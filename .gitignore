@@ -3,9 +3,6 @@
 packages/
 artifacts/
 
-_ReSharper.*
-*.ReSharper.user
-*.resharper.user
 .vs/
 .vscode/
 *.lock.json
@@ -15,3 +12,10 @@ _ReSharper.*
 *.orig
 .DS_Store
 *.sln.ide
+
+# JetBrains
+_ReSharper.*
+*.ReSharper.user
+*.resharper.user
+.idea/
+*.DotSettings.*
