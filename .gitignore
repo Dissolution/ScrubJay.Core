@@ -1,0 +1,17 @@
+[Bb]in/
+[Oo]bj/
+packages/
+artifacts/
+
+_ReSharper.*
+*.ReSharper.user
+*.resharper.user
+.vs/
+.vscode/
+*.lock.json
+.nuget/
+*.nuget.targets
+*.nuget.props
+*.orig
+.DS_Store
+*.sln.ide
