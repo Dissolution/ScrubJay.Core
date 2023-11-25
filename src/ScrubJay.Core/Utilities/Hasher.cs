@@ -19,7 +19,7 @@ public ref struct Hasher
     private const uint PRIME3 = 3_266_489_917U;
     private const uint PRIME4 = 0_668_265_263U;
     private const uint PRIME5 = 0_374_761_393U;
-
+    
     private static uint CreateSeed()
     {
 #if NET48 || NETSTANDARD2_0
@@ -82,8 +82,10 @@ public ref struct Hasher
         hash ^= hash >> 16;
         return hash;
     }
-    
-    
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int EmptyHashCode() => new Hasher().ToHashCode();
+
     /// <summary>
     /// Gets the hashcode for a single <paramref name="value"/>
     /// </summary>
@@ -269,7 +271,7 @@ public ref struct Hasher
     {
         switch (span.Length)
         {
-            case 0: return 0;
+            case 0: return EmptyHashCode();
             case 1: return GetHashCode(span[0]);
             case 2: return Combine(span[0], span[1]);
             case 3: return Combine(span[0], span[1], span[2]);
@@ -299,7 +301,7 @@ public ref struct Hasher
         if (array is null) return 0;
         switch (array.Length)
         {
-            case 0: return 0;
+            case 0: return EmptyHashCode();
             case 1: return GetHashCode(array[0]);
             case 2: return Combine(array[0], array[1]);
             case 3: return Combine(array[0], array[1], array[2]);

@@ -32,17 +32,25 @@ public readonly struct Option<T> :
     public static bool operator ==(object? obj, Option<T> option) => option.Equals(obj);
     public static bool operator !=(object? obj, Option<T> option) => !option.Equals(obj);
 
+    
+    /// <summary>
+    /// Gets <see cref="Option{T}"/>.<see cref="None"/>
+    /// </summary>
+    public static readonly Option<T> None = default;
+    
     /// <summary>
     /// Creates an <see cref="Option{T}"/>.<see cref="Some"/> containing the given <paramref name="value"/>
     /// </summary>
     public static Option<T> Some(T value) => new(true, value);
 
     /// <summary>
-    /// Gets <see cref="Option{T}"/>.<see cref="None"/>
+    /// Creates an <see cref="Option{T}"/> that is<br/>
+    /// <see cref="Some"/> if <paramref name="value"/> is not <c>null</c> and <br/> 
+    /// <see cref="None"/> if it is
     /// </summary>
-    public static readonly Option<T> None = default;
-    
-    
+    public static Option<T> NotNull(T? value) => value is null ? None : Some(value);
+
+
     private readonly bool _some;
     private readonly T _value;
 

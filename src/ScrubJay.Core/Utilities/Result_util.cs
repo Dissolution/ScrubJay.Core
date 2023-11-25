@@ -8,6 +8,9 @@ partial struct Result
 
     public static Result<T> Ok<T>(T value) => Result<T>.Ok(value);
     public static Result<T> Error<T>(Exception? error) => Result<T>.Error(error);
+
+    public static Result<T> NotNull<T>(T? value) => value is not null ? value : new ArgumentNullException(nameof(value));
+    
     
     
     public static Result<TValue> Wrap<TValue>(Try<TValue> tryFunc)

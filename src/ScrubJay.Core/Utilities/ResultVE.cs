@@ -71,8 +71,6 @@ public readonly struct Result<TOk, TError> :
     /// <summary>
     /// Gets an <c>Error</c> <see cref="Result{V,E}"/> with attached <paramref name="errorValue"/>
     /// </summary>
-    /// <param name="errorValue"></param>
-    /// <returns></returns>
     public static Result<TOk, TError> Error(TError? errorValue)
     {
         return new(false, default!, errorValue);

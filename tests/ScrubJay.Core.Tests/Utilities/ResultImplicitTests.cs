@@ -9,7 +9,7 @@ public class ImplicitTests
         Assert.True(alpha.IsError());
 
         Result beta = new Result();
-        Assert.True(alpha.IsError());
+        Assert.True(beta.IsError());
     }
     
     [Fact]

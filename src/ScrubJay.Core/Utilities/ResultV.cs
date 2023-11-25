@@ -97,7 +97,18 @@ public readonly struct Result<TValue> :
         return new(false, default!, exception);
     }
 
-
+    public static Result<TValue> NotNull([AllowNull] TValue value)
+    {
+        if (value is not null)
+        {
+            return Ok(value);
+        }
+        else
+        {
+            return Error(new ArgumentNullException(nameof(value)));
+        }
+    }
+    
     private readonly bool _ok;
     private readonly TValue _value;
     private readonly Exception? _exception;
