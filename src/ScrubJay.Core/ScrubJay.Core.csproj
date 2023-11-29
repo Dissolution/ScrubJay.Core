@@ -54,6 +54,7 @@
         <Using Include="System.Numerics"/>
         <Using Include="ScrubJay.Extensions"/>
         <Using Include="ScrubJay.Utilities"/>
+        <Using Include="ScrubJay.Validation"/>
     </ItemGroup>
     
     <!-- Packed Files -->

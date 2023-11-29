@@ -13,3 +13,7 @@
 /// The <see cref="Type"/> of return result
 /// </typeparam>
 public delegate TResult SpanFunc<T, out TResult>(Span<T> span);
+
+public delegate void RefAction<T>(ref T value);
+
+public delegate int TryWrite<T>(Span<T> destination);

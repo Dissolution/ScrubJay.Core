@@ -2,7 +2,7 @@
 
 internal static class TestHelper
 {
-    public static ThreadLocal<InfiniteStack<object?>> InfiniteObjects { get; } = new ThreadLocal<InfiniteStack<object?>>(() => new InfiniteStack<object?>(TestObjects));
+    public static ThreadLocal<InfiniteStack<object?>> InfiniteObjects { get; } = new ThreadLocal<InfiniteStack<object?>>(() => new InfiniteStack<object?>(TestObjects!)!);
 
     public static IEnumerable<object[]> ToEnumerableObjects<T>(IEnumerable<T> values)
         => values.Select(static value => new object[1] { (object)value! });
@@ -13,9 +13,7 @@ internal static class TestHelper
     public static IReadOnlyList<object?> TestObjects { get; } = new List<object?>
     {
         null,
-        (byte)13,
         (ulong)ulong.MaxValue - 13UL,
-        (int)147,
         (int?)null,
         (int?)147,
         (string?)null,
@@ -23,7 +21,8 @@ internal static class TestHelper
         (string?)"ABC",
         default(Nothing),
         new object(),
-        new Exception("BLAH")
+        new Exception("BLAH"),
+        new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() },
     };
 }
 

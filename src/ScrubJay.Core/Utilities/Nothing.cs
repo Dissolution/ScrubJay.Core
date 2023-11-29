@@ -4,8 +4,8 @@ namespace ScrubJay.Utilities;
 
 /// <summary>
 /// A representation of a <c>void</c> value<br/>
-/// Not the same as <c>null</c><br/>
-/// Construct with <c>default</c> or <c>default(Nothing)</c>
+/// Not <c>null</c>, but literally <c>Nothing</c>
+/// Create with <c>default</c>
 /// </summary>
 [StructLayout(LayoutKind.Auto, Size = 0)]
 public readonly struct Nothing :

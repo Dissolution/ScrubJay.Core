@@ -19,7 +19,7 @@ public ref struct Hasher
     private const uint PRIME3 = 3_266_489_917U;
     private const uint PRIME4 = 0_668_265_263U;
     private const uint PRIME5 = 0_374_761_393U;
-    
+
     private static uint CreateSeed()
     {
 #if NET48 || NETSTANDARD2_0
@@ -35,12 +35,6 @@ public ref struct Hasher
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint RotateLeft(uint value, int offset)
-    {
-        return (value << offset) | (value >> (32 - offset));
-    }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Initialize(out uint v1, out uint v2, out uint v3, out uint v4)
     {
         v1 = _seed + PRIME1 + PRIME2;
@@ -52,19 +46,22 @@ public ref struct Hasher
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint Round(uint hash, uint input)
     {
-        return RotateLeft(hash + input * PRIME2, 13) * PRIME1;
+        return MathHelper.RotateLeft(hash + input * PRIME2, 13) * PRIME1;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint QueueRound(uint hash, uint queuedValue)
     {
-        return RotateLeft(hash + queuedValue * PRIME3, 17) * PRIME4;
+        return MathHelper.RotateLeft(hash + queuedValue * PRIME3, 17) * PRIME4;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint MixState(uint v1, uint v2, uint v3, uint v4)
     {
-        return RotateLeft(v1, 1) + RotateLeft(v2, 7) + RotateLeft(v3, 12) + RotateLeft(v4, 18);
+        return MathHelper.RotateLeft(v1, 1)
+            + MathHelper.RotateLeft(v2, 7)
+            + MathHelper.RotateLeft(v3, 12)
+            + MathHelper.RotateLeft(v4, 18);
     }
 
     private static uint MixEmptyState()
@@ -82,10 +79,8 @@ public ref struct Hasher
         hash ^= hash >> 16;
         return hash;
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int EmptyHashCode() => new Hasher().ToHashCode();
-
+    
+    
     /// <summary>
     /// Gets the hashcode for a single <paramref name="value"/>
     /// </summary>
@@ -271,7 +266,7 @@ public ref struct Hasher
     {
         switch (span.Length)
         {
-            case 0: return EmptyHashCode();
+            case 0: return 0;
             case 1: return GetHashCode(span[0]);
             case 2: return Combine(span[0], span[1]);
             case 3: return Combine(span[0], span[1], span[2]);
@@ -301,7 +296,7 @@ public ref struct Hasher
         if (array is null) return 0;
         switch (array.Length)
         {
-            case 0: return EmptyHashCode();
+            case 0: return 0;
             case 1: return GetHashCode(array[0]);
             case 2: return Combine(array[0], array[1]);
             case 3: return Combine(array[0], array[1], array[2]);
