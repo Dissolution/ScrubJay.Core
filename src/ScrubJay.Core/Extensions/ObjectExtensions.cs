@@ -38,4 +38,45 @@ public static class ObjectExtensions
         value = default;
         return obj is null && typeof(T).CanContainNull();
     }
+    
+    /// <summary>
+    /// Unbox this <see cref="object"/> into a <typeparamref name="T"/> value,
+    /// throwing an <see cref="ArgumentException"/> if it is not a valid <typeparamref name="T"/> instance
+    /// </summary>
+    /// <param name="obj">The <see cref="object"/> to unbox</param>
+    /// <param name="objName">The name of the <paramref name="obj"/> parameter, passed to a thrown <see cref="ArgumentException"/></param>
+    /// <typeparam name="T">The <see cref="Type"/> of value to unbox to</typeparam>
+    /// <returns>
+    /// <paramref name="obj"/> unboxed to a <typeparamref name="T"/> value
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown if <see cref="obj"/> is not a valid <typeparamref name="T"/> instance
+    /// </exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Unbox<T>(this object? obj, [CallerArgumentExpression(nameof(obj))] string? objName = null)
+    {
+        if (obj is T)
+            return (T)obj;
+        throw new ArgumentException($"Object '{obj}' is not a {typeof(T).Name}", objName);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T UnboxRef<T>(this object? obj, [CallerArgumentExpression(nameof(obj))] string? objName = null)
+    {
+        if (obj is T)
+            return ref Scary.UnboxRef<T>(obj);
+        throw new ArgumentException($"Object '{obj}' is not a {typeof(T).Name}", objName);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [return: NotNullIfNotNull(nameof(obj))]
+    public static T? CastClass<T>(this object? obj, [CallerArgumentExpression(nameof(obj))] string? objName = null)
+        where T : class
+    {
+        if (obj is null)
+            return null;
+        if (obj is T)
+            return (T)obj;
+        throw new ArgumentException($"Object '{obj}' is not a {typeof(T).Name}", objName);
+    }
 }

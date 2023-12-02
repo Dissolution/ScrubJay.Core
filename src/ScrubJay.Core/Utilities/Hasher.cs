@@ -13,13 +13,15 @@ namespace ScrubJay.Utilities;
 public ref struct Hasher
 {
     private static readonly uint _seed = CreateSeed();
-
+    private static readonly int _emptyHash = new Hasher().ToHashCode();
+    private static readonly int _nullHash = GetHashCode<object?>(null);
+    
     private const uint PRIME1 = 2_654_435_761U;
     private const uint PRIME2 = 2_246_822_519U;
     private const uint PRIME3 = 3_266_489_917U;
     private const uint PRIME4 = 0_668_265_263U;
     private const uint PRIME5 = 0_374_761_393U;
-
+    
     private static uint CreateSeed()
     {
 #if NET48 || NETSTANDARD2_0
@@ -35,6 +37,12 @@ public ref struct Hasher
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint RotateLeft(uint value, int offset)
+    {
+        return (value << offset) | (value >> (32 - offset));
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Initialize(out uint v1, out uint v2, out uint v3, out uint v4)
     {
         v1 = _seed + PRIME1 + PRIME2;
@@ -46,22 +54,19 @@ public ref struct Hasher
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint Round(uint hash, uint input)
     {
-        return MathHelper.RotateLeft(hash + input * PRIME2, 13) * PRIME1;
+        return RotateLeft(hash + input * PRIME2, 13) * PRIME1;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint QueueRound(uint hash, uint queuedValue)
     {
-        return MathHelper.RotateLeft(hash + queuedValue * PRIME3, 17) * PRIME4;
+        return RotateLeft(hash + queuedValue * PRIME3, 17) * PRIME4;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint MixState(uint v1, uint v2, uint v3, uint v4)
     {
-        return MathHelper.RotateLeft(v1, 1)
-            + MathHelper.RotateLeft(v2, 7)
-            + MathHelper.RotateLeft(v3, 12)
-            + MathHelper.RotateLeft(v4, 18);
+        return RotateLeft(v1, 1) + RotateLeft(v2, 7) + RotateLeft(v3, 12) + RotateLeft(v4, 18);
     }
 
     private static uint MixEmptyState()
@@ -79,8 +84,9 @@ public ref struct Hasher
         hash ^= hash >> 16;
         return hash;
     }
-    
-    
+
+
+
     /// <summary>
     /// Gets the hashcode for a single <paramref name="value"/>
     /// </summary>
@@ -96,7 +102,7 @@ public ref struct Hasher
         hash = MixFinal(hash);
         return (int)hash;
     }
-
+    
     /// <summary>
     /// Gets a combined hashcode for the given values
     /// </summary>
@@ -266,8 +272,8 @@ public ref struct Hasher
     {
         switch (span.Length)
         {
-            case 0: return 0;
-            case 1: return GetHashCode(span[0]);
+            case 0: return _emptyHash;
+            case 1: return Combine(span[0]);
             case 2: return Combine(span[0], span[1]);
             case 3: return Combine(span[0], span[1], span[2]);
             case 4: return Combine(span[0], span[1], span[2], span[3]);
@@ -278,7 +284,7 @@ public ref struct Hasher
             default:
             {
                 var hasher = new Hasher();
-                hasher.AddAll<T>(span);
+                hasher.AddMany<T>(span);
                 return hasher.ToHashCode();
             }
         }
@@ -287,17 +293,17 @@ public ref struct Hasher
     public static int Combine<T>(ReadOnlySpan<T> span, IEqualityComparer<T>? comparer)
     {
         var hasher = new Hasher();
-        hasher.AddAll<T>(span, comparer);
+        hasher.AddMany<T>(span, comparer);
         return hasher.ToHashCode();
     }
 
     public static int Combine<T>(params T[]? array)
     {
-        if (array is null) return 0;
+        if (array is null) return _nullHash;
         switch (array.Length)
         {
-            case 0: return 0;
-            case 1: return GetHashCode(array[0]);
+            case 0: return _emptyHash;
+            case 1: return Combine(array[0]);
             case 2: return Combine(array[0], array[1]);
             case 3: return Combine(array[0], array[1], array[2]);
             case 4: return Combine(array[0], array[1], array[2], array[3]);
@@ -308,7 +314,7 @@ public ref struct Hasher
             default:
             {
                 var hasher = new Hasher();
-                hasher.AddAll<T>(array);
+                hasher.AddMany<T>(array);
                 return hasher.ToHashCode();
             }
         }
@@ -316,15 +322,15 @@ public ref struct Hasher
 
     public static int Combine<T>(T[]? array, IEqualityComparer<T>? comparer)
     {
-        if (array is null) return 0;
+        if (array is null) return _nullHash;
         var hasher = new Hasher();
-        hasher.AddAll<T>(array, comparer);
+        hasher.AddMany<T>(array, comparer);
         return hasher.ToHashCode();
     }
 
     public static int Combine<T>(IEnumerable<T>? enumerable)
     {
-        if (enumerable is null) return 0;
+        if (enumerable is null) return _nullHash;
         var hasher = new Hasher();
         foreach (T value in enumerable)
         {
@@ -335,7 +341,7 @@ public ref struct Hasher
 
     public static int Combine<T>(IEnumerable<T>? enumerable, IEqualityComparer<T>? comparer)
     {
-        if (enumerable is null) return 0;
+        if (enumerable is null) return _nullHash;
         var hasher = new Hasher();
         foreach (T value in enumerable)
         {
@@ -403,7 +409,7 @@ public ref struct Hasher
         }
     }
 
-    public void AddAll<T>(ReadOnlySpan<T> values)
+    public void AddMany<T>(ReadOnlySpan<T> values)
     {
         for (var i = 0; i < values.Length; i++)
         {
@@ -411,7 +417,7 @@ public ref struct Hasher
         }
     }
 
-    public void AddAll<T>(ReadOnlySpan<T> values, IEqualityComparer<T>? comparer)
+    public void AddMany<T>(ReadOnlySpan<T> values, IEqualityComparer<T>? comparer)
     {
         for (var i = 0; i < values.Length; i++)
         {
@@ -419,7 +425,7 @@ public ref struct Hasher
         }
     }
     
-    public void AddAll<T>(Span<T> values)
+    public void AddMany<T>(Span<T> values)
     {
         for (var i = 0; i < values.Length; i++)
         {
@@ -427,7 +433,7 @@ public ref struct Hasher
         }
     }
 
-    public void AddAll<T>(Span<T> values, IEqualityComparer<T>? comparer)
+    public void AddMany<T>(Span<T> values, IEqualityComparer<T>? comparer)
     {
         for (var i = 0; i < values.Length; i++)
         {
@@ -435,7 +441,7 @@ public ref struct Hasher
         }
     }
     
-    public void AddAll<T>(params T[]? values)
+    public void AddMany<T>(params T[]? values)
     {
         if (values is null) return;
         for (var i = 0; i < values.Length; i++)
@@ -444,7 +450,7 @@ public ref struct Hasher
         }
     }
 
-    public void AddAll<T>(T[]? values, IEqualityComparer<T>? comparer)
+    public void AddMany<T>(T[]? values, IEqualityComparer<T>? comparer)
     {
         if (values is null) return;
         for (var i = 0; i < values.Length; i++)
@@ -453,7 +459,7 @@ public ref struct Hasher
         }
     }
 
-    public void AddAll<T>(IEnumerable<T>? values)
+    public void AddMany<T>(IEnumerable<T>? values)
     {
         if (values is null) return;
         foreach (var value in values)
@@ -462,7 +468,7 @@ public ref struct Hasher
         }
     }
 
-    public void AddAll<T>(IEnumerable<T>? values, IEqualityComparer<T>? comparer)
+    public void AddMany<T>(IEnumerable<T>? values, IEqualityComparer<T>? comparer)
     {
         if (values is null) return;
         foreach (var value in values)

@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Utilities;
+﻿namespace ScrubJay;
 
 /* Static Utilities involving Result, Result<T>, and Result<V,E> */
 partial struct Result

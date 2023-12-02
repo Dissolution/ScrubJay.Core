@@ -1,32 +1,32 @@
 ﻿namespace ScrubJay.Debugging;
 
 /// <summary>
-/// <see cref="EventArgs"/> related to Unhandled <see cref="Exception">Exceptions</see>
+/// <see cref="EventArgs"/> for unhandled <see cref="Exception">Exceptions</see>
 /// </summary>
 public class UnhandledExceptionArgs : EventArgs
 {
     /// <summary>
-    /// The source of the Unhandled Exception 
-    /// </summary>
-    public required string Source { get; init; }
-
-    /// <summary>
-    /// The optional Unhandled <see cref="Exception"/>
-    /// </summary>
-    public required Exception Exception { get; init; }
-
-    /// <summary>
-    /// When did this Unhandled Exception occur?
+    /// When did this unhandled exception occur?
     /// </summary>
     public DateTime Occurrence { get; } = DateTime.Now;
     
     /// <summary>
-    /// Did this Unhandled Exception cause this process to terminate?
+    /// The source of the unhandled exception
+    /// </summary>
+    public required string Source { get; init; }
+
+    /// <summary>
+    /// The unhandled <see cref="Exception"/>
+    /// </summary>
+    public required Exception Exception { get; init; }
+    
+    /// <summary>
+    /// Is this unhandled exception causing this application to terminate?
     /// </summary>
     public bool? IsTerminating { get; init; } = null;
 
     /// <summary>
-    /// Has this Unhandled Exception been observed?
+    /// Has this unhandled exception been observed?
     /// </summary>
     public bool? IsObserved { get; init; } = null;
 

@@ -7,8 +7,6 @@
             net8.0;net7.0;net6.0;
             <!-- The latest Framework -->
             net48;
-            <!-- Both Standard versions (source generators are stuck on .Net Standard 2.0 -->
-            netstandard2.1;netstandard2.0;
         </TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -43,6 +41,7 @@
     
     <!-- NuGet Packages -->
     <ItemGroup>
+        <PackageReference Include="Bogus" Version="34.0.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0"/>
         <PackageReference Include="xunit" Version="2.4.2"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">

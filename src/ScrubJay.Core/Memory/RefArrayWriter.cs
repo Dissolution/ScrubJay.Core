@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using Jay;
 
 namespace ScrubJay.Memory;
 
@@ -18,8 +17,8 @@ public static class RefArrayWriter
         else if (newIndex > array.Length)
         {
             var newArray = ArrayPool<T>.Shared.Rent(newIndex);
-            Easy.CopyTo(array, newArray);
-            ArrayPool<T>.Shared.Return(array);
+            array.CopyTo(newArray);
+            ArrayPool<T>.Shared.Return(array, true);
             array = newArray;
         }
 
@@ -40,12 +39,12 @@ public static class RefArrayWriter
         else if (newIndex > array.Length)
         {
             var newArray = ArrayPool<T>.Shared.Rent(newIndex);
-            Easy.CopyTo(array, newArray);
-            ArrayPool<T>.Shared.Return(array);
+            array.CopyTo(newArray);
+            ArrayPool<T>.Shared.Return(array, true);
             array = newArray;
         }
 
-        Easy.CopyTo(items, array.AsSpan(arrayIndex));
+        items.CopyTo(array.AsSpan(arrayIndex));
         arrayIndex = newIndex;
     }
 
@@ -68,8 +67,8 @@ public static class RefArrayWriter
         else if (newIndex > charArray.Length)
         {
             var newArray = ArrayPool<char>.Shared.Rent(newIndex);
-            Easy.CopyTo(charArray, newArray);
-            ArrayPool<char>.Shared.Return(charArray);
+            charArray.CopyTo(newArray);
+            ArrayPool<char>.Shared.Return(charArray, true);
             charArray = newArray;
         }
 
@@ -90,12 +89,12 @@ public static class RefArrayWriter
         else if (newIndex > charArray.Length)
         {
             var newArray = ArrayPool<char>.Shared.Rent(newIndex);
-            Easy.CopyTo(charArray, newArray);
-            ArrayPool<char>.Shared.Return(charArray);
+            charArray.CopyTo(newArray);
+            ArrayPool<char>.Shared.Return(charArray, true);
             charArray = newArray;
         }
 
-        Easy.CopyTo(text, charArray.AsSpan(arrayIndex));
+        text.CopyTo(charArray.AsSpan(arrayIndex));
         arrayIndex = newIndex;
     }
 

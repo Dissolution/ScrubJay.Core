@@ -1,169 +1,183 @@
 ﻿// ReSharper disable InconsistentNaming
 
-using System.ComponentModel;
-using System.Reflection;
-
 namespace ScrubJay.Tests.Utilities;
 
 public class HasherTests
 {
-    public static IEnumerable<object?[]> TestData_1()
+    /// <summary>
+    /// Gets the data for any Theory test
+    /// </summary>
+    public static IEnumerable<object?[]> Data(int arrayLen)
     {
-        foreach (object? obj in TestHelper.TestObjects)
-        {
-            yield return new object?[1] { obj };
-        }
-    }
-    public static IEnumerable<object?[]> TestData(int len)
-    {
-        var infData = TestHelper.InfiniteObjects.Value!;
-        int total = TestHelper.TestObjects.Count;
-        total = (total * total);
-        for (var t = 0; t < total; t++)
-        {
-            object?[] objArray = infData.PopArray(len);
-            yield return objArray;
-        }
+        return TestHelper.ToEnumerableNullableObjects(TestHelper.TestObjects, arrayLen);
     }
 
     [Theory]
-    [MemberData(nameof(TestData_1))]
-    public int CanGetHashCode<T>(T? value)
+    [MemberData(nameof(Data), 1)]
+    public int CanCombine1<T>(T? value)
     {
         return Hasher.GetHashCode<T>(value);
     }
     
     [Theory]
-    [MemberData(nameof(TestData), 2)]
-    public int CanCombine<T1, T2>(T1? first, T2? second)
+    [MemberData(nameof(Data), 2)]
+    public int CanCombine2<T1, T2>(T1? first, T2? second)
     {
         return Hasher.Combine<T1, T2>(first, second);
     }
     
-
     [Theory]
-    [MemberData(nameof(TestData_1))]
-    public void GetHashCodeIsConsistent<T>(T? value)
+    [MemberData(nameof(Data), 3)]
+    public int CanCombine3<T1, T2, T3>(T1? first, T2? second, T3? third)
     {
-        int? firstResult = null;
-        for (var i = 0; i < 10; i++)
-        {
-            if (firstResult is null)
-            {
-                firstResult = Hasher.GetHashCode<T>(value);
-            }
-            else
-            {
-                var result = Hasher.GetHashCode<T>(value);
-                Assert.Equal(firstResult, result);
-            }
-        }
-    }
-
-    [Fact]
-    public void CanHashNullArray()
-    {
-        object?[]? nullArray = (object?[]?)null;
-        int hash = Hasher.Combine<object?>(nullArray);
-        Assert.Equal(0, hash);
+        return Hasher.Combine<T1, T2, T3>(first, second, third);
     }
     
-    [Fact]
-    public void CanHashArrays()
+    [Theory]
+    [MemberData(nameof(Data), 4)]
+    public int CanCombine4<T1, T2, T3, T4>(T1? first, T2? second, T3? third, T4? fourth)
     {
-        var infData = TestHelper.InfiniteObjects.Value!;
-        for (var len = 0; len <= 16; len++)
-        {
-            object?[] objArray = infData.PopArray(len);
-            int hash = Hasher.Combine<object?>(objArray);
-            Assert.NotEqual(0, hash);
-        }
+        return Hasher.Combine<T1, T2, T3, T4>(first, second, third, fourth);
     }
 
     [Theory]
-    [MemberData(nameof(TestData), 2)]
+    [MemberData(nameof(Data), 5)]
+    public int CanCombine5<T1, T2, T3, T4, T5>(T1? first, T2? second, T3? third, T4? fourth, T5? fifth)
+    {
+        return Hasher.Combine<T1, T2, T3, T4, T5>(first, second, third, fourth, fifth);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data), 6)]
+    public int CanCombine6<T1, T2, T3, T4, T5, T6>(T1? first, T2? second, T3? third, T4? fourth, T5? fifth, T6? sixth)
+    {
+        return Hasher.Combine<T1, T2, T3, T4, T5, T6>(first, second, third, fourth, fifth, sixth);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data), 7)]
+    public int CanCombine7<T1, T2, T3, T4, T5, T6, T7>(T1? first, T2? second, T3? third, T4? fourth, T5? fifth, T6? sixth, T7? seventh)
+    {
+        return Hasher.Combine<T1, T2, T3, T4, T5, T6, T7>(first, second, third, fourth, fifth, sixth, seventh);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data), 8)]
+    public int CanCombine8<T1, T2, T3, T4, T5, T6, T7, T8>(T1? first, T2? second, T3? third, T4? fourth, T5? fifth, T6? sixth, T7? seventh, T8? eighth)
+    {
+        return Hasher.Combine<T1, T2, T3, T4, T5, T6, T7, T8>(first, second, third, fourth, fifth, sixth, seventh, eighth);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data), 9)]
+    public int CanCombine9<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1? first, T2? second, T3? third, T4? fourth, T5? fifth, T6? sixth, T7? seventh, T8? eighth, T9? ninth)
+    {
+        return Hasher.Combine<object?>(first, second, third, fourth, fifth, sixth, seventh, eighth, ninth);
+    }
+    
+    [Theory]
+    [MemberData(nameof(Data), 1)]
+    public void GetHashCodeIsConsistent<T>(T? value)
+    {
+        var alpha = Hasher.GetHashCode(value);
+        var beta = Hasher.GetHashCode(value);
+        Assert.Equal(alpha, beta);
+    }
+    
+    [Theory]
+    [MemberData(nameof(Data), 3)]
+    public void CombineIsConsistent<T1, T2, T3>(T1? value1, T2? value2, T3? value3)
+    {
+        var alpha = Hasher.Combine(value1, value2, value3);
+        var beta = Hasher.Combine(value1, value2, value3);
+        Assert.Equal(alpha, beta);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data), 2)]
     public void HashOrderMatters<T1, T2>(T1? first, T2? second)
     {
         int alpha = Hasher.Combine<T1, T2>(first, second);
         int beta = Hasher.Combine<T2, T1>(second, first);
         Assert.NotEqual(alpha, beta);
     }
-
+    
+    [Fact]
+    public void NullHashingIsConsistent()
+    {
+        int alpha = Hasher.GetHashCode<object?>(null);
+        int beta = Hasher.GetHashCode<int?>(null);
+        Assert.Equal(alpha, beta);
+        int gamma = Hasher.GetHashCode<string>((string)null!);
+        Assert.Equal(alpha, gamma);
+        int delta = Hasher.Combine<object?>((object?[]?)null);
+        Assert.Equal(alpha, delta);
+        int epsilon = Hasher.Combine<object?>((IEnumerable<object?>)null!);
+        Assert.Equal(alpha, epsilon);
+    }
+    
+    [Fact]
+    public void EmptyHashingIsConsistent()
+    {
+        int alpha = new Hasher().ToHashCode();
+        int beta = Hasher.Combine<object?>(ReadOnlySpan<object?>.Empty);
+        Assert.Equal(alpha, beta);
+        int gamma = Hasher.Combine<object?>(Array.Empty<object?>());
+        Assert.Equal(alpha, gamma);
+        int delta = Hasher.Combine<object?>(Enumerable.Empty<object?>());
+        Assert.Equal(alpha, delta);
+    }
+   
     [Fact]
     public void NullHashIsDifferentThanEmptyHash()
     {
-        var hasher = new Hasher();
-        int alpha = hasher.ToHashCode();
-
-        int beta = Hasher.GetHashCode<object>(null);
-        Assert.NotEqual(alpha, beta);
-
-        int gamma = Hasher.Combine<object>((object[]?)null);
-        Assert.NotEqual(alpha, gamma);
-        Assert.Equal(beta, gamma);
-
-        int delta = Hasher.Combine<object>((object[]?)null, new BadComparer<object>());
-        Assert.NotEqual(alpha, delta);
-        Assert.Equal(beta, delta);
-        Assert.Equal(gamma, delta);
+        var emptyHash = new Hasher().ToHashCode();
+        var nullHash = Hasher.GetHashCode<object?>(null);
+        Assert.NotEqual(emptyHash, nullHash);
     }
-
-    [Fact]
-    public void NullHashesTheSame()
-    {
-        var hasher = new Hasher();
-        hasher.Add<object>(null);
-        int alpha = hasher.ToHashCode();
-
-        int beta = Hasher.GetHashCode<object>(null);
-        Assert.Equal(alpha, beta);
-
-        int gamma = Hasher.Combine<object>((object[]?)null);
-        Assert.Equal(alpha, gamma);
-        Assert.Equal(beta, gamma);
-
-        int delta = Hasher.Combine<object>((object[]?)null, new BadComparer<object>());
-        Assert.Equal(alpha, delta);
-        Assert.Equal(beta, delta);
-        Assert.Equal(gamma, delta);
-    }
-
+    
     [Fact]
     public void AllWaysToCombineHashesAreTheSame()
     {
-        int a = 147;
-        string b = "ABC";
-        List<byte>? c = null;
+        var data = TestHelper.TestObjects;
+
+        IEnumerable<object?> dataEnumerable = data.AsEnumerable();
+        object?[] dataArray = data.ToArray();
+        Span<object?> dataSpan = dataArray.AsSpan();
+
+        Hasher hasher;
         
-        var hasher = new Hasher();
-        hasher.Add(a);
-        hasher.Add(b);
-        hasher.Add(c);
+        hasher = new Hasher();
+        hasher.AddMany<object?>(dataSpan);
         int alpha = hasher.ToHashCode();
 
-        int beta = Hasher.Combine(a, b, c);
-
+        hasher = new Hasher();
+        hasher.AddMany<object?>(dataArray);
+        int beta = hasher.ToHashCode();
         Assert.Equal(alpha, beta);
 
-        int gamma = Hasher.Combine<object?>(a, b, c);
-
+        hasher = new Hasher();
+        hasher.AddMany<object?>(dataEnumerable);
+        int gamma = hasher.ToHashCode();
         Assert.Equal(alpha, gamma);
+        
+        hasher = new Hasher();
+        for (var i = 0; i < data.Count; i++)
+        {
+            hasher.Add<object?>(data[i]);
+        }
+        int delta = hasher.ToHashCode();
+        Assert.Equal(alpha, delta);
+
+        int epsilon = Hasher.Combine<object?>(dataSpan);
+        Assert.Equal(alpha, epsilon);
+        
+        int zeta = Hasher.Combine<object?>(dataArray);
+        Assert.Equal(alpha, zeta);
+        
+        int eta = Hasher.Combine<object?>(dataEnumerable);
+        Assert.Equal(alpha, eta);
+
     }
 }
 
-internal sealed class BadComparer<T> : IEqualityComparer<T>
-{
-    public bool Equals(T? x, T? y)
-    {
-        if (ReferenceEquals(x, y)) return true;
-        if (x is null || y is null) return false;
-        return EqualityComparer<T>.Default.Equals(x, y);
-    }
-
-    public int GetHashCode(T? obj)
-    {
-        if (obj is null)
-            throw new ArgumentNullException(nameof(obj));
-        return obj.GetHashCode();
-    }
-}

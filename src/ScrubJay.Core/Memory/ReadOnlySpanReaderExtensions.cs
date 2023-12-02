@@ -1,37 +1,37 @@
 ﻿namespace ScrubJay.Memory;
 
 /// <summary>
-/// Extensions on <see cref="SpanReader{T}"/>
+/// Extensions on <see cref="ReadOnlySpanEnumerator{T}"/>
 /// </summary>
 /// <remarks>
-/// These methods are not on <see cref="SpanReader{T}"/> itself so that we can constrain
+/// These methods are not on <see cref="ReadOnlySpanEnumerator{T}"/> itself so that we can constrain
 /// the generic type further
 /// </remarks>
-public static class SpanReaderExtensions
+public static class ReadOnlySpanEnumeratorExtensions
 {
     public static void SkipWhile<T>(
-        this ref SpanReader<T> spanReader,
+        this ref ReadOnlySpanEnumerator<T> readOnlySpanEnumerator,
         ReadOnlySpan<T> match)
         where T : IEquatable<T>
     {
-        int readCount = spanReader.ReadCount;
-        ReadOnlySpan<T> span = spanReader.Span[readCount..];
+        int readCount = readOnlySpanEnumerator.EnumeratedCount;
+        ReadOnlySpan<T> span = readOnlySpanEnumerator.ReadOnlySpan[readCount..];
         int i = 0;
         int capacity = span.Length;
         while (i < capacity && span[i..].StartsWith(match))
         {
             i += match.Length;
         }
-        spanReader.ReadCount = readCount + i;
+        readOnlySpanEnumerator.EnumeratedCount = readCount + i;
     }
     
     public static ReadOnlySpan<T> TakeWhile<T>(
-        this ref SpanReader<T> spanReader,
+        this ref ReadOnlySpanEnumerator<T> readOnlySpanEnumerator,
         ReadOnlySpan<T> match)
         where T : IEquatable<T>
     {
-        int readCount = spanReader.ReadCount;
-        ReadOnlySpan<T> span = spanReader.Span[readCount..];
+        int readCount = readOnlySpanEnumerator.EnumeratedCount;
+        ReadOnlySpan<T> span = readOnlySpanEnumerator.ReadOnlySpan[readCount..];
         int i = 0;
         int capacity = span.Length;
         while (i < capacity && span[i..].StartsWith(match))
@@ -39,33 +39,33 @@ public static class SpanReaderExtensions
             i += match.Length;
         }
 
-        spanReader.ReadCount = readCount + i;
+        readOnlySpanEnumerator.EnumeratedCount = readCount + i;
         return span[..i];
     }
     
     public static void SkipUntil<T>(
-        this ref SpanReader<T> spanReader,
+        this ref ReadOnlySpanEnumerator<T> readOnlySpanEnumerator,
         ReadOnlySpan<T> match)
         where T : IEquatable<T>
     {
-        int readCount = spanReader.ReadCount;
-        ReadOnlySpan<T> span = spanReader.Span[readCount..];
+        int readCount = readOnlySpanEnumerator.EnumeratedCount;
+        ReadOnlySpan<T> span = readOnlySpanEnumerator.ReadOnlySpan[readCount..];
         int i = 0;
         int capacity = span.Length;
         while (i < capacity && !span[i..].StartsWith(match))
         {
             i += match.Length;
         }
-        spanReader.ReadCount = readCount + i;
+        readOnlySpanEnumerator.EnumeratedCount = readCount + i;
     }
     
     public static ReadOnlySpan<T> TakeUntil<T>(
-        this ref SpanReader<T> spanReader,
+        this ref ReadOnlySpanEnumerator<T> readOnlySpanEnumerator,
         ReadOnlySpan<T> match)
         where T : IEquatable<T>
     {
-        int readCount = spanReader.ReadCount;
-        ReadOnlySpan<T> span = spanReader.Span[readCount..];
+        int readCount = readOnlySpanEnumerator.EnumeratedCount;
+        ReadOnlySpan<T> span = readOnlySpanEnumerator.ReadOnlySpan[readCount..];
         int i = 0;
         int capacity = span.Length;
         while (i < capacity && !span[i..].StartsWith(match))
@@ -73,7 +73,7 @@ public static class SpanReaderExtensions
             i += match.Length;
         }
 
-        spanReader.ReadCount = readCount + i;
+        readOnlySpanEnumerator.EnumeratedCount = readCount + i;
         return span[..i];
     }
 }

@@ -1,139 +1,151 @@
-﻿namespace ScrubJay.Extensions;
+﻿using System.Reflection;
 
+namespace ScrubJay.Extensions;
+
+/// <summary>
+/// Extensions on <see cref="Type"/> and <see cref="TypeInfo"/>
+/// </summary>
 public static class TypeExtensions
 {
-    public static bool Implements<T>(this Type? type)
+    /// <summary>
+    /// Get all base <see cref="Type"/>s for this <paramref name="type"/>
+    /// </summary>
+    /// <param name="type">
+    /// The <see cref="Type"/> to get all base types for
+    /// </param>
+    /// <returns>
+    /// An enumeration of all base types
+    /// </returns>
+    public static IEnumerable<Type> GetBaseTypes(this Type? type)
     {
-        return Implements(type, typeof(T));
+        if (type is null)
+            yield break;
+        for (Type? baseType = type.BaseType; baseType is not null; baseType = baseType.BaseType)
+        {
+            yield return baseType;
+        }
     }
 
-    public static bool Implements(this Type? type, Type? otherType)
+    /// <summary>
+    /// Does this <see cref="Type"/> implement the <paramref name="checkType"/>?
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="checkType"></param>
+    /// <returns></returns>
+    public static bool Implements(this Type? type, Type? checkType)
     {
-        if (type == otherType) return true;
-        if (type is null || otherType is null) return false;
-        if (otherType.IsAssignableFrom(type)) return true;
-        if (type.IsGenericType && otherType.IsGenericTypeDefinition)
-            return type.GetGenericTypeDefinition() == otherType;
-        if (otherType.HasAttribute<DynamicAttribute>()) return true;
-        if (otherType.IsGenericTypeDefinition)
+        if (checkType is null) return type is null;
+        if (type is null) return false;
+
+        // Shortcut a bunch of checks
+        if (checkType.IsAssignableFrom(type)) return true;
+
+        if (checkType.IsGenericTypeDefinition)
         {
-            // Check interface generic types
-            // e.g. List<int> : IList<>
-            if (type.GetInterfaces()
-                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == otherType))
+            // Check direct (List<T> : List<>)
+            if (type.GetGenericTypeDefinition() == checkType)
                 return true;
+
+            // Check my base types
+            foreach (var baseType in type.GetBaseTypes())
+            {
+                if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == checkType)
+                    return true;
+            }
+
+            // Check my interfaces
+            foreach (var iface in type.GetInterfaces())
+            {
+                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == checkType)
+                    return true;
+            }
         }
+
         return false;
     }
 
+    public static bool Implements<T>(this Type? type) => Implements(type, typeof(T));
+    
+    /// <summary>
+    /// Is this <paramref name="type"/> a <c>static</c> <see cref="Type"/>?
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsStatic(this Type type)
+    {
+        return type.IsAbstract && type.IsSealed;
+    }
+    
+    /// <summary>
+    /// Can values of this <see cref="Type"/> contain <c>null</c>?
+    /// </summary>
+    /// <param name="type">The <see cref="Type"/> to examine</param>
+    /// <returns>
+    /// <c>true</c> if instances of this <see cref="Type"/> can contain <c>null</c> (such as classes and Nullable&lt;&gt;)<br/>
+    /// <c>false</c> if they cannot (value types)
+    /// </returns>
     public static bool CanContainNull(this Type? type)
     {
-        return type switch
-        {
-            null => true,
-            { IsAbstract: true, IsSealed: true } => false, // static
-            { IsValueType: true } => Nullable.GetUnderlyingType(type) != null, // Is Nullable
-            _ => true,
-        };
+        if (type is null) return true;
+        if (type.IsStatic()) return false;
+        if (type.IsValueType)
+            return Nullable.GetUnderlyingType(type) is not null;
+        return true; // non-value types can always contain null
     }
 
     /// <summary>
     /// Is this <see cref="Type"/> a <see cref="Nullable{T}"/>?
     /// </summary>
-    public static bool IsNullable(this Type? type)
+    public static bool IsNullable([AllowNull, NotNullWhen(true)] this Type? type)
     {
-        return type is not null && type.Implements(typeof(Nullable<>));
+        return type is { IsValueType: true, IsGenericType: true }
+            && type.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 
+    /// <summary>
+    /// Is this <see cref="Type"/> a <see cref="Nullable{T}"/>?<br/>
+    /// If so, also return the <paramref name="underlyingType"/>
+    /// </summary>
     public static bool IsNullable(this Type? type, [NotNullWhen(true)] out Type? underlyingType)
     {
-        if (type is { IsValueType: true, IsGenericType: true }
-            && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+        if (type.IsNullable())
         {
             underlyingType = type.GetGenericArguments()[0];
             return true;
         }
+
         underlyingType = null;
         return false;
     }
 
+    /// <inheritdoc cref="Type.MakeGenericType"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Type MakeGenericType<T>(this Type type)
     {
         return type.MakeGenericType(typeof(T));
     }
 
-    public static bool IsByRef(this Type? type, out Type underlyingType)
+    /// <summary>
+    /// Is this <see cref="Type"/> a <c>ref</c>?<br/>
+    /// If so, also return the <paramref name="underlyingType"/>
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="underlyingType"></param>
+    /// <returns></returns>
+    public static bool IsByRef(this Type? type, [NotNullWhen(true)] out Type? underlyingType)
     {
         if (type is null)
         {
-            underlyingType = typeof(void);
+            underlyingType = null;
             return false;
         }
 
         if (type.IsByRef)
         {
-            underlyingType = type
-                .GetElementType()
-                .ThrowIfNull();
+            underlyingType = type.GetElementType()!;
             return true;
         }
 
         underlyingType = type;
         return false;
-    }
-
-    public static (bool ByRef, Type UnderlyingType) IsByRef(this Type? type)
-    {
-        if (type is null)
-        {
-            return (false, typeof(void));
-        }
-
-        if (type.IsByRef)
-        {
-            return (true, type.GetElementType()!);
-        }
-
-        return (false, type);
-    }
-
-    public static bool HasInterface(this Type type, Type interfaceType)
-    {
-        return type.GetInterfaces().Any(t => t == interfaceType);
-    }
-
-    public static bool HasAttribute<TAttribute>(this Type type)
-        where TAttribute : Attribute
-    {
-        return Attribute.IsDefined(type, typeof(TAttribute));
-    }
-
-    public static IEnumerable<Type> GetAllBaseTypes(this Type type, bool includeSelf = false)
-    {
-        if (includeSelf)
-            yield return type;
-        Type? baseType = type.BaseType;
-        while (baseType is not null)
-        {
-            yield return baseType;
-            baseType = baseType.BaseType;
-        }
-    }
-
-    public static IReadOnlyCollection<Type> GetAllImplementedTypes(this Type type)
-    {
-        var types = new HashSet<Type>();
-        Type? baseType = type;
-        while (baseType != null)
-        {
-            types.Add(baseType);
-            foreach (Type face in baseType.GetInterfaces())
-            {
-                types.Add(face);
-            }
-            baseType = type.BaseType;
-        }
-        return types;
     }
 }

@@ -1,5 +1,8 @@
 ﻿namespace ScrubJay.Utilities;
 
+/// <summary>
+/// A utility for working with <see cref="IDisposable"/>
+/// </summary>
 public static class Disposable
 {
     public static IDisposable FromAction(Action? action)
@@ -8,10 +11,8 @@ public static class Disposable
     }
 
     /// <summary>
-    /// Tries to dispose of <paramref name="value"/>.
+    /// Tries to dispose of <paramref name="value"/>, ignoring all exceptions
     /// </summary>
-    /// <typeparam name="T">The <see cref="Type"/> of <paramref name="value"/> to dispose</typeparam>
-    /// <param name="value">The value to dispose.</param>
     public static void Dispose<T>(T? value)
     {
         if (value is IDisposable disposable)
@@ -27,6 +28,9 @@ public static class Disposable
         }
     }
 
+    /// <summary>
+    /// Sets <paramref name="value"/> to <c>null</c> and disposes it, ignoring all exceptions
+    /// </summary>
     public static void DisposeRef<T>(ref T? value)
         where T : class
     {

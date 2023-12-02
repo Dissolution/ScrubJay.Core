@@ -1,11 +1,9 @@
-﻿using ScrubJay.Reflection;
-
-namespace ScrubJay.Validation;
+﻿namespace ScrubJay.Validation;
 
 public static class ValidationExtensions
 {
     /// <summary>
-    /// Throws an <see cref="ArgumentNullException"/> if <paramref name="value"/> is <c>null</c>
+    /// Returns <paramref name="value"/> or throws an <see cref="ArgumentNullException"/> if it is <c>null</c>
     /// </summary>
     /// <typeparam name="T">
     /// The <see cref="Type"/> of <paramref name="value"/>
@@ -29,8 +27,8 @@ public static class ValidationExtensions
         string? valueName = null)
         where T : class?
     {
-        Throw.IfNull<T>(value, valueName);
-        return value;
+        if (value is not null) return value;
+        throw new ArgumentNullException(valueName);
     }
 
     /// <summary>
@@ -60,9 +58,8 @@ public static class ValidationExtensions
     {
         if (obj is TOut output)
             return output;
-
         throw new ArgumentException(
-            $"The given {obj?.GetType().NameOf()} value is not a valid {typeof(TOut).NameOf()} instance",
+            $"The given {obj?.GetType().Name} value is not a valid {typeof(TOut).Name} instance",
             objName);
     }
 }

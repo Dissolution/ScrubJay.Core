@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 
 namespace ScrubJay.Concurrency;
 
@@ -31,7 +32,7 @@ public sealed class OnlyApplication : IDisposable
             }
             catch (AbandonedMutexException amex)
             {
-                Console.WriteLine(amex.Message);
+                Debug.WriteLine(amex.Message);
                 return amex;
             }
         }
@@ -46,7 +47,7 @@ public sealed class OnlyApplication : IDisposable
                 }
                 catch (AbandonedMutexException amex)
                 {
-                    Console.WriteLine(amex.Message);
+                    Debug.WriteLine(amex.Message);
                     return amex;
                 }
             }

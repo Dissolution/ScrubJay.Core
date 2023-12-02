@@ -1,11 +1,11 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace ScrubJay.Utilities;
+namespace ScrubJay;
 
 /// <summary>
 /// A representation of a <c>void</c> value<br/>
 /// Not <c>null</c>, but literally <c>Nothing</c>
-/// Create with <c>default</c>
+/// Create with <c>default</c> or <c>default(Nothing)</c>
 /// </summary>
 [StructLayout(LayoutKind.Auto, Size = 0)]
 public readonly struct Nothing :

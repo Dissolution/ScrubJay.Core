@@ -35,10 +35,12 @@ public class UnhandledExceptionWatcher : IDisposable
             IsObserved = args.Observed,
         };
         UnhandledException?.Invoke(sender, unhandledExArgs);
-        // We observed this?
+        
+        // We observed this
         args.SetObserved();
     }
 
+    [Conditional("DEBUG")]
     public void WriteToDebug()
     {
         this.UnhandledException += static (_, args) => Debug.WriteLine(args.ToString());

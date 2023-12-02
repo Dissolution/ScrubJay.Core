@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Utilities;
+﻿namespace ScrubJay;
 
 /// <summary>
 /// Represents the typed result of an operation as either:<br/>
@@ -65,13 +65,13 @@ public readonly struct Result<TOk, TError> :
     /// </summary>
     public static Result<TOk, TError> Ok(TOk okValue)
     {
-        return new(true, okValue, default);
+        return new(true, okValue, default!);
     }
     
     /// <summary>
     /// Gets an <c>Error</c> <see cref="Result{V,E}"/> with attached <paramref name="errorValue"/>
     /// </summary>
-    public static Result<TOk, TError> Error(TError? errorValue)
+    public static Result<TOk, TError> Error(TError errorValue)
     {
         return new(false, default!, errorValue);
     }
@@ -79,9 +79,9 @@ public readonly struct Result<TOk, TError> :
     
     private readonly bool _ok;
     private readonly TOk _value;
-    private readonly TError? _error;
+    private readonly TError _error;
 
-    internal Result(bool ok, TOk value, TError? error)
+    internal Result(bool ok, TOk value, TError error)
     {
         _ok = ok;
         _value = value;
@@ -102,14 +102,14 @@ public readonly struct Result<TOk, TError> :
     public bool IsError() => !_ok;
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsError(out TError? error)
+    public bool IsError([MaybeNullWhen(false)] out TError error)
     {
         error = _error;
         return !_ok;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(Action<TOk> onOk, Action<TError?> onError)
+    public void Match(Action<TOk> onOk, Action<TError> onError)
     {
         if (_ok)
         {
@@ -122,7 +122,7 @@ public readonly struct Result<TOk, TError> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TReturn Match<TReturn>(Func<TOk, TReturn> onOk, Func<TError?, TReturn> onError)
+    public TReturn Match<TReturn>(Func<TOk, TReturn> onOk, Func<TError, TReturn> onError)
     {
         if (_ok)
         {

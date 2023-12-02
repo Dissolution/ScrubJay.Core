@@ -1,5 +1,11 @@
 ﻿namespace ScrubJay.Collections;
 
+/// <summary>
+/// A universal <see cref="IEnumerator{T}"/> for any-dimensional <see cref="Array"/>s
+/// </summary>
+/// <typeparam name="T">
+/// The <see cref="Type"/> of items stored in the <see cref="Array"/>
+/// </typeparam>
 public sealed class ArrayWrapper<T> :
     IReadOnlyCollection<T>,
     IEnumerable<T>,
@@ -23,7 +29,7 @@ public sealed class ArrayWrapper<T> :
     
     public ArrayWrapper(Array array)
     {
-        if (!array.GetType().GetElementType().Implements<T>())
+        if (!array.GetElementType().Implements<T>())
             throw new ArgumentException();
         _array = array;
         var rank = _rank = array.Rank;
@@ -36,11 +42,17 @@ public sealed class ArrayWrapper<T> :
         }
     }
 
+    /// <summary>
+    /// Gets the value stored at the given <paramref name="indices"/>
+    /// </summary>
     public T GetValue(params int[] indices)
     {
         return _array.GetValue(indices).AsValid<T>();
     }
 
+    /// <summary>
+    /// Sets the <paramref name="value"/> stored at the given <paramref name="indices"/>
+    /// </summary>
     public void SetValue(T value, params int[] indices)
     {
         _array.SetValue(value, indices);

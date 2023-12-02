@@ -1,5 +1,11 @@
 ﻿namespace ScrubJay.Collections;
 
+/// <summary>
+/// A universal <see cref="IEnumerator{T}"/> for any-dimensional <see cref="Array"/>s
+/// </summary>
+/// <typeparam name="T">
+/// The <see cref="Type"/> of items stored in the <see cref="Array"/>
+/// </typeparam>
 public sealed class ArrayEnumerator<T> : 
     IEnumerator<T>, 
     IEnumerator,
@@ -10,12 +16,25 @@ public sealed class ArrayEnumerator<T> :
     private readonly int[] _lowerBounds;
     private readonly int[] _upperBounds;
     
-    private readonly int[] _arrayIndex;
+    private readonly int[] _arrayIndices;
 
+    /// <summary>
+    /// The <see cref="Array"/>'s Rank -- or Number of Dimensions (1-based)
+    /// </summary>
     public int Rank => _rank;
-    public int[] Index => _arrayIndex;
-    object IEnumerator.Current => _array.GetValue(_arrayIndex)!;
-    public T Current => (T)_array.GetValue(_arrayIndex)!;
+    
+    /// <summary>
+    /// The current enumeration indices
+    /// </summary>
+    public int[] Indices => _arrayIndices;
+    
+    /// <inheritdoc cref="IEnumerator"/>
+    object IEnumerator.Current => _array.GetValue(_arrayIndices)!;
+    
+    /// <summary>
+    /// The currently enumerated item
+    /// </summary>
+    public T Current => (T)_array.GetValue(_arrayIndices)!;
     
     internal ArrayEnumerator(Array array, int rank, int[] lowerBounds, int[] upperBounds)
     {
@@ -23,46 +42,27 @@ public sealed class ArrayEnumerator<T> :
         _rank = rank;
         _lowerBounds = lowerBounds;
         _upperBounds = upperBounds;
-        var index = _arrayIndex = new int[rank];
         
-        // The last item in arrayIndex needs to be at '-1'
-        int end = rank - 1;
-        for (var dim = 0; dim <= end; dim++)
-        {
-            if (dim < end)
-            {
-                index[dim] = lowerBounds[dim];
-            }
-            else
-            {
-                index[dim] = lowerBounds[dim] - 1;
-            }
-        }
+        // Setup our starting indices
+        _arrayIndices = new int[rank];
+        Reset();
     }
 
-    public bool TryMoveNext([MaybeNullWhen(false)] out T value)
+    public void Deconstruct(out int[] indices, out T item)
     {
-        if (MoveNext())
-        {
-            value = Current;
-            return true;
-        }
-        else
-        {
-            value = default;
-            return false;
-        }
+        indices = _arrayIndices;
+        item = Current;
     }
 
-    private bool TryRollNext(int index)
+    private bool TryIncrementAt(int index)
     {
         if (index < 0) return false;
-        var arrayIndex = _arrayIndex;
+        var arrayIndex = _arrayIndices;
         var rankValue = arrayIndex[index];
         if (rankValue >= _upperBounds[index])
         {
             // We have to be able to roll the one to the left
-            if (!TryRollNext(index - 1))
+            if (!TryIncrementAt(index - 1))
                 return false;
             // Reset me
             arrayIndex[index] = _lowerBounds[index];
@@ -74,21 +74,32 @@ public sealed class ArrayEnumerator<T> :
         return true;
     }
     
+    public bool TryMoveNext([MaybeNullWhen(false)] out T value)
+    {
+        if (MoveNext())
+        {
+            value = Current;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+    
     public bool MoveNext()
     {
-        return TryRollNext(_rank - 1);
+        return TryIncrementAt(_rank - 1);
     }
 
     public void Reset()
     {
-        var arrayIndex = _arrayIndex;
-        int i = _rank - 1;
-        arrayIndex[i] = _lowerBounds[i] - 1;
-        i--;
-        while (i > 0)
+        int end = _rank - 1;
+        // The last index needs to be one lower (pre-incremented)
+        _arrayIndices[end] = _lowerBounds[end] - 1; 
+        // The rest start at their zero
+        for (var dim = 0; dim < end; dim++)
         {
-            arrayIndex[i] = _lowerBounds[i];
-            i--;
+            _arrayIndices[dim] = _lowerBounds[dim];
         }
     }
 

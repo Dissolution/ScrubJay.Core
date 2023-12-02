@@ -15,7 +15,7 @@ public class TypeImplementsTests
         typeof(TypeExtensions),
     };
 
-    public static IEnumerable<object?[]> TestData() => TestHelper.ToEnumerableNullableObjects(TestTypes);
+    public static IEnumerable<object?[]> TestData() => TestHelper.ToEnumerableNullableObjects(TestTypes, 1);
     
 
     [Fact]
@@ -39,8 +39,9 @@ public class TypeImplementsTests
         Assert.True(impl);
     }
 
-    public class TestList<T> : List<T> { }
-    public class NestedTestList<T> : TestList<T> { }
+    public class TestList<T> : List<T>;
+
+    public class NestedTestList<T> : TestList<T>;
     
     [Fact]
     public void SubClasses()

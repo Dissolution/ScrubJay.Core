@@ -23,5 +23,5 @@ public static class StaticImports
     /// <inheritdoc cref="Result{V,E}.Ok"/>
     public static Result<TOk, TError> Ok<TOk, TError>(TOk okValue) => Result<TOk, TError>.Ok(okValue);
     /// <inheritdoc cref="Result{V,E}.Error"/>
-    public static Result<TOk, TError> Error<TOk, TError>(TError? errorValue) => Result<TOk, TError>.Error(errorValue);
+    public static Result<TOk, TError> Error<TOk, TError>(TError errorValue) => Result<TOk, TError>.Error(errorValue);
 }

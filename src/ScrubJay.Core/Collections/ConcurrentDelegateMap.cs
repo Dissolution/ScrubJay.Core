@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using ScrubJay.Comparison;
-using ScrubJay.Reflection;
 
 namespace ScrubJay.Collections;
 
@@ -12,7 +11,7 @@ public sealed class ConcurrentDelegateMap
         var typeArgs = typeof(TDelegate).GetGenericArguments();
         if (typeArgs.Length > 0)
             return typeArgs;
-        throw new ArgumentException($"{typeof(TDelegate).NameOf()} does not contain at least one generic type", nameof(TDelegate));
+        throw new ArgumentException($"{typeof(TDelegate).Name} does not contain at least one generic type", nameof(TDelegate));
     }
 
     private static bool TypesEqual(Type[] left, Type[] right)

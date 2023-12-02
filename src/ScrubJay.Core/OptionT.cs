@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Utilities;
+﻿namespace ScrubJay;
 
 /// <summary>
 /// An <c>Option</c> represents either:<br/>

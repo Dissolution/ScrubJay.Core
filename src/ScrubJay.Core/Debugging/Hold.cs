@@ -4,7 +4,8 @@ namespace ScrubJay.Debugging;
 
 /// <summary>
 /// Provides a reference to values at DEBUG time<br/>
-/// So that they are not compiled out nor triggering compiler warnings
+/// - Keeps them from being compiled out<br/>
+/// - Prevents compiler warnings about unused variables
 /// </summary>
 public static class Hold
 {
@@ -24,4 +25,9 @@ public static class Hold
     public static void Onto<T1, T2, T3, T4, T5, T6, T7>(T1 _1, T2 _2, T3 _3, T4 _4, T5 _5, T6 _6, T7 _7) { }
     [Conditional("DEBUG")]
     public static void Onto<T1, T2, T3, T4, T5, T6, T7, T8>(T1 _1, T2 _2, T3 _3, T4 _4, T5 _5, T6 _6, T7 _7, T8 _8) { }
+    
+    [Conditional("DEBUG")]
+    public static void Onto<T>(ReadOnlySpan<T> _) { }
+    [Conditional("DEBUG")]
+    public static void Onto<T>(Span<T> _) { }
 }

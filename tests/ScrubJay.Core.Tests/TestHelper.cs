@@ -1,71 +1,78 @@
-﻿namespace ScrubJay.Tests;
+﻿using System.Reflection;
+using Bogus;
 
-internal static class TestHelper
+namespace ScrubJay.Tests;
+
+public static class TestHelper
 {
-    public static ThreadLocal<InfiniteStack<object?>> InfiniteObjects { get; } = new ThreadLocal<InfiniteStack<object?>>(() => new InfiniteStack<object?>(TestObjects!)!);
-
-    public static IEnumerable<object[]> ToEnumerableObjects<T>(IEnumerable<T> values)
-        => values.Select(static value => new object[1] { (object)value! });
-
-    public static IEnumerable<object?[]> ToEnumerableNullableObjects<T>(IEnumerable<T?> values)
-        => values.Select(static value => new object?[1] { (object?)value });
-
     public static IReadOnlyList<object?> TestObjects { get; } = new List<object?>
     {
         null,
-        (ulong)ulong.MaxValue - 13UL,
-        (int?)null,
-        (int?)147,
-        (string?)null,
+        ulong.MaxValue - 13UL,
         (string?)string.Empty,
         (string?)"ABC",
         default(Nothing),
+        new byte[4]{0,147,13,101},
+        new Action(() => { }),
+        IntPtr.Zero,
         new object(),
         new Exception("BLAH"),
+        (int?)147,
+        Guid.NewGuid(),
         new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() },
+        BindingFlags.Public | BindingFlags.NonPublic,
+        typeof(TestHelper),
+        new { Name = "Joe", Age = 40},
+        DBNull.Value,
+        new Dictionary<int,string>
+        {
+            {1, "one"},
+            {2, "two"},
+            {3, "three"},
+        },
+        DateTime.UtcNow,
+        TimeSpan.MaxValue,
+        AppDomain.CurrentDomain,
+        '❤',
+        "❤️",
     };
-}
-
-public sealed class InfiniteStack<T>
-{
-    private readonly IReadOnlyList<T> _items;
-    private readonly int _count;
-    private int _index;
-
-    public InfiniteStack(IEnumerable<T> items)
+    
+    static TestHelper()
     {
-        _items = items as IReadOnlyList<T> ?? items.ToList();
-        _count = _items.Count;
-        if (_count == 0)
-            throw new ArgumentException("", nameof(items));
-        _index = 0;
+        Randomizer.Seed = new Random(147);
     }
-
-
-    public T Pop()
+    
+    public static IEnumerable<object[]> ToEnumerableObjects<T>(IEnumerable<T> values, int arrayCount)
     {
-        int index = _index;
-        _index = ((index + 1) % _count);
-        return _items[index];
-    }
+        using var e = values.GetEnumerator();
 
-    public IEnumerable<T> Pop(int count)
-    {
-        for (var i = 0; i < count; i++)
+        while (true)
         {
-            yield return Pop();
+            object[] objects = new object[arrayCount];
+            for (var i = 0; i < arrayCount; i++)
+            {
+                if (!e.TryMoveNext(out var value)) yield break;
+                objects[i] = value!;
+            }
+
+            yield return objects;
         }
     }
 
-    public T[] PopArray(int count)
+    public static IEnumerable<object?[]> ToEnumerableNullableObjects<T>(IEnumerable<T> values, int arrayCount)
     {
-        if (count <= 0) return Array.Empty<T>();
-        T[] array = new T[count];
-        for (var i = 0; i < count; i++)
-        {
-            array[i] = Pop();
-        }
+        using var e = values.GetEnumerator();
 
-        return array;
+        while (true)
+        {
+            object?[] objects = new object?[arrayCount];
+            for (var i = 0; i < arrayCount; i++)
+            {
+                if (!e.TryMoveNext(out var value)) yield break;
+                objects[i] = value;
+            }
+
+            yield return objects;
+        }
     }
 }

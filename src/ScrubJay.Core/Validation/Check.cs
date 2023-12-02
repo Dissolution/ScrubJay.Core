@@ -56,21 +56,7 @@ public static class Check
         }
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} must be in [{inclusiveMinimum}..{inclusiveMaximum}]");
     }
-    
-    public static Result IfNotIn<T>(
-        T value,
-        IEnumerable<T> options,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-    {
-        var comparer = EqualityComparer<T>.Default;
-        if (options.Any(opt => comparer.Equals(opt, value)))
-        {
-            return Ok();
-        }
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} must be in {options}");
-    }
-
+  
     public static Result Index(
         int available,
         int index,

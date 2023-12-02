@@ -112,7 +112,7 @@ public readonly struct FlagsEnumWrapper<TEnum> :
 
     public FlagsEnumWrapper(TEnum flagsEnum)
     {
-        if (!typeof(TEnum).HasAttribute<FlagsAttribute>())
+        if (!Attribute.IsDefined(typeof(TEnum), typeof(FlagsAttribute)))
             throw new ArgumentException("You must pass an enum with [Flags] applied to it", nameof(flagsEnum));
         _enum = flagsEnum;
     }

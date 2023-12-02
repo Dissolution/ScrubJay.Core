@@ -214,6 +214,7 @@ public static unsafe class Scary
     }
 
     // in T -> 
+    // These are all _really_ dangerous!
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void* InToVoidPointer<T>(in T inValue)
@@ -253,8 +254,10 @@ public static unsafe class Scary
     {
 #if NET48 || NETSTANDARD2_0
         return new ReadOnlySpan<T>(InToVoidPointer<T>(in inValue), length);
+#elif NET8_0_OR_GREATER
+        return MemoryMarshal.CreateReadOnlySpan(in inValue, length);
 #else
-        return MemoryMarshal.CreateReadOnlySpan(ref InToRef<T>(in inValue), length);
+        return MemoryMarshal.CreateReadOnlySpan(ref InToRef(in inValue), length);
 #endif
     }
 
@@ -387,9 +390,6 @@ public static unsafe class Scary
         return MemoryMarshal.Cast<TIn, TOut>(inSpan);
     }
 
-
-
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TOut DirectCast<TIn, TOut>(TIn value)
     {
@@ -471,6 +471,51 @@ public static unsafe class Scary
             Emit.Ldarg(nameof(sourceByte));
             Emit.Ldarg(nameof(byteCount));
             Emit.Cpblk();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(ReadOnlySpan<byte> source, Span<byte> dest)
+        {
+            CopyTo(in source.GetPinnableReference(),
+                ref dest.GetPinnableReference(),
+                source.Length);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(ReadOnlySpan<byte> source, byte[] dest)
+        {
+            CopyTo(in source.GetPinnableReference(),
+                ref dest.GetPinnableReference(),
+                source.Length);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(Span<byte> source, Span<byte> dest)
+        {
+            CopyTo(in source.GetPinnableReference(),
+                ref dest.GetPinnableReference(),
+                source.Length);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(Span<byte> source, byte[] dest)
+        {
+            CopyTo(in source.GetPinnableReference(),
+                ref dest.GetPinnableReference(),
+                source.Length);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(byte[] source, Span<byte> dest)
+        {
+            CopyTo(in source.GetPinnableReference(),
+                ref dest.GetPinnableReference(),
+                source.Length);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(byte[] source, byte[] dest)
+        {
+            CopyTo(in source.GetPinnableReference(),
+                ref dest.GetPinnableReference(),
+                source.Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -558,6 +603,36 @@ public static unsafe class Scary
         }
     }
 
+    /// <summary>
+    /// Methods on <c>unmanaged</c> values
+    /// </summary>
+    public static class Unmanaged
+    {
+        public static T Clone<T>(in T value)
+            where T : unmanaged
+        {
+            int size = sizeof(T);
+            Span<byte> buffer = stackalloc byte[size];
+            Block.CopyTo(
+                InToVoidPointer(in value), 
+                RefToVoidPointer(ref buffer.GetPinnableReference()), 
+                (uint)size);
+            return Unsafe.ReadUnaligned<T>(ref buffer.GetPinnableReference());
+        }
+
+        public static byte[] ToBytes<T>(in T value)
+            where T : unmanaged
+        {
+            int size = sizeof(T);
+            Span<byte> buffer = stackalloc byte[size];
+            Block.CopyTo(
+                InToVoidPointer(in value), 
+                RefToVoidPointer(ref buffer.GetPinnableReference()), 
+                (uint)size);
+            return buffer.ToArray();
+        }
+    }
+    
 
 #region Offsets
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -648,6 +723,9 @@ public static unsafe class Scary
     }
 
 
+    /// <summary>
+    /// Is the <c>ref</c> <typeparamref name="T"/> <paramref name="source"/> a reference to <c>null</c>?
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNullRef<T>(ref T source)
     {
@@ -658,6 +736,9 @@ public static unsafe class Scary
         return Return<bool>();
     }
 
+    /// <summary>
+    /// Gets a <c>ref (</c><typeparamref name="T"/><c>)null</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T NullRef<T>()
     {
@@ -666,6 +747,9 @@ public static unsafe class Scary
         return ref ReturnRef<T>();
     }
 
+    /// <summary>
+    /// Gets a <c>((</c><typeparamref name="T"/><c>)null)*</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* NullPointer<T>()
         where T : unmanaged
@@ -673,5 +757,16 @@ public static unsafe class Scary
         Emit.Ldc_I4_0();
         Emit.Conv_U();
         return ReturnPointer<T>();
+    }
+    
+    /// <summary>
+    /// Gets a <c>void*</c> to <c>null</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void* NullPointer()
+    {
+        Emit.Ldc_I4_0();
+        Emit.Conv_U();
+        return ReturnPointer();
     }
 }

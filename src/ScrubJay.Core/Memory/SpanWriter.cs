@@ -1,5 +1,4 @@
-﻿using Jay;
-using ScrubJay.Text;
+﻿using ScrubJay.Text;
 
 namespace ScrubJay.Memory;
 
@@ -62,7 +61,7 @@ public ref struct SpanWriter<T>
         var span = _span;
         if (newIndex <= span.Length)
         {
-            Easy.CopyTo(items, span[index..]);
+            items.CopyTo(span[index..]);
             _position = newIndex;
             return true;
         }
@@ -76,7 +75,7 @@ public ref struct SpanWriter<T>
         var span = _span;
         if (newIndex <= span.Length)
         {
-            Easy.CopyTo(items, span[index..]);
+            items.CopyTo(span[index..]);
             _position = newIndex;
             return true;
         }

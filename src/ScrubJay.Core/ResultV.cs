@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Utilities;
+﻿namespace ScrubJay;
 
 /// <summary>
 /// Represents the result of an operation as either:<br/>

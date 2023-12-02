@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Extensions;
+﻿using System.Runtime.InteropServices;
+
+namespace ScrubJay.Extensions;
 
 public static class ArrayExtensions
 {
@@ -9,7 +11,7 @@ public static class ArrayExtensions
         return array.AsSpan(offset, length);
     }
 #endif
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this T[]? array)
     {
@@ -122,6 +124,7 @@ public static class ArrayExtensions
         {
             types[i] = objectArray[i]?.GetType() ?? nullType;
         }
+
         return types;
     }
 
@@ -164,5 +167,26 @@ public static class ArrayExtensions
         {
             yield return array[i];
         }
+    }
+
+    [return: NotNullIfNotNull(nameof(array))]
+    public static Type? GetElementType(this Array? array)
+    {
+        if (array is null) return null;
+        return array.GetType().GetElementType()!;
+    }
+
+    public static Type GetElementType<T>(this T[] array) => typeof(T);
+
+    public static void CopyTo<T>(this T[] array, T[] dest)
+        => array.AsSpan().CopyTo(dest.AsSpan());
+
+    public static ref T GetPinnableReference<T>(this T[] array)
+    {
+#if NET6_0_OR_GREATER
+        return ref MemoryMarshal.GetArrayDataReference<T>(array);
+#else
+        return ref array[0];
+#endif
     }
 }

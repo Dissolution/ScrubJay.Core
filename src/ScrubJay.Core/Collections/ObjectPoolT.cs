@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using ScrubJay.Reflection;
 
 // ReSharper disable MethodOverloadWithOptionalParameter
 
@@ -75,7 +74,8 @@ public sealed class ObjectPool<T> : IDisposable
     {
         get
         {
-            if (_instances is null) return 0; // We've been disposed
+            if (_instances is null) 
+                return 0; // We've been disposed
 
             return _instances.Length + 1;
         }
@@ -106,17 +106,14 @@ public sealed class ObjectPool<T> : IDisposable
     /// <summary>
     /// Creates a new <see cref="ObjectPool{T}"/>
     /// </summary>
-    /// <typeparam name="T">
-    /// The <see cref="Type"/> of <c>class</c> instances stored
-    /// </typeparam>
     /// <param name="factory">
-    /// A <see cref="Func{T}"/> used to create needed instances
+    /// A <see cref="Func{T}"/> to create new <typeparamref name="T"/> instances
     /// </param>
     /// <param name="clean">
-    /// An optional <see cref="Action{T}"/> to perform on each returned instance
+    /// An optional <see cref="Action{T}"/> to perform on <typeparamref name="T"/> instances when they are returned
     /// </param>
     /// <param name="dispose">
-    /// An optional <see cref="Action{T}"/> to perform on a disposed instance
+    /// An optional <see cref="Action{T}"/> to perform on <typeparamref name="T"/> instances when they are discarded
     /// </param>
     public ObjectPool(
         Func<T> factory,
@@ -128,22 +125,19 @@ public sealed class ObjectPool<T> : IDisposable
 
 
     /// <summary>
-    /// Creates a new <see cref="ObjectPool{T}"/> with the given <paramref name="totalCapacity"/>
+    /// Creates a new <see cref="ObjectPool{T}"/>
     /// </summary>
-    /// <typeparam name="T">
-    /// The <see cref="Type"/> of <c>class</c> instances stored
-    /// </typeparam>
     /// <param name="totalCapacity">
-    /// The total number of instances that can ever be stored
+    /// The total number of <typeparamref name="T"/> instances that can ever be stored
     /// </param>
     /// <param name="factory">
-    /// A <see cref="Func{T}"/> used to create needed instances
+    /// A <see cref="Func{T}"/> to create new <typeparamref name="T"/> instances
     /// </param>
     /// <param name="clean">
-    /// An optional <see cref="Action{T}"/> to perform on each returned instance
+    /// An optional <see cref="Action{T}"/> to perform on <typeparamref name="T"/> instances when they are returned
     /// </param>
     /// <param name="dispose">
-    /// An optional <see cref="Action{T}"/> to perform on a disposed instance
+    /// An optional <see cref="Action{T}"/> to perform on <typeparamref name="T"/> instances when they are discarded
     /// </param>
     public ObjectPool(
         int totalCapacity,
@@ -167,6 +161,45 @@ public sealed class ObjectPool<T> : IDisposable
         _instances = new RefInstance[totalCapacity - 1];
     }
 
+    private T RentSlow()
+    {
+        RefInstance[] instances = _instances!;
+        T? instance;
+        for (var i = 0; i < instances.Length; i++)
+        {
+            instance = instances[i].Instance;
+            if (instance != null)
+            {
+                if (instance == Interlocked.CompareExchange(ref instances[i].Instance, null, instance))
+                {
+                    // found one
+                    return instance;
+                }
+            }
+        }
+
+        // we have to create a new instance
+        return _instanceFactory();
+    }
+
+    private void ReturnSlow(T instance)
+    {
+        RefInstance[] instances = _instances!;
+        for (var i = 0; i < instances.Length; i++)
+        {
+            if (instances[i].Instance is null)
+            {
+                if (Interlocked.CompareExchange(ref instances[i].Instance, instance, null) is null)
+                {
+                    // We stored it
+                    break;
+                }
+            }
+        }
+
+        // we could not store this instance, dispose it
+        _disposeInstance?.Invoke(instance);
+    }
 
     /// <summary>
     /// Rent a <typeparamref name="T"/> instance from this <see cref="ObjectPool{T}"/>
@@ -178,7 +211,7 @@ public sealed class ObjectPool<T> : IDisposable
     {
         // Always check if we've been disposed
         if (_instances is null)
-            throw new ObjectDisposedException(GetType().NameOf());
+            throw new ObjectDisposedException(GetType().Name);
 
         // Check if we can satisfy with the first instance
         T? instance = _firstInstance;
@@ -299,7 +332,7 @@ public sealed class ObjectPool<T> : IDisposable
     public void Dispose()
     {
         T? instance;
-        // we use _items == null to determine disposal in Return()
+        // we use _instances == null to determine disposal in Return()
         var instances = Interlocked.Exchange<RefInstance[]?>(ref _instances, null);
         if (instances is not null)
         {
@@ -319,45 +352,5 @@ public sealed class ObjectPool<T> : IDisposable
                 _disposeInstance?.Invoke(instance);
             }
         }
-    }
-
-    private T RentSlow()
-    {
-        RefInstance[] instances = _instances!;
-        T? instance;
-        for (var i = 0; i < instances.Length; i++)
-        {
-            instance = instances[i].Instance;
-            if (instance != null)
-            {
-                if (instance == Interlocked.CompareExchange(ref instances[i].Instance, null, instance))
-                {
-                    // found one
-                    return instance;
-                }
-            }
-        }
-
-        // we have to create a new instance
-        return _instanceFactory();
-    }
-
-    private void ReturnSlow(T instance)
-    {
-        RefInstance[] instances = _instances!;
-        for (var i = 0; i < instances.Length; i++)
-        {
-            if (instances[i].Instance is null)
-            {
-                if (Interlocked.CompareExchange(ref instances[i].Instance, instance, null) is null)
-                {
-                    // We stored it
-                    break;
-                }
-            }
-        }
-
-        // we could not store this instance, dispose it
-        _disposeInstance?.Invoke(instance);
     }
 }

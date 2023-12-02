@@ -689,7 +689,7 @@
 //    {
 //        return StringBuilderPool.Rent()
 //            .Append("PooledList<")
-//            .Append(typeof(T).NameOf())
+//            .Append(typeof(T).Name)
 //            .Append(">[")
 //            .AppendDelimit<T>(", ", AsSpan())
 //            .Append(']')
