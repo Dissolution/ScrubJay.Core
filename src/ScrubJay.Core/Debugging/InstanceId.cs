@@ -51,7 +51,7 @@ internal static class InstanceId<T>
         if (instance is null) return 0L;
         
         // Check if we have already assigned an identifier
-        if (_instanceIds.TryGetValue(instance, out byte[] bytes))
+        if (_instanceIds.TryGetValue(instance, out byte[]? bytes))
         {
             return BitConverter.ToInt64(bytes, 0);
         }

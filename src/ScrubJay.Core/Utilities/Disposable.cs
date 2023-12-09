@@ -5,6 +5,17 @@
 /// </summary>
 public static class Disposable
 {
+    /// <summary>
+    /// Gets an <see cref="IDisposable"/> value that executes the given <paramref name="action"/>
+    /// when its Dispose method is called
+    /// </summary>
+    /// <param name="action">
+    /// The <see cref="Action"/> to invoke when the returned <see cref="IDisposable"/> is disposed
+    /// </param>
+    /// <returns>
+    /// An <see cref="IDisposable"/> instance that will execute the given <see cref="Action"/>
+    /// exactly once when it is disposed
+    /// </returns>
     public static IDisposable FromAction(Action? action)
     {
         return new ActionDisposable(action);
