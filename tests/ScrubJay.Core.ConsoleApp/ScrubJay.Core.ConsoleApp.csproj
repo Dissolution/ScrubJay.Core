@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFrameworks>
+            <!-- All supported Core versions as per https://versionsof.net/ -->
+            net8.0;net7.0;net6.0;
+            <!-- The latest Framework -->
+            net48;
+            <!-- Both Standard versions (source generators are stuck on .Net Standard 2.0 -->
+            netstandard2.1;netstandard2.0;
+        </TargetFrameworks>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+        <AssemblyName>ScrubJay.ConsoleApp</AssemblyName>
+        <RootNamespace>ScrubJay.ConsoleApp</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\ScrubJay.Core\ScrubJay.Core.csproj" />
+    </ItemGroup>
+
+</Project>

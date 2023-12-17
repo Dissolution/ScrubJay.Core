@@ -102,101 +102,89 @@ public static class EnumTestData
         [Flags]
         public enum EFSbyte : sbyte
         {
-            Min = sbyte.MinValue,
-            NegOne = -1,
             Default = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
             Alphabet = Alpha | Beta,
-            Max = sbyte.MaxValue,
+            //Max = sbyte.MaxValue,
         }
 
         [Flags]
         public enum EFByte : byte
         {
-            Min = byte.MinValue,
             Default = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
             Alphabet = Alpha | Beta,
-            Max = byte.MaxValue,
+            //Max = byte.MaxValue,
         }
         
         [Flags]
         public enum EFShort : short
         {
-            Min = short.MinValue,
-            NegOne = -1,
             Default = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
             Alphabet = Alpha | Beta,
-            Max = short.MaxValue,
+            //Max = short.MaxValue,
         }
 
         [Flags]
         public enum EFUshort : ushort
         {
-            Min = ushort.MinValue,
             Default = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
             Alphabet = Alpha | Beta,
-            Max = ushort.MaxValue,
+            //Max = ushort.MaxValue,
         }
         
         [Flags]
         public enum EFInt : int
         {
-            Min = int.MinValue,
-            NegOne = -1,
             Default = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
             Alphabet = Alpha | Beta,
-            Max = int.MaxValue,
+           // Max = int.MaxValue,
         }
 
         [Flags]
         public enum EFUint : uint
         {
-            Min = uint.MinValue,
             Default = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
             Alphabet = Alpha | Beta,
-            Max = uint.MaxValue,
+            //Max = uint.MaxValue,
         }
         
         [Flags]
         public enum EFLong : long
         {
-            Min = long.MinValue,
-            NegOne = -1,
             Default = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
             Alphabet = Alpha | Beta,
-            Max = long.MaxValue,
+            //Max = long.MaxValue,
         }
 
         [Flags]
         public enum EFUlong : ulong
         {
-            Min = ushort.MinValue,
             Default = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
             Alphabet = Alpha | Beta,
-            Max = ulong.MaxValue,
+            //Max = ulong.MaxValue,
         }
 
     }

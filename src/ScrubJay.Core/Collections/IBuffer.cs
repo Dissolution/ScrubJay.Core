@@ -1,19 +1,14 @@
 ﻿namespace ScrubJay.Collections;
 
 
+// ReSharper disable once PossibleInterfaceMemberAmbiguity
 public interface IBuffer<T> : 
-    IReadOnlyCollection<T>, IEnumerable<T>, 
+    IList<T>, IReadOnlyList<T>,
+    ICollection<T>, IReadOnlyCollection<T>,
+    IEnumerable<T>, 
     IDisposable,
     IFormattable
 {
-    /// <summary>
-    /// Gets a reference to the item at <paramref name="index"/>
-    /// </summary>
-    /// <param name="index">
-    /// The index of the item to reference
-    /// </param>
-    ref T this[int index] { get; }
-
     /// <summary>
     /// Gets a reference to the item at <paramref name="index"/>
     /// </summary>
@@ -35,12 +30,6 @@ public interface IBuffer<T> :
     /// Sets the minimum capacity for this buffer - but actual may be higher 
     /// </summary>
     int Capacity { get; set; }
-    
-    /// <summary>
-    /// Adds a new <paramref name="item"/> to the end of this buffer
-    /// </summary>
-    /// <param name="item">The item to append</param>
-    void Add(T item);
     
     /// <summary>
     /// Adds several <paramref name="items"/> to the end of this buffer
@@ -80,7 +69,7 @@ public interface IBuffer<T> :
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown if <paramref name="index"/> is invalid
     /// </exception>
-    void Insert(int index, T item);
+    void Insert(Index index, T item);
     
     /// <summary>
     /// Inserts several <paramref name="items"/> at the given <paramref name="index"/>
@@ -90,7 +79,7 @@ public interface IBuffer<T> :
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown if <paramref name="index"/> is invalid
     /// </exception>
-    void InsertMany(int index, scoped ReadOnlySpan<T> items);
+    void InsertMany(Index index, scoped ReadOnlySpan<T> items);
     
     /// <summary>
     /// Does this buffer contain an instance of the given <paramref name="item"/>?
@@ -118,21 +107,12 @@ public interface IBuffer<T> :
 
     int FindIndex(T item, IEqualityComparer<T>? itemComparer = default, Index? startIndex = default, bool fromEnd = false);
     int FindIndex(scoped ReadOnlySpan<T> items, IEqualityComparer<T>? itemComparer = default, Index? startIndex = default, bool fromEnd = false);
-
-    
-    
-    Result TryRemoveAt(int index);
+   
     Result TryRemoveAt(Index index);
     Result TryRemoveRange(int start, int length);
     Result TryRemoveRange(Range range);
     Result TryRemoveFirst(T item, IEqualityComparer<T>? itemComparer = default);
     Result TryRemoveLast(T item, IEqualityComparer<T>? itemComparer = default);
-    
-    
-    /// <summary>
-    /// Removes all items from this buffer
-    /// </summary>
-    void Clear();
     
     /// <summary>
     /// Copy the items in this buffer into the given <paramref name="span"/>
@@ -192,9 +172,8 @@ public interface IUnsafeBuffer<T> : IBuffer<T>
     
     ref T Allocate();
     Span<T> AllocateMany(int length);
-    ref T AllocateAt(int index);
     ref T AllocateAt(Index index);
-    Span<T> AllocateRange(int index, int length);
+    Span<T> AllocateRange(Index index, int length);
     Span<T> AllocateRange(Range range);
 
     Span<T> GetUnwrittenSpan();

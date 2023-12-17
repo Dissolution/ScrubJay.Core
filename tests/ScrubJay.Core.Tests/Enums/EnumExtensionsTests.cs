@@ -105,38 +105,8 @@ public class EnumExtensionsTests
     public void CompareToWorks<TEnum>(TEnum left, TEnum right)
         where TEnum : struct, Enum
     {
-        int compare = left.CompareTo(right);
+        int compare = Comparer<TEnum>.Default.Compare(left, right);
         var extCompare = EnumExtensions.CompareTo(left, right);
         Assert.Equal(compare, extCompare);
-    }
-
-    [Theory]
-    [MemberData(nameof(EnumTestData), 1)]
-    public void ToInt32Works<TEnum>(TEnum e)
-        where TEnum : struct, Enum
-    {
-        int int32 = (int)(object)e;
-        int extInt32 = EnumExtensions.ToInt32(e);
-        Assert.Equal(int32, extInt32);
-    }
-
-    [Theory]
-    [MemberData(nameof(EnumTestData), 1)]
-    public void ToInt64Works<TEnum>(TEnum e)
-        where TEnum : struct, Enum
-    {
-        long int64 = (long)(object)e;
-        long extInt64 = EnumExtensions.ToInt64(e);
-        Assert.Equal(int64, extInt64);
-    }
-
-    [Theory]
-    [MemberData(nameof(EnumTestData), 1)]
-    public void ToUInt64Works<TEnum>(TEnum e)
-        where TEnum : struct, Enum
-    {
-        ulong uint64 = (ulong)(object)e;
-        ulong extUInt64 = EnumExtensions.ToUInt64(e);
-        Assert.Equal(uint64, extUInt64);
     }
 }

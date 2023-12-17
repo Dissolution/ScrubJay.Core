@@ -631,6 +631,26 @@ public static unsafe class Scary
                 (uint)size);
             return buffer.ToArray();
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T ShiftLeft<T>(T value, int count)
+            where T : unmanaged
+        {
+            Emit.Ldarg(nameof(value));
+            Emit.Ldarg(nameof(count));
+            Emit.Shl();
+            return Return<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T ShiftRight<T>(T value, int count)
+            where T : unmanaged
+        {
+            Emit.Ldarg(nameof(value));
+            Emit.Ldarg(nameof(count));
+            Emit.Shr();
+            return Return<T>();
+        }
     }
     
 

@@ -90,26 +90,15 @@ public static class MathHelper
 #if NETCOREAPP3_1_OR_GREATER
         return BitOperations.PopCount(value);
 #else
-#if TARGET_32BIT
-        return PopCount((uint)value) // lo
-            + PopCount((uint)(value >> 32)); // hi
-#else
-        return softwareFallback(value);
-
-        static int softwareFallback(ulong value)
+        return NumberOfSetBits(value);
+        
+        // https://stackoverflow.com/a/2709523/2871210
+        static int NumberOfSetBits(ulong i)
         {
-            const ulong C1 = 0b1010101010101010101010101010101_01010101010101010101010101010101UL;
-            const ulong C2 = 0b0110011001100110011001100110011_00110011001100110011001100110011UL;
-            const ulong C3 = 0b0001111000011110000111100001111_00001111000011110000111100001111UL;
-            const ulong C4 = 0b0000001000000010000000100000001_00000001000000010000000100000001UL;
-
-            value -= (value >> 1) & C1;
-            value = (value & C2) + ((value >> 2) & C2);
-            value = (((value + (value >> 4)) & C3) * C4) >> 56;
-
-            return (int)value;
+            i = i - ((i >> 1) & 0x5555555555555555UL);
+            i = (i & 0x3333333333333333UL) + ((i >> 2) & 0x3333333333333333UL);
+            return (int)(unchecked(((i + (i >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
         }
-#endif
 #endif
     }
 
@@ -223,5 +212,11 @@ public static class MathHelper
     public static int PowerOfTwo(int exponent)
     {
         return 1 << exponent;
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsPowerOfTwo(ulong x)
+    {
+        return (x != 0) && ((x & (x - 1)) == 0);
     }
 }

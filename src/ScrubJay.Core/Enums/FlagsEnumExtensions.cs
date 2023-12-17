@@ -17,6 +17,29 @@ namespace ScrubJay.Enums;
 public static class FlagsEnumExtensions
 {
     /// <summary>
+    /// Returns the <see cref="ulong"/> representation of <c>this</c> <see cref="FlagsAttribute">flagged</see> <see cref="Enum">enum</see>
+    /// </summary>
+    /// <param name="enum"></param>
+    /// <typeparam name="TEnum"></typeparam>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ulong ToUInt64<TEnum>(this TEnum @enum)
+        where TEnum : struct, Enum
+    {
+        Emit.Ldarg(nameof(@enum));
+        Emit.Conv_U8();
+        return Return<ulong>();
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TEnum FromUInt64<TEnum>(ulong value)
+        where TEnum : struct, Enum
+    {
+        Emit.Ldarg(nameof(value));
+        return Return<TEnum>();
+    }
+    
+    /// <summary>
     /// Returns a bitwise NOT (<c>~</c>) of this <paramref name="enum"/>
     /// </summary>
     /// <remarks>
@@ -87,27 +110,7 @@ public static class FlagsEnumExtensions
     {
         Emit.Ldarg(nameof(@enum));
         Emit.Ldarg(nameof(flag));
-        Emit.Or();
-        return Return<TEnum>();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum ShiftLeft<TEnum>(this TEnum @enum, int count)
-        where TEnum : struct, Enum
-    {
-        Emit.Ldarg(nameof(@enum));
-        Emit.Ldarg(nameof(count));
-        Emit.Shl();
-        return Return<TEnum>();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum ShiftRight<TEnum>(this TEnum @enum, int count)
-        where TEnum : struct, Enum
-    {
-        Emit.Ldarg(nameof(@enum));
-        Emit.Ldarg(nameof(count));
-        Emit.Shr_Un(); // 99%+ of enums are unsigned
+        Emit.Xor();
         return Return<TEnum>();
     }
 
@@ -128,7 +131,7 @@ public static class FlagsEnumExtensions
         var flags = new TEnum[flagCount];
         int f = 0;
         int maxBits = Scary.SizeOf<TEnum>() * 8;
-        ulong enumValue = EnumExtensions.ToUInt64(@enum);
+        ulong enumValue = ToUInt64(@enum);
         //string enumValueBits = Convert.ToString((long)enumValue, 2);
         for (var shift = 0; shift < maxBits; shift++)
         {
@@ -136,7 +139,7 @@ public static class FlagsEnumExtensions
             //string maskBits = Convert.ToString((long)mask, 2);
             if ((enumValue & mask) != 0UL)
             {
-                var flag = EnumExtensions.FromUInt64<TEnum>(mask);
+                var flag = FromUInt64<TEnum>(mask);
                 flags[f++] = flag;
             }
         }

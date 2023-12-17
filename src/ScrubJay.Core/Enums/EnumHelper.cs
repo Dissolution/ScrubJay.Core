@@ -32,18 +32,4 @@ public static class EnumHelper
         }
         return true;
     }
-
-    public static bool TryParse<TEnum>(
-        int value,
-        out TEnum @enum)
-        where TEnum : struct, Enum
-    {
-        if (Enum.IsDefined(typeof(TEnum), value))
-        {
-            @enum = EnumExtensions.From<int, TEnum>(value);
-            return true;
-        }
-        @enum = default;
-        return false;
-    }
 }
