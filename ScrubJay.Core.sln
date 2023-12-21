@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Core", "src\ScrubJay.Core\ScrubJay.Core.csproj", "{6C0F9EB2-C957-4504-9DE3-73DC6EDD07D3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Core", "ScrubJay.Core\ScrubJay.Core.csproj", "{6C0F9EB2-C957-4504-9DE3-73DC6EDD07D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Core.Tests", "tests\ScrubJay.Core.Tests\ScrubJay.Core.Tests.csproj", "{212E0221-83BC-4662-9C2C-D31CA064D86C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Core.Tests", "ScrubJay.Core.Tests\ScrubJay.Core.Tests.csproj", "{212E0221-83BC-4662-9C2C-D31CA064D86C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Benchmarks", "benchmarks\ScrubJay.Benchmarks\ScrubJay.Benchmarks.csproj", "{B1C4CA9A-6C7A-4B65-8302-A8297991D431}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Benchmarks", "ScrubJay.Benchmarks\ScrubJay.Benchmarks.csproj", "{B1C4CA9A-6C7A-4B65-8302-A8297991D431}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Core.ConsoleApp", "tests\ScrubJay.Core.ConsoleApp\ScrubJay.Core.ConsoleApp.csproj", "{63E9DA24-675F-441D-BAC7-C830C49E5192}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Core.ConsoleApp", "ScrubJay.Core.ConsoleApp\ScrubJay.Core.ConsoleApp.csproj", "{63E9DA24-675F-441D-BAC7-C830C49E5192}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

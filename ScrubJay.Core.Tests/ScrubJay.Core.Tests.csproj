@@ -36,7 +36,7 @@
 
     <!-- Project References -->
     <ItemGroup>
-        <ProjectReference Include="..\..\src\ScrubJay.Core\ScrubJay.Core.csproj" />
+        <ProjectReference Include="..\ScrubJay.Core\ScrubJay.Core.csproj" />
     </ItemGroup>
     
     <!-- NuGet Packages -->

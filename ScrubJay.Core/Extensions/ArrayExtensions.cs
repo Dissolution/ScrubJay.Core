@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿#if NET6_0_OR_GREATER
+using System.Runtime.InteropServices;
+#endif
 
 namespace ScrubJay.Extensions;
 
