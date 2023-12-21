@@ -1,10 +1,21 @@
 ﻿using System.Reflection;
-using Bogus;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ScrubJay.Tests;
 
 public static class TestHelper
 {
+    public static JsonSerializerOptions AggressiveSerialization { get; } = new JsonSerializerOptions
+    {
+        AllowTrailingCommas = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+        IgnoreReadOnlyFields = false,
+        IgnoreReadOnlyProperties = false,
+        IncludeFields = true,
+    };
+    
+    
     public static IReadOnlyList<object?> TestObjects { get; } = new List<object?>
     {
         null,
@@ -39,8 +50,26 @@ public static class TestHelper
     
     static TestHelper()
     {
-        Randomizer.Seed = new Random(147);
+
     }
+    
+    public static IEnumerable<object[]> ToEnumerableObjects<T>(int arrayLength, params T[] values)
+    {
+        int v = 0;
+        while (true)
+        {
+            object[] objects = new object[arrayLength];
+            for (var o = 0; o < arrayLength; o++)
+            {
+                v += 1;
+                if (!values.TryGetItem(v, out var value)) yield break;
+                objects[o] = value!;
+            }
+            yield return objects;
+        }
+    }
+
+    
     
     public static IEnumerable<object[]> ToEnumerableObjects<T>(IEnumerable<T> values, int arrayCount)
     {
