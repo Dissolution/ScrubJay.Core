@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Utilities;
+﻿using JetBrains.Annotations;
+
+namespace ScrubJay.Utilities;
 
 /// <summary>
 /// A utility for working with <see cref="IDisposable"/>
@@ -24,7 +26,7 @@ public static class Disposable
     /// <summary>
     /// Tries to dispose of <paramref name="value"/>, ignoring all exceptions
     /// </summary>
-    public static void Dispose<T>(T? value)
+    public static void Dispose<T>([HandlesResourceDisposal] T? value)
     {
         if (value is IDisposable disposable)
         {
@@ -42,7 +44,7 @@ public static class Disposable
     /// <summary>
     /// Sets <paramref name="value"/> to <c>null</c> and disposes it, ignoring all exceptions
     /// </summary>
-    public static void DisposeRef<T>(ref T? value)
+    public static void DisposeRef<T>([HandlesResourceDisposal] ref T? value)
         where T : class
     {
         var toDispose = Interlocked.Exchange(ref value, null);
