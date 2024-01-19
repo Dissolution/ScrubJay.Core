@@ -14,23 +14,11 @@ public sealed class ConcurrentDelegateMap
         throw new ArgumentException($"{typeof(TDelegate).Name} does not contain at least one generic type", nameof(TDelegate));
     }
 
-    private static bool TypesEqual(Type[] left, Type[] right)
-    {
-        if (ReferenceEquals(left, right)) return true;
-        int len = left.Length;
-        if (right.Length != len) return false;
-        for (var i = 0; i < len; i++)
-        {
-            if (left[i] != right[i]) return false;
-        }
-        return true;
-    }
-
 
     private readonly ConcurrentDictionary<Type[], Delegate> _delegates = new(
-        comparer: EqualityComparerCache.CreateKeyComparer<Type[]>(
-            static (left, right) => TypesEqual(left, right),
-            static types => Hasher.Combine(types)));
+        comparer: Relate.Equal.CreateNonNullEqualityComparer<Type[]>(
+            static (left, right) => Relate.Equal.Sequence<Type>(left, right),
+            static types => Relate.Hash.Sequence<Type>(types)));
 
     public int Count => _delegates.Count;
 

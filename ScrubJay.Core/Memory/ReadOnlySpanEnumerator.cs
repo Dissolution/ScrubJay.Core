@@ -98,14 +98,18 @@ public ref struct ReadOnlySpanEnumerator<T> // : IEnumerator<T>
         if (pos < span.Length)
         {
             item = span[pos];
-            return true;
+            return Ok();
         }
         item = default;
         return new InvalidOperationException("Cannot peek an item: Zero items remain");
     }
 
-    public T Peek() => TryPeek(out var value).WithValue(value).OkValueOrThrowError()!;
-
+    public T Peek()
+    {
+        TryPeek(out var item).ThrowIfError();
+        return item!;
+    }
+    
     /// <summary>
     /// Try to peek at the next <paramref name="count"/> <paramref name="items"/>
     /// </summary>
@@ -124,7 +128,7 @@ public ref struct ReadOnlySpanEnumerator<T> // : IEnumerator<T>
         if (pos + count <= span.Length)
         {
             items = span.Slice(pos, count);
-            return true;
+            return Ok();
         }
         items = default;
         return new InvalidOperationException($"Cannot peek {count} items: Only {UnenumeratedCount} items remain");
@@ -144,7 +148,7 @@ public ref struct ReadOnlySpanEnumerator<T> // : IEnumerator<T>
         if (index < _readOnlySpan.Length)
         {
             _position = index + 1;
-            return true;
+            return Ok();
         }
         return new InvalidOperationException("Cannot skip an item: No items remain");
     }
@@ -154,14 +158,14 @@ public ref struct ReadOnlySpanEnumerator<T> // : IEnumerator<T>
     public Result TrySkip(int count)
     {
         if (count <= 0)
-            return true;
+            return Ok();
 
         int index = _position;
         int newIndex = index + count;
         if (newIndex <=  _readOnlySpan.Length)
         {
             _position = newIndex;
-            return true;
+            return Ok();
         }
         return new InvalidOperationException($"Cannot skip {count} items: Only {UnenumeratedCount} items remain");
     }
@@ -204,21 +208,25 @@ public ref struct ReadOnlySpanEnumerator<T> // : IEnumerator<T>
         {
             _position = index + 1;
             taken = span[index];
-            return true;
+            return Ok();
         }
 
         taken = default;
         return new InvalidOperationException("Cannot take an item: No items remain");
     }
-    
-    public T Take() => TryTake(out var value).WithValue(value!).OkValueOrThrowError();
+
+    public T Take()
+    {
+        TryTake(out var item).ThrowIfError();
+        return item!;
+    }
 
     public Result TryTake(int count, out ReadOnlySpan<T> taken)
     {
         if (count <= 0)
         {
             taken = default;
-            return true;
+            return Ok();
         }
 
         int index = _position;
@@ -228,7 +236,7 @@ public ref struct ReadOnlySpanEnumerator<T> // : IEnumerator<T>
         {
             _position = newIndex;
             taken = span.Slice(index, count);
-            return true;
+            return Ok();
         }
 
         taken = default;
@@ -247,9 +255,9 @@ public ref struct ReadOnlySpanEnumerator<T> // : IEnumerator<T>
         if (TryTake(buffer.Length, out var taken))
         {
             taken.CopyTo(buffer);
-            return true;
+            return Ok();
         }
-        return false;
+        return Error(null);
     }
 
     public void TakeInto(Span<T> buffer) => TryTakeInto(buffer).ThrowIfError();

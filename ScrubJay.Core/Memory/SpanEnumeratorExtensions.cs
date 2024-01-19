@@ -18,7 +18,7 @@ public static class SpanReaderExtensions
         Span<T> span = spanEnumerator.Span[readCount..];
         int i = 0;
         int capacity = span.Length;
-        while (i < capacity && span[i..].StartsWith(match))
+        while (i < capacity && MemoryExtensions.StartsWith(span[i..], match))
         {
             i += match.Length;
         }
@@ -34,7 +34,7 @@ public static class SpanReaderExtensions
         Span<T> span = spanEnumerator.Span[readCount..];
         int i = 0;
         int capacity = span.Length;
-        while (i < capacity && span[i..].StartsWith(match))
+        while (i < capacity && MemoryExtensions.StartsWith(span[i..], match))
         {
             i += match.Length;
         }
@@ -52,7 +52,7 @@ public static class SpanReaderExtensions
         Span<T> span = spanEnumerator.Span[readCount..];
         int i = 0;
         int capacity = span.Length;
-        while (i < capacity && !span[i..].StartsWith(match))
+        while (i < capacity && !MemoryExtensions.StartsWith(span[i..], match))
         {
             i += match.Length;
         }
@@ -68,7 +68,7 @@ public static class SpanReaderExtensions
         Span<T> span = spanEnumerator.Span[readCount..];
         int i = 0;
         int capacity = span.Length;
-        while (i < capacity && !span[i..].StartsWith(match))
+        while (i < capacity && !MemoryExtensions.StartsWith(span[i..], match))
         {
             i += match.Length;
         }

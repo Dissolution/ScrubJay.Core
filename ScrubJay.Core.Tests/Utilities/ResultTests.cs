@@ -1,23 +1,34 @@
-﻿namespace ScrubJay.Tests.Utilities;
+﻿using System.Reflection;
+
+namespace ScrubJay.Tests.Utilities;
 
 public class ResultTests
 {
     public static IEnumerable<object[]> GetResults()
     {
-        yield return new object[1] { Result.Ok() };
-        yield return new object[1] { Result.Error(null) };
-        yield return new object[1] { Result.Error(new Exception("0xBAD")) };
-
-        yield return new object[1] { (Result)true };
-        yield return new object[1] { (Result)false };
-
-        yield return new object[1] { (Result)(new Exception("0xBAD")) };
+        yield return new object[1] { Result<int>.Ok(147) };
+        yield return new object[1] { Result<BindingFlags>.Ok(BindingFlags.ExactBinding) };
+        yield return new object[1] { Result<Nothing>.Ok(default) };
+        yield return new object[1] { Result<string>.Ok("ABC") };
+        yield return new object[1] { Result<EventArgs?>.Ok(null) };
+        
+        
+        yield return new object[1] { Result<int>.Error(null) };
+        yield return new object[1] { Result<int>.Error(new Exception("Bad")) };
+        yield return new object[1] { Result<BindingFlags>.Error(null) };
+        yield return new object[1] { Result<BindingFlags>.Error(new Exception("Bad")) };
+        yield return new object[1] { Result<Nothing>.Error(null) };
+        yield return new object[1] { Result<Nothing>.Error(new Exception("Bad")) };
+        yield return new object[1] { Result<string>.Error(null) };
+        yield return new object[1] { Result<string>.Error(new Exception("Bad")) };
+        yield return new object[1] { Result<EventArgs?>.Error(null) };
+        yield return new object[1] { Result<EventArgs?>.Error(new Exception("Bad")) };
     }
 
 
     [Theory]
     [MemberData(nameof(GetResults))]
-    public void CannotBeOkAndError(Result result)
+    public void CannotBeOkAndError<T>(Result<T> result)
     {
         bool ok = result.IsOk();
         bool error = result.IsError();
@@ -26,11 +37,46 @@ public class ResultTests
 
     [Theory]
     [MemberData(nameof(GetResults))]
-    public void CanAlwaysGetError(Result result)
+    public void GetErrorIsAlwaysNotNull<T>(Result<T> result)
     {
         if (result.IsError(out var error))
         {
             Assert.NotNull(error);
         }
+    }
+
+    [Fact]
+    public void CanDealWithOkExceptionType()
+    {
+        Result<Exception> exResult = new Result<Exception>();
+        Assert.True(exResult.IsError());
+        Assert.False(exResult.IsOk());
+
+        exResult = Result<Exception>.Ok(new Exception("Ok"));
+        bool isOk = exResult.IsOk(out Exception? okValue);
+        Assert.True(isOk);
+        Assert.False(exResult.IsError());
+        Assert.NotNull(okValue);
+        Assert.Equal("Ok", okValue.Message);
+        
+        exResult = Result<Exception>.Ok(null!);
+        isOk = exResult.IsOk(out okValue);
+        Assert.True(isOk);
+        Assert.False(exResult.IsError());
+        Assert.Null(okValue);
+
+        exResult = Result<Exception>.Error(new Exception("Ok"));
+        bool isError = exResult.IsError(out Exception? error);
+        Assert.True(isError);
+        Assert.False(exResult.IsOk());
+        Assert.NotNull(error);
+        Assert.Equal("Ok", error.Message);
+
+        exResult = Result<Exception>.Error(null);
+        isError = exResult.IsError(out error);
+        Assert.True(isError);
+        Assert.False(exResult.IsOk());
+        Assert.NotNull(error);
+        Assert.Equal("Error", error.Message);
     }
 }

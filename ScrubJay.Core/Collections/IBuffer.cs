@@ -108,11 +108,11 @@ public interface IBuffer<T> :
     int FindIndex(T item, IEqualityComparer<T>? itemComparer = default, Index? startIndex = default, bool fromEnd = false);
     int FindIndex(scoped ReadOnlySpan<T> items, IEqualityComparer<T>? itemComparer = default, Index? startIndex = default, bool fromEnd = false);
    
-    Result TryRemoveAt(Index index);
-    Result TryRemoveRange(int start, int length);
-    Result TryRemoveRange(Range range);
-    Result TryRemoveFirst(T item, IEqualityComparer<T>? itemComparer = default);
-    Result TryRemoveLast(T item, IEqualityComparer<T>? itemComparer = default);
+    Result<int> TryRemoveAt(Index index);
+    Result<int> TryRemoveRange(int start, int length);
+    Result<int> TryRemoveRange(Range range);
+    Result<int> TryRemoveFirst(T item, IEqualityComparer<T>? itemComparer = default);
+    Result<int> TryRemoveLast(T item, IEqualityComparer<T>? itemComparer = default);
     
     /// <summary>
     /// Copy the items in this buffer into the given <paramref name="span"/>
@@ -132,7 +132,7 @@ public interface IBuffer<T> :
     /// <c>true</c> if all items were copied<br/>
     /// <c>false</c> if the items could not be copied
     /// </returns>
-    Result TryCopyTo(Span<T> span);
+    bool TryCopyTo(Span<T> span);
     
 
 

@@ -1,5 +1,7 @@
 ﻿// ReSharper disable InvokeAsExtensionMethod
 
+// ReSharper disable MethodOverloadWithOptionalParameter
+
 #if !NETCOREAPP3_1_OR_GREATER
 #pragma warning disable CS8604
 #endif
@@ -21,47 +23,47 @@ public sealed class EnumerableEqualityComparer<T> :
 
     public bool Equals(T[]? x, T[]? y)
     {
-        return x.AsSpan().SequenceEqual(y.AsSpan(), _equalityComparer);
+        return x.AsSpan().SequenceEqual<T>(y.AsSpan(), _equalityComparer);
     }
 
     public bool Equals(Span<T> x, T[]? y)
     {
-        return x.SequenceEqual(y.AsSpan(), _equalityComparer);
+        return x.SequenceEqual<T>(y.AsSpan(), _equalityComparer);
     }
 
     public bool Equals(ReadOnlySpan<T> x, T[]? y)
     {
-        return x.SequenceEqual(y.AsSpan(), _equalityComparer);
+        return x.SequenceEqual<T>(y.AsSpan(), _equalityComparer);
     }
 
     public bool Equals(T[]? x, Span<T> y)
     {
-        return x.AsSpan().SequenceEqual(y, _equalityComparer);
+        return x.AsSpan().SequenceEqual<T>(y, _equalityComparer);
     }
 
     public bool Equals(Span<T> x, Span<T> y)
     {
-        return x.SequenceEqual(y, _equalityComparer);
+        return x.SequenceEqual<T>(y, _equalityComparer);
     }
 
     public bool Equals(ReadOnlySpan<T> x, Span<T> y)
     {
-        return x.SequenceEqual(y, _equalityComparer);
+        return x.SequenceEqual<T>(y, _equalityComparer);
     }
 
     public bool Equals(T[]? x, ReadOnlySpan<T> y)
     {
-        return x.AsSpan().SequenceEqual(y, _equalityComparer);
+        return x.AsSpan().SequenceEqual<T>(y, _equalityComparer);
     }
 
     public bool Equals(Span<T> x, ReadOnlySpan<T> y)
     {
-        return x.SequenceEqual(y, _equalityComparer);
+        return x.SequenceEqual<T>(y, _equalityComparer);
     }
 
     public bool Equals(ReadOnlySpan<T> x, ReadOnlySpan<T> y)
     {
-        return x.SequenceEqual(y, _equalityComparer);
+        return x.SequenceEqual<T>(y, _equalityComparer);
     }
 
     public bool Equals(IEnumerable<T>? x, IEnumerable<T>? y)
@@ -79,6 +81,7 @@ public sealed class EnumerableEqualityComparer<T> :
 
             if (!comparer.Equals(xe.Current, ye.Current)) return false;
         }
+
         // Length and Items are equal
         return true;
     }

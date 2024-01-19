@@ -24,11 +24,11 @@ public static class DelegateExtensions
         try
         {
             action.Invoke();
-            return Result.Ok();
+            return Ok();
         }
         catch (Exception ex)
         {
-            return Result.Error(ex);
+            return Error(ex);
         }
     }
 
@@ -55,12 +55,12 @@ public static class DelegateExtensions
         try
         {
             value = func.Invoke();
-            return Result.Ok();
+            return Ok();
         }
         catch (Exception ex)
         {
             value = default;
-            return Result.Error(ex);
+            return Error(ex);
         }
     }
 
@@ -83,11 +83,11 @@ public static class DelegateExtensions
         try
         {
             TValue value = func.Invoke();
-            return Result<TValue>.Ok(value);
+            return Ok(value);
         }
         catch (Exception ex)
         {
-            return Result<TValue>.Error(ex);
+            return Error(ex);
         }
     }
 

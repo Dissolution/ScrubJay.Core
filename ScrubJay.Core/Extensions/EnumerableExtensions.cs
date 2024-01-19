@@ -138,7 +138,7 @@ public static class EnumerableExtensions
         where TSub : IEquatable<TSub>
     {
         return enumerable
-            .OrderBy(selectSub, ComparerCache.Create<TSub>((x, y) =>
+            .OrderBy(selectSub, Relate.Compare.CreateComparer<TSub>((x, y) =>
             {
                 var xIndex = subItemOrder.FirstIndexOf(x);
                 var yIndex = subItemOrder.FirstIndexOf(y);

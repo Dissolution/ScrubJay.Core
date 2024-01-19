@@ -26,6 +26,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => typeof(T).IsClass ? 64 : 1024;
     }
+
     /// <summary>
     /// The maximum capacity for any Buffer
     /// </summary>
@@ -55,7 +56,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
         get => this[index];
         set => this[index] = value;
     }
-    
+
     /// <summary>
     /// Gets a reference to the item at <paramref name="index"/>
     /// </summary>
@@ -136,9 +137,10 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
     {
         _array = ArrayPool<T>.Shared.Rent(minCapacity.Clamp(MinCapacity, MAX_CAPACITY));
     }
-    
+
 
 #region Grow
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void GrowBy(int adding)
     {
@@ -170,6 +172,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
         items.CopyTo(_array.AsSpan(_count));
         _count += items.Length;
     }
+
 #endregion
 
     public void IncreaseCapacity() => GrowBy(Capacity);
@@ -230,6 +233,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
                 dest[d] = item;
                 d++;
             }
+
             _count = newCount;
         }
         else
@@ -274,6 +278,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
     }
 
 #region Allocate
+
     public ref T Allocate()
     {
         int curLen = _count;
@@ -351,7 +356,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
         int offset = Throw.Index(_count, index);
         return ref AllocateAt(offset);
     }
-    
+
     public Span<T> AllocateRange(Index index, int length)
     {
         int curLen = _count;
@@ -396,8 +401,9 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
         (int offset, int length) = Throw.Range(_count, range);
         return AllocateRange(offset, length);
     }
+
 #endregion
-    
+
     public bool TryAdd(SpanFunc<T, int> availableBufferUse)
     {
         var available = _array.AsSpan(_count);
@@ -407,9 +413,10 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
             _count += used;
             return true;
         }
+
         return false;
     }
-    
+
     /// <inheritdoc cref="ICollection{T}"/>
     bool ICollection<T>.Contains(T item) => Contains(item, default);
 
@@ -423,6 +430,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
             if (comparer.Equals(array[i], item))
                 return true;
         }
+
         return false;
     }
 
@@ -448,6 +456,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
                     return true;
             }
         }
+
         return false;
     }
 
@@ -481,7 +490,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
             }
         }
     }
-    
+
     public int FindIndex(T item, IEqualityComparer<T>? itemComparer = default, Index? startIndex = default, bool fromEnd = false)
     {
         var comparer = itemComparer ?? EqualityComparer<T>.Default;
@@ -494,9 +503,10 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
                 return i;
             }
         }
+
         return -1;
     }
-    
+
     public int FindIndex(scoped ReadOnlySpan<T> items, IEqualityComparer<T>? itemComparer = default, Index? startIndex = default, bool fromEnd = false)
     {
         int itemCount = items.Length;
@@ -520,6 +530,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
                     return arrayIndex;
             }
         }
+
         return -1;
     }
 
@@ -530,7 +541,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
         TryRemoveAt(index);
     }
 
-    public Result TryRemoveAt(int index)
+    public Result<int> TryRemoveAt(int index)
     {
         int count = _count;
         if (index < 0 || index >= count)
@@ -545,15 +556,16 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
 
         // one smaller
         _count = count - 1;
-        return true;
+        return Ok(1);
     }
 
-    public Result TryRemoveAt(Index index) => TryRemoveAt(index.GetOffset(_count));
+    public Result<int> TryRemoveAt(Index index) => TryRemoveAt(index.GetOffset(_count));
 
-    public Result TryRemoveRange(int offset, int length)
+    public Result<int> TryRemoveRange(int offset, int length)
     {
         var checkResult = Check.Range(_count, offset, length);
-        if (!checkResult) return checkResult;
+        if (checkResult.IsError(out var ex))
+            return ex;
 
         // Take everything to the right of the range
         int rightStart = offset + length;
@@ -564,10 +576,10 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
 
         // smaller
         _count -= length;
-        return true;
+        return Ok(length);
     }
 
-    public Result TryRemoveRange(Range range)
+    public Result<int> TryRemoveRange(Range range)
     {
         (int offset, int length) = range.GetOffsetAndLength(_count);
         return TryRemoveRange(offset, length);
@@ -576,7 +588,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
     /// <inheritdoc cref="ICollection{T}"/>
     bool ICollection<T>.Remove(T item) => TryRemoveFirst(item);
 
-    public Result TryRemoveFirst(T item, IEqualityComparer<T>? itemComparer = default)
+    public Result<int> TryRemoveFirst(T item, IEqualityComparer<T>? itemComparer = default)
     {
         var end = _count;
         var written = _array.AsSpan(0, end);
@@ -588,10 +600,11 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
                 return TryRemoveAt(i);
             }
         }
-        return false;
+
+        return new ArgumentException("The given item was not found in this Buffer", nameof(item));
     }
 
-    public Result TryRemoveLast(T item, IEqualityComparer<T>? itemComparer = default)
+    public Result<int>  TryRemoveLast(T item, IEqualityComparer<T>? itemComparer = default)
     {
         var end = _count;
         var written = _array.AsSpan(0, end);
@@ -603,7 +616,8 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
                 return TryRemoveAt(i);
             }
         }
-        return false;
+
+        return new ArgumentException("The given item was not found in this Buffer", nameof(item));
     }
 
     /// <inheritdoc cref="ICollection{T}"/>
@@ -615,8 +629,11 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
 
     public void CopyTo(Span<T> buffer) => this.AsSpan().CopyTo(buffer);
 
-    public Result TryCopyTo(Span<T> buffer) => this.AsSpan().TryCopyTo(buffer);
-    
+    public bool TryCopyTo(Span<T> buffer)
+    {
+        return this.AsSpan().TryCopyTo(buffer);
+    }
+
     /// <summary>
     /// Removes all items from this <see cref="Buffer{T}"/>
     /// </summary>
@@ -631,7 +648,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
     public ICollection<T> AsCollection() => this;
 
     public IUnsafeBuffer<T> AsUnsafe() => this;
-    
+
     public List<T> ToList() => new List<T>(this);
 
     public T[] ToArray() => AsSpan().ToArray();
@@ -692,6 +709,7 @@ public class Buffer<T> : IBuffer<T>, IUnsafeBuffer<T>,
                 sb.Append<T>(this[i], format, formatProvider);
             }
         }
+
         return sb.Append("]>").ToStringAndReturn();
     }
 

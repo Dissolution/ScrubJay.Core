@@ -5,29 +5,31 @@
 /// </summary>
 public static class ByteSpanEnumeratorExtensions
 {
-    public static Result TryPeek<T>(
+    public static Result<int> TryPeek<T>(
         this ref SpanEnumerator<byte> byteEnumerator,
         out T value)
         where T : unmanaged
     {
-        if (byteEnumerator.TryPeek(Scary.SizeOf<T>(), out var bytes))
+        int size = Scary.SizeOf<T>();
+        if (byteEnumerator.TryPeek(size, out var bytes))
         {
             value = Scary.ReadUnaligned<T>(in bytes.GetPinnableReference());
-            return true;
+            return size;
         }
         value = default;
         return new InvalidOperationException($"Cannot peek for a {typeof(T).Name}: Only {byteEnumerator.UnenumeratedCount} bytes remain");
     }
     
-    public static Result TryTake<T>(
+    public static Result<int> TryTake<T>(
         this ref SpanEnumerator<byte> byteEnumerator,
         out T value)
         where T : unmanaged
     {
-        if (byteEnumerator.TryTake(Scary.SizeOf<T>(), out var bytes))
+        int size = Scary.SizeOf<T>();
+        if (byteEnumerator.TryTake(size, out var bytes))
         {
             value = Scary.ReadUnaligned<T>(in bytes.GetPinnableReference());
-            return true;
+            return size;
         }
         value = default;
         return new InvalidOperationException($"Cannot take a {typeof(T).Name}: Only {byteEnumerator.UnenumeratedCount} bytes remain");
@@ -35,7 +37,8 @@ public static class ByteSpanEnumeratorExtensions
 
     public static T Take<T>(this ref SpanEnumerator<byte> byteEnumerator)
         where T : unmanaged
-        => TryTake<T>(ref byteEnumerator, out T value)
-            .WithValue(value)
-            .OkValueOrThrowError();
+    {
+        TryTake(ref byteEnumerator, out T value).ThrowIfError();
+        return value;
+    }
 }

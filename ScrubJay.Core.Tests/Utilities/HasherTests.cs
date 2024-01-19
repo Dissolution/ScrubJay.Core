@@ -1,5 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
+// ReSharper disable PossibleMultipleEnumeration
 namespace ScrubJay.Tests.Utilities;
 
 public class HasherTests

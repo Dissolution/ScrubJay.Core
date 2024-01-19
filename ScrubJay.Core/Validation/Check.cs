@@ -1,6 +1,5 @@
 ﻿#pragma warning disable CS8777 // Parameter must have a non-null value when exiting.
 
-using static ScrubJay.StaticImports;
 
 namespace ScrubJay.Validation;
 
@@ -156,7 +155,7 @@ public static class Check
         if ((uint)start + (uint)length <= available)
             return Ok((start, length));
 
-        throw new ArgumentOutOfRangeException(
+        return new ArgumentOutOfRangeException(
             rangeName,
             range,
             $"'{rangeName}' {range} is not in [0..{available})");

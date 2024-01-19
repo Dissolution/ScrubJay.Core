@@ -1,12 +1,6 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace ScrubJay.Tests.Utilities;
-
-public class ScaryTests
-{
-    
-}
 
 public class ScaryUnmanagedTests
 {

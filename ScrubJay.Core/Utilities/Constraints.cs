@@ -31,7 +31,9 @@ public static class Constraints
     public readonly struct IsUnmanaged<T> where T : unmanaged;
 
     public readonly struct IsNewDisposable<T> where T : IDisposable, new();
-    
+
+    public readonly struct IsEquatable<T> where T : IEquatable<T>;
+
 #if NET7_0_OR_GREATER
     public readonly struct IsSpanParsable<T> where T : ISpanParsable<T>;
 

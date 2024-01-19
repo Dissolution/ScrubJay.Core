@@ -1,4 +1,4 @@
-﻿
+﻿using System.Diagnostics;
 using System.Text;
 
 namespace ScrubJay.Text;
@@ -15,14 +15,97 @@ public static class StringBuilderExtensions
                 builder.Append(ptr, text.Length);
             }
         }
+
         return builder;
     }
+
+#region AppendJoin
+
+    private static StringBuilder AppendJoinCore<T>(StringBuilder builder, ReadOnlySpan<char> separator, T[]? values)
+    {
+        if (values is null || values.Length == 0) return builder;
+
+        builder.Append<T>(values[0]);
+
+        for (int i = 1; i < values.Length; i++)
+        {
+            builder.Append(separator).Append<T>(values[i]);
+        }
+
+        return builder;
+    }
+
+    private static StringBuilder AppendJoinCore<T>(StringBuilder builder, ReadOnlySpan<char> separator, IEnumerable<T> values)
+    {
+        using var e = values.GetEnumerator();
+
+        if (!e.MoveNext()) return builder;
+
+        builder.Append<T>(e.Current);
+        while (e.MoveNext())
+        {
+            builder.Append(separator).Append(e.Current);
+        }
+
+        return builder;
+    }
+
+
+    public static StringBuilder AppendJoin(this StringBuilder builder, char separator, params object?[]? values)
+    {
+        return AppendJoinCore<object?>(builder, separator.AsSpan(), values);
+    }
+
+    public static StringBuilder AppendJoin<T>(this StringBuilder builder, char separator, IEnumerable<T> values)
+    {
+        return AppendJoinCore<T>(builder, separator.AsSpan(), values);
+    }
+
+    public static StringBuilder AppendJoin(this StringBuilder builder, char separator, params string?[]? values)
+    {
+        return AppendJoinCore<string?>(builder, separator.AsSpan(), values);
+    }
+    
+    public static StringBuilder AppendJoin<T>(this StringBuilder builder, char separator, params T[]? values)
+    {
+        return AppendJoinCore<T>(builder, separator.AsSpan(), values);
+    }
+
+    public static StringBuilder AppendJoin(this StringBuilder builder, string? separator, params object?[]? values)
+    {
+        return AppendJoinCore<object?>(builder, separator.AsSpan(), values);
+    }
+
+    public static StringBuilder AppendJoin<T>(this StringBuilder builder, string? separator, IEnumerable<T> values)
+    {
+        return AppendJoinCore<T>(builder, separator.AsSpan(), values);
+    }
+
+    public static StringBuilder AppendJoin(this StringBuilder builder, string? separator, params string?[]? values)
+    {
+        return AppendJoinCore<string?>(builder, separator.AsSpan(), values);
+    }
+    
+    public static StringBuilder AppendJoin<T>(this StringBuilder builder, string? separator, params T[]? values)
+    {
+        return AppendJoinCore<T>(builder, separator.AsSpan(), values);
+    }
+
+#endregion
+
 #endif
 
     public static StringBuilder Append<T>(
         this StringBuilder builder,
+        T? value)
+    {
+        return value is null ? builder : builder.Append(value.ToString());
+    }
+
+    public static StringBuilder Append<T>(
+        this StringBuilder builder,
         T? value,
-        string? format = null,
+        string? format,
         IFormatProvider? provider = null)
     {
         string? str;
@@ -30,6 +113,7 @@ public static class StringBuilderExtensions
         {
             return builder;
         }
+
         // No boxing for value types
         // ReSharper disable once MergeCastWithTypeCheck
         if (value is IFormattable)
@@ -40,10 +124,11 @@ public static class StringBuilderExtensions
         {
             str = value.ToString();
         }
+
         return builder.Append(str);
     }
 
-    
+
     public static StringBuilder AppendDelimit<T>(
         this StringBuilder builder,
         string delimiter,
@@ -57,11 +142,12 @@ public static class StringBuilderExtensions
             {
                 builder.Append(delimiter)
                     .Append<T>(values[i]);
-            }   
+            }
         }
+
         return builder;
     }
-    
+
     public static StringBuilder AppendDelimit<T>(
         this StringBuilder builder,
         string delimiter,
@@ -77,6 +163,7 @@ public static class StringBuilderExtensions
             builder.Append(delimiter)
                 .Append<T>(e.Current);
         }
+
         return builder;
     }
 }

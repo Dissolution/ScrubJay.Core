@@ -2,6 +2,10 @@
 
 namespace ScrubJay.Memory;
 
+/// <summary>
+/// 
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public ref struct SpanWriter<T>
 {
     public static implicit operator SpanWriter<T>(Span<T> span) => new(span);
@@ -11,9 +15,12 @@ public ref struct SpanWriter<T>
 
     public int Position
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _position;
-        set => _position = value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => _position = value.Clamp(0, Capacity);
     }
+    
     public int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -38,7 +45,7 @@ public ref struct SpanWriter<T>
         _position = 0;
     }
 
-    public Result TryWrite(T item)
+    public Result<int> TryWrite(T item)
     {
         int index = _position;
         var span = _span;
@@ -46,115 +53,64 @@ public ref struct SpanWriter<T>
         {
             span[index] = item;
             _position = index + 1;
-            return true;
+            return Ok(1);
         }
-        return new InvalidOperationException("Cannot add another item: No remaining capacity");
+        return new InvalidOperationException("Cannot write an item: No remaining capacity");
     }
     
-    public Result TryWrite(params T[]? items)
+    public Result<int> TryWriteMany(params T[]? items)
     {
-        if (items is null) return false;
-        int itemsLen = items.Length;
-        if (itemsLen == 0) return true;
-        int index = _position;
-        int newIndex = index + itemsLen;
-        var span = _span;
-        if (newIndex <= span.Length)
-        {
-            items.CopyTo(span[index..]);
-            _position = newIndex;
-            return true;
-        }
-        return new InvalidOperationException($"Cannot add {itemsLen} items: Only a capacity of {span.Length - index} remains");
-    }
-    
-    public Result TryWrite(scoped ReadOnlySpan<T> items)
-    {
-        int index = _position;
-        int newIndex = index + items.Length;
-        var span = _span;
-        if (newIndex <= span.Length)
-        {
-            items.CopyTo(span[index..]);
-            _position = newIndex;
-            return true;
-        }
-        return new InvalidOperationException($"Cannot add {items.Length} items: Only a capacity of {span.Length - index} remains");
-    }
+        if (items is null) 
+            return new ArgumentNullException(nameof(items));
 
-    public Result TryWrite(IReadOnlyList<T> list)
-    {
-        int pos = _position;
-        var remaining = _span[pos..];
-        int itemsCount = list.Count;
-        int newPos = pos + itemsCount;
-        if (newPos > remaining.Length)
-            return false;
-        for (var i = 0; i < itemsCount; i++)
+        var avail = this.AvailableItems;
+        var count = items.Length;
+        if (count <= avail.Length)
         {
-            remaining[i] = list[i];
+            items.CopyTo(avail);
+            _position += count;
+            return Ok(count);
         }
-        _position = newPos;
-        return true;
+        return new InvalidOperationException($"Cannot write {count} items: Only a capacity of {avail.Length} remains");
     }
     
-    public Result TryWrite(IList<T> list)
+    public Result<int> TryWriteMany(scoped ReadOnlySpan<T> items)
     {
-        int pos = _position;
-        var remaining = _span[pos..];
-        int itemsCount = list.Count;
-        int newPos = pos + itemsCount;
-        if (newPos > remaining.Length)
-            return false;
-        for (var i = 0; i < itemsCount; i++)
+        var avail = this.AvailableItems;
+        var count = items.Length;
+        if (count <= avail.Length)
         {
-            remaining[i] = list[i];
+            items.CopyTo(avail);
+            _position += count;
+            return Ok(count);
         }
-        _position = newPos;
-        return true;
+        return new InvalidOperationException($"Cannot write {count} items: Only a capacity of {avail.Length} remains");
     }
     
-    public Result TryWrite(IReadOnlyCollection<T> collection)
+    public Result<int> TryWriteMany(IEnumerable<T> items)
     {
-        int pos = _position;
-        var remaining = _span[pos..];
-        int itemsCount = collection.Count;
-        int newPos = pos + itemsCount;
-        if (newPos > remaining.Length)
-            return false;
+        var avail = AvailableItems;
+        int i = 0;
+        foreach (var item in items)
+        {
+            if (i >= avail.Length)
+            {
+                avail.Clear();
+                return new InvalidOperationException($"Cannot write {i + 1} items: Only a capacity of {avail.Length} remains");
+            }
+            avail[i] = item;
+            i++;
+        }
 
-        int r = 0;
-        foreach (var item in collection)
-        {
-            remaining[r++] = item;
-        }
-        _position = newPos;
-        return true;
-    }
-    
-    public Result TryWrite(ICollection<T> collection)
-    {
-        int pos = _position;
-        var remaining = _span[pos..];
-        int itemsCount = collection.Count;
-        int newPos = pos + itemsCount;
-        if (newPos > remaining.Length)
-            return false;
-
-        int r = 0;
-        foreach (var item in collection)
-        {
-            remaining[r++] = item;
-        }
-        _position = newPos;
-        return true;
+        _position += i;
+        return Ok(i);
     }
     
     public void Write(T item) => TryWrite(item).ThrowIfError();
 
-    public void Write(params T[]? items) => TryWrite(items).ThrowIfError();
+    public void WriteMany(params T[]? items) => TryWriteMany(items).ThrowIfError();
     
-    public void Write(ReadOnlySpan<T> items) => TryWrite(items).ThrowIfError();
+    public void WriteMany(scoped ReadOnlySpan<T> items) => TryWriteMany(items).ThrowIfError();
     
     public Result TryAllocate(int count, out Span<T> allocated)
     {
@@ -163,7 +119,7 @@ public ref struct SpanWriter<T>
         {
             allocated = remaining[..count];
             _position += count;
-            return true;
+            return Ok();
         }
         allocated = default;
         return new InvalidOperationException($"Cannot allocate {count} items: Only a capacity of {remaining.Length} remains");
