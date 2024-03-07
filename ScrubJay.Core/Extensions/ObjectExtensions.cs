@@ -15,6 +15,18 @@ public static class ObjectExtensions
         return false;
     }
 
+    public static bool CanBe<T>(this object? obj)
+    {
+        switch (obj)
+        {
+            case T:
+            case null when typeof(T).CanContainNull():
+                return true;
+            default:
+                return false;
+        }
+    }
+    
     /// <summary>
     /// If this <see cref="object"/> can be a <typeparamref name="T"/> value,
     /// cast it to that value and return <c>true</c>.

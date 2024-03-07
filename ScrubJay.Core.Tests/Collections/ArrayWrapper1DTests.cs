@@ -11,6 +11,18 @@ public sealed class ArrayWrapper1DTests
         yield return new object[1] { Guid.NewGuid().ToString("N").ToCharArray() };
     }
     
+    [Theory]
+    [MemberData(nameof(GetTestData))]
+    public void TestIndexer(char[] typedArray)
+    {
+        ArrayWrapper<char> wrapper = new((Array)typedArray);
+        Assert.Equal(typedArray.Length, wrapper.Count);
+        for (var i = 0; i < wrapper.Count; i++)
+        {
+            Assert.Equal(typedArray[i], wrapper[i]);
+        }
+        Assert.Throws<IndexOutOfRangeException>(() => wrapper[wrapper.Count]);
+    }
     
     [Theory]
     [MemberData(nameof(GetTestData))]
@@ -31,16 +43,5 @@ public sealed class ArrayWrapper1DTests
         Disposable.Dispose(e);
     }
     
-    [Theory]
-    [MemberData(nameof(GetTestData))]
-    public void TestIndexer(char[] typedArray)
-    {
-        ArrayWrapper<char> wrapper = new((Array)typedArray);
-        Assert.Equal(typedArray.Length, wrapper.Count);
-        for (var i = 0; i < wrapper.Count; i++)
-        {
-            Assert.Equal(typedArray[i], wrapper[i]);
-        }
-        Assert.Throws<IndexOutOfRangeException>(() => wrapper[wrapper.Count]);
-    }
+ 
 }

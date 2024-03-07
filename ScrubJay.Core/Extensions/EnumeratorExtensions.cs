@@ -5,6 +5,21 @@
 /// </summary>
 public static class EnumeratorExtensions
 {
+    public static bool TryMoveNext<TEnumerator, T>(
+        this TEnumerator enumerator,
+        [MaybeNullWhen(false)] out T? value)
+        where TEnumerator : IEnumerator<T>
+    {
+        if (enumerator.MoveNext())
+        {
+            value = enumerator.Current;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+    
     public static bool TryMoveNext<T>(
         this IEnumerator<T> enumerator,
         [MaybeNullWhen(false)] out T? value)

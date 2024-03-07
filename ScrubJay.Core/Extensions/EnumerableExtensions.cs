@@ -1,5 +1,4 @@
-﻿
-// ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+﻿// ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 
 using ScrubJay.Comparison;
 
@@ -55,7 +54,7 @@ public static class EnumerableExtensions
             throw new InvalidOperationException("There are too many items");
         return one;
     }
-    
+
     [return: NotNullIfNotNull(nameof(defaultValue))]
     public static T? OneOrDefault<T>(this IEnumerable<T>? source, T? defaultValue = default)
     {
@@ -117,10 +116,20 @@ public static class EnumerableExtensions
         yield return firstValue;
         yield return secondValue;
     }
-    
-    public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
+
+    /// <summary>
+    /// Enumerates over the non-<c>null</c> items in <paramref name="source"/>
+    /// </summary>
+    public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?>? source)
+        where T : notnull
     {
-        return source.Where(value => value is not null)!;
+        if (source is null)
+            yield break;
+        foreach (T? value in source)
+        {
+            if (value is not null)
+                yield return value;
+        }
     }
 
 
@@ -172,16 +181,109 @@ public static class EnumerableExtensions
             count = collection.Count;
             return true;
         }
+
         if (enumerable is IReadOnlyCollection<T> roCollection)
         {
             count = roCollection.Count;
             return true;
         }
+
         count = 0;
         return false;
     }
+
+    /// <summary>
+    /// Split the elements of a sequence into chunks of size at most <paramref name="size"/>.
+    /// </summary>
+    /// <remarks>
+    /// Every chunk except the last will be of size <paramref name="size"/>.
+    /// The last chunk will contain the remaining elements and may be of a smaller size.
+    /// </remarks>
+    /// <param name="source">
+    /// An <see cref="IEnumerable{T}"/> whose elements to chunk.
+    /// </param>
+    /// <param name="size">
+    /// Maximum size of each chunk.
+    /// </param>
+    /// <typeparam name="TSource">
+    /// The type of the elements of source.
+    /// </typeparam>
+    /// <returns>
+    /// An <see cref="IEnumerable{T}"/> that contains the elements the input sequence split into chunks of size <paramref name="size"/>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="source"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="size"/> is below 1.
+    /// </exception>
+    public static IEnumerable<TSource[]> Chunk<TSource>(this IEnumerable<TSource> source, int size)
+    {
+        if (source is null)
+            throw new ArgumentNullException(nameof(source));
+        if (size < 1)
+            throw new ArgumentOutOfRangeException(nameof(size));
+        return ChunkIterator(source, size);
+    }
+
+    private static IEnumerable<TSource[]> ChunkIterator<TSource>(IEnumerable<TSource> source, int size)
+    {
+        using IEnumerator<TSource> e = source.GetEnumerator();
+
+        // Before allocating anything, make sure there's at least one element.
+        if (e.MoveNext())
+        {
+            // Now that we know we have at least one item, allocate an initial storage array. This is not
+            // the array we'll yield.  It starts out small in order to avoid significantly overallocating
+            // when the source has many fewer elements than the chunk size.
+            int arraySize = Math.Min(size, 4);
+            int i;
+            do
+            {
+                var array = new TSource[arraySize];
+
+                // Store the first item.
+                array[0] = e.Current;
+                i = 1;
+
+                if (size != array.Length)
+                {
+                    // This is the first chunk. As we fill the array, grow it as needed.
+                    for (; i < size && e.MoveNext(); i++)
+                    {
+                        if (i >= array.Length)
+                        {
+                            arraySize = (int)Math.Min((uint)size, 2 * (uint)array.Length);
+                            Array.Resize(ref array, arraySize);
+                        }
+
+                        array[i] = e.Current;
+                    }
+                }
+                else
+                {
+                    // For all but the first chunk, the array will already be correctly sized.
+                    // We can just store into it until either it's full or MoveNext returns false.
+                    TSource[] local = array; // avoid bounds checks by using cached local (`array` is lifted to iterator object as a field)
+                    //Debug.Assert(local.Length == size);
+                    for (; (uint)i < (uint)local.Length && e.MoveNext(); i++)
+                    {
+                        local[i] = e.Current;
+                    }
+                }
+
+                if (i != array.Length)
+                {
+                    Array.Resize(ref array, i);
+                }
+
+                yield return array;
+            } while (i >= size && e.MoveNext());
+        }
+    }
+
 #endif
-    
+
     /// <summary>
     /// A deep wrapper for <see cref="IEnumerable{T}"/> that ignores all thrown exceptions
     /// at every level of enumeration, only returning values that could be acquired without error
@@ -198,7 +300,7 @@ public static class EnumerableExtensions
         {
             yield break;
         }
-       
+
         while (true)
         {
             // try to move next

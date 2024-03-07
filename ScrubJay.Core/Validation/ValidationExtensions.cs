@@ -56,7 +56,22 @@ public static class ValidationExtensions
         [CallerArgumentExpression(nameof(obj))]
         string? objName = null)
     {
-        if (obj is TOut output)
+        return obj switch
+        {
+            null => throw new ArgumentNullException(objName),
+            TOut output => output,
+            _ => throw new ArgumentException($"The given {obj.GetType().Name} value is not a valid {typeof(TOut).Name} instance", objName)
+        };
+    }
+
+
+    [return: NotNullIfNotNull(nameof(obj))]
+    public static TOut? AsNullValid<TOut>(
+        this object? obj,
+        [CallerArgumentExpression(nameof(obj))]
+        string? objName = null)
+    {
+        if (obj.CanBe<TOut>(out var output))
             return output;
         throw new ArgumentException(
             $"The given {obj?.GetType().Name} value is not a valid {typeof(TOut).Name} instance",

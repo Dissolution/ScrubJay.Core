@@ -47,7 +47,7 @@ public readonly struct EquatableArray<T> : IReadOnlyList<T>,
 
     public bool Equals(IEnumerable<T>? values)
     {
-        return EnumerableEqualityComparer<T>.Default.Equals(_array, values);
+        return Relate.Equal.Sequence(_array, values);
     }
 
     public override bool Equals(object? obj)

@@ -8,20 +8,10 @@
 /// </typeparam>
 public sealed class ArrayEnumerator<T> : 
     IEnumerator<T>, 
-    IEnumerator,
-    IDisposable
+    IEnumerator
 {
-    private Array _array;
-    private readonly int _rank;
-    private readonly int[] _lowerBounds;
-    private readonly int[] _upperBounds;
-    
+    private readonly ArrayWrapper<T> _wrappedArray;
     private readonly int[] _arrayIndices;
-
-    /// <summary>
-    /// The <see cref="Array"/>'s Rank -- or Number of Dimensions (1-based)
-    /// </summary>
-    public int Rank => _rank;
     
     /// <summary>
     /// The current enumeration indices
@@ -29,22 +19,18 @@ public sealed class ArrayEnumerator<T> :
     public int[] Indices => _arrayIndices;
     
     /// <inheritdoc cref="IEnumerator"/>
-    object IEnumerator.Current => _array.GetValue(_arrayIndices)!;
+    object? IEnumerator.Current => _wrappedArray.GetValue(_arrayIndices);
     
     /// <summary>
     /// The currently enumerated item
     /// </summary>
-    public T Current => (T)_array.GetValue(_arrayIndices)!;
+    public T Current => _wrappedArray.GetValue(_arrayIndices);
     
-    internal ArrayEnumerator(Array array, int rank, int[] lowerBounds, int[] upperBounds)
+    internal ArrayEnumerator(ArrayWrapper<T> wrappedArray)
     {
-        _array = array;
-        _rank = rank;
-        _lowerBounds = lowerBounds;
-        _upperBounds = upperBounds;
-        
+        _wrappedArray = wrappedArray;
         // Setup our starting indices
-        _arrayIndices = new int[rank];
+        _arrayIndices = new int[wrappedArray.Dimensions];
         Reset();
     }
 
@@ -54,23 +40,24 @@ public sealed class ArrayEnumerator<T> :
         item = Current;
     }
 
-    private bool TryIncrementAt(int index)
+    private bool TryIncrementAt(int rank)
     {
-        if (index < 0) return false;
+        if (rank < 0) return false;
         var arrayIndex = _arrayIndices;
-        var rankValue = arrayIndex[index];
-        if (rankValue >= _upperBounds[index])
+        var rankIndex = arrayIndex[rank];
+        var rankBounds = _wrappedArray.GetBounds(rank);
+        if (rankIndex >= rankBounds.Upper)
         {
             // We have to be able to roll the one to the left
-            if (!TryIncrementAt(index - 1))
+            if (!TryIncrementAt(rank - 1))
                 return false;
             // Reset me
-            arrayIndex[index] = _lowerBounds[index];
+            arrayIndex[rank] = rankBounds.Lower;
             return true;
         }
         
         // Roll Me
-        arrayIndex[index] = rankValue + 1;
+        arrayIndex[rank] = rankIndex + 1;
         return true;
     }
     
@@ -88,23 +75,21 @@ public sealed class ArrayEnumerator<T> :
     
     public bool MoveNext()
     {
-        return TryIncrementAt(_rank - 1);
+        return TryIncrementAt(_wrappedArray.Dimensions - 1);
     }
 
     public void Reset()
     {
-        int end = _rank - 1;
+        int end = _wrappedArray.Dimensions - 1;
+        var lowerBounds = _wrappedArray.LowerBounds;
         // The last index needs to be one lower (pre-incremented)
-        _arrayIndices[end] = _lowerBounds[end] - 1; 
+        _arrayIndices[end] = lowerBounds[end] - 1; 
         // The rest start at their zero
         for (var dim = 0; dim < end; dim++)
         {
-            _arrayIndices[dim] = _lowerBounds[dim];
+            _arrayIndices[dim] = lowerBounds[dim];
         }
     }
 
-    void IDisposable.Dispose()
-    {
-        _array = null!;
-    }
+    void IDisposable.Dispose() { }
 }

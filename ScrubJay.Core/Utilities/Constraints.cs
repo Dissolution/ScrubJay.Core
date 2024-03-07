@@ -33,6 +33,8 @@ public static class Constraints
     public readonly struct IsNewDisposable<T> where T : IDisposable, new();
 
     public readonly struct IsEquatable<T> where T : IEquatable<T>;
+    
+    public readonly struct IsComparable<T> where T : IComparable<T>;
 
 #if NET7_0_OR_GREATER
     public readonly struct IsSpanParsable<T> where T : ISpanParsable<T>;

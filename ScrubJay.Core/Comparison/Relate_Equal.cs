@@ -310,91 +310,22 @@ public static partial class Relate
 #region IEnumerable
 
         public static bool Sequence<T>(T[]? left, IEnumerable<T>? right)
-            => Sequence<T>((ReadOnlySpan<T>)left, right);
+            => SpanExtensions.SequenceEqual<T>(left, right);
 
         public static bool Sequence<T>(Span<T> left, IEnumerable<T>? right)
-            => Sequence<T>((ReadOnlySpan<T>)left, right);
+            => SpanExtensions.SequenceEqual<T>(left, right);
 
         public static bool Sequence<T>(ReadOnlySpan<T> left, IEnumerable<T>? right)
-        {
-            if (right is null) return false;
-            int count = left.Length;
-            switch (right)
-            {
-                case IList<T> list:
-                {
-                    if (list.Count != count) return false;
-                    for (var i = 0; i < count; i++)
-                    {
-                        if (!EqualityComparer<T>.Default.Equals(left[i], list[i]))
-                            return false;
-                    }
-
-                    return true;
-                }
-                case IReadOnlyList<T> roList:
-                {
-                    if (roList.Count != count) return false;
-                    for (var i = 0; i < count; i++)
-                    {
-                        if (!EqualityComparer<T>.Default.Equals(left[i], roList[i]))
-                            return false;
-                    }
-
-                    return true;
-                }
-                case ICollection<T> collection:
-                {
-                    if (collection.Count != count) return false;
-                    using var e = collection.GetEnumerator();
-                    for (var i = 0; i < count; i++)
-                    {
-                        e.MoveNext();
-                        if (!EqualityComparer<T>.Default.Equals(left[i], e.Current))
-                            return false;
-                    }
-
-                    return true;
-                }
-                case IReadOnlyCollection<T> roCollection:
-                {
-                    if (roCollection.Count != count) return false;
-                    using var e = roCollection.GetEnumerator();
-                    for (var i = 0; i < count; i++)
-                    {
-                        e.MoveNext();
-                        if (!EqualityComparer<T>.Default.Equals(left[i], e.Current))
-                            return false;
-                    }
-
-                    return true;
-                }
-                default:
-                {
-                    using var e = right.GetEnumerator();
-                    for (var i = 0; i < count; i++)
-                    {
-                        if (!e.MoveNext())
-                            return false;
-                        if (!EqualityComparer<T>.Default.Equals(left[i], e.Current))
-                            return false;
-                    }
-
-                    if (e.MoveNext())
-                        return false;
-                    return true;
-                }
-            }
-        }
+            => SpanExtensions.SequenceEqual<T>(left, right);
 
         public static bool Sequence<T>(IEnumerable<T>? left, T[]? right)
-            => Sequence<T>(right, left);
+            => SpanExtensions.SequenceEqual<T>(right, left);
 
         public static bool Sequence<T>(IEnumerable<T>? left, Span<T> right)
-            => Sequence<T>(right, left);
+            => SpanExtensions.SequenceEqual<T>(right, left);
 
         public static bool Sequence<T>(IEnumerable<T>? left, ReadOnlySpan<T> right)
-            => Sequence<T>(right, left);
+            => SpanExtensions.SequenceEqual<T>(right, left);
 
 #endregion
 

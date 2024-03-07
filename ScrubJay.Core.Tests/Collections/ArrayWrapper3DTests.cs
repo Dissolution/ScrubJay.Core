@@ -11,6 +11,24 @@ public sealed class ArrayWrapper3DTests
     }
 
 
+  
+
+    [Theory]
+    [MemberData(nameof(GetTestData))]
+    public void TestIndexer(char[,,] typedArray)
+    {
+        ArrayWrapper<char> wrapper = new((Array)typedArray);
+        Assert.Equal(typedArray.Length, wrapper.Count);
+
+        for (var x = 0; x < typedArray.GetLength(0); x++)
+        for (var y = 0; y < typedArray.GetLength(1); y++)
+        for (var z = 0; z < typedArray.GetLength(2); z++)
+        {
+            int[] indices = new int[3] { x, y, z };
+            Assert.Equal(typedArray[x, y, z], wrapper[indices]);
+        }
+    }
+    
     [Theory]
     [MemberData(nameof(GetTestData))]
     public void TestEnumeration(char[,,] typedArray)
@@ -30,21 +48,5 @@ public sealed class ArrayWrapper3DTests
         }
 
         Disposable.Dispose(e);
-    }
-
-    [Theory]
-    [MemberData(nameof(GetTestData))]
-    public void TestIndexer(char[,,] typedArray)
-    {
-        ArrayWrapper<char> wrapper = new((Array)typedArray);
-        Assert.Equal(typedArray.Length, wrapper.Count);
-
-        for (var x = 0; x < typedArray.GetLength(0); x++)
-        for (var y = 0; y < typedArray.GetLength(1); y++)
-        for (var z = 0; z < typedArray.GetLength(2); z++)
-        {
-            int[] indices = new int[3] { x, y, z };
-            Assert.Equal(typedArray[x, y, z], wrapper[indices]);
-        }
     }
 }

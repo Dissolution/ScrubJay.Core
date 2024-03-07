@@ -1,29 +1,25 @@
 ﻿using System.Reflection;
 
-namespace ScrubJay.Tests.Utilities;
+namespace ScrubJay.Tests;
 
-public class ResultTests
+public class ResultTTests
 {
-    public static IEnumerable<object[]> GetResults()
-    {
-        yield return new object[1] { Result<int>.Ok(147) };
-        yield return new object[1] { Result<BindingFlags>.Ok(BindingFlags.ExactBinding) };
-        yield return new object[1] { Result<Nothing>.Ok(default) };
-        yield return new object[1] { Result<string>.Ok("ABC") };
-        yield return new object[1] { Result<EventArgs?>.Ok(null) };
-        
-        
-        yield return new object[1] { Result<int>.Error(null) };
-        yield return new object[1] { Result<int>.Error(new Exception("Bad")) };
-        yield return new object[1] { Result<BindingFlags>.Error(null) };
-        yield return new object[1] { Result<BindingFlags>.Error(new Exception("Bad")) };
-        yield return new object[1] { Result<Nothing>.Error(null) };
-        yield return new object[1] { Result<Nothing>.Error(new Exception("Bad")) };
-        yield return new object[1] { Result<string>.Error(null) };
-        yield return new object[1] { Result<string>.Error(new Exception("Bad")) };
-        yield return new object[1] { Result<EventArgs?>.Error(null) };
-        yield return new object[1] { Result<EventArgs?>.Error(new Exception("Bad")) };
-    }
+    public static IEnumerable<object[]> GetResults() => TestHelper.ToMemberData<object>(1,
+        Result<int>.Ok(147),
+        Result<BindingFlags>.Ok(BindingFlags.ExactBinding),
+        Result<Nothing>.Ok(default),
+        Result<string>.Ok("ABC"),
+        Result<EventArgs?>.Ok(null),
+        Result<int>.Error(null),
+        Result<int>.Error(new Exception("Bad")),
+        Result<BindingFlags>.Error(null),
+        Result<BindingFlags>.Error(new Exception("Bad")),
+        Result<Nothing>.Error(null),
+        Result<Nothing>.Error(new Exception("Bad")),
+        Result<string>.Error(null),
+        Result<string>.Error(new Exception("Bad")),
+        Result<EventArgs?>.Error(null),
+        Result<EventArgs?>.Error(new Exception("Bad")));
 
 
     [Theory]
@@ -58,7 +54,7 @@ public class ResultTests
         Assert.False(exResult.IsError());
         Assert.NotNull(okValue);
         Assert.Equal("Ok", okValue.Message);
-        
+
         exResult = Result<Exception>.Ok(null!);
         isOk = exResult.IsOk(out okValue);
         Assert.True(isOk);

@@ -212,7 +212,7 @@ public class FlaggedEnumExtensionsTests
 
         var extFlags = FlagsEnumExtensions.GetFlags(e);
 
-        Assert.True(EnumerableEqualityComparer<TEnum>.Default.Equals(flags, extFlags));
+        Assert.True(Relate.Equal.Sequence(flags, extFlags));
     }
     
     [Theory]
@@ -231,7 +231,7 @@ public class FlaggedEnumExtensionsTests
 
         var extFlags = FlagsEnumExtensions.GetFlags(e);
 
-        Assert.True(EnumerableEqualityComparer<TEnum>.Default.Equals(flags, extFlags));
+        Assert.True(Relate.Equal.Sequence(flags, extFlags));
     }
     
     // All the *Flags methods use the methods already checked above!

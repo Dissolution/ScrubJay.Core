@@ -10,7 +10,7 @@ public class HasherTests
     /// </summary>
     public static IEnumerable<object?[]> Data(int arrayLen)
     {
-        return TestHelper.ToEnumerableNullableObjects(TestHelper.TestObjects, arrayLen);
+        return TestHelper.ToNullableMemberData(arrayLen, TestHelper.TestObjects);
     }
 
     [Theory]

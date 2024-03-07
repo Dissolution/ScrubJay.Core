@@ -1,22 +1,20 @@
-﻿global using Result = ScrubJay.Result<ScrubJay.Nothing>;
-
-global using static ScrubJay.StaticImports;
+﻿global using static ScrubJay.StaticImports;
 
 namespace ScrubJay;
 
 // ReSharper disable once InconsistentNaming
 public static class StaticImports
 {
-    private static readonly Result _okResult = Result.Ok(default);
-    
     /// <inheritdoc cref="Option{T}.None"/>
     public static Option<T> None<T>() => Option<T>.None;
     
     /// <inheritdoc cref="Option{T}.Some"/>
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
 
+    public static Option<T> NotNull<T>(T? value) => Option<T>.NotNull(value);
+    
     /// <inheritdoc cref="Result{T}.Ok"/>
-    public static Result Ok() => _okResult;
+    public static Result Ok() => Result.Ok();
 
     /// <inheritdoc cref="Result{T}.Error"/>
     public static Exception Error(Exception? error) => error ?? new Exception();

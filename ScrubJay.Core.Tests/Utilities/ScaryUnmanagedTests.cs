@@ -35,7 +35,7 @@ public class ScaryUnmanagedTests
     }
 
 
-    public static IEnumerable<object[]> Data => TestHelper.ToEnumerableObjects<object>(arrayLength: 1,
+    public static IEnumerable<object[]> Data => TestHelper.ToMemberData<object>(1,
         byte.MinValue, (int)0, Guid.NewGuid(), DateTime.Now, new TestUnmanagedStruct(147));
     
     

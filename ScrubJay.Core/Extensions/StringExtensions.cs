@@ -7,11 +7,13 @@ public static class StringExtensions
     {
         return string.IsNullOrEmpty(text);
     }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? text)
     {
         return string.IsNullOrWhiteSpace(text);
     }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNonWhiteSpace([NotNullWhen(true)] this string? text)
     {
@@ -25,6 +27,7 @@ public static class StringExtensions
             ch = text[index];
             return true;
         }
+
         ch = default;
         return false;
     }
@@ -50,4 +53,13 @@ public static class StringExtensions
             return ifInvalid;
         return str;
     }
+
+#if NETSTANDARD2_0 || NET48
+    public static bool Contains(this string? str, string? value, StringComparison comparisonType)
+    {
+        if (string.IsNullOrEmpty(value)) return true;
+        if (string.IsNullOrEmpty(str)) return false;
+        return str!.IndexOf(value, comparisonType) >= 0;
+    }
+#endif
 }
