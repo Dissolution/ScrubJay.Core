@@ -3,15 +3,20 @@
 packages/
 artifacts/
 
-.vs/
-.vscode/
-*.lock.json
+# Nuget
 .nuget/
 *.nuget.targets
 *.nuget.props
+# IDE
+.vs/
+.vscode/
+*.lock.json
 *.orig
 .DS_Store
 *.sln.ide
+*.user
+*.suo
+*.userprefs
 
 # JetBrains
 _ReSharper.*
