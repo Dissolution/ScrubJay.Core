@@ -1,0 +1,84 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>
+            <!-- All supported .Net Core versions ~~ https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core -->
+            net8.0;net7.0;net6.0;
+            <!-- Support for both .Net Standard versions ~~ .Net Standard 2.0 so we can be consumed by Source Generators, which are currently limited to that version -->
+            netstandard2.1;netstandard2.0;
+            <!-- Only supported version of .Net Framework ~~https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
+            net481;                         
+        </TargetFrameworks>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        
+        <RootNamespace>ScrubJay</RootNamespace>
+        <AssemblyName>ScrubJay.Core</AssemblyName>
+        
+        <!-- Setup NuGet -->
+        <IsPackable>true</IsPackable>
+        <EnablePackageValidation>true</EnablePackageValidation>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <!-- NuGet Package Information -->
+        <Title>ScrubJay Core Libraries</Title>
+        <Authors>Timothy Jay</Authors>
+        <Description>
+            The core shared library for all ScrubJay namespaces.
+        </Description>
+        <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Core</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageIcon>jay.png</PackageIcon>
+        <PackageOutputPath>..\packages\</PackageOutputPath>
+        <PackageVersion>0.0.1-alpha</PackageVersion>
+    </PropertyGroup>
+
+    <!-- NuGet -->
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\LICENSE.txt" Pack="true" PackagePath="\"/>
+        <None Include="..\jay.png" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+    
+    <!-- Global Usings -->
+    <ItemGroup>
+        <Using Include="System.Diagnostics.CodeAnalysis"/>
+        <Using Include="System.Numerics"/>
+        <Using Include="System.Runtime.CompilerServices"/>
+        <Using Include="System.Runtime.InteropServices"/>
+        <Using Include="System.Collections"/>
+        <!-- Support for Option -->
+        <Using Include="ScrubJay.Option" Static="true"/>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">
+        <PackageReference Include="System.Memory" Version="4.5.5">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="System.Memory" Version="4.5.5">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+    
+    <!-- PolySharp ~ Support for newer language versions in older versions -->
+    <ItemGroup>
+      <PackageReference Include="PolySharp" Version="1.14.1">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
+    <PropertyGroup>
+        <PolySharpUsePublicAccessibilityForGeneratedTypes>true</PolySharpUsePublicAccessibilityForGeneratedTypes>
+    </PropertyGroup>
+</Project>
