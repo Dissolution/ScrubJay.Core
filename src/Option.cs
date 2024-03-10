@@ -44,7 +44,6 @@ public readonly struct Option<T> :
 #endif
     IEquatable<Option<T>>,
     IEquatable<T>,
-    //IEquatable<None>,
     IEnumerable<T>
 {
     public static implicit operator Option<T>(None _) => None;
@@ -56,6 +55,9 @@ public readonly struct Option<T> :
     public static bool operator !=(Option<T> left, T? right) => !left.Equals(right);
     public static bool operator ==(Option<T> left, None right) => left.Equals(right);
     public static bool operator !=(Option<T> left, None right) => !left.Equals(right);
+    public static bool operator ==(Option<T> left, object? right) => left.Equals(right);
+    public static bool operator !=(Option<T> left, object? right) => !left.Equals(right);
+    
 
     public static Option<T> operator &(Option<T> left, Option<T> right)
     {
