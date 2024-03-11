@@ -43,10 +43,7 @@ using System.Security.Cryptography;
 namespace ScrubJay.Utilities;
 
 /// <summary>
-/// Hasher is a near-copy of <c>System.HashCode</c> for use in
-/// <c>netstandard2.0</c> and <c>net48</c> environments<br />
-/// It has many static methods for getting a single value's hashcode (which can deal with <c>null</c>)
-/// and combining many values into a single hashcode
+/// Hasher is a hashcode generator for use in many dotnet environments<br />
 /// </summary>
 public ref struct Hasher
 {
@@ -55,14 +52,11 @@ public ref struct Hasher
     private const uint PRIME3 = 0xC2B2AE3DU;
     private const uint PRIME4 = 0x27D4EB2FU;
     private const uint PRIME5 = 0x165667B1U;
-    
+
     private static readonly uint _seed = CreateSeed();
-
-    /// <summary>
-    /// Gets the HashCode for <c>null</c>
-    /// </summary>
-    public static int NullHash { get; } = GetHashCode<object?>(null);
-
+    private static readonly int _emptyHash = new Hasher().ToHashCode();
+    private static readonly int _nullHash = GetHashCode<object?>(null);
+    
     private static uint CreateSeed()
     {
 #if NET48_OR_GREATER || NETSTANDARD2_0
@@ -76,55 +70,52 @@ public ref struct Hasher
         return Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(bytes));
 #endif
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint RotateLeft(uint value, int offset)
+    private static uint RotateLeft(uint value, int offset)
     {
-        #if NET6_0_OR_GREATER
+#if NET6_0_OR_GREATER
         return BitOperations.RotateLeft(value, offset);
 #else
         return (value << offset) | (value >> (32 - offset));
 #endif
     }
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Initialize(out uint v1, out uint v2, out uint v3, out uint v4)
-    {
-        v1 = _seed + PRIME1 + PRIME2;
-        v2 = _seed + PRIME2;
-        v3 = _seed;
-        v4 = _seed - PRIME1;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint Round(uint hash, uint input)
-    {
-        return RotateLeft(hash + input * PRIME2, 13) * PRIME1;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint QueueRound(uint hash, uint queuedValue)
-    {
-        return RotateLeft(hash + queuedValue * PRIME3, 17) * PRIME4;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint MixState(uint v1, uint v2, uint v3, uint v4)
-    {
-        return RotateLeft(v1, 1)
-            + RotateLeft(v2, 7)
-            + RotateLeft(v3, 12)
-            + RotateLeft(v4, 18);
-    }
-
-    private static uint MixEmptyState()
+    private static uint StartingHash()
     {
         return _seed + PRIME5;
     }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void StartingStates(out uint state1, out uint state2, out uint state3, out uint state4)
+    {
+        state1 = _seed + PRIME1 + PRIME2;
+        state2 = _seed + PRIME2;
+        state3 = _seed;
+        state4 = _seed - PRIME1;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint MixFinal(uint hash)
+    private static uint StateAdd(uint hash, uint input)
+    {
+        return RotateLeft(hash + (input * PRIME2), 13) * PRIME1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint HashAdd(uint hash, uint queuedValue)
+    {
+        return RotateLeft(hash + (queuedValue * PRIME3), 17) * PRIME4;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint StateToHash(uint value1, uint value2, uint value3, uint value4)
+    {
+        return RotateLeft(value1, 1) + RotateLeft(value2, 7) + RotateLeft(value3, 12) + RotateLeft(value4, 18);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint HashFinalize(uint hash)
     {
         hash ^= hash >> 15;
         hash *= PRIME2;
@@ -142,12 +133,12 @@ public ref struct Hasher
     {
         var hc1 = (uint)(value?.GetHashCode() ?? 0);
 
-        uint hash = MixEmptyState();
+        uint hash = StartingHash();
         hash += 4;
 
-        hash = QueueRound(hash, hc1);
-
-        hash = MixFinal(hash);
+        hash = HashAdd(hash, hc1);
+        
+        hash = HashFinalize(hash);
         return (int)hash;
     }
 
@@ -159,13 +150,13 @@ public ref struct Hasher
         var hc1 = (uint)(value1?.GetHashCode() ?? 0);
         var hc2 = (uint)(value2?.GetHashCode() ?? 0);
 
-        uint hash = MixEmptyState();
+        uint hash = StartingHash();
         hash += 8;
 
-        hash = QueueRound(hash, hc1);
-        hash = QueueRound(hash, hc2);
-
-        hash = MixFinal(hash);
+        hash = HashAdd(hash, hc1);
+        hash = HashAdd(hash, hc2);
+        
+        hash = HashFinalize(hash);
         return (int)hash;
     }
 
@@ -175,14 +166,14 @@ public ref struct Hasher
         var hc2 = (uint)(value2?.GetHashCode() ?? 0);
         var hc3 = (uint)(value3?.GetHashCode() ?? 0);
 
-        uint hash = MixEmptyState();
+        uint hash = StartingHash();
         hash += 12;
 
-        hash = QueueRound(hash, hc1);
-        hash = QueueRound(hash, hc2);
-        hash = QueueRound(hash, hc3);
+        hash = HashAdd(hash, hc1);
+        hash = HashAdd(hash, hc2);
+        hash = HashAdd(hash, hc3);
 
-        hash = MixFinal(hash);
+        hash = HashFinalize(hash);
         return (int)hash;
     }
 
@@ -193,17 +184,17 @@ public ref struct Hasher
         var hc3 = (uint)(value3?.GetHashCode() ?? 0);
         var hc4 = (uint)(value4?.GetHashCode() ?? 0);
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
+        state1 = StateAdd(state1, hc1);
+        state2 = StateAdd(state2, hc2);
+        state3 = StateAdd(state3, hc3);
+        state4 = StateAdd(state4, hc4);
 
-        uint hash = MixState(v1, v2, v3, v4);
+        uint hash = StateToHash(state1, state2, state3, state4);
         hash += 16;
 
-        hash = MixFinal(hash);
+        hash = HashFinalize(hash);
         return (int)hash;
     }
 
@@ -215,19 +206,19 @@ public ref struct Hasher
         var hc4 = (uint)(value4?.GetHashCode() ?? 0);
         var hc5 = (uint)(value5?.GetHashCode() ?? 0);
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
+        state1 = StateAdd(state1, hc1);
+        state2 = StateAdd(state2, hc2);
+        state3 = StateAdd(state3, hc3);
+        state4 = StateAdd(state4, hc4);
 
-        uint hash = MixState(v1, v2, v3, v4);
+        uint hash = StateToHash(state1, state2, state3, state4);
         hash += 20;
 
-        hash = QueueRound(hash, hc5);
+        hash = HashAdd(hash, hc5);
 
-        hash = MixFinal(hash);
+        hash = HashFinalize(hash);
         return (int)hash;
     }
 
@@ -240,20 +231,20 @@ public ref struct Hasher
         var hc5 = (uint)(value5?.GetHashCode() ?? 0);
         var hc6 = (uint)(value6?.GetHashCode() ?? 0);
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
+        state1 = StateAdd(state1, hc1);
+        state2 = StateAdd(state2, hc2);
+        state3 = StateAdd(state3, hc3);
+        state4 = StateAdd(state4, hc4);
 
-        uint hash = MixState(v1, v2, v3, v4);
+        uint hash = StateToHash(state1, state2, state3, state4);
         hash += 24;
 
-        hash = QueueRound(hash, hc5);
-        hash = QueueRound(hash, hc6);
+        hash = HashAdd(hash, hc5);
+        hash = HashAdd(hash, hc6);
 
-        hash = MixFinal(hash);
+        hash = HashFinalize(hash);
         return (int)hash;
     }
 
@@ -267,21 +258,21 @@ public ref struct Hasher
         var hc6 = (uint)(value6?.GetHashCode() ?? 0);
         var hc7 = (uint)(value7?.GetHashCode() ?? 0);
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
+        state1 = StateAdd(state1, hc1);
+        state2 = StateAdd(state2, hc2);
+        state3 = StateAdd(state3, hc3);
+        state4 = StateAdd(state4, hc4);
 
-        uint hash = MixState(v1, v2, v3, v4);
+        uint hash = StateToHash(state1, state2, state3, state4);
         hash += 28;
 
-        hash = QueueRound(hash, hc5);
-        hash = QueueRound(hash, hc6);
-        hash = QueueRound(hash, hc7);
+        hash = HashAdd(hash, hc5);
+        hash = HashAdd(hash, hc6);
+        hash = HashAdd(hash, hc7);
 
-        hash = MixFinal(hash);
+        hash = HashFinalize(hash);
         return (int)hash;
     }
 
@@ -297,22 +288,22 @@ public ref struct Hasher
         var hc7 = (uint)(value7?.GetHashCode() ?? 0);
         var hc8 = (uint)(value8?.GetHashCode() ?? 0);
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
+        state1 = StateAdd(state1, hc1);
+        state2 = StateAdd(state2, hc2);
+        state3 = StateAdd(state3, hc3);
+        state4 = StateAdd(state4, hc4);
 
-        v1 = Round(v1, hc5);
-        v2 = Round(v2, hc6);
-        v3 = Round(v3, hc7);
-        v4 = Round(v4, hc8);
+        state1 = StateAdd(state1, hc5);
+        state2 = StateAdd(state2, hc6);
+        state3 = StateAdd(state3, hc7);
+        state4 = StateAdd(state4, hc8);
 
-        uint hash = MixState(v1, v2, v3, v4);
+        uint hash = StateToHash(state1, state2, state3, state4);
         hash += 32;
 
-        hash = MixFinal(hash);
+        hash = HashFinalize(hash);
         return (int)hash;
     }
 
@@ -320,7 +311,7 @@ public ref struct Hasher
     {
         switch (span.Length)
         {
-            case 0: return 0;
+            case 0: return _emptyHash;
             case 1: return GetHashCode(span[0]);
             case 2: return Combine(span[0], span[1]);
             case 3: return Combine(span[0], span[1], span[2]);
@@ -347,10 +338,10 @@ public ref struct Hasher
 
     public static int Combine<T>(params T[]? array)
     {
-        if (array is null) return 0;
+        if (array is null) return _nullHash;
         switch (array.Length)
         {
-            case 0: return 0;
+            case 0: return _emptyHash;
             case 1: return GetHashCode(array[0]);
             case 2: return Combine(array[0], array[1]);
             case 3: return Combine(array[0], array[1], array[2]);
@@ -370,7 +361,7 @@ public ref struct Hasher
 
     public static int Combine<T>(T[]? array, IEqualityComparer<T>? comparer)
     {
-        if (array is null) return 0;
+        if (array is null) return _nullHash;
         var hasher = new Hasher();
         hasher.AddMany<T>(array, comparer);
         return hasher.ToHashCode();
@@ -378,7 +369,7 @@ public ref struct Hasher
 
     public static int Combine<T>(IEnumerable<T>? enumerable)
     {
-        if (enumerable is null) return 0;
+        if (enumerable is null) return _nullHash;
         var hasher = new Hasher();
         foreach (T value in enumerable)
         {
@@ -389,7 +380,7 @@ public ref struct Hasher
 
     public static int Combine<T>(IEnumerable<T>? enumerable, IEqualityComparer<T>? comparer)
     {
-        if (enumerable is null) return 0;
+        if (enumerable is null) return _nullHash;
         var hasher = new Hasher();
         foreach (T value in enumerable)
         {
@@ -400,8 +391,15 @@ public ref struct Hasher
 
 
 
-    private uint _v1, _v2, _v3, _v4;
-    private uint _queue1, _queue2, _queue3;
+    private uint _state1;
+    private uint _state2;
+    private uint _state3;
+    private uint _state4;
+    
+    private uint _queue1;
+    private uint _queue2;
+    private uint _queue3;
+    
     private uint _length;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -420,12 +418,12 @@ public ref struct Hasher
         else // position == 3
         {
             if (previousLength == 3)
-                Initialize(out _v1, out _v2, out _v3, out _v4);
+                StartingStates(out _state1, out _state2, out _state3, out _state4);
 
-            _v1 = Round(_v1, _queue1);
-            _v2 = Round(_v2, _queue2);
-            _v3 = Round(_v3, _queue3);
-            _v4 = Round(_v4, val);
+            _state1 = StateAdd(_state1, _queue1);
+            _state2 = StateAdd(_state2, _queue2);
+            _state3 = StateAdd(_state3, _queue3);
+            _state4 = StateAdd(_state4, val);
         }
     }
 
@@ -527,44 +525,33 @@ public ref struct Hasher
 
     public int ToHashCode()
     {
-        // Storing the value of _length locally shaves of quite a few bytes
-        // in the resulting machine code.
         uint length = _length;
 
-        // position refers to the *next* queue position in this method, so
-        // position == 1 means that _queue1 is populated; _queue2 would have
-        // been populated on the next call to Add.
+        // position refers to the *next* queue position in this method, so position == 1 means that _queue1 is populated;
+        // _queue2 would have been populated on the next call to Add()
         uint position = length % 4;
 
-        // If the length is less than 4, _v1 to _v4 don't contain anything
-        // yet. xxHash32 treats this differently.
+        // If the length is less than 4, _state1 to _state4 don't contain anything yet
+        uint hash = length < 4 ? StartingHash() : StateToHash(_state1, _state2, _state3, _state4);
 
-        uint hash = length < 4 ? MixEmptyState() : MixState(_v1, _v2, _v3, _v4);
-
-        // _length is incremented once per Add(Int32) and is therefore 4
-        // times too small (xxHash length is in bytes, not ints).
-
+        // _length is incremented once per AddHash() and is therefore 4 times too small (xxHash length is in bytes, not ints).
         hash += length * 4;
 
         // Mix what remains in the queue
-
-        // Switch can't be inlined right now, so use as few branches as
-        // possible by manually excluding impossible scenarios (position > 1
-        // is always false if position is not > 0).
         if (position > 0)
         {
-            hash = QueueRound(hash, _queue1);
+            hash = HashAdd(hash, _queue1);
             if (position > 1)
             {
-                hash = QueueRound(hash, _queue2);
+                hash = HashAdd(hash, _queue2);
                 if (position > 2)
                 {
-                    hash = QueueRound(hash, _queue3);
+                    hash = HashAdd(hash, _queue3);
                 }
             }
         }
 
-        hash = MixFinal(hash);
+        hash = HashFinalize(hash);
         return (int)hash;
     }
 

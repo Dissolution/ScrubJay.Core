@@ -1,3 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿
 
-Console.WriteLine("Hello, World!");
+
+using static ScrubJay.Option;
+
+
+var option = Some("joe");
+var a = option == None;
+var b = None == option;

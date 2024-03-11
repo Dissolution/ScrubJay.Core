@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Core", "src\ScrubJay.Core.csproj", "{66B1B906-AE63-4950-8F6F-A5EE6727278E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Core.Tests", "tests\ScrubJay.Core.Tests.csproj", "{803A6D49-7772-43E9-99CF-2EE0DB4E0A21}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "tests\Tests.csproj", "{803A6D49-7772-43E9-99CF-2EE0DB4E0A21}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{1CBA5B58-D341-4868-8D0B-EA60E703A96E}"
 EndProject

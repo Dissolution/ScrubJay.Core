@@ -1,230 +1,239 @@
-﻿namespace ScrubJay.OLD;
+﻿using ScrubJay.Utilities;
+
+namespace ScrubJay;
 
 /// <summary>
-/// An <c>Option</c> represents either:<br/>
-/// <see cref="Some">Some(T value)</see><br/>
-/// or<br/>
-/// <see cref="None"/>
+/// 
 /// </summary>
-/// <typeparam name="T">
-/// The <see cref="Type"/> of value stored with <see cref="Some"/>
-/// </typeparam>
+/// <typeparam name="T"></typeparam>
 /// <remarks>
-/// <see cref="Option{T}"/> does not protect against <c>null</c> references, <c>Option&lt;string?&gt;.Some(null)</c> is perfectly valid
+/// Heavily based upon Rust's Option<br/>
 /// </remarks>
+/// <see href="https://doc.rust-lang.org/std/option/"/>
+/// <see href="https://doc.rust-lang.org/std/option/enum.Option.html"/>
 public readonly struct Option<T> :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Option<T>, Option<T>, bool>,
-    IEqualityOperators<Option<T>, T, bool>,
+    IEqualityOperators<Option<T>, T, bool>,         // + flipped input types
+    //IEqualityOperators<Option<T>, None, bool>,    // + flipped input types
+    //IEqualityOperators<Option<T>, object, bool>,  // + flipped input types
 #endif
     IEquatable<Option<T>>,
     IEquatable<T>,
+    //IEquatable<None>,
     IEnumerable<T>
 {
-    public static bool operator ==(Option<T> option, Option<T> otherOption) => option.Equals(otherOption);
-    public static bool operator !=(Option<T> option, Option<T> otherOption) => !option.Equals(otherOption);
-    public static bool operator ==(Option<T> option, T? value) => option.Equals(value);
-    public static bool operator !=(Option<T> option, T? value) => !option.Equals(value);
-    public static bool operator ==(T? value, Option<T> option) => option.Equals(value);
-    public static bool operator !=(T? value, Option<T> option) => !option.Equals(value);
-    public static bool operator ==(Option<T> option, object? obj) => option.Equals(obj);
-    public static bool operator !=(Option<T> option, object? obj) => !option.Equals(obj);
-    public static bool operator ==(object? obj, Option<T> option) => option.Equals(obj);
-    public static bool operator !=(object? obj, Option<T> option) => !option.Equals(obj);
+    public static implicit operator Option<T>(None _) => None;
+    public static explicit operator Option<T>(T value) => Some(value);
 
+    public static bool operator ==(Option<T> left, Option<T> right) => left.Equals(right);
+    public static bool operator !=(Option<T> left, Option<T> right) => !left.Equals(right);
+    public static bool operator ==(Option<T> left, T? right) => left.Equals(right);
+    public static bool operator !=(Option<T> left, T? right) => !left.Equals(right);
+    public static bool operator ==(Option<T> left, None right) => left.Equals(right);
+    public static bool operator !=(Option<T> left, None right) => !left.Equals(right);
+    public static bool operator ==(Option<T> left, object? right) => left.Equals(right);
+    public static bool operator !=(Option<T> left, object? right) => !left.Equals(right);
+    public static bool operator ==(T? right, Option<T> left) => left.Equals(right);
+    public static bool operator !=(T? right, Option<T> left) => !left.Equals(right);
+    public static bool operator ==(None right, Option<T> left) => left.Equals(right);
+    public static bool operator !=(None right, Option<T> left) => !left.Equals(right);
+    public static bool operator ==(object? right, Option<T> left) => left.Equals(right);
+    public static bool operator !=(object? right, Option<T> left) => !left.Equals(right);
     
-    /// <summary>
-    /// Gets <see cref="Option{T}"/>.<see cref="None"/>
-    /// </summary>
-    public static readonly Option<T> None = default;
+    public static readonly Option<T> None = default(Option<T>);
     
-    /// <summary>
-    /// Creates an <see cref="Option{T}"/>.<see cref="Some"/> containing the given <paramref name="value"/>
-    /// </summary>
-    public static Option<T> Some(T value) => new(true, value);
+    public static Option<T> Some(T value) => new Option<T>(value);
+    
+    private readonly bool _isSome;
+    private readonly T? _value;
 
-    /// <summary>
-    /// Creates an <see cref="Option{T}"/> that is<br/>
-    /// <see cref="Some"/> if <paramref name="value"/> is not <c>null</c> and <br/> 
-    /// <see cref="None"/> if it is
-    /// </summary>
-    public static Option<T> NotNull(T? value) => value is null ? None : Some(value);
-
-
-    private readonly bool _some;
-    private readonly T _value;
-
-    private Option(bool some, T value)
+    internal Option(T value)
     {
-        _some = some;
+        _isSome = true;
         _value = value;
     }
 
     /// <summary>
-    /// Is this <see cref="Option{T}"/> a <see cref="Some"/>?
+    /// Returns <c>true</c> if this <see cref="Option{T}"/> is a <see cref="None"/> value
     /// </summary>
-    /// <returns>
-    /// <c>true</c> if this is <see cref="Some"/>, <c>false</c> if this is <see cref="None"/>
-    /// </returns>
-    public bool IsSome() => _some;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsNone() => !_isSome;
 
     /// <summary>
-    /// Is this <see cref="Option{T}"/> a <see cref="Some"/>, and if so, get the <typeparamref name="T"/> <paramref name="value"/>
+    /// Returns <c>true</c> if this <see cref="Option{T}"/> is a <see cref="Some"/> value
     /// </summary>
-    /// <param name="value">
-    /// If this is <see cref="Some"/>, the <typeparamref name="T"/> value, otherwise <c>default(T)</c>
-    /// </param>
-    /// <returns>
-    /// <c>true</c> if this is <see cref="Some"/>, <c>false</c> if this is <see cref="None"/>
-    /// </returns>
-    public bool IsSome([MaybeNullWhen(false)] out T value)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsSome() => _isSome;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsSome(out T some)
     {
-        value = _value;
-        return _some;
+        some = _value!;
+        return _isSome;
     }
 
-    /// <summary>
-    /// Is this <see cref="Option{T}"/> a <see cref="None"/>?
-    /// </summary>
-    /// <returns>
-    /// <c>true</c> if this is <see cref="None"/>, <c>false</c> if this is <see cref="Some"/>
-    /// </returns>
-    public bool IsNone() => !_some;
-
-    /// <summary>
-    /// Perform an action depending on if this <see cref="Option{T}"/> is:<br/>
-    /// <see cref="Some"/> =&gt; <paramref name="some"/><br/>
-    /// <see cref="None"/> =&gt; <paramref name="none"/>
-    /// </summary>
-    /// <param name="some">
-    /// The <see cref="Action{T}"/> to invoke if this is <see cref="Some"/>, passing the <typeparamref name="T"/> value
-    /// </param>
-    /// <param name="none">
-    /// The <see cref="Action"/> to invoke if this is <see cref="None"/>
-    /// </param>
-    public void Match(Action<T> some, Action none)
+    public T Expect(string? errorMessage = null)
     {
-        if (_some)
+        if (_isSome)
+            return _value!;
+        throw new InvalidOperationException(errorMessage ?? $"Expected Option.Some<{typeof(T).Name}>, found Option.None");
+    }
+
+    public T Unwrap()
+    {
+        if (_isSome)
+            return _value!;
+        throw new InvalidOperationException($"Expected Option.Some<{typeof(T).Name}>, found Option.None");
+    }
+
+    public T UnwrapOr(T valueIfNone)
+    {
+        if (_isSome)
+            return _value!;
+        return valueIfNone!;
+    }
+
+    public T UnwrapOrElse(Func<T> createValueIfNone)
+    {
+        if (_isSome)
+            return _value!;
+        return createValueIfNone();
+    }
+
+    [return: MaybeNull]
+    public T UnwrapOrDefault()
+    {
+        if (_isSome)
+            return _value!;
+        return default(T);
+    }
+
+    public void Match(Action<T> ifSome, Action<None> ifNone)
+    {
+        if (_isSome)
         {
-            some(_value);
+            ifSome.Invoke(_value!);
         }
         else
         {
-            none();
+            ifNone.Invoke(default(None));
         }
     }
-
-    /// <summary>
-    /// Perform an action depending on if this <see cref="Option{T}"/> is:<br/>
-    /// <see cref="Some"/> =&gt; <paramref name="some"/><br/>
-    /// <see cref="None"/> =&gt; <paramref name="none"/>
-    /// </summary>
-    /// <param name="some">
-    /// The <see cref="Action{T}"/> to invoke if this is <see cref="Some"/>, passing the <typeparamref name="T"/> value
-    /// </param>
-    /// <param name="none">
-    /// The <see cref="Action">Action&lt;Nothing&gt;</see> to invoke if this is <see cref="None"/>
-    /// </param>
-    public void Match(Action<T> some, Action<Nothing> none)
+    public TReturn Match<TReturn>(Func<T, TReturn> ifSome, Func<None, TReturn> ifNone)
     {
-        if (_some)
+        if (_isSome)
         {
-            some(_value);
+            return ifSome.Invoke(_value!);
         }
         else
         {
-            none(default);
+            return ifNone.Invoke(default(None));
         }
     }
 
-    /// <summary>
-    /// Perform a <see cref="Func{TResult}"/> depending on if this <see cref="Option{T}"/> is:<br/>
-    /// <see cref="Some"/> =&gt; <paramref name="some"/><br/>
-    /// <see cref="None"/> =&gt; <paramref name="none"/>
-    /// </summary>
-    /// <param name="some">
-    /// The <see cref="Func{T,TResult}"/> to invoke if this is <see cref="Some"/>, passing the <typeparamref name="T"/> value
-    /// </param>
-    /// <param name="none">
-    /// The <see cref="Func{TResult}"/> to invoke if this is <see cref="None"/>
-    /// </param>
-    public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
+    public Option<U> Map<U>(Func<T, U> convertSome)
     {
-        if (_some)
+        if (_isSome)
         {
-            return some(_value);
+            return Option<U>.Some(convertSome(_value!));
         }
-        else
-        {
-            return none();
-        }
+        return Option<U>.None;
     }
 
-    /// <summary>
-    /// Perform a <see cref="Func{TResult}"/> depending on if this <see cref="Option{T}"/> is:<br/>
-    /// <see cref="Some"/> =&gt; <paramref name="some"/><br/>
-    /// <see cref="None"/> =&gt; <paramref name="none"/>
-    /// </summary>
-    /// <param name="some">
-    /// The <see cref="Func{T, TResult}"/> to invoke if this is <see cref="Some"/>, passing the <typeparamref name="T"/> value
-    /// </param>
-    /// <param name="none">
-    /// The <see cref="Func{T, TResult}">Func&lt;Nothing,TResult&gt;</see> to invoke if this is <see cref="None"/>
-    /// </param>
-    public TReturn Match<TReturn>(Func<T, TReturn> some, Func<Nothing, TReturn> none)
+    public Option<T> Inspect(Action<T> ifSome)
     {
-        if (_some)
+        if (_isSome)
         {
-            return some(_value);
+            ifSome.Invoke(_value!);
         }
-        else
-        {
-            return none(default);
-        }
+        return this;
     }
-    
+
+    public U MapOr<U>(U valueIfNone, Func<T, U> convertSome)
+    {
+        if (_isSome)
+        {
+            return convertSome(_value!);
+        }
+        return valueIfNone;
+    }
+
+    public U MapOrElse<U>(Func<U> createValueIfNone, Func<T, U> convertSome)
+    {
+        if (_isSome)
+        {
+            return convertSome(_value!);
+        }
+        return createValueIfNone();
+    }
+
+    public Option<T> Filter(Func<T, bool> someValuePredicate)
+    {
+        if (_isSome && someValuePredicate(_value!))
+            return Some(_value!);
+        return None;
+    }
+
+/*
+    public Result<T> OkOr(Exception error)
+    {
+        if (_isSome)
+        {
+            return Result<T>.Ok(_someValue!);
+        }
+        return Result<T>.Error(error);
+    }
+
+    public Result<T> OkOrElse(Func<Exception> createError)
+    {
+        if (_isSome)
+        {
+            return Result<T>.Ok(_someValue!);
+        }
+        return Result<T>.Error(createError());
+    }
+*/
+
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     public IEnumerator<T> GetEnumerator()
     {
-        if (_some)
+        if (IsSome(out var some))
         {
-            yield return _value;
+            yield return some!;
         }
     }
 
     public bool Equals(Option<T> option)
     {
-        if (_some)
+        if (IsSome(out var some))
         {
-            return option.IsSome(out var value) && 
-                EqualityComparer<T>.Default.Equals(_value, value);
+            if (option.IsSome(out var optSome))
+            {
+                return EqualityComparer<T>.Default.Equals(some!, optSome!);
+            }
+            return false;
         }
-        return !option._some;
+        return option.IsNone();
     }
-
-    public bool Equals(T? value)
+    public bool Equals(T? value) => IsSome(out var some) && EqualityComparer<T>.Default.Equals(some!, value!);
+    public bool Equals(None _) => IsNone();
+    public override bool Equals(object? obj) => obj switch
     {
-        return _some && EqualityComparer<T>.Default.Equals(_value!, value!);
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj switch
-        {
-            Option<T> option => Equals(option),
-            T value => Equals(value),
-            null => _some && _value is null,
-            _ => false,
-        };
-    }
-
+        Option<T> option => Equals(option),
+        T value => Equals(value),
+        None none => Equals(none),
+        _ => false,
+    };
     public override int GetHashCode()
     {
-        return _some ? Hasher.GetHashCode(_value) : 0;
+        return _isSome ? Hasher.GetHashCode<T>(_value) : 0;
     }
-
     public override string ToString()
     {
-        return _some ? $"Some({_value})" : "None";
+        if (_isSome)
+            return $"Option<{typeof(T).Name}>.Some({_value})";
+        else
+            return $"Option<{typeof(T).Name}>.None";
     }
 }
