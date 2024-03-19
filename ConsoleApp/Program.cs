@@ -1,9 +1,22 @@
-﻿
+﻿using static ScrubJay.Option;
+using static ScrubJay.Scratch.Result;
+using ScrubJay.Scratch;
 
 
-using static ScrubJay.Option;
+
+Result<int, byte> result = Ok(147);
+Result<byte, Exception> nope = Error(new Exception());
 
 
-var option = Some("joe");
-var a = option == None;
-var b = None == option;
+
+
+
+internal static class Things
+{
+    public static Result<int, Exception> TryParse(string? str)
+    {
+        //return 4;
+        //return new InvalidOperationException();
+        return null!;
+    }
+}

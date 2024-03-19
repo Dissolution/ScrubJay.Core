@@ -27,11 +27,13 @@ public static class TypeExtensions
     }
 
     /// <summary>
-    /// Does this <see cref="Type"/> implement the <paramref name="checkType"/>?
+    /// Does <c>this</c> <paramref name="type"/> implement <typeparamref name="T"/>?
     /// </summary>
-    /// <param name="type"></param>
-    /// <param name="checkType"></param>
-    /// <returns></returns>
+    /// <param name="type">The <see cref="Type"/> to examine</param>
+    /// <param name="checkType">The <see cref="Type"/> that this <paramref name="type"/> must implement</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> implements <typeparamref name="T"/>; otherwise, <c>false</c>
+    /// </returns>
     public static bool Implements(this Type? type, Type? checkType)
     {
         if (checkType is null) return type is null;
@@ -39,11 +41,11 @@ public static class TypeExtensions
 
         // Shortcut a bunch of checks
         if (checkType.IsAssignableFrom(type)) return true;
-
+        
         if (checkType.IsGenericTypeDefinition)
         {
             // Check direct (List<T> : List<>)
-            if (type.GetGenericTypeDefinition() == checkType)
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == checkType)
                 return true;
 
             // Check my base types
@@ -64,6 +66,14 @@ public static class TypeExtensions
         return false;
     }
 
+    /// <summary>
+    /// Does <c>this</c> <paramref name="type"/> implement <typeparamref name="T"/>?
+    /// </summary>
+    /// <param name="type">The <see cref="Type"/> to examine</param>
+    /// <typeparam name="T">The generic <see cref="Type"/> that this <paramref name="type"/> must implement</typeparam>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> implements <typeparamref name="T"/>; otherwise, <c>false</c>
+    /// </returns>
     public static bool Implements<T>(this Type? type) => Implements(type, typeof(T));
     
     /// <summary>

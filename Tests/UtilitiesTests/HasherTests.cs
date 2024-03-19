@@ -6,9 +6,6 @@ namespace ScrubJay.Tests.UtilitiesTests;
 
 public class HasherTests
 {
-    /// <summary>
-    /// Gets the data for any Theory test
-    /// </summary>
     public static IEnumerable<object?[]> TypedData(int argCount)
     {
         return TheoryHelper.ShuffledCombinations(argCount, TheoryHelper.Data.Objects);
@@ -138,6 +135,19 @@ public class HasherTests
         Assert.Equal(alpha, beta);
     }
 
+    [Theory]
+    [MemberData(nameof(TypedData), 3)]
+    public void CombineIsTheSameAsAdd<T1, T2, T3>(T1? value1, T2? value2, T3? value3)
+    {
+        var alpha = Hasher.Combine(value1, value2, value3);
+        var hasher = new Hasher();
+        hasher.Add<T1>(value1);
+        hasher.Add<T2>(value2);
+        hasher.Add<T3>(value3);
+        var beta = hasher.ToHashCode();
+        Assert.Equal(alpha, beta);
+    }
+    
     [Theory]
     [MemberData(nameof(ArrayData))]
     public void HashOrderMatters(object?[]? array)

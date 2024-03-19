@@ -49,8 +49,10 @@
         <Using Include="System.Runtime.CompilerServices"/>
         <Using Include="System.Runtime.InteropServices"/>
         <Using Include="System.Collections"/>
-        <!-- Support for Option -->
+
         <Using Include="ScrubJay.Option" Static="true"/>
+        <Using Include="ScrubJay.Extensions"/>
+        <Using Include="ScrubJay.Annotations"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">

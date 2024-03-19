@@ -68,6 +68,33 @@ internal static class TheoryHelper
             // complex class
             AppDomain.CurrentDomain,
         };
+        
+        public static TheoryData<Type> AllKnownTypes { get; }
+
+        static Data()
+        {
+            HashSet<Type> allTypes = new();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (var a = 0; a < assemblies.Length; a++)
+            {
+                Assembly assembly;
+                Type[] assemblyTypes;
+                try
+                {
+                    assembly = assemblies[a];
+                    assemblyTypes = assembly.GetTypes();        // All types, not just Public
+                    for (var t = 0; t < assemblyTypes.Length; t++)
+                    {
+                        allTypes.Add(assemblyTypes[t]);
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore any exceptions, Assemblies can be tricky
+                }
+            }
+            AllKnownTypes = new TheoryData<Type>(allTypes);
+        }
     }
 
     internal static void Shuffle<T>(Span<T> items)
