@@ -1,4 +1,5 @@
-namespace ScrubJay.Annotations;
+// ReSharper disable once CheckNamespace
+namespace JetBrains.Annotations;
 
 /// <summary>
 /// Indicates that method or class instance acquires resource ownership and will dispose it after use.

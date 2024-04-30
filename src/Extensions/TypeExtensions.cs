@@ -27,12 +27,12 @@ public static class TypeExtensions
     }
 
     /// <summary>
-    /// Does <c>this</c> <paramref name="type"/> implement <typeparamref name="T"/>?
+    /// Does <c>this</c> <paramref name="type"/> implement the <paramref name="checkType"/>?
     /// </summary>
     /// <param name="type">The <see cref="Type"/> to examine</param>
     /// <param name="checkType">The <see cref="Type"/> that this <paramref name="type"/> must implement</param>
     /// <returns>
-    /// <c>true</c> if <paramref name="type"/> implements <typeparamref name="T"/>; otherwise, <c>false</c>
+    /// <c>true</c> if <paramref name="type"/> implements <paramref name="checkType"/>; otherwise, <c>false</c>
     /// </returns>
     public static bool Implements(this Type? type, Type? checkType)
     {

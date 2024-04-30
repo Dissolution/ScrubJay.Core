@@ -2,7 +2,6 @@
 
 using System.Collections;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using ScrubJay.Extensions;
 using TypeExtensions = ScrubJay.Extensions.TypeExtensions;
 
@@ -33,6 +32,7 @@ public class TypeExtensionsTests
         typeof(NestedTestList<DateTime>),
         typeof(AttributeTargets),
         typeof((int Id, string Name)),
+        // ReSharper disable once StringLiteralTypo
         (new { Id = 3, Name = "TJ"}).GetType(),
     };
 
@@ -44,6 +44,7 @@ public class TypeExtensionsTests
     public void GetBaseTypes_Works(Type? type)
     {
         var baseTypesList = TypeExtensions.GetBaseTypes(type).ToList();
+        Assert.NotNull(baseTypesList);
     }
     
     

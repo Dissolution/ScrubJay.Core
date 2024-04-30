@@ -52,7 +52,7 @@
 
         <Using Include="ScrubJay.Option" Static="true"/>
         <Using Include="ScrubJay.Extensions"/>
-        <Using Include="ScrubJay.Annotations"/>
+        <Using Include="JetBrains.Annotations"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">
@@ -73,8 +73,14 @@
         </PackageReference>
     </ItemGroup>
     
-    <!-- PolySharp ~ Support for newer language versions in older versions -->
     <ItemGroup>
+      <PackageReference Include="Fody" Version="6.8.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="InlineIL.Fody" Version="1.8.0" >
+          <PrivateAssets>all</PrivateAssets>
+      </PackageReference>
       <PackageReference Include="PolySharp" Version="1.14.1">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

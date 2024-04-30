@@ -1,71 +1,156 @@
-﻿using ScrubJay.Utilities;
+using ScrubJay.Utilities;
 
-namespace ScrubJay.Scratch;
+namespace ScrubJay;
+
+// Generic Ok helper struct
+public readonly struct Ok :
+#if NET7_0_OR_GREATER
+    IEqualityOperators<Ok, Ok, bool>,
+    IBitwiseOperators<Ok, Ok, bool>,
+#endif
+    IEquatable<Ok>,
+    IEquatable<bool>
+{
+    public static bool operator true(Ok _) => true;
+    public static bool operator false(Ok _) => false;
+
+    public static bool operator &(Ok left, Ok right) => true;
+    public static bool operator |(Ok left, Ok right) => true;
+    public static bool operator ^(Ok left, Ok right) => false;
+    [Obsolete("Cannot apply operator '~' to operand of type 'Ok'", true)]
+    public static bool operator ~(Ok _) => throw new NotSupportedException();
+
+    public static bool operator ==(Ok left, Ok right) => true;
+    public static bool operator !=(Ok left, Ok right) => false;
+
+    public bool Equals(Ok _) => true;
+    public bool Equals(bool ok) => ok;
+    public override bool Equals(object? obj) => obj switch
+    {
+        Ok => true,
+        bool ok => ok,
+        _ => false,
+    };
+    public override int GetHashCode() => 1;
+    public override string ToString() => nameof(Ok);
+}
+
+// Generic Error (non-Exception) helper struct
+public readonly struct Error :
+#if NET7_0_OR_GREATER
+    IEqualityOperators<Error, Error, bool>,
+    IBitwiseOperators<Error, Error, bool>,
+#endif
+    IEquatable<Error>,
+    IEquatable<bool>
+{
+    public static bool operator true(Error _) => false;
+    public static bool operator false(Error _) => true;
+
+    public static bool operator &(Error left, Error right) => false;
+    public static bool operator |(Error left, Error right) => false;
+    public static bool operator ^(Error left, Error right) => false;
+    [Obsolete("Cannot apply operator '~' to operand of type 'Error'", true)]
+    public static bool operator ~(Error _) => throw new NotSupportedException();
+
+    public static bool operator ==(Error left, Error right) => true;
+    public static bool operator !=(Error left, Error right) => false;
+
+    private readonly string? _message;
+
+    public Error(string? message)
+    {
+        _message = message;
+    }
+    
+    public bool Equals(Error _) => true;
+    public bool Equals(bool ok) => ok == false;
+    public override bool Equals(object? obj) => obj switch
+    {
+        Error => true,
+        bool ok => ok == false,
+        _ => false,
+    };
+    public override int GetHashCode() => 0;
+    public override string ToString() => _message is null ? nameof(Error) : $"{nameof(Error)}({_message})";
+}
+
+/* Some of the Interfaces are commented out to prevent compiler errors */
 
 public readonly struct Result<TOk, TError> :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Result<TOk, TError>, Result<TOk, TError>, bool>,
-    IEqualityOperators<Result<TOk, TError>, Ok<TOk>, bool>,
-    IEqualityOperators<Result<TOk, TError>, Error<TError>, bool>,
+    //IEqualityOperators<Result<TOk, TError>, TOk, bool>,
+    //IEqualityOperators<Result<TOk, TError>, TError, bool>,
     IEqualityOperators<Result<TOk, TError>, bool, bool>,
+    IBitwiseOperators<Result<TOk, TError>, Result<TOk, TError>, bool>,
+    IBitwiseOperators<Result<TOk, TError>, bool, bool>,
 #endif
     IEquatable<Result<TOk, TError>>,
-    IEquatable<Ok<TOk>>,
-    IEquatable<Error<TError>>,
+    //IEquatable<TOk>,
+    //IEquatable<TError>,
     IEquatable<bool>,
     IEnumerable<TOk>,
     IFormattable
 {
-    public static implicit operator Result<TOk, TError>(TOk okValue) => new(okValue);
-    public static implicit operator Result<TOk, TError>(Ok<TOk> ok) => new(ok.Value);
-    public static implicit operator Result<TOk, TError>(TError errorValue) => new(errorValue);
-    public static implicit operator Result<TOk, TError>(Error<TError> error) => new(error._value);
+    public static implicit operator Result<TOk, TError>(TOk okValue) => Ok(okValue);
+    public static implicit operator Result<TOk, TError>(TError errorValue) => Error(errorValue);
 
     public static bool operator true(Result<TOk, TError> result) => result._isOk;
     public static bool operator false(Result<TOk, TError> result) => !result._isOk;
+
     public static bool operator !(Result<TOk, TError> result) => !result._isOk;
-    
+    [Obsolete("Do not use the ~ operator with Result<TOk, TError>", true)]
+    public static bool operator ~(Result<TOk, TError> value) => throw new NotSupportedException();
+
+    public static bool operator &(Result<TOk, TError> left, Result<TOk, TError> right) => left._isOk && right._isOk;
+    public static bool operator &(Result<TOk, TError> result, bool isOk) => result._isOk && isOk;
+    public static bool operator &(bool isOk, Result<TOk, TError> result) => result._isOk && isOk;
+
+    public static bool operator |(Result<TOk, TError> left, Result<TOk, TError> right) => left._isOk || right._isOk;
+    public static bool operator |(Result<TOk, TError> result, bool isOk) => result._isOk || isOk;
+    public static bool operator |(bool isOk, Result<TOk, TError> result) => result._isOk || isOk;
+
+    public static bool operator ^(Result<TOk, TError> left, Result<TOk, TError> right) => left._isOk ^ right._isOk;
+    public static bool operator ^(Result<TOk, TError> result, bool isOk) => result._isOk ^ isOk;
+    public static bool operator ^(bool isOk, Result<TOk, TError> result) => result._isOk ^ isOk;
+
     public static bool operator ==(Result<TOk, TError> left, Result<TOk, TError> right) => left.Equals(right);
-    public static bool operator ==(Result<TOk, TError> result, Ok<TOk> ok) => result.Equals(ok);
-    public static bool operator ==(Result<TOk, TError> result, Error<TError> error) => result.Equals(error);
+    public static bool operator ==(Result<TOk, TError> result, TOk? ok) => result.Equals(ok);
+    public static bool operator ==(Result<TOk, TError> result, TError? error) => result.Equals(error);
     public static bool operator ==(Result<TOk, TError> result, bool isOk) => result.Equals(isOk);
-    public static bool operator ==(Ok<TOk> ok, Result<TOk, TError> result) => result.Equals(ok);
-    public static bool operator ==(Error<TError> error, Result<TOk, TError> result) => result.Equals(error);
+    public static bool operator ==(TOk? ok, Result<TOk, TError> result) => result.Equals(ok);
+    public static bool operator ==(TError? error, Result<TOk, TError> result) => result.Equals(error);
     public static bool operator ==(bool isOk, Result<TOk, TError> result) => result.Equals(isOk);
-    
+
     public static bool operator !=(Result<TOk, TError> left, Result<TOk, TError> right) => !left.Equals(right);
     public static bool operator !=(Result<TOk, TError> result, bool isOk) => !result.Equals(isOk);
-    public static bool operator !=(Result<TOk, TError> result, Ok<TOk> ok) => !result.Equals(ok);
-    public static bool operator !=(Result<TOk, TError> result, Error<TError> error) => !result.Equals(error);
-    public static bool operator !=(Ok<TOk> ok, Result<TOk, TError> result) => !result.Equals(ok);
-    public static bool operator !=(Error<TError> error, Result<TOk, TError> result) => !result.Equals(error);
+    public static bool operator !=(Result<TOk, TError> result, TOk? ok) => !result.Equals(ok);
+    public static bool operator !=(Result<TOk, TError> result, TError? error) => !result.Equals(error);
+    public static bool operator !=(TOk? ok, Result<TOk, TError> result) => !result.Equals(ok);
+    public static bool operator !=(TError? error, Result<TOk, TError> result) => !result.Equals(error);
     public static bool operator !=(bool isOk, Result<TOk, TError> result) => !result.Equals(isOk);
 
     /// <summary>
     /// Returns an Ok Result containing the given <paramref name="okValue"/>
     /// </summary>
-    public static Result<TOk, TError> Ok(TOk okValue) => new(okValue);
-    
+    public static Result<TOk, TError> Ok(TOk okValue) => new(true, okValue, default(TError));
+
     /// <summary>
     /// Returns an Error Result containing the given <paramref name="errorValue"/>
     /// </summary>
-    public static Result<TOk, TError> Error(TError errorValue) => new(errorValue);
+    public static Result<TOk, TError> Error(TError errorValue) => new(false, default(TOk), errorValue);
+
 
     private readonly bool _isOk;
-    private readonly TOk? _okValue;
-    private readonly TError? _errorValue;
+    private readonly TOk? _ok;
+    private readonly TError? _error;
 
-    private Result(TOk ok)
+    private Result(bool isOk, TOk? ok, TError? error)
     {
-        _isOk = true;
-        _okValue = ok;
-        _errorValue = default;
-    }
-    private Result(TError error)
-    {
-        _isOk = false;
-        _okValue = default;
-        _errorValue = error;
+        _isOk = isOk;
+        _ok = ok;
+        _error = error;
     }
 
     /// <summary>
@@ -90,7 +175,7 @@ public readonly struct Result<TOk, TError> :
     {
         if (_isOk)
         {
-            okValue = _okValue!;
+            okValue = _ok!;
             return true;
         }
         okValue = default;
@@ -105,35 +190,35 @@ public readonly struct Result<TOk, TError> :
     {
         if (!_isOk)
         {
-            error = _errorValue!;
+            error = _error!;
             return true;
         }
         error = default;
         return false;
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsOkAndError(
-        [MaybeNullWhen(false)] out TOk ok, 
+        [MaybeNullWhen(false)] out TOk ok,
         [MaybeNullWhen(true)] out TError error)
     {
-        ok = _okValue;
-        error = _errorValue;
+        ok = _ok;
+        error = _error;
         return _isOk;
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsErrorAndOk(
-        [MaybeNullWhen(false)] out TError error, 
+        [MaybeNullWhen(false)] out TError error,
         [MaybeNullWhen(true)] out TOk ok)
     {
-        ok = _okValue;
-        error = _errorValue;
+        ok = _ok;
+        error = _error;
         return !_isOk;
     }
-    
+
     /// <summary>
-    /// Performs a matching operation on this <see cref="Result{TOk, TError}"/>
+    /// Performs a matching operation on this <see cref="Result{TOk,TError}"/>
     /// </summary>
     /// <param name="onOk">
     /// Invoked on the <typeparamref name="TOk"/> value if this is a Result.Ok&lt;TOk&gt;
@@ -146,16 +231,16 @@ public readonly struct Result<TOk, TError> :
     {
         if (_isOk)
         {
-            onOk(_okValue!);
+            onOk(_ok!);
         }
         else
         {
-            onError(_errorValue!);
+            onError(_error!);
         }
     }
-    
+
     /// <summary>
-    /// Performs a matching operation on this <see cref="Result{TOk, TError}"/> and returns a result
+    /// Performs a matching operation on this <see cref="Result{TOk,TError}"/> and returns a result
     /// </summary>
     /// <param name="onOk">
     /// Invoked on the <typeparamref name="TOk"/> value if this is a Result.Ok&lt;TOk&gt;
@@ -171,14 +256,14 @@ public readonly struct Result<TOk, TError> :
     {
         if (_isOk)
         {
-            return onOk(_okValue!);
+            return onOk(_ok!);
         }
         else
         {
-            return onError(_errorValue!);
+            return onError(_error!);
         }
     }
-    
+
     /// <summary>
     /// Converts this <see cref="Result{TOk,TError}"/> to an <see cref="Option{T}"/>
     /// </summary>
@@ -191,21 +276,21 @@ public readonly struct Result<TOk, TError> :
     {
         if (_isOk)
         {
-            return Option<TOk>.Some(_okValue!);
+            return Option<TOk>.Some(_ok!);
         }
         else
         {
             return Option<TOk>.None;
         }
     }
-    
+
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public IEnumerator<TOk> GetEnumerator()
     {
         if (_isOk)
         {
-            yield return _okValue!;
+            yield return _ok!;
         }
     }
 
@@ -214,34 +299,35 @@ public readonly struct Result<TOk, TError> :
         if (_isOk)
         {
             return result._isOk &&
-                EqualityComparer<TOk>.Default.Equals(_okValue!, result._okValue!);
+                EqualityComparer<TOk>.Default.Equals(_ok!, result._ok!);
         }
         else
         {
             return !result._isOk &&
-                EqualityComparer<TError>.Default.Equals(_errorValue!, result._errorValue!);
+                EqualityComparer<TError>.Default.Equals(_error!, result._error!);
         }
     }
-    public bool Equals(Ok<TOk> ok) => _isOk && EqualityComparer<TOk>.Default.Equals(_okValue!, ok.Value!);
-    public bool Equals(Error<TError> error) => !_isOk && EqualityComparer<TError>.Default.Equals(_errorValue!, error._value!);
+    public bool Equals(TOk? ok) => _isOk && EqualityComparer<TOk>.Default.Equals(_ok!, ok!);
+    public bool Equals(TError? error) => !_isOk && EqualityComparer<TError>.Default.Equals(_error!, error!);
     public bool Equals(bool isOk) => _isOk == isOk;
     public override bool Equals(object? obj)
     {
         return obj switch
         {
             Result<TOk, TError> result => Equals(result),
-            Ok<TOk> ok => Equals(ok),
-            Error<TError> error => Equals(error),
+            TOk ok => Equals(ok),
+            TError error => Equals(error),
             bool isOk => Equals(isOk),
             _ => false,
         };
     }
 
-    public override int GetHashCode() => _isOk ? Hasher.GetHashCode<TOk>(_okValue) : Hasher.GetHashCode<TError>(_errorValue);
-    
-    public string ToString(string? format, IFormatProvider? provider = default)
-    {
-        return Match(okValue =>
+    public override int GetHashCode() => Match<int>(
+        static ok => Hasher.GetHashCode<TOk>(ok),
+        static error => Hasher.GetHashCode<TError>(error));
+
+    public string ToString(string? format, IFormatProvider? provider = default) => Match(
+        okValue =>
         {
             string? okString;
             // ReSharper disable once MergeCastWithTypeCheck
@@ -254,7 +340,8 @@ public readonly struct Result<TOk, TError> :
                 okString = okValue?.ToString();
             }
             return $"Result.Ok<{typeof(TOk).Name}>({okString})";
-        }, errorValue =>
+        },
+        errorValue =>
         {
             string? errorString;
             // ReSharper disable once MergeCastWithTypeCheck
@@ -268,139 +355,8 @@ public readonly struct Result<TOk, TError> :
             }
             return $"Result.Error<{typeof(TError).Name}>({errorString})";
         });
-    }
 
     public override string ToString() => Match(
         ok => $"Result.Ok<{typeof(TOk).Name}>({ok})",
         error => $"Result.Error<{typeof(TError).Name}>({error})");
-}
-
-
-public readonly struct Ok<T> :
-#if NET7_0_OR_GREATER
-    IEqualityOperators<Ok<T>, Ok<T>, bool>,
-    IEqualityOperators<Ok<T>, T, bool>,
-#endif
-    IEquatable<Ok<T>>,
-    IEquatable<T>,
-    IEnumerable<T>
-{
-    public static bool operator ==(Ok<T> left, Ok<T> right) => left.Equals(right);
-    public static bool operator !=(Ok<T> left, Ok<T> right) => !left.Equals(right);
-    public static bool operator ==(Ok<T> left, T? right) => left.Equals(right);
-    public static bool operator !=(Ok<T> left, T? right) => !left.Equals(right);
-    public static bool operator ==(T? right, Ok<T> left) => left.Equals(right);
-    public static bool operator !=(T? right, Ok<T> left) => !left.Equals(right);
-
-    public readonly T Value;
-
-    public Ok(T value)
-    {
-        this.Value = value;
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    public IEnumerator<T> GetEnumerator()
-    {
-        yield return Value;
-    }
-
-    public bool Equals(Ok<T> ok) => EqualityComparer<T>.Default.Equals(Value!, ok.Value!);
-
-    public bool Equals(T? value) => EqualityComparer<T>.Default.Equals(Value!, value!);
-
-    public override bool Equals(object? obj) => obj switch
-    {
-        Ok<T> ok => Equals(ok),
-        T value => Equals(value),
-        _ => false,
-    };
-
-    public override int GetHashCode() => Hasher.GetHashCode<T>(Value);
-
-    public override string ToString() => $"Ok<{typeof(T).Name}>({Value})";
-}
-
-public readonly struct Error<T> :
-#if NET7_0_OR_GREATER
-    IEqualityOperators<Error<T>, Error<T>, bool>,
-    IEqualityOperators<Error<T>, T, bool>,
-#endif
-    IEquatable<Error<T>>,
-    IEquatable<T>,
-    IEnumerable<T>
-{
-    public static bool operator ==(Error<T> left, Error<T> right) => left.Equals(right);
-    public static bool operator !=(Error<T> left, Error<T> right) => !left.Equals(right);
-    public static bool operator ==(Error<T> left, T? right) => left.Equals(right);
-    public static bool operator !=(Error<T> left, T? right) => !left.Equals(right);
-    public static bool operator ==(T? right, Error<T> left) => left.Equals(right);
-    public static bool operator !=(T? right, Error<T> left) => !left.Equals(right);
-
-    internal readonly T _value;
-
-    public Error(T value)
-    {
-        _value = value;
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    public IEnumerator<T> GetEnumerator()
-    {
-        yield return _value;
-    }
-
-    public bool Equals(Error<T> error) => EqualityComparer<T>.Default.Equals(_value!, error._value!);
-
-    public bool Equals(T? value) => EqualityComparer<T>.Default.Equals(_value!, value!);
-
-    public override bool Equals(object? obj) => obj switch
-    {
-        Error<T> ok => Equals(ok),
-        T value => Equals(value),
-        _ => false,
-    };
-
-    public override int GetHashCode() => Hasher.GetHashCode<T>(_value);
-
-    public override string ToString() => $"Error<{typeof(T).Name}>({_value})";
-}
-
-public static class Result
-{
-    public static Ok<TOk> Ok<TOk>(TOk value) => new Ok<TOk>(value);
-    public static Error<TError> Error<TError>(TError error) => new Error<TError>(error);
-
-//    public static Error<Exception> Error<TException>(TException ex)
-//        where TException : Exception
-//        => new Error<Exception>(ex);
-
-    public static Error<Exception> Errors(params Exception?[]? exceptions)
-    {
-        var aggEx = new AggregateException(exceptions.WhereNotNull());
-        return new Error<Exception>(aggEx);
-    }
-    
-    
-    
-    public static Result<T, ArgumentNullException> NotNull<T>(
-        [AllowNull] T value,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-        where T : notnull
-    {
-        if (value is not null)
-            return value;
-        return new ArgumentNullException(valueName);
-    }
-}
-
-public static class ResultExtensions
-{
-    public static void ThrowIfError<TOk, TError>(this Result<TOk, TError> result)
-        where TError : Exception
-    {
-        if (result.IsError(out var ex))
-            throw ex;
-    }
 }
