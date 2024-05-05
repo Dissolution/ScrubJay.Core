@@ -57,12 +57,19 @@ public static class EnumerableExtensions
         return enumerable.SelectMany(i => selectWhere(i));
     }
 
-//    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
-//        this IEnumerable<TIn> enumerable,
-//        Func<TIn, Result<TOut>> selectWhere)
-//    {
-//        return enumerable.SelectMany(i => selectWhere(i));
-//    }
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
+        this IEnumerable<TIn> enumerable,
+        Func<TIn, Result<TOut, Error>> selectWhere)
+    {
+        return enumerable.SelectMany(i => selectWhere(i));
+    }
+    
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
+        this IEnumerable<TIn> enumerable,
+        Func<TIn, Result<TOut, Exception>> selectWhere)
+    { 
+        return enumerable.SelectMany(i => selectWhere(i));
+    }
 
     public static T One<T>(this IEnumerable<T> enumerable)
     {

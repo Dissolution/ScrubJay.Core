@@ -19,10 +19,7 @@ public static class SpanExtensions
 #if !NET6_0_OR_GREATER
     public static bool SequenceEqual<T>(this Span<T> left, ReadOnlySpan<T> right)
         => SequenceEqual<T>((ReadOnlySpan<T>)left, right);
-
-    public static bool SequenceEqual<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer)
-        => SequenceEqual<T>((ReadOnlySpan<T>)left, right, itemComparer);
-
+    
     public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right)
     {
         int firstLen = left.Length;
@@ -35,6 +32,9 @@ public static class SpanExtensions
         return true;
     }
 
+    public static bool SequenceEqual<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer)
+        => SequenceEqual<T>((ReadOnlySpan<T>)left, right, itemComparer);
+    
     public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer)
     {
         int firstLen = left.Length;
@@ -304,7 +304,7 @@ public static class SpanExtensions
         if (index < 0 || index >= span.Length)
             return new ArgumentOutOfRangeException(indexName, index, $"{indexName} must be between 0 and {span.Length - 1}");
         span[index] = value;
-        return Option.None;
+        return GlobalHelper.None;
     }
 
 

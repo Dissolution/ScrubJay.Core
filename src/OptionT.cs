@@ -41,6 +41,9 @@ public readonly struct Option<T> :
     public static bool operator ==(object? right, Option<T> left) => left.Equals(right);
     public static bool operator !=(object? right, Option<T> left) => !left.Equals(right);
     
+    /// <summary>
+    /// Returns None, which represents the absence of a value
+    /// </summary>
     public static readonly Option<T> None = default(Option<T>);
     
     public static Option<T> Some(T value) => new Option<T>(value);

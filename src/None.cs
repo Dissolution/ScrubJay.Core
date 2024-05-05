@@ -4,7 +4,7 @@
 /// <see cref="Option{T}"/>.None
 /// </summary>
 /// <remarks>
-/// None exists to support <see cref="Option"/>'s ability to return a <see cref="M:Option{T}.None"/>
+/// None exists to support <see cref="GlobalHelper"/>'s ability to return a <see cref="M:Option{T}.None"/>
 /// without needing the generic type information 
 /// </remarks>
 [StructLayout(LayoutKind.Explicit, Size = 0)]

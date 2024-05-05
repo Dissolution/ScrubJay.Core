@@ -1,5 +1,3 @@
-using static ScrubJay.ImportResult;
-
 namespace ScrubJay.Collections;
 
 public sealed class BoundedIndices : IEnumerator<int[]>
