@@ -123,7 +123,7 @@ public readonly struct Result<TOk, TError> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsOkAndError(
+    public bool IsOkIncludeError(
         [MaybeNullWhen(false)] out TOk ok,
         [MaybeNullWhen(true)] out TError error)
     {

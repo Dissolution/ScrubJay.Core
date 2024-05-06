@@ -158,4 +158,9 @@ public static class TypeExtensions
         underlyingType = type;
         return false;
     }
+
+    public static IReadOnlyList<MemberInfo> AllMembers(this Type type)
+    {
+        return type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+    }
 }
