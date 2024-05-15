@@ -27,3 +27,11 @@ public static class StringBuilderPool
         return str;
     }
 }
+
+/// <summary>
+/// Extensions on <see cref="System.Text.StringBuilder"/>
+/// </summary>
+public static class StringBuilderExtensions
+{
+    
+}

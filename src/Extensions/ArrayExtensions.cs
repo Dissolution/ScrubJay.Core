@@ -2,6 +2,11 @@ namespace ScrubJay.Extensions;
 
 public static class ArrayExtensions
 {
+    public static TOutput[] ConvertAll<TInput, TOutput>([NotNull] this TInput[] array, [NotNull] Converter<TInput, TOutput> converter)
+    {
+        return Array.ConvertAll<TInput, TOutput>(array, converter);
+    }
+    
     public static Result<T, Exception> TryGet<T>(this T[]? array, 
         int index,
         [CallerArgumentExpression(nameof(array))]

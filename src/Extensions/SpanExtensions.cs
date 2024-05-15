@@ -304,7 +304,7 @@ public static class SpanExtensions
         if (index < 0 || index >= span.Length)
             return new ArgumentOutOfRangeException(indexName, index, $"{indexName} must be between 0 and {span.Length - 1}");
         span[index] = value;
-        return GlobalHelper.None;
+        return None();
     }
 
 

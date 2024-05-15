@@ -19,7 +19,7 @@ public static class GlobalHelper
     /// <summary>
     /// <see cref="Option{T}"/>.None/>
     /// </summary>
-    public static readonly None None = default(None);
+    public static None None() => default(None);
 
     /// <inheritdoc cref="Option{T}.Some"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
