@@ -310,7 +310,7 @@ public sealed class ObjectPool<T> : IDisposable
     /// </param>
     public void Borrow(Action<T> instanceAction)
     {
-        Throw.IfNull(instanceAction);
+        ThrowIf.Null(instanceAction);
         T instance = Rent();
         instanceAction.Invoke(instance);
         Return(instance);
@@ -327,7 +327,7 @@ public sealed class ObjectPool<T> : IDisposable
     /// </param>
     public TResult Borrow<TResult>(Func<T, TResult> instanceFunc)
     {
-        Throw.IfNull(instanceFunc);
+        ThrowIf.Null(instanceFunc);
         T instance = Rent();
         TResult result = instanceFunc.Invoke(instance);
         Return(instance);

@@ -22,11 +22,11 @@ public readonly struct Error :
     public static bool operator ==(Error left, Error right) => true;
     public static bool operator !=(Error left, Error right) => false;
 
-    private readonly string? _message;
+    public readonly string? Message;
 
     public Error(string? message)
     {
-        _message = message;
+        Message = message;
     }
     
     public bool Equals(Error _) => true;
@@ -38,5 +38,5 @@ public readonly struct Error :
         _ => false,
     };
     public override int GetHashCode() => 0;
-    public override string ToString() => _message is null ? nameof(Error) : $"{nameof(Error)}({_message})";
+    public override string ToString() => Message is null ? nameof(Error) : $"{nameof(Error)}({Message})";
 }

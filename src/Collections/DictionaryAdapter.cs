@@ -102,7 +102,7 @@ public sealed class DictionaryAdapter<TKey, TValue> : IDictionary<TKey, TValue>
 
     void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
-        Throw.IfNull(array);
+        ThrowIf.Null(array);
         if ((uint)arrayIndex + Count > array.Length)
             throw new ArgumentOutOfRangeException(nameof(arrayIndex));
 

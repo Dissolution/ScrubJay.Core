@@ -10,14 +10,22 @@ public static class StringBuilderPool
         clean: static sb => sb.Clear());
 
     public static StringBuilder Rent() => _pool.Rent();
+    
     public static IDisposable Borrow(out StringBuilder builder)
     {
         var instance = _pool.GetInstance();
         builder = instance.Instance;
         return instance;
     }
+
+    public static string ToStringAndReturn(this StringBuilder? builder)
+    {
+        var str = builder?.ToString();
+        _pool.Return(builder);
+        return str ?? "";
+    }
+    public static void Return(this StringBuilder? builder) => _pool.Return(builder);
     
-    public static void Return(StringBuilder? builder) => _pool.Return(builder);
     public static string Borrow(Action<StringBuilder> build)
     {
         var builder = _pool.Rent();
@@ -26,12 +34,4 @@ public static class StringBuilderPool
         _pool.Return(builder);
         return str;
     }
-}
-
-/// <summary>
-/// Extensions on <see cref="System.Text.StringBuilder"/>
-/// </summary>
-public static class StringBuilderExtensions
-{
-    
 }

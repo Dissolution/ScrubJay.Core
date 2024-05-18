@@ -108,6 +108,12 @@ public readonly struct Result<TOk, TError> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TOk OkOrFallback(TOk fallback)
+    {
+        return _isOk ? _ok! : fallback;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsError() => !_isOk;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -120,6 +126,12 @@ public readonly struct Result<TOk, TError> :
         }
         error = default;
         return false;
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TError ErrorOrFallback(TError fallback)
+    {
+        return _isOk ? fallback : _error!;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
