@@ -36,7 +36,7 @@ public static class TypeExtensions
     /// </returns>
     public static bool Implements(this Type? type, Type? checkType)
     {
-        if (checkType is null) return type is null;
+        if (checkType is null) return type.CanContainNull();
         if (type is null) return false;
 
         // Shortcut a bunch of checks
