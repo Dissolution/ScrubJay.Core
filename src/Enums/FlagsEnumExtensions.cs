@@ -237,10 +237,7 @@ public static class FlagsEnumExtensions
     public static bool HasAnyFlags<TEnum>(this TEnum @enum, TEnum flag1, TEnum flag2, TEnum flag3)
         where TEnum : struct, Enum
     {
-        return @enum.And(
-                flag1.Or(flag2)
-                    .Or(flag3))
-            .NotEqual(default);
+        return @enum.And(flag1.Or(flag2).Or(flag3)).NotEqual(default);
     }
 
     public static bool HasAnyFlags<TEnum>(this TEnum @enum, params TEnum[] flags)
