@@ -28,4 +28,14 @@ public static class GlobalHelper
     public static Ok Ok() => default;
     
     public static Error Error(string? message = null) => new Error(message);
+
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [return: NotNullIfNotNull(nameof(value))]
+    public static T? Capture<T>(T? value, [NotNullIfNotNull(nameof(value))] out T? captured)
+    {
+        captured = value;
+        return value;
+    }
 }

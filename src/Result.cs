@@ -9,7 +9,6 @@ public readonly struct Result<TOk, TError> :
     //IEqualityOperators<Result<TOk, TError>, TError, bool>,
     IEqualityOperators<Result<TOk, TError>, bool, bool>,
     IBitwiseOperators<Result<TOk, TError>, Result<TOk, TError>, bool>,
-    IBitwiseOperators<Result<TOk, TError>, bool, bool>,
 #endif
     IEquatable<Result<TOk, TError>>,
     //IEquatable<TOk>,
@@ -20,25 +19,16 @@ public readonly struct Result<TOk, TError> :
 {
     public static implicit operator Result<TOk, TError>(TOk okValue) => Ok(okValue);
     public static implicit operator Result<TOk, TError>(TError errorValue) => Error(errorValue);
-
+    public static implicit operator bool(Result<TOk, TError> result) => result._isOk;
     public static bool operator true(Result<TOk, TError> result) => result._isOk;
     public static bool operator false(Result<TOk, TError> result) => !result._isOk;
 
     public static bool operator !(Result<TOk, TError> result) => !result._isOk;
     [Obsolete("Do not use the ~ operator with Result<TOk, TError>", true)]
     public static bool operator ~(Result<TOk, TError> value) => throw new NotSupportedException();
-
     public static bool operator &(Result<TOk, TError> left, Result<TOk, TError> right) => left._isOk && right._isOk;
-    public static bool operator &(Result<TOk, TError> result, bool isOk) => result._isOk && isOk;
-    public static bool operator &(bool isOk, Result<TOk, TError> result) => result._isOk && isOk;
-
     public static bool operator |(Result<TOk, TError> left, Result<TOk, TError> right) => left._isOk || right._isOk;
-    public static bool operator |(Result<TOk, TError> result, bool isOk) => result._isOk || isOk;
-    public static bool operator |(bool isOk, Result<TOk, TError> result) => result._isOk || isOk;
-
     public static bool operator ^(Result<TOk, TError> left, Result<TOk, TError> right) => left._isOk ^ right._isOk;
-    public static bool operator ^(Result<TOk, TError> result, bool isOk) => result._isOk ^ isOk;
-    public static bool operator ^(bool isOk, Result<TOk, TError> result) => result._isOk ^ isOk;
 
     public static bool operator ==(Result<TOk, TError> left, Result<TOk, TError> right) => left.Equals(right);
     public static bool operator ==(Result<TOk, TError> result, TOk? ok) => result.Equals(ok);
