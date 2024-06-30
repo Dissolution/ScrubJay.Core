@@ -12,27 +12,28 @@
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         
         <RootNamespace>ScrubJay</RootNamespace>
         <AssemblyName>ScrubJay.Core</AssemblyName>
         
-        <!-- Setup NuGet -->
-        <IsPackable>true</IsPackable>
-        <EnablePackageValidation>true</EnablePackageValidation>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <!-- NuGet Package Information -->
-        <Title>ScrubJay Core Libraries</Title>
-        <Authors>Timothy Jay</Authors>
-        <Description>
-            The core shared library for all ScrubJay namespaces.
-        </Description>
-        <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Core</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageIcon>jay.png</PackageIcon>
-        <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.0.5-alpha</PackageVersion>
+<!--        &lt;!&ndash; Setup NuGet &ndash;&gt;-->
+<!--        <IsPackable>true</IsPackable>-->
+<!--        <EnablePackageValidation>true</EnablePackageValidation>-->
+<!--        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>-->
+<!--        &lt;!&ndash; NuGet Package Information &ndash;&gt;-->
+<!--        <Title>ScrubJay Core Libraries</Title>-->
+<!--        <Authors>Timothy Jay</Authors>-->
+<!--        <Description>-->
+<!--            The core shared library for all ScrubJay namespaces.-->
+<!--        </Description>-->
+<!--        <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Core</RepositoryUrl>-->
+<!--        <RepositoryType>git</RepositoryType>-->
+<!--        <PackageReadmeFile>README.md</PackageReadmeFile>-->
+<!--        <PackageLicenseExpression>MIT</PackageLicenseExpression>-->
+<!--        <PackageIcon>jay.png</PackageIcon>-->
+<!--        <PackageOutputPath>..\packages\</PackageOutputPath>-->
+<!--        <PackageVersion>0.0.5-alpha</PackageVersion>-->
     </PropertyGroup>
 
     <!-- NuGet -->

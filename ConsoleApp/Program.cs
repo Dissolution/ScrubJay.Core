@@ -5,17 +5,22 @@
 //using ScrubJay.Scratch.Gamma;
 
 
+using System.Diagnostics;
 using ScrubJay;
 
+var ex = new Exception();
+Debugger.Break();
 
 
-
-
-Result<int, byte> result_ib_a = 147;
-Result<int, byte> result_ib_b = (byte)147;
-Result<byte, Exception> nope = new Exception();
-Result<byte, Exception> nope2 = new InvalidOperationException();
-Result<byte, Exception> nope3 = new InvalidOperationException();
+//
+//
+//
+//
+// Result<int, byte> result_ib_a = 147;
+// Result<int, byte> result_ib_b = (byte)147;
+// Result<byte, Exception> nope = new Exception();
+// Result<byte, Exception> nope2 = new InvalidOperationException();
+// Result<byte, Exception> nope3 = new InvalidOperationException();
 
 
 
