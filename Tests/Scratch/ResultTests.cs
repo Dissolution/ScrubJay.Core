@@ -1,3 +1,6 @@
+// Disable warning about compare to self, testing == implementation
+#pragma warning disable CS1718
+
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 // ReSharper disable EqualExpressionComparison

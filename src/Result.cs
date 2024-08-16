@@ -5,56 +5,27 @@ namespace ScrubJay;
 public readonly struct Result<TOk, TError> :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Result<TOk, TError>, Result<TOk, TError>, bool>,
-    //IEqualityOperators<Result<TOk, TError>, TOk, bool>,
-    //IEqualityOperators<Result<TOk, TError>, TError, bool>,
-    IEqualityOperators<Result<TOk, TError>, bool, bool>,
-    IBitwiseOperators<Result<TOk, TError>, Result<TOk, TError>, bool>,
 #endif
     IEquatable<Result<TOk, TError>>,
-    //IEquatable<TOk>,
-    //IEquatable<TError>,
-    IEquatable<bool>,
     IEnumerable<TOk>,
     IFormattable
 {
     public static implicit operator Result<TOk, TError>(TOk okValue) => Ok(okValue);
     public static implicit operator Result<TOk, TError>(TError errorValue) => Error(errorValue);
     public static implicit operator bool(Result<TOk, TError> result) => result._isOk;
-    public static bool operator true(Result<TOk, TError> result) => result._isOk;
-    public static bool operator false(Result<TOk, TError> result) => !result._isOk;
-
-    public static bool operator !(Result<TOk, TError> result) => !result._isOk;
-    [Obsolete("Do not use the ~ operator with Result<TOk, TError>", true)]
-    public static bool operator ~(Result<TOk, TError> value) => throw new NotSupportedException();
-    public static bool operator &(Result<TOk, TError> left, Result<TOk, TError> right) => left._isOk && right._isOk;
-    public static bool operator |(Result<TOk, TError> left, Result<TOk, TError> right) => left._isOk || right._isOk;
-    public static bool operator ^(Result<TOk, TError> left, Result<TOk, TError> right) => left._isOk ^ right._isOk;
-
+   
     public static bool operator ==(Result<TOk, TError> left, Result<TOk, TError> right) => left.Equals(right);
-    public static bool operator ==(Result<TOk, TError> result, TOk? ok) => result.Equals(ok);
-    public static bool operator ==(Result<TOk, TError> result, TError? error) => result.Equals(error);
-    public static bool operator ==(Result<TOk, TError> result, bool isOk) => result.Equals(isOk);
-    public static bool operator ==(TOk? ok, Result<TOk, TError> result) => result.Equals(ok);
-    public static bool operator ==(TError? error, Result<TOk, TError> result) => result.Equals(error);
-    public static bool operator ==(bool isOk, Result<TOk, TError> result) => result.Equals(isOk);
-
     public static bool operator !=(Result<TOk, TError> left, Result<TOk, TError> right) => !left.Equals(right);
-    public static bool operator !=(Result<TOk, TError> result, bool isOk) => !result.Equals(isOk);
-    public static bool operator !=(Result<TOk, TError> result, TOk? ok) => !result.Equals(ok);
-    public static bool operator !=(Result<TOk, TError> result, TError? error) => !result.Equals(error);
-    public static bool operator !=(TOk? ok, Result<TOk, TError> result) => !result.Equals(ok);
-    public static bool operator !=(TError? error, Result<TOk, TError> result) => !result.Equals(error);
-    public static bool operator !=(bool isOk, Result<TOk, TError> result) => !result.Equals(isOk);
 
     /// <summary>
-    /// Returns an Ok Result containing the given <paramref name="okValue"/>
+    /// Returns an Ok Result containing the given <paramref name="value"/>
     /// </summary>
-    public static Result<TOk, TError> Ok(TOk okValue) => new(true, okValue, default(TError));
+    public static Result<TOk, TError> Ok(TOk value) => new(true, value, default(TError));
 
     /// <summary>
-    /// Returns an Error Result containing the given <paramref name="errorValue"/>
+    /// Returns an Error Result containing the given <paramref name="value"/>
     /// </summary>
-    public static Result<TOk, TError> Error(TError errorValue) => new(false, default(TOk), errorValue);
+    public static Result<TOk, TError> Error(TError value) => new(false, default(TOk), value);
 
 
     private readonly bool _isOk;
@@ -88,13 +59,8 @@ public readonly struct Result<TOk, TError> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsOk([MaybeNullWhen(false)] out TOk okValue)
     {
-        if (_isOk)
-        {
-            okValue = _ok!;
-            return true;
-        }
-        okValue = default;
-        return false;
+        okValue = _ok;
+        return _isOk;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -109,13 +75,8 @@ public readonly struct Result<TOk, TError> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsError([MaybeNullWhen(false)] out TError error)
     {
-        if (!_isOk)
-        {
-            error = _error!;
-            return true;
-        }
-        error = default;
-        return false;
+        error = _error;
+        return !_isOk;
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -135,7 +96,7 @@ public readonly struct Result<TOk, TError> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsErrorAndOk(
+    public bool IsErrorIncludeOk(
         [MaybeNullWhen(false)] out TError error,
         [MaybeNullWhen(true)] out TOk ok)
     {
@@ -284,6 +245,6 @@ public readonly struct Result<TOk, TError> :
         });
 
     public override string ToString() => Match(
-        ok => $"Result.Ok<{typeof(TOk).Name}>({ok})",
-        error => $"Result.Error<{typeof(TError).Name}>({error})");
+        ok => $"Ok<{ok?.GetType().Name}>({ok})",
+        error => $"Error<{error?.GetType().Name}>({error})");
 }

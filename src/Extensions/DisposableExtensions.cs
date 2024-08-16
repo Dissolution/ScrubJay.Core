@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace ScrubJay.Extensions;
 
 public static class DisposableExtensions

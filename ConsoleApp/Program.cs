@@ -4,12 +4,19 @@
 //using static ScrubJay.Scratch.Gamma.Result;
 //using ScrubJay.Scratch.Gamma;
 
-
 using System.Diagnostics;
 using ScrubJay;
 
-var ex = new Exception();
+
+
+
+
+
+
+
 Debugger.Break();
+return;
+
 
 
 //

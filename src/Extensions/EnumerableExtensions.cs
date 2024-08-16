@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace ScrubJay.Extensions;
 
 /// <summary>
@@ -57,20 +59,13 @@ public static class EnumerableExtensions
         return enumerable.SelectMany(i => selectWhere(i));
     }
 
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut, TError>(
         this IEnumerable<TIn> enumerable,
-        Func<TIn, Result<TOut, Error>> selectWhere)
+        Func<TIn, Result<TOut, TError>> selectWhere)
     {
         return enumerable.SelectMany(i => selectWhere(i));
     }
     
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
-        this IEnumerable<TIn> enumerable,
-        Func<TIn, Result<TOut, Exception>> selectWhere)
-    { 
-        return enumerable.SelectMany(i => selectWhere(i));
-    }
-
     public static T One<T>(this IEnumerable<T> enumerable)
     {
         using var e = enumerable.GetEnumerator();
@@ -201,11 +196,11 @@ public static class EnumerableExtensions
     }
 
 #if !NET6_0_OR_GREATER
-    public static bool TryGetNonEnumeratedCount<T>(this IEnumerable<T> enumerable, out int count)
+    public static bool TryGetNonEnumeratedCount<T>([NoEnumeration] this IEnumerable<T> enumerable, out int count)
     {
-        if (enumerable is ICollection<T> collection)
+        if (enumerable is ICollection<T> collectionT)
         {
-            count = collection.Count;
+            count = collectionT.Count;
             return true;
         }
 
@@ -215,6 +210,12 @@ public static class EnumerableExtensions
             return true;
         }
 
+        if (enumerable is ICollection collection)
+        {
+            count = collection.Count;
+            return true;
+        }
+        
         count = 0;
         return false;
     }

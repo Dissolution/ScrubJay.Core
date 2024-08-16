@@ -166,7 +166,7 @@ public sealed class BoundedIndices : IEnumerator<int[]>
         return false;
     }
 
-    public Result<int[], Error> TryMoveNext()
+    public Result<int[], Exception> TryMoveNext()
     {
         if (TryIncrement())
         {
@@ -174,7 +174,7 @@ public sealed class BoundedIndices : IEnumerator<int[]>
         }
         else
         {
-            return Error();
+            return new InvalidOperationException();
         }
     }
 

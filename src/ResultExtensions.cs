@@ -1,16 +1,16 @@
 namespace ScrubJay;
 
-public static class ResultExtensions
+public static class ExceptionResultExtensions
 {
-    public static void ThrowIfError<TOk, TError>(this Result<TOk, TError> result)
-        where TError : Exception
+    public static void ThrowIfError<TOk, TException>(this Result<TOk, TException> result)
+        where TException : Exception
     {
         if (result.IsError(out var ex))
             throw ex;
     }
     
-    public static TOk OkOrThrow<TOk, TError>(this Result<TOk, TError> result)
-        where TError : Exception
+    public static TOk OkOrThrow<TOk, TException>(this Result<TOk, TException> result)
+        where TException : Exception
     {
         if (result.IsOkIncludeError(out var ok, out var error))
             return ok;

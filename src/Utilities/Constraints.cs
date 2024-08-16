@@ -17,6 +17,9 @@ namespace ScrubJay.Utilities;
 /// </summary>
 public static class Constraints
 {
+    public readonly struct None<T>;
+    
+    
     /// <summary>
     /// Constrains <typeparamref name="T"/> to only non-<c>static</c> types that have a default constructor
     /// </summary>

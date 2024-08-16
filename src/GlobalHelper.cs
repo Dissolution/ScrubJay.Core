@@ -19,17 +19,17 @@ public static class GlobalHelper
     /// <summary>
     /// <see cref="Option{T}"/>.None/>
     /// </summary>
-    public static None None() => default(None);
+    public static Option.None None
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => default;
+    }
 
     /// <inheritdoc cref="Option{T}.Some"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
     
     public static Ok Ok() => default;
-    
-    public static Error Error(string? message = null) => new Error(message);
-
-
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: NotNullIfNotNull(nameof(value))]
