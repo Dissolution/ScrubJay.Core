@@ -90,9 +90,8 @@ public readonly struct Option<T> :
     public static Option<T> Some(T value) => new(value);
 
     private readonly bool _isSome;
-
-    [MaybeNull]
-    private readonly T _value;
+    
+    private readonly T? _value;
 
 
     private Option(T value)
@@ -259,7 +258,7 @@ public readonly struct Option<T> :
     /// <typeparam name="TError"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or"/>
-    public ScrubJay.Result<T, TError> OkOr<TError>(TError err)
+    public Result<T, TError> OkOr<TError>(TError err)
     {
         if (_isSome)
             return ScrubJay.Result<T, TError>.Ok(_value!);
@@ -279,9 +278,7 @@ public readonly struct Option<T> :
             return ScrubJay.Result<T, TError>.Ok(_value!);
         return ScrubJay.Result<T, TError>.Error(getErr());
     }
-
-    public dynamic Transpose() => throw new NotImplementedException();
-
+    
     /// <summary>
     /// 
     /// </summary>
@@ -364,6 +361,12 @@ public readonly struct Option<T> :
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.or_else"/>
     public Option<T> OrElse(Func<Option<T>> other) => _isSome ? this : other();
 
+    public Result<T, Exception> AsResult()
+    {
+        if (_isSome)
+            return _value!;
+        return new InvalidOperationException("Option.None");
+    }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();

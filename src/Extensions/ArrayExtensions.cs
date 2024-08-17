@@ -45,7 +45,7 @@ public static class ArrayExtensions
         return true;
     }
     
-    public static Result TrySet<T>(this T[]? array, 
+    public static OkExResult TrySet<T>(this T[]? array, 
         int index,
         T item,
         [CallerArgumentExpression(nameof(array))]
@@ -60,6 +60,6 @@ public static class ArrayExtensions
         if (index < 0 || index >= array.Length)
             return new ArgumentOutOfRangeException(indexName, index, $"{indexName} must be between 0 and {array.Length - 1}");
         array[index] = item;
-        return Ok();
+        return Ok;
     }
 }

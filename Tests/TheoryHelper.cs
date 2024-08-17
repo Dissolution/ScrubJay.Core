@@ -78,7 +78,7 @@ public static class TheoryHelper
             // primitive
             (byte)147,
             // custom primitive
-            default(None),
+            default(Option.None),
             // struct
             IntPtr.Zero,
             // Nullable

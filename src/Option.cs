@@ -6,6 +6,7 @@ public static class Option
     public readonly struct None :
 #if NET7_0_OR_GREATER
         IEqualityOperators<None, None, bool>,
+        IBitwiseOperators<None, None, bool>,
 #endif
         IEquatable<None>
     {
@@ -15,11 +16,17 @@ public static class Option
         public static bool operator true(None none) => false;
         public static bool operator false(None none) => true;
 
+        public static bool operator &(None left, None right) => false;
+        public static bool operator |(None left, None right) => false;
+        public static bool operator ^(None left, None right) => false;
+
+        [Obsolete("Cannot apply operator '~' to operand of type 'None'", true)]
+        public static bool operator ~(None none) => throw new NotSupportedException();
+        
         // All Nones are the same
         public static bool operator ==(None left, None right) => true;
         public static bool operator !=(None left, None right) => false;
-
-        // All Nones are the same
+        
         public bool Equals(None none) => true;
         public override bool Equals([NotNullWhen(true)] object? obj) => obj is None;
         public override int GetHashCode() => 0;
@@ -48,8 +55,8 @@ public static class Option
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<TOk> From<TOk, TError>(Result<TOk, TError> result)
     {
-        if (result.IsOk(out var value))
-            return Some<TOk>(value);
+        if (result.IsOk(out var ok))
+            return Some<TOk>(ok);
         return Option<TOk>.None;
     }
 }

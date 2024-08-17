@@ -124,7 +124,7 @@ public static class ReadOnlySpanEnumeratorExtensions
     public static T Take<T>(this ref SpanReader<byte> byteEnumerator)
         where T : unmanaged
     {
-        TryTake(ref byteEnumerator, out T value).ThrowIfError();
+        TryTake(ref byteEnumerator, out T value).Unwrap();
         return value;
     }
 

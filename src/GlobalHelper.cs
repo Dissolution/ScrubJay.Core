@@ -1,8 +1,4 @@
-﻿global using Result = ScrubJay.Result<ScrubJay.Ok, System.Exception>;
-//global using Result<T> = ScrubJay.Result<T, System.Exception>;
-
-
-namespace ScrubJay;
+﻿namespace ScrubJay;
 
 /// <summary>
 /// Global helper methods to support <see cref="Option{T}"/> and <see cref="Result{TOk, TError}"/>
@@ -25,12 +21,17 @@ public static class GlobalHelper
         get => default;
     }
 
+    public static Result.Ok Ok
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => default;
+    }
+
     /// <inheritdoc cref="Option{T}.Some"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
     
-    public static Ok Ok() => default;
-
+   
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: NotNullIfNotNull(nameof(value))]
     public static T? Capture<T>(T? value, [NotNullIfNotNull(nameof(value))] out T? captured)

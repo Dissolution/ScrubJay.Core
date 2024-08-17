@@ -48,28 +48,35 @@ public ref struct SpanReader<T>
 
 #region Peek
     /// <summary>
-    /// Tries to peek at the next <paramref name="item"/>
+    /// Tries to peek at the next item
     /// </summary>
-    /// <param name="item"></param>
     /// <returns></returns>
-    public Result TryPeek([MaybeNullWhen(false)] out T item)
+    public Result<T, Exception> TryPeek()
+    {
+        int pos = _position;
+        var span = _span;
+        if (pos < span.Length)
+        {
+            return span[pos];
+        }
+        return new InvalidOperationException("Cannot Peek: No items remain");
+    }
+
+    public Result<int, Exception> TryPeek([MaybeNullWhen(false)] out T item)
     {
         int pos = _position;
         var span = _span;
         if (pos < span.Length)
         {
             item = span[pos];
-            return Ok();
+            return pos;
         }
+
         item = default!;
         return new InvalidOperationException("Cannot Peek: No items remain");
     }
 
-    public T Peek()
-    {
-        TryPeek(out var item).ThrowIfError();
-        return item;
-    }
+    public T Peek() => TryPeek().Unwrap();
 
     /// <summary>
     /// Try to peek at the next <paramref name="count"/> <paramref name="items"/>
@@ -77,7 +84,7 @@ public ref struct SpanReader<T>
     /// <param name="count"></param>
     /// <param name="items"></param>
     /// <returns></returns>
-    public Result TryPeek(int count, out ReadOnlySpan<T> items)
+    public Result<Range, Exception> TryPeek(int count, out ReadOnlySpan<T> items)
     {
         if (count < 0)
         {
@@ -89,7 +96,7 @@ public ref struct SpanReader<T>
         if (pos + count <= span.Length)
         {
             items = span.Slice(pos, count);
-            return Ok();
+            return new Range(pos, pos + count);
         }
         items = default;
         return new InvalidOperationException($"Cannot Peek({count}): Only {RemainingCount} items remain");
@@ -97,41 +104,41 @@ public ref struct SpanReader<T>
     
     public ReadOnlySpan<T> Peek(int count)
     {
-        TryPeek(count, out var values).ThrowIfError();
+        TryPeek(count, out var values).Unwrap();
         return values;
     }
 #endregion
 
 #region Skip
-    public Result TrySkip()
+    public Result<int, Exception> TrySkip()
     {
         int index = _position;
         if (index < _span.Length)
         {
             _position = index + 1;
-            return Ok();
+            return index;
         }
         return new InvalidOperationException("Cannot Skip: No items remain");
     }
     
-    public void Skip() => TrySkip().ThrowIfError();
+    public void Skip() => TrySkip().Unwrap();
 
-    public Result TrySkip(int count)
+    public Result<Range, Exception> TrySkip(int count)
     {
         if (count <= 0)
-            return Ok();
+            return default;
 
         int index = _position;
         int newIndex = index + count;
         if (newIndex <=  _span.Length)
         {
             _position = newIndex;
-            return Ok();
+            return new Range(index, newIndex);
         }
         return new InvalidOperationException($"Cannot Skip({count}): Only {RemainingCount} items remain");
     }
-    
-    public void Skip(int count) => TrySkip(count).ThrowIfError();
+
+    public void Skip(int count) => TrySkip(count).Unwrap();
 
     
     public void SkipWhile(Func<T, bool> itemPredicate)
@@ -161,7 +168,21 @@ public ref struct SpanReader<T>
 #endregion
 
 #region Take
-    public Result TryTake([MaybeNullWhen(false)] out T taken)
+
+    public Result<T, Exception> TryTake()
+    {
+        int index = _position;
+        var span = _span;
+        if (index < span.Length)
+        {
+            _position = index + 1;
+            return span[index];
+        }
+        return new InvalidOperationException("Cannot Take: No items remain");
+    }
+    
+    
+    public Result<int, Exception> TryTake([MaybeNullWhen(false)] out T taken)
     {
         int index = _position;
         var span = _span;
@@ -169,25 +190,21 @@ public ref struct SpanReader<T>
         {
             _position = index + 1;
             taken = span[index];
-            return Ok();
+            return index;
         }
 
         taken = default!;
         return new InvalidOperationException("Cannot Take: No items remain");
     }
     
-    public T Take()
-    {
-        TryTake(out var item).ThrowIfError();
-        return item;
-    }
+    public T Take() => TryTake().Unwrap();
 
-    public Result TryTake(int count, out ReadOnlySpan<T> taken)
+    public Result<Range, Exception> TryTake(int count, out ReadOnlySpan<T> taken)
     {
         if (count <= 0)
         {
             taken = default;
-            return Ok();
+            return default;
         }
 
         int index = _position;
@@ -197,7 +214,7 @@ public ref struct SpanReader<T>
         {
             _position = newIndex;
             taken = span.Slice(index, count);
-            return Ok();
+            return new Range(index, newIndex);
         }
 
         taken = default;
@@ -206,22 +223,21 @@ public ref struct SpanReader<T>
     
     public ReadOnlySpan<T> Take(int count)
     {
-        var result = TryTake(count, out var values);
-        result.ThrowIfError();
+        TryTake(count, out var values).Unwrap();
         return values;
     }
 
-    public Result TryTakeInto(Span<T> buffer)
+    public Result<Range, Exception> TryTakeInto(Span<T> buffer)
     {
         var result = TryTake(buffer.Length, out var taken);
-        if (!result)
+        if (!result.IsOk(out var range))
             return result;
         
         taken.CopyTo(buffer);
-        return Ok();
+        return range;
     }
 
-    public void TakeInto(Span<T> buffer) => TryTakeInto(buffer).ThrowIfError();
+    public void TakeInto(Span<T> buffer) => TryTakeInto(buffer).Unwrap();
 
     public ReadOnlySpan<T> TakeWhile(Func<T, bool> itemPredicate)
     {
