@@ -9,9 +9,7 @@ using ScrubJay;
 
 
 
-
-
-
+Result<int, Exception> result = new InvalidOperationException();
 
 
 Debugger.Break();

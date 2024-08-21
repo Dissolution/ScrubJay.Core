@@ -1,73 +1,72 @@
-﻿// ReSharper disable InconsistentNaming
-
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using ScrubJay.Utilities;
 
 namespace ScrubJay;
 
 /// <summary>
-/// <c>Result&lt;T, E&gt;</c> is the type used for returning and propagating errors<br/>
+/// <c>Result&lt;TOk, TError&gt;</c> is the type used for returning and propagating errors<br/>
 /// It has two variants:<br/>
-/// <see cref="Ok"/>, representing success and containing a <typeparamref name="T"/> ok value<br/>
-/// <see cref="Error"/>, representing error and containing a <typeparamref name="E"/> error value<br/>
+/// <see cref="Ok"/>, representing success and containing a <typeparamref name="TOk"/> ok value<br/>
+/// <see cref="Error"/>, representing error and containing a <typeparamref name="TError"/> error value<br/>
 /// </summary>
-/// <typeparam name="T">The generic <see cref="Type"/> for an Ok value</typeparam>
-/// <typeparam name="E">The generic <see cref="Type"/> for an Err value</typeparam>
+/// <typeparam name="TOk">The generic <see cref="Type"/> for an Ok value</typeparam>
+/// <typeparam name="TError">The generic <see cref="Type"/> for an Error value</typeparam>
 /// <remarks>
 /// Heavily inspired by Rust's Result type<br/>
 /// <a href="https://doc.rust-lang.org/std/result/"/><br/>
 /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html"/><br/>
 /// </remarks>
-public readonly struct Result<T, E> :
+[PublicAPI]
+public readonly struct Result<TOk, TError> :
 /* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */
 #if NET7_0_OR_GREATER
-    IEqualityOperators<Result<T, E>, Result<T, E>, bool>,
+    IEqualityOperators<Result<TOk, TError>, Result<TOk, TError>, bool>,
     //IEqualityOperators<Result<T, E>, T, bool>,
     //IEqualityOperators<Result<T, E>, E, bool>,
 #endif
-    IEquatable<Result<T, E>>,
+    IEquatable<Result<TOk, TError>>,
     //IEquatable<T>,
     //IEquatable<E>,
 #if NET7_0_OR_GREATER
-    IComparisonOperators<Result<T, E>, Result<T, E>, bool>,
+    IComparisonOperators<Result<TOk, TError>, Result<TOk, TError>, bool>,
     //IComparisonOperators<Result<T, E>, T, bool>,
     //IComparisonOperators<Result<T, E>, E, bool>,
 #endif
-    IComparable<Result<T, E>>,
+    IComparable<Result<TOk, TError>>,
     //IComparable<T>,
     //IComparable<E>,
-    IEnumerable<T>,
+    IEnumerable<TOk>,
     IEnumerable
 {
 #region Operators
 
-    public static implicit operator bool(Result<T, E> result) => result._isOk;
-    public static implicit operator Result<T, E>(T ok) => Ok(ok);
-    public static implicit operator Result<T, E>(E error) => Error(error);
+    public static implicit operator bool(Result<TOk, TError> result) => result._isOk;
+    public static implicit operator Result<TOk, TError>(TOk ok) => Ok(ok);
+    public static implicit operator Result<TOk, TError>(TError error) => Error(error);
 
-    public static bool operator true(Result<T, E> result) => result._isOk;
-    public static bool operator false(Result<T, E> result) => !result._isOk;
+    public static bool operator true(Result<TOk, TError> result) => result._isOk;
+    public static bool operator false(Result<TOk, TError> result) => !result._isOk;
 
-    public static bool operator ==(Result<T, E> x, Result<T, E> y) => x.Equals(y);
-    public static bool operator !=(Result<T, E> x, Result<T, E> y) => !x.Equals(y);
-    public static bool operator >(Result<T, E> x, Result<T, E> y) => x.CompareTo(y) > 0;
-    public static bool operator >=(Result<T, E> x, Result<T, E> y) => x.CompareTo(y) >= 0;
-    public static bool operator <(Result<T, E> x, Result<T, E> y) => x.CompareTo(y) < 0;
-    public static bool operator <=(Result<T, E> x, Result<T, E> y) => x.CompareTo(y) <= 0;
+    public static bool operator ==(Result<TOk, TError> left, Result<TOk, TError> right) => left.Equals(right);
+    public static bool operator !=(Result<TOk, TError> left, Result<TOk, TError> right) => !left.Equals(right);
+    public static bool operator >(Result<TOk, TError> left, Result<TOk, TError> right) => left.CompareTo(right) > 0;
+    public static bool operator >=(Result<TOk, TError> left, Result<TOk, TError> right) => left.CompareTo(right) >= 0;
+    public static bool operator <(Result<TOk, TError> left, Result<TOk, TError> right) => left.CompareTo(right) < 0;
+    public static bool operator <=(Result<TOk, TError> left, Result<TOk, TError> right) => left.CompareTo(right) <= 0;
 
-    public static bool operator ==(Result<T, E> result, T? ok) => result.Equals(ok);
-    public static bool operator !=(Result<T, E> result, T? ok) => !result.Equals(ok);
-    public static bool operator >(Result<T, E> result, T? ok) => result.CompareTo(ok) > 0;
-    public static bool operator >=(Result<T, E> result, T? ok) => result.CompareTo(ok) >= 0;
-    public static bool operator <(Result<T, E> result, T? ok) => result.CompareTo(ok) < 0;
-    public static bool operator <=(Result<T, E> result, T? ok) => result.CompareTo(ok) <= 0;
+    public static bool operator ==(Result<TOk, TError> result, TOk? ok) => result.Equals(ok);
+    public static bool operator !=(Result<TOk, TError> result, TOk? ok) => !result.Equals(ok);
+    public static bool operator >(Result<TOk, TError> result, TOk? ok) => result.CompareTo(ok) > 0;
+    public static bool operator >=(Result<TOk, TError> result, TOk? ok) => result.CompareTo(ok) >= 0;
+    public static bool operator <(Result<TOk, TError> result, TOk? ok) => result.CompareTo(ok) < 0;
+    public static bool operator <=(Result<TOk, TError> result, TOk? ok) => result.CompareTo(ok) <= 0;
 
-    public static bool operator ==(Result<T, E> result, E? err) => result.Equals(err);
-    public static bool operator !=(Result<T, E> result, E? err) => !result.Equals(err);
-    public static bool operator >(Result<T, E> result, E? err) => result.CompareTo(err) > 0;
-    public static bool operator >=(Result<T, E> result, E? err) => result.CompareTo(err) >= 0;
-    public static bool operator <(Result<T, E> result, E? err) => result.CompareTo(err) < 0;
-    public static bool operator <=(Result<T, E> result, E? err) => result.CompareTo(err) <= 0;
+    public static bool operator ==(Result<TOk, TError> result, TError? error) => result.Equals(error);
+    public static bool operator !=(Result<TOk, TError> result, TError? error) => !result.Equals(error);
+    public static bool operator >(Result<TOk, TError> result, TError? error) => result.CompareTo(error) > 0;
+    public static bool operator >=(Result<TOk, TError> result, TError? error) => result.CompareTo(error) >= 0;
+    public static bool operator <(Result<TOk, TError> result, TError? error) => result.CompareTo(error) < 0;
+    public static bool operator <=(Result<TOk, TError> result, TError? error) => result.CompareTo(error) <= 0;
 
 #endregion
 
@@ -76,24 +75,24 @@ public readonly struct Result<T, E> :
     /// </summary>
     /// <param name="ok">The Ok value</param>
     /// <returns></returns>
-    public static Result<T, E> Ok(T ok) => new Result<T, E>(true, ok, default);
+    public static Result<TOk, TError> Ok(TOk ok) => new Result<TOk, TError>(true, ok, default);
 
     /// <summary>
     /// Creates a new Error <see cref="Result{T,E}"/>
     /// </summary>
     /// <param name="error">The Error value</param>
     /// <returns></returns>
-    public static Result<T, E> Error(E error) => new Result<T, E>(false, default, error);
+    public static Result<TOk, TError> Error(TError error) => new Result<TOk, TError>(false, default, error);
 
 
     private readonly bool _isOk;
-    private readonly T? _value;
-    private readonly E? _error;
+    private readonly TOk? _ok;
+    private readonly TError? _error;
 
-    private Result(bool isOk, T? value, E? error)
+    private Result(bool isOk, TOk? ok, TError? error)
     {
         _isOk = isOk;
-        _value = value;
+        _ok = ok;
         _error = error;
     }
 
@@ -105,30 +104,25 @@ public readonly struct Result<T, E> :
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_ok"/>
     public bool IsOk() => _isOk;
 
-    /// <summary>
-    /// Returns <c>true</c> if this Result is Ok and the value inside of it matches a predicate
-    /// </summary>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_ok_and"/>
-    public bool IsOkAnd(Func<T, bool> predicate) => _isOk && predicate(_value!);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    public bool IsOk([MaybeNullWhen(false)] out T value)
+    public bool IsOk([MaybeNullWhen(false)] out TOk ok)
     {
         if (_isOk)
         {
-            value = _value!;
+            ok = _ok!;
             return true;
         }
 
-        value = default!;
+        ok = default!;
         return false;
     }
+
+    /// <summary>
+    /// Returns <c>true</c> if this Result is Ok and the value inside of it matches a predicate
+    /// </summary>
+    /// <param name="okPredicate"></param>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_ok_and"/>
+    public bool IsOkAnd(Func<TOk, bool> okPredicate) => _isOk && okPredicate(_ok!);
 
     /// <summary>
     /// Returns the contained Ok value
@@ -140,24 +134,24 @@ public readonly struct Result<T, E> :
     /// Thrown if the value is an Error
     /// </exception>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap"/>
-    public T OkOrThrow(string? errorMessage = null)
+    public TOk OkOrThrow(string? errorMessage = null)
     {
         if (_isOk)
-            return _value!;
+            return _ok!;
         throw (_error as Exception) ?? new InvalidOperationException(errorMessage ?? "This Result is not Ok");
     }
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="value"></param>
+    /// <param name="fallbackOk"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap_or"/>
-    public T OkOr(T value)
+    public TOk OkOr(TOk fallbackOk)
     {
         if (_isOk)
-            return _value!;
-        return value;
+            return _ok!;
+        return fallbackOk;
     }
 
 
@@ -166,12 +160,12 @@ public readonly struct Result<T, E> :
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap_or_default"/>
-    public T? OkOrDefault()
+    public TOk? OkOrDefault()
     {
         {
             if (_isOk)
-                return _value!;
-            return default(T);
+                return _ok!;
+            return default(TOk);
         }
     }
 
@@ -181,10 +175,10 @@ public readonly struct Result<T, E> :
     /// <param name="getOk"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap_or_else"/>
-    public T OkOrElse(Func<T> getOk)
+    public TOk OkOrElse(Func<TOk> getOk)
     {
         if (_isOk)
-            return _value!;
+            return _ok!;
         return getOk();
     }
 
@@ -193,26 +187,26 @@ public readonly struct Result<T, E> :
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.ok"/>
-    public Option<T> AsOk()
+    public Option<TOk> AsOk()
     {
         if (_isOk)
         {
-            return Some(_value!);
+            return Some(_ok!);
         }
 
         return None;
     }
 
-    public bool IsSuccess([MaybeNullWhen(false)] out T ok, [MaybeNullWhen(true)] out E error)
+    public bool IsSuccess([MaybeNullWhen(false)] out TOk ok, [MaybeNullWhen(true)] out TError error)
     {
         if (_isOk)
         {
-            ok = _value!;
+            ok = _ok!;
             error = _error;
             return true;
         }
 
-        ok = _value;
+        ok = _ok;
         error = _error!;
         return false;
     }
@@ -221,17 +215,17 @@ public readonly struct Result<T, E> :
     /// 
     /// </summary>
     /// <param name="map"></param>
-    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="TNewOk"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.map"/>
-    public Result<U, E> MapOk<U>(Func<T, U> map)
+    public Result<TNewOk, TError> MapOk<TNewOk>(Func<TOk, TNewOk> map)
     {
         if (_isOk)
         {
-            return Result<U, E>.Ok(map(_value!));
+            return Result<TNewOk, TError>.Ok(map(_ok!));
         }
 
-        return Result<U, E>.Error(_error!);
+        return Result<TNewOk, TError>.Error(_error!);
     }
 
     /// <summary>
@@ -239,14 +233,14 @@ public readonly struct Result<T, E> :
     /// </summary>
     /// <param name="mapOk"></param>
     /// <param name="defaultOk"></param>
-    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="TNewOk"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.map_or"/>
-    public U MapOkOr<U>(Func<T, U> mapOk, U defaultOk)
+    public TNewOk MapOkOr<TNewOk>(Func<TOk, TNewOk> mapOk, TNewOk defaultOk)
     {
         if (_isOk)
         {
-            return mapOk(_value!);
+            return mapOk(_ok!);
         }
 
         return defaultOk;
@@ -257,14 +251,14 @@ public readonly struct Result<T, E> :
     /// </summary>
     /// <param name="mapOk"></param>
     /// <param name="getOk"></param>
-    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="TNewOk"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.map_or_else"/>
-    public U MapOkOrElse<U>(Func<T, U> mapOk, Func<U> getOk)
+    public TNewOk MapOkOrElse<TNewOk>(Func<TOk, TNewOk> mapOk, Func<TNewOk> getOk)
     {
         if (_isOk)
         {
-            return mapOk(_value!);
+            return mapOk(_ok!);
         }
 
         return getOk();
@@ -275,21 +269,13 @@ public readonly struct Result<T, E> :
 #region Error
 
     /// <summary>
-    /// Returns <c>true</c> if this Result is Error
+    /// Returns <c>true</c> if this Result is Error<br/>
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_err"/>
     public bool IsError() => !_isOk;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_err_and"/>
-    public bool IsErrorAnd(Func<E, bool> predicate) => !_isOk && predicate(_error!);
-
-    public bool IsError([MaybeNullWhen(false)] out E error)
+    public bool IsError([MaybeNullWhen(false)] out TError error)
     {
         if (!_isOk)
         {
@@ -302,33 +288,41 @@ public readonly struct Result<T, E> :
     }
 
     /// <summary>
+    /// Returns <c>true</c> if this Result is Error and the value inside of it matches a predicate
+    /// </summary>
+    /// <param name="errorPredicate"></param>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_err_and"/>
+    public bool IsErrorAnd(Func<TError, bool> errorPredicate) => !_isOk && errorPredicate(_error!);
+
+    /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.unwrap_err"/>
-    public E ErrorOrThrow(string? errorMessage = null)
+    public TError ErrorOrThrow(string? errorMessage = null)
     {
         if (!_isOk)
             return _error!;
         throw new InvalidOperationException(errorMessage ?? "This Result is not an Error");
     }
 
-    public E ErrorOr(E error)
+    public TError ErrorOr(TError error)
     {
         if (!_isOk)
             return _error!;
         return error;
     }
 
-    public E? ErrorOrDefault()
+    public TError? ErrorOrDefault()
     {
         if (!_isOk)
             return _error!;
-        return default(E);
+        return default(TError);
     }
 
-    public E ErrorOrElse(Func<E> getError)
+    public TError ErrorOrElse(Func<TError> getError)
     {
         if (_isOk)
             return _error!;
@@ -340,24 +334,24 @@ public readonly struct Result<T, E> :
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.err"/>
-    public Option<E> AsError()
+    public Option<TError> AsError()
     {
         if (!_isOk)
             return Some(_error!);
         return None;
     }
 
-    public bool IsFailure([MaybeNullWhen(false)] out E error, [MaybeNullWhen(true)] out T ok)
+    public bool IsFailure([MaybeNullWhen(false)] out TError error, [MaybeNullWhen(true)] out TOk ok)
     {
         if (!_isOk)
         {
             error = _error!;
-            ok = _value;
+            ok = _ok;
             return true;
         }
 
         error = _error;
-        ok = _value!;
+        ok = _ok!;
         return false;
     }
 
@@ -365,20 +359,20 @@ public readonly struct Result<T, E> :
     /// 
     /// </summary>
     /// <param name="mapError"></param>
-    /// <typeparam name="F"></typeparam>
+    /// <typeparam name="TNewError"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.map_err"/>
-    public Result<T, F> MapError<F>(Func<E, F> mapError)
+    public Result<TOk, TNewError> MapError<TNewError>(Func<TError, TNewError> mapError)
     {
         if (_isOk)
         {
-            return Result<T, F>.Ok(_value!);
+            return Result<TOk, TNewError>.Ok(_ok!);
         }
 
-        return Result<T, F>.Error(mapError(_error!));
+        return Result<TOk, TNewError>.Error(mapError(_error!));
     }
 
-    public F MapErrorOr<F>(Func<E, F> mapError, F defaultError)
+    public TNewError MapErrorOr<TNewError>(Func<TError, TNewError> mapError, TNewError defaultError)
     {
         if (!_isOk)
         {
@@ -388,7 +382,7 @@ public readonly struct Result<T, E> :
         return defaultError;
     }
 
-    public F MapErrorOrElse<F>(Func<E, F> mapError, Func<F> getError)
+    public TNewError MapErrorOrElse<TNewError>(Func<TError, TNewError> mapError, Func<TNewError> getError)
     {
         if (!_isOk)
             return mapError(_error!);
@@ -398,11 +392,11 @@ public readonly struct Result<T, E> :
 
 #endregion
 
-    public void Match(Action<T> onOk, Action<E> onError)
+    public void Match(Action<TOk> onOk, Action<TError> onError)
     {
         if (_isOk)
         {
-            onOk(_value!);
+            onOk(_ok!);
         }
         else
         {
@@ -410,18 +404,18 @@ public readonly struct Result<T, E> :
         }
     }
 
-    public TResult Match<TResult>(Func<T, TResult> onOk, Func<E, TResult> onError)
+    public TResult Match<TResult>(Func<TOk, TResult> onOk, Func<TError, TResult> onError)
     {
         if (_isOk)
-            return onOk(_value!);
+            return onOk(_ok!);
         return onError(_error!);
     }
 
-    public Option<T> AsOption()
+    public Option<TOk> AsOption()
     {
         if (_isOk)
         {
-            return Some(_value!);
+            return Some(_ok!);
         }
 
         return None;
@@ -429,47 +423,47 @@ public readonly struct Result<T, E> :
 
 #region Compare
 
-    public int CompareTo(Result<T, E> other)
+    public int CompareTo(Result<TOk, TError> result)
     {
         // An Ok compares as less than any Err
         // while two Ok or two Err compare their containing values
 
         if (_isOk)
         {
-            if (other._isOk)
+            if (result._isOk)
             {
                 // compare ok values
-                return Comparer<T>.Default.Compare(_value!, other._value!);
+                return Comparer<TOk>.Default.Compare(_ok!, result._ok!);
             }
 
             return -1; // my Ok is less than their Error
         }
 
         // i'm Error
-        if (other._isOk)
+        if (result._isOk)
         {
             return 1; // my Error is greater than their Ok
         }
 
         // compare err values
-        return Comparer<E>.Default.Compare(_error!, other._error!);
+        return Comparer<TError>.Default.Compare(_error!, result._error!);
     }
 
-    public int CompareTo(T? value)
+    public int CompareTo(TOk? ok)
     {
         if (_isOk)
         {
-            return Comparer<T>.Default.Compare(_value!, value!);
+            return Comparer<TOk>.Default.Compare(_ok!, ok!);
         }
 
         return 1; // my Err is greater than an Ok value
     }
 
-    public int CompareTo(E? error)
+    public int CompareTo(TError? error)
     {
         if (!_isOk)
         {
-            return Comparer<E>.Default.Compare(_error!, error!);
+            return Comparer<TError>.Default.Compare(_error!, error!);
         }
 
         return -1; // my Ok is less than an Err value
@@ -479,10 +473,10 @@ public readonly struct Result<T, E> :
     {
         return obj switch
         {
-            Result<E, E> result => CompareTo(result),
-            T ok => CompareTo(ok),
-            E error => CompareTo(error),
-            _ => 1, // unknown values sort before
+            Result<TError, TError> result => CompareTo(result),
+            TOk ok => CompareTo(ok),
+            TError error => CompareTo(error),
+            _ => 1, // null and unknown values sort before
         };
     }
 
@@ -490,44 +484,41 @@ public readonly struct Result<T, E> :
 
 #region Equal
 
-    public bool Equals(Result<T, E> other)
+    public bool Equals(Result<TOk, TError> result)
     {
         if (_isOk)
         {
-            if (other._isOk)
+            if (result._isOk)
             {
-                // compare ok values
-                return EqualityComparer<T>.Default.Equals(_value!, other._value!);
+                return EqualityComparer<TOk>.Default.Equals(_ok!, result._ok!);
             }
 
             return false;
         }
 
-        // i'm Error
-        if (other._isOk)
+        if (result._isOk)
         {
             return false;
         }
-
-        // compare error values
-        return EqualityComparer<E>.Default.Equals(_error!, other._error!);
+        
+        return EqualityComparer<TError>.Default.Equals(_error!, result._error!);
     }
 
-    public bool Equals(T? ok)
+    public bool Equals(TOk? ok)
     {
         if (_isOk)
         {
-            return EqualityComparer<T>.Default.Equals(_value!, ok!);
+            return EqualityComparer<TOk>.Default.Equals(_ok!, ok!);
         }
 
         return false;
     }
 
-    public bool Equals(E? error)
+    public bool Equals(TError? error)
     {
         if (!_isOk)
         {
-            return EqualityComparer<E>.Default.Equals(_error!, error!);
+            return EqualityComparer<TError>.Default.Equals(_error!, error!);
         }
 
         return false;
@@ -536,9 +527,9 @@ public readonly struct Result<T, E> :
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj switch
         {
-            Result<E, E> result => Equals(result),
-            T ok => Equals(ok),
-            E err => Equals(err),
+            Result<TError, TError> result => Equals(result),
+            TOk ok => Equals(ok),
+            TError error => Equals(error),
             _ => false,
         };
 
@@ -548,44 +539,49 @@ public readonly struct Result<T, E> :
     {
         if (_isOk)
         {
-            return Hasher.GetHashCode<T>(_value);
+            return Hasher.GetHashCode<TOk>(_ok);
         }
 
-        return Hasher.GetHashCode<E>(_error);
+        return Hasher.GetHashCode<TError>(_error);
     }
 
     public override string ToString()
     {
-        return Match(static ok => $"Ok({ok})", static error => $"Error({error})");
+        if (_isOk)
+        {
+            return $"Ok({_ok!})";
+        }
+
+        return $"Error({_error!})";
     }
 
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    IEnumerator<TOk> IEnumerable<TOk>.GetEnumerator() => GetEnumerator();
 
     public ResultEnumerator GetEnumerator() => new ResultEnumerator(this);
 
 
     [MustDisposeResource(false)]
-    public struct ResultEnumerator : IEnumerator<T>, IEnumerator, IDisposable
+    public struct ResultEnumerator : IEnumerator<TOk>, IEnumerator, IDisposable
     {
         private bool _yielded;
-        private readonly T _value;
+        private readonly TOk _ok;
 
-        object? IEnumerator.Current => _value;
-        public T Current => _value;
+        object? IEnumerator.Current => _ok;
+        public TOk Current => _ok;
 
-        public ResultEnumerator(Result<T, E> result)
+        public ResultEnumerator(Result<TOk, TError> result)
         {
             if (result._isOk)
             {
-                _value = result._value!;
+                _ok = result._ok!;
                 _yielded = false;
             }
             else
             {
-                _value = default!;
+                _ok = default!;
                 _yielded = true;
             }
         }
