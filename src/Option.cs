@@ -2,6 +2,9 @@
 
 public static class Option
 {
+    // None must live as a SubType in order to enable GlobalHelpers support for
+    // `None` as a Field or Property (and not type name)
+    
     [StructLayout(LayoutKind.Explicit, Size = 0)]
     public readonly struct None :
 #if NET7_0_OR_GREATER
@@ -44,7 +47,7 @@ public static class Option
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> From<T>(T? nullable)
+    public static Option<T> AsOption<T>(this T? nullable)
         where T : struct
     {
         if (nullable.HasValue)
@@ -53,10 +56,6 @@ public static class Option
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<TOk> From<TOk, TError>(Result<TOk, TError> result)
-    {
-        if (result.IsOk(out var ok))
-            return Some<TOk>(ok);
-        return Option<TOk>.None;
-    }
+    public static Option<T> Some<T>(T value) => Option<T>.Some(value);
+
 }

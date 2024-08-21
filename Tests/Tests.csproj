@@ -11,7 +11,7 @@
         <AssemblyName>ScrubJay.Core.Tests</AssemblyName>
         <RootNamespace>ScrubJay.Tests</RootNamespace>
         
-        <NoWarn>xUnit1037</NoWarn>
+        <NoWarn>xUnit1037; CS1718</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -43,6 +43,7 @@
     <ItemGroup>
         <Using Include="Xunit"/>
         <Using Include="System.Diagnostics"/>
+        <Using Include="System.Diagnostics.CodeAnalysis"/>
     </ItemGroup>
 
     <!-- PolySharp ~ Support for newer language versions in older versions -->

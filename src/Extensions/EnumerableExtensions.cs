@@ -316,16 +316,17 @@ public static class EnumerableExtensions
     /// A deep wrapper for <see cref="IEnumerable{T}"/> that ignores all thrown exceptions
     /// at every level of enumeration, only returning values that could be acquired without error
     /// </summary>
-    public static IEnumerable<T> Swallowed<T>(this IEnumerable<T>? enumerable)
+    public static IEnumerable<T> SafeEnumerate<T>(this IEnumerable<T>? enumerable)
     {
         if (enumerable is null) yield break;
-        IEnumerator<T>? enumerator;
+        IEnumerator<T>? enumerator = null;
         try
         {
             enumerator = enumerable.GetEnumerator();
         }
         catch (Exception)
         {
+            enumerator?.SafeDispose();
             yield break;
         }
 

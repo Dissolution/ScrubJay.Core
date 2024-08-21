@@ -81,7 +81,7 @@ public class EnumerableExtensionsTests
     [MemberData(nameof(SwallowedData))]
     public void Swallowed_Works(IEnumerable<int>? enumerable)
     {
-        var a = enumerable.Swallowed().ToList();
+        var a = enumerable.SafeEnumerate().ToList();
         // No exception should be thrown
         Assert.NotNull(a);
     }
@@ -92,7 +92,7 @@ public class EnumerableExtensionsTests
     {
         // ReSharper disable PossibleMultipleEnumeration
         var stringList = enumerable
-            .Swallowed()
+            .SafeEnumerate()
             .Select(i => i.ToString())
             .ToList();
         Assert.NotNull(stringList);
@@ -102,7 +102,7 @@ public class EnumerableExtensionsTests
 
         var objList = enumerable
             .Select<int, object?>(_ => throw new InvalidOperationException())
-            .Swallowed()
+            .SafeEnumerate()
             .ToList();
         Assert.NotNull(objList);
         // No Exception Thrown

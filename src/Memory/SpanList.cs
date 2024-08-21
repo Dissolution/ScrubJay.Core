@@ -2,9 +2,9 @@
 
 namespace ScrubJay.Memory;
 
-public ref struct Buffer<T>
+public ref struct SpanList<T>
 {
-    public static implicit operator Buffer<T>(Span<T> span) => new Buffer<T>(span);
+    public static implicit operator SpanList<T>(Span<T> span) => new SpanList<T>(span);
 
     private readonly Span<T> _span;
     private int _position;
@@ -15,7 +15,7 @@ public ref struct Buffer<T>
     public int Count => _position;
     public int Capacity => _span.Length;
 
-    public Buffer(Span<T> span)
+    public SpanList(Span<T> span)
     {
         _span = span;
         _position = 0;

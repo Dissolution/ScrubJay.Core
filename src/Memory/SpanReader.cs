@@ -18,7 +18,7 @@ public ref struct SpanReader<T>
 
     public ReadOnlySpan<T> ReadSpan => _span.Slice(0, _position);
     public int ReadCount => _position;
-    
+
     public ReadOnlySpan<T> RemainingSpan => _span.Slice(_position);
     public int RemainingCount => _span.Length - _position;
 
@@ -47,36 +47,19 @@ public ref struct SpanReader<T>
     }
 
 #region Peek
+
     /// <summary>
     /// Tries to peek at the next item
     /// </summary>
     /// <returns></returns>
-    public Result<T, Exception> TryPeek()
+    public Option<T> TryPeek()
     {
-        int pos = _position;
-        var span = _span;
-        if (pos < span.Length)
-        {
-            return span[pos];
-        }
-        return new InvalidOperationException("Cannot Peek: No items remain");
+        if (_position < _span.Length)
+            return Some(_span[_position]);
+        return None;
     }
 
-    public Result<int, Exception> TryPeek([MaybeNullWhen(false)] out T item)
-    {
-        int pos = _position;
-        var span = _span;
-        if (pos < span.Length)
-        {
-            item = span[pos];
-            return pos;
-        }
-
-        item = default!;
-        return new InvalidOperationException("Cannot Peek: No items remain");
-    }
-
-    public T Peek() => TryPeek().Unwrap();
+    public T Peek() => TryPeek().SomeOrThrow($"There was not an item to Peek");
 
     /// <summary>
     /// Try to peek at the next <paramref name="count"/> <paramref name="items"/>
@@ -84,160 +67,62 @@ public ref struct SpanReader<T>
     /// <param name="count"></param>
     /// <param name="items"></param>
     /// <returns></returns>
-    public Result<Range, Exception> TryPeek(int count, out ReadOnlySpan<T> items)
+    public SpanOption<T> TryPeek(int count)
     {
         if (count < 0)
-        {
-            items = default;
-            return new ArgumentOutOfRangeException(nameof(count), count, "Count must be zero or greater");
-        }
+            return None;
+
         int pos = _position;
         var span = _span;
         if (pos + count <= span.Length)
         {
-            items = span.Slice(pos, count);
-            return new Range(pos, pos + count);
+            return SpanOption<T>.Some(span.Slice(pos, count));
         }
-        items = default;
-        return new InvalidOperationException($"Cannot Peek({count}): Only {RemainingCount} items remain");
-    }
-    
-    public ReadOnlySpan<T> Peek(int count)
-    {
-        TryPeek(count, out var values).Unwrap();
-        return values;
-    }
-#endregion
 
-#region Skip
-    public Result<int, Exception> TrySkip()
-    {
-        int index = _position;
-        if (index < _span.Length)
-        {
-            _position = index + 1;
-            return index;
-        }
-        return new InvalidOperationException("Cannot Skip: No items remain");
-    }
-    
-    public void Skip() => TrySkip().Unwrap();
-
-    public Result<Range, Exception> TrySkip(int count)
-    {
-        if (count <= 0)
-            return default;
-
-        int index = _position;
-        int newIndex = index + count;
-        if (newIndex <=  _span.Length)
-        {
-            _position = newIndex;
-            return new Range(index, newIndex);
-        }
-        return new InvalidOperationException($"Cannot Skip({count}): Only {RemainingCount} items remain");
+        return None;
     }
 
-    public void Skip(int count) => TrySkip(count).Unwrap();
+    public ReadOnlySpan<T> Peek(int count) => TryPeek(count).SomeOrThrow($"There were not {count} items to Peek");
 
-    
-    public void SkipWhile(Func<T, bool> itemPredicate)
-    {
-        var span = _span;
-        int start = _position;
-        int index = start;
-        int len = span.Length;
-        while (index < len && itemPredicate(span[index]))
-        {
-            index += 1;
-        }
-        _position = index;
-    }
-
-    public void SkipWhile(T match) => SkipWhile(item => EqualityComparer<T>.Default.Equals(item, match));
-
-    public void SkipUntil(Func<T, bool> itemPredicate) => SkipWhile(item => !itemPredicate(item));
-
-    public void SkipUntil(T match) => SkipWhile(item => !EqualityComparer<T>.Default.Equals(item, match));
-
-    public void SkipAny(params T[] matches) => SkipWhile(item => matches.Contains(item));
-
-    public void SkipAny(IReadOnlyCollection<T> matches) => SkipWhile(item => matches.Contains(item));
-
-    public void SkipAll() => SkipWhile(static _ => true);
 #endregion
 
 #region Take
 
-    public Result<T, Exception> TryTake()
+    public Option<T> TryTake()
     {
         int index = _position;
         var span = _span;
         if (index < span.Length)
         {
             _position = index + 1;
-            return span[index];
+            return Some(span[index]);
         }
-        return new InvalidOperationException("Cannot Take: No items remain");
+
+        return None;
     }
+
+    public T Take() => TryTake().SomeOrThrow($"There was not an item to Take");
     
-    
-    public Result<int, Exception> TryTake([MaybeNullWhen(false)] out T taken)
+    public SpanOption<T> TryTake(int count)
     {
-        int index = _position;
+        if (count < 0)
+            return None;
+
+        int pos = _position;
+        int newPos = pos + count;
         var span = _span;
-        if (index < span.Length)
+        if (newPos <= span.Length)
         {
-            _position = index + 1;
-            taken = span[index];
-            return index;
+            var taken = span.Slice(pos, count);
+            _position = newPos;
+            return SpanOption<T>.Some(taken);
         }
 
-        taken = default!;
-        return new InvalidOperationException("Cannot Take: No items remain");
+        return None;
     }
     
-    public T Take() => TryTake().Unwrap();
-
-    public Result<Range, Exception> TryTake(int count, out ReadOnlySpan<T> taken)
-    {
-        if (count <= 0)
-        {
-            taken = default;
-            return default;
-        }
-
-        int index = _position;
-        int newIndex = index + count;
-        var span = _span;
-        if (newIndex <= span.Length)
-        {
-            _position = newIndex;
-            taken = span.Slice(index, count);
-            return new Range(index, newIndex);
-        }
-
-        taken = default;
-        return new InvalidOperationException($"Cannot Take({count}): Only {RemainingCount} items remain");
-    }
+    public ReadOnlySpan<T> Take(int count) => TryTake(count).SomeOrThrow($"There were not {count} items to Take");
     
-    public ReadOnlySpan<T> Take(int count)
-    {
-        TryTake(count, out var values).Unwrap();
-        return values;
-    }
-
-    public Result<Range, Exception> TryTakeInto(Span<T> buffer)
-    {
-        var result = TryTake(buffer.Length, out var taken);
-        if (!result.IsOk(out var range))
-            return result;
-        
-        taken.CopyTo(buffer);
-        return range;
-    }
-
-    public void TakeInto(Span<T> buffer) => TryTakeInto(buffer).Unwrap();
 
     public ReadOnlySpan<T> TakeWhile(Func<T, bool> itemPredicate)
     {
@@ -249,6 +134,7 @@ public ref struct SpanReader<T>
         {
             index += 1;
         }
+
         _position = index;
         return span.Slice(start, index - start);
     }
@@ -264,14 +150,56 @@ public ref struct SpanReader<T>
     public ReadOnlySpan<T> TakeAny(IReadOnlyCollection<T> matches) => TakeWhile(item => matches.Contains(item));
 
     public ReadOnlySpan<T> TakeAll() => TakeWhile(static _ => true);
+
 #endregion
 
+
+#region Skip
+
+    public bool TrySkip() => TryTake();
+
+    public void Skip() => TryTake().SomeOrThrow($"There was not an item to Skip");
+
+    public bool TrySkip(int count) => TryTake(count);
+
+    public void Skip(int count) => TryTake(count).SomeOrThrow($"There were not ${count} items to Skip");
+
+    public void SkipWhile(Func<T, bool> itemPredicate)
+    {
+        var span = _span;
+        int index = _position;
+        int len = span.Length;
+        while (index < len && itemPredicate(span[index]))
+        {
+            index += 1;
+        }
+
+        _position = index;
+    }
+
+    public void SkipWhile(T match) => SkipWhile(item => EqualityComparer<T>.Default.Equals(item, match));
+
+    public void SkipUntil(Func<T, bool> itemPredicate) => SkipWhile(item => !itemPredicate(item));
+
+    public void SkipUntil(T match) => SkipWhile(item => !EqualityComparer<T>.Default.Equals(item, match));
+
+    public void SkipAny(params T[] matches) => SkipWhile(item => matches.Contains(item));
+
+    public void SkipAny(IReadOnlyCollection<T> matches) => SkipWhile(item => matches.Contains(item));
+
+    public void SkipAll() => SkipWhile(static _ => true);
+
+#endregion
+
+
 #region IEnumerator Support
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     public T Current => _span[_position];
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool MoveNext() => TrySkip();
+
 #endregion
 
     public override string ToString()
@@ -318,6 +246,7 @@ public ref struct SpanReader<T>
             {
                 text.Append(delimiter);
             }
+
             text.Append(span[i]);
         }
 
@@ -346,13 +275,13 @@ public ref struct SpanReader<T>
             {
                 text.Append(delimiter);
             }
+
             text.Append(span[i]);
         }
 
         if (postpendEllipsis)
         {
-            text.Append(delimiter)
-                .Append('…');
+            text.Append(delimiter).Append('…');
         }
 
         return text.ToStringAndReturn();

@@ -1,22 +1,22 @@
 ﻿// ReSharper disable once CheckNamespace
 namespace JetBrains.Annotations;
 
+/// <inheritdoc cref="JetBrains.Annotations.MustDisposeResourceAttribute"/>
+/// <remarks>
+/// The only difference is this can target a Struct
+/// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 internal sealed class MustDisposeResourceAttribute : Attribute
 {
+    public bool Value { get; }
+    
     public MustDisposeResourceAttribute()
     {
-        Value = true;
+        this.Value = true;
     }
 
     public MustDisposeResourceAttribute(bool value)
     {
-        Value = value;
+        this.Value = value;
     }
-
-    /// <summary>
-    /// When set to <c>false</c>, disposing of the resource is not obligatory.
-    /// The main use-case for explicit <c>[MustDisposeResource(false)]</c> annotation is to loosen inherited annotation.
-    /// </summary>
-    public bool Value { get; }
 }

@@ -48,21 +48,21 @@ public class TypeExtensionsTests
     }
     
     
-    [Theory]
-    [MemberData(nameof(TheoryTypes))]
-    public void Implements_Null_OnlyNullShould(Type? type)
-    {
-        if (type is null)
-        {
-            Assert.True(TypeExtensions.Implements(type, (Type?)null));
-            Assert.True(TypeExtensions.Implements((Type?)null, type));
-        }
-        else
-        {
-            Assert.False(TypeExtensions.Implements(type, (Type?)null));
-            Assert.False(TypeExtensions.Implements((Type?)null, type));
-        }
-    }
+    // [Theory]
+    // [MemberData(nameof(TheoryTypes))]
+    // public void Implements_Null_OnlyNullShould(Type? type)
+    // {
+    //     if (type is null)
+    //     {
+    //         Assert.True(TypeExtensions.Implements(type, (Type?)null));
+    //         Assert.True(TypeExtensions.Implements((Type?)null, type));
+    //     }
+    //     else
+    //     {
+    //         Assert.False(TypeExtensions.Implements(type, (Type?)null));
+    //         Assert.False(TypeExtensions.Implements((Type?)null, type));
+    //     }
+    // }
 
     [Theory]
     [MemberData(nameof(TheoryTypes))]

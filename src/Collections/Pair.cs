@@ -2,6 +2,11 @@
 
 namespace ScrubJay.Collections;
 
+/// <summary>
+/// Represents a Pair of related Values
+/// </summary>
+/// <typeparam name="TKey"></typeparam>
+/// <typeparam name="TValue"></typeparam>
 public readonly struct Pair<TKey, TValue> :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Pair<TKey, TValue>, Pair<TKey, TValue>, bool>,
@@ -28,28 +33,28 @@ public readonly struct Pair<TKey, TValue> :
 
     public Pair(TKey key, TValue value)
     {
-        this.Key = key;
-        this.Value = value;
+        Key = key;
+        Value = value;
     }
 
     public bool Equals(Pair<TKey, TValue> other)
     {
-        return EqualityComparer<TKey>.Default.Equals(other.Key, this.Key) && EqualityComparer<TValue>.Default.Equals(other.Value, this.Value);
+        return EqualityComparer<TKey>.Default.Equals(other.Key, Key) && EqualityComparer<TValue>.Default.Equals(other.Value, Value);
     }
 
     public bool Equals(KeyValuePair<TKey, TValue> other)
     {
-        return EqualityComparer<TKey>.Default.Equals(other.Key, this.Key) && EqualityComparer<TValue>.Default.Equals(other.Value, this.Value);
+        return EqualityComparer<TKey>.Default.Equals(other.Key, Key) && EqualityComparer<TValue>.Default.Equals(other.Value, Value);
     }
 
     public bool Equals(Tuple<TKey, TValue>? other)
     {
-        return other is not null && EqualityComparer<TKey>.Default.Equals(other.Item1, this.Key) && EqualityComparer<TValue>.Default.Equals(other.Item2, this.Value);
+        return other is not null && EqualityComparer<TKey>.Default.Equals(other.Item1, Key) && EqualityComparer<TValue>.Default.Equals(other.Item2, Value);
     }
 
     public bool Equals(ValueTuple<TKey, TValue> other)
     {
-        return EqualityComparer<TKey>.Default.Equals(other.Item1, this.Key) && EqualityComparer<TValue>.Default.Equals(other.Item2, this.Value);
+        return EqualityComparer<TKey>.Default.Equals(other.Item1, Key) && EqualityComparer<TValue>.Default.Equals(other.Item2, Value);
     }
 
     public override bool Equals(object? obj)

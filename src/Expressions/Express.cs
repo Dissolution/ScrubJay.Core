@@ -11,9 +11,9 @@ public static class Express
         var @params = buildExpression.Parameters;
         Debug.Assert(@params.Count == 1);
 
-        var param = Express.Parameter<T1>(@params[0].Name);
+        var param = Parameter<T1>(@params[0].Name);
         var body = buildExpression.Compile().Invoke(param);
-        var lambda = Express.Lambda<System.Func<T1, TResult>>(body, param);
+        var lambda = Lambda<Func<T1, TResult>>(body, param);
         return lambda;
     }
     
@@ -23,10 +23,10 @@ public static class Express
         var @params = buildExpression.Parameters;
         Debug.Assert(@params.Count == 2);
 
-        var leftParam = Express.Parameter<T1>(@params[0].Name);
-        var rightParam = Express.Parameter<T2>(@params[1].Name);
+        var leftParam = Parameter<T1>(@params[0].Name);
+        var rightParam = Parameter<T2>(@params[1].Name);
         var body = buildExpression.Compile().Invoke(leftParam, rightParam);
-        var lambda = Express.Lambda<System.Func<T1, T2, TResult>>(body, leftParam, rightParam);
+        var lambda = Lambda<Func<T1, T2, TResult>>(body, leftParam, rightParam);
         return lambda;
     }
 

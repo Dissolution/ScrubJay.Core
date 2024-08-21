@@ -8,7 +8,7 @@ public sealed class DefaultComparer : IComparer
     {
     }
 
-    public int Compare(object? x, object? y) => Relate.Compare.Objects(x, y);
+    public int Compare(object? x, object? y) => Comparison.Compare.Objects(x, y);
 }
 
 public sealed class DefaultComparer<T> : IComparer<T>, IComparer
@@ -19,7 +19,7 @@ public sealed class DefaultComparer<T> : IComparer<T>, IComparer
     {
     }
 
-    public int Compare(T? x, T? y) => Relate.Compare.Values<T>(x, y);
+    public int Compare(T? x, T? y) => Comparison.Compare.Values<T>(x, y);
 
-    public int Compare(object? x, object? y) => Relate.Compare.Objects(x, y);
+    public int Compare(object? x, object? y) => Comparison.Compare.Objects(x, y);
 }

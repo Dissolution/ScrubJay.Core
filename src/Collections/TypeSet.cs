@@ -1,5 +1,8 @@
 ﻿namespace ScrubJay.Collections;
 
+/// <summary>
+/// A <see cref="HashSet{T}"/> containing <see cref="Type"/> values
+/// </summary>
 public class TypeSet : HashSet<Type>
 {
     public TypeSet() : base() { }

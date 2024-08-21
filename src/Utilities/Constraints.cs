@@ -17,7 +17,7 @@ namespace ScrubJay.Utilities;
 /// </summary>
 public static class Constraints
 {
-    public readonly struct None<T>;
+    public readonly struct Any<T>;
     
     
     /// <summary>
@@ -35,6 +35,12 @@ public static class Constraints
 
     public readonly struct IsEquatable<T> where T : IEquatable<T>;
     
+    /// <summary>
+    /// Constrains <typeparamref name="T"/> to only <see cref="Type">Types</see> that implement <see cref="IComparable{T}"/>
+    /// </summary>
+    /// <typeparam name="T">
+    /// <c>T : IComparable&lt;T&gt;</c>
+    /// </typeparam>
     public readonly struct IsComparable<T> where T : IComparable<T>;
     
     

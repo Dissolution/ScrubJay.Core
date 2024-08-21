@@ -109,10 +109,10 @@ public readonly struct Bounds<T> :
 
     private Bounds(Option<T> minimum, bool minimumIsInclusive, Option<T> maximum, bool maximumIsInclusive)
     {
-        this.Minimum = minimum;
-        this.MinimumIsInclusive = minimumIsInclusive;
-        this.Maximum = maximum;
-        this.MaximumIsInclusive = maximumIsInclusive;
+        Minimum = minimum;
+        MinimumIsInclusive = minimumIsInclusive;
+        Maximum = maximum;
+        MaximumIsInclusive = maximumIsInclusive;
     }
 
     public bool Contains(T? value)
@@ -193,7 +193,7 @@ public readonly struct Bounds<T> :
 
     public bool Equals(Bounds<T> other)
     {
-        return other.MinimumIsInclusive == this.MinimumIsInclusive && other.MaximumIsInclusive == this.MaximumIsInclusive && other.Minimum == this.Minimum && other.Maximum == this.Maximum;
+        return other.MinimumIsInclusive == MinimumIsInclusive && other.MaximumIsInclusive == MaximumIsInclusive && other.Minimum == Minimum && other.Maximum == Maximum;
     }
 
     public override bool Equals(object? obj) => obj is Bounds<T> bounds && Equals(bounds);

@@ -19,6 +19,11 @@ public ref struct InterpolatedStringHandler // : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int GetDefaultLength(int literalLength, int formattedCount) => (literalLength + (formattedCount * HOLE_LENGTH)).Clamp(MIN_CAPACITY, MAX_CAPACITY);
 
+    public static string Render(ref InterpolatedStringHandler text)
+    {
+        return text.ToStringAndDispose();
+    }
+    
 
     private char[]? _charArray;
     private Span<char> _charSpan;
@@ -61,6 +66,18 @@ public ref struct InterpolatedStringHandler // : IDisposable
         {
             ArrayPool<char>.Shared.Return(toReturn, true);
         }
+    }
+    
+    public void AppendLiteral(char ch)
+    {
+        int pos = _position;
+        if (pos >= _charSpan.Length)
+        {
+            GrowBy(1);
+        }
+        
+        _charSpan[pos] = ch;
+        _position = pos + 1;
     }
     
     public void AppendLiteral(string str)
@@ -181,6 +198,7 @@ public ref struct InterpolatedStringHandler // : IDisposable
         }
     }
     
+    [HandlesResourceDisposal]
     public void Dispose()
     {
         char[]? toReturn = _charArray;
@@ -191,6 +209,7 @@ public ref struct InterpolatedStringHandler // : IDisposable
         }
     }
 
+    [HandlesResourceDisposal]
     public string ToStringAndDispose()
     {
         string result = Written.ToString();

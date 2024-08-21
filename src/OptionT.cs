@@ -1,4 +1,6 @@
-﻿using JetBrains.Annotations;
+﻿// ReSharper disable InconsistentNaming
+
+using JetBrains.Annotations;
 using ScrubJay.Utilities;
 
 namespace ScrubJay;
@@ -25,6 +27,8 @@ public readonly struct Option<T> :
     IEnumerable<T>,
     IEnumerable
 {
+#region Operators
+
     public static implicit operator bool(Option<T> option) => option._isSome;
     public static implicit operator Option<T>(Option.None none) => None;
     public static implicit operator Option<T>(T value) => Some(value);
@@ -53,46 +57,23 @@ public readonly struct Option<T> :
     public static bool operator <(Option<T> left, T right) => left.CompareTo(right) < 0;
     public static bool operator <=(Option<T> left, T right) => left.CompareTo(right) <= 0;
 
+#endregion
 
     /// <summary>
-    /// 
+    /// Gets the None option
     /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.or"/>
-    public static Option<T> operator |(Option<T> x, Option<T> y) => x.IsSome() ? x : y;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.xor"/>
-    public static Option<T> operator ^(Option<T> x, Option<T> y)
-    {
-        if (x._isSome)
-        {
-            if (y._isSome)
-                return None;
-            return x;
-        }
-        else
-        {
-            if (y._isSome)
-                return y;
-            return None;
-        }
-    }
-
     public static Option<T> None => default;
+    
+    /// <summary>
+    /// Creates a new <see cref="Option{T}"/>.Some containing <paramref name="value"/>
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public static Option<T> Some(T value) => new(value);
 
-    private readonly bool _isSome;
     
+    private readonly bool _isSome;
     private readonly T? _value;
-
 
     private Option(T value)
     {
@@ -134,67 +115,6 @@ public readonly struct Option<T> :
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_none"/>
     public bool IsNone() => !_isSome;
 
-    public void Match(Action<T> onSome, Action onNone)
-    {
-        if (_isSome)
-        {
-            onSome(_value!);
-        }
-        else
-        {
-            onNone();
-        }
-    }
-
-    public void Match(Action<T> onSome, Action<Option.None> onNone)
-    {
-        if (_isSome)
-        {
-            onSome(_value!);
-        }
-        else
-        {
-            onNone(default);
-        }
-    }
-
-    public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
-    {
-        if (_isSome)
-        {
-            return some(_value!);
-        }
-        else
-        {
-            return none();
-        }
-    }
-
-    public TResult Match<TResult>(Func<T, TResult> some, Func<Option.None, TResult> none)
-    {
-        if (_isSome)
-        {
-            return some(_value!);
-        }
-        else
-        {
-            return none(default);
-        }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="noneErrorMessage"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.expect"/>
-    public T Expect(string noneErrorMessage)
-    {
-        if (_isSome)
-            return _value!;
-        throw new InvalidOperationException(noneErrorMessage);
-    }
 
     /// <summary>
     /// 
@@ -202,11 +122,11 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap"/>
-    public T Unwrap()
+    public T SomeOrThrow(string? errorMessage = null)
     {
         if (_isSome)
             return _value!;
-        throw new InvalidOperationException("This option is not some");
+        throw new InvalidOperationException(errorMessage ?? "This option is not some");
     }
 
     /// <summary>
@@ -215,7 +135,7 @@ public readonly struct Option<T> :
     /// <param name="value"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or"/>
-    public T UnwrapOr(T value)
+    public T SomeOr(T value)
     {
         if (_isSome)
             return _value!;
@@ -228,8 +148,7 @@ public readonly struct Option<T> :
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_default"/>
-    [return: MaybeNull]
-    public T UnwrapOrDefault()
+    public T? SomeOrDefault()
     {
         {
             if (_isSome)
@@ -244,7 +163,7 @@ public readonly struct Option<T> :
     /// <param name="getValue"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
-    public T UnwrapOrElse(Func<T> getValue)
+    public T SomeOrElse(Func<T> getValue)
     {
         if (_isSome)
             return _value!;
@@ -261,8 +180,8 @@ public readonly struct Option<T> :
     public Result<T, TError> OkOr<TError>(TError err)
     {
         if (_isSome)
-            return ScrubJay.Result<T, TError>.Ok(_value!);
-        return ScrubJay.Result<T, TError>.Error(err);
+            return Result<T, TError>.Ok(_value!);
+        return Result<T, TError>.Error(err);
     }
 
     /// <summary>
@@ -272,13 +191,13 @@ public readonly struct Option<T> :
     /// <typeparam name="TError"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or_else"/>
-    public ScrubJay.Result<T, TError> OkOrElse<TError>(Func<TError> getErr)
+    public Result<T, TError> OkOrElse<TError>(Func<TError> getErr)
     {
         if (_isSome)
-            return ScrubJay.Result<T, TError>.Ok(_value!);
-        return ScrubJay.Result<T, TError>.Error(getErr());
+            return Result<T, TError>.Ok(_value!);
+        return Result<T, TError>.Error(getErr());
     }
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -345,21 +264,53 @@ public readonly struct Option<T> :
         return getDefaultValue();
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.or"/>
-    public Option<T> Or(Option<T> other) => _isSome ? this : other;
+    public void Match(Action<T> onSome, Action onNone)
+    {
+        if (_isSome)
+        {
+            onSome(_value!);
+        }
+        else
+        {
+            onNone();
+        }
+    }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.or_else"/>
-    public Option<T> OrElse(Func<Option<T>> other) => _isSome ? this : other();
+    public void Match(Action<T> onSome, Action<Option.None> onNone)
+    {
+        if (_isSome)
+        {
+            onSome(_value!);
+        }
+        else
+        {
+            onNone(default);
+        }
+    }
+
+    public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
+    {
+        if (_isSome)
+        {
+            return some(_value!);
+        }
+        else
+        {
+            return none();
+        }
+    }
+
+    public TResult Match<TResult>(Func<T, TResult> some, Func<Option.None, TResult> none)
+    {
+        if (_isSome)
+        {
+            return some(_value!);
+        }
+        else
+        {
+            return none(default);
+        }
+    }
 
     public Result<T, Exception> AsResult()
     {
@@ -368,54 +319,7 @@ public readonly struct Option<T> :
         return new InvalidOperationException("Option.None");
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
-    public Enumerator GetEnumerator() => new Enumerator(this);
-
-    [MustDisposeResource(false)]
-    public struct Enumerator : IEnumerator<T>, IEnumerator, IDisposable
-    {
-        private bool _yielded;
-        private readonly T _value;
-
-        object? IEnumerator.Current => _value;
-        public T Current => _value;
-
-        public Enumerator(Option<T> option)
-        {
-            if (option._isSome)
-            {
-                _value = option._value!;
-                _yielded = false;
-            }
-            else
-            {
-                _value = default!;
-                _yielded = true;
-            }
-        }
-
-        public bool MoveNext()
-        {
-            if (_yielded)
-                return false;
-            _yielded = true;
-            return true;
-        }
-
-        void IEnumerator.Reset() => throw new NotSupportedException();
-
-        void IDisposable.Dispose()
-        {
-            // Do nothing
-        }
-    }
+#region Compare
 
     public int CompareTo(Option<T> other)
     {
@@ -445,6 +349,19 @@ public readonly struct Option<T> :
         }
     }
 
+    public int CompareTo(T? other)
+    {
+        if (_isSome)
+        {
+            return Comparer<T>.Default.Compare(_value!, other!);
+        }
+        else
+        {
+            // None compares as less than any Some
+            return -1;
+        }
+    }
+
     public int CompareTo(Option.None none)
     {
         // None compares as less than any Some
@@ -459,19 +376,20 @@ public readonly struct Option<T> :
         }
     }
 
-    public int CompareTo(T? other)
+    public int CompareTo(object? obj)
     {
-        if (_isSome)
+        return obj switch
         {
-            return Comparer<T>.Default.Compare(_value!, other!);
-        }
-        else
-        {
-            // None compares as less than any Some
-            return -1;
-        }
+            Option<T> option => CompareTo(option),
+            T some => CompareTo(some),
+            Option.None none => CompareTo(none),
+            _ => 1, // unknown values sort before
+        };
     }
 
+#endregion
+
+#region Equals
 
     public bool Equals(Option<T> other)
     {
@@ -500,23 +418,25 @@ public readonly struct Option<T> :
         }
     }
 
-    public bool Equals(Option.None none) => !_isSome;
-
     public bool Equals(T? value)
     {
         return _isSome && EqualityComparer<T>.Default.Equals(_value!, value!);
     }
+
+    public bool Equals(Option.None none) => !_isSome;
 
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return obj switch
         {
             Option<T> option => Equals(option),
-            Option.None none => Equals(none),
             T value => Equals(value),
+            Option.None none => Equals(none),
             _ => false,
         };
     }
+
+#endregion
 
     public override int GetHashCode()
     {
@@ -527,6 +447,55 @@ public readonly struct Option<T> :
 
     public override string ToString()
     {
-        return Match(value => $"Some({value})", () => nameof(None));
+        return Match(static value => $"Some({value})", static () => nameof(None));
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
+    public OptionEnumerator GetEnumerator() => new OptionEnumerator(this);
+
+    [MustDisposeResource(false)]
+    public struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
+    {
+        private bool _yielded;
+        private readonly T _value;
+
+        object? IEnumerator.Current => _value;
+        public T Current => _value;
+
+        public OptionEnumerator(Option<T> option)
+        {
+            if (option._isSome)
+            {
+                _value = option._value!;
+                _yielded = false;
+            }
+            else
+            {
+                _value = default!;
+                _yielded = true;
+            }
+        }
+
+        public bool MoveNext()
+        {
+            if (_yielded)
+                return false;
+            _yielded = true;
+            return true;
+        }
+
+        void IEnumerator.Reset() => throw new NotSupportedException();
+
+        void IDisposable.Dispose()
+        {
+            // Do nothing
+        }
     }
 }

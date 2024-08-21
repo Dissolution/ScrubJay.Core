@@ -21,11 +21,11 @@ public static class GlobalHelper
         get => default;
     }
 
-    public static Result.Ok Ok
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => default;
-    }
+    // public static Result.Ok Ok
+    // {
+    //     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //     get => default;
+    // }
 
     /// <inheritdoc cref="Option{T}.Some"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -19,10 +19,10 @@ public static class SpanExtensions
 
 #region Equal
 #if !NET6_0_OR_GREATER
-    public static bool SequenceEqual<T>(this Span<T> left, ReadOnlySpan<T> right, Constraints.None<T> _ = default)
+    public static bool SequenceEqual<T>(this Span<T> left, ReadOnlySpan<T> right, Constraints.Any<T> _ = default)
         => SequenceEqual<T>((ReadOnlySpan<T>)left, right);
     
-    public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, Constraints.None<T> _ = default)
+    public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, Constraints.Any<T> _ = default)
     {
         int firstLen = left.Length;
         if (right.Length != firstLen) return false;
@@ -51,8 +51,8 @@ public static class SpanExtensions
     }
 #endif
 
-    public static bool SequenceEqual<T>(this Span<T> left, IEnumerable<T>? right)
-        => SequenceEqual<T>((ReadOnlySpan<T>)left, right);
+    public static bool SequenceEqual<T>(this Span<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null)
+        => SequenceEqual<T>((ReadOnlySpan<T>)left, right, itemComparer);
 
     public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null)
     {
@@ -310,7 +310,7 @@ public static class SpanExtensions
     }
 
 
-    public static bool StartsWith<T>(this Span<T> span, ReadOnlySpan<T> slice, Constraints.None<T> _ = default)
+    public static bool StartsWith<T>(this Span<T> span, ReadOnlySpan<T> slice, Constraints.Any<T> _ = default)
     {
         int sliceLen = slice.Length;
         if (sliceLen > span.Length) return false;
@@ -335,7 +335,7 @@ public static class SpanExtensions
         return true;
     }
 
-    public static bool StartsWith<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> slice, Constraints.None<T> _ = default)
+    public static bool StartsWith<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> slice, Constraints.Any<T> _ = default)
     {
         int sliceLen = slice.Length;
         if (sliceLen > span.Length) return false;

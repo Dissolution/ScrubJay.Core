@@ -8,21 +8,26 @@ public class HasherTests
 {
     public static IEnumerable<object?[]> TypedData(int argCount)
     {
-        return TheoryHelper.ShuffledCombinations(argCount, TheoryHelper.Data.Objects);
+        return TheoryDataHelper.ShuffledCombinations(argCount, CommonTheoryData.Objects);
     }
 
     public static TheoryData<object?[]?> ArrayData()
     {
         var arrays = new List<object?[]>();
-        
-        var theoryObjects = TheoryHelper.Data.Objects;
-        for (var i = 0; i < theoryObjects.Length; i++)
+
+        var theoryObjects = CommonTheoryData.Objects.SelectMany(o => o).ToList();
+        for (var i = 0; i < theoryObjects.Count; i++)
         {
-            TheoryHelper.Shuffle<object?>(theoryObjects);
             var array = new object?[i];
-            theoryObjects.AsSpan(0, i).CopyTo(array);
+            theoryObjects.CopyTo(destination: array.AsSpan());
+#if NET48_OR_GREATER
+            new Random().Shuffle(array);
+#else
+            Random.Shared.Shuffle(array);
+#endif
             arrays.Add(array);
         }
+
         return new(arrays);
     }
 
@@ -33,7 +38,7 @@ public class HasherTests
         var hash = Hasher.GetHashCode<T>(value);
         Assert.NotEqual(0, hash);
     }
-    
+
     [Theory]
     [MemberData(nameof(TypedData), 2)]
     public void CanCombine2<T1, T2>(T1? first, T2? second)
@@ -41,7 +46,7 @@ public class HasherTests
         var hash = Hasher.Combine<T1, T2>(first, second);
         Assert.NotEqual(0, hash);
     }
-    
+
     [Theory]
     [MemberData(nameof(TypedData), 3)]
     public void CanCombine3<T1, T2, T3>(T1? first, T2? second, T3? third)
@@ -49,7 +54,7 @@ public class HasherTests
         var hash = Hasher.Combine<T1, T2, T3>(first, second, third);
         Assert.NotEqual(0, hash);
     }
-    
+
     [Theory]
     [MemberData(nameof(TypedData), 4)]
     public void CanCombine4<T1, T2, T3, T4>(T1? first, T2? second, T3? third, T4? fourth)
@@ -105,7 +110,7 @@ public class HasherTests
         var hash = Hasher.Combine<object?>(array);
         Assert.NotEqual(0, hash);
     }
-    
+
     [Theory]
     [MemberData(nameof(TypedData), 1)]
     public void GetHashCodeIsConsistent<T>(T? value)
@@ -114,7 +119,7 @@ public class HasherTests
         var beta = Hasher.GetHashCode(value);
         Assert.Equal(alpha, beta);
     }
-    
+
     [Theory]
     [MemberData(nameof(TypedData), 1)]
     public void GetHashCodeIsTheSameAsAdd<T>(T? value)
@@ -125,7 +130,7 @@ public class HasherTests
         var beta = hasher.ToHashCode();
         Assert.Equal(alpha, beta);
     }
-    
+
     [Theory]
     [MemberData(nameof(ArrayData))]
     public void CombineIsConsistent(object?[]? array)
@@ -147,12 +152,12 @@ public class HasherTests
         var beta = hasher.ToHashCode();
         Assert.Equal(alpha, beta);
     }
-    
+
     [Theory]
     [MemberData(nameof(ArrayData))]
     public void HashOrderMatters(object?[]? array)
     {
-        var copy = TheoryHelper.ReverseShallowCopy<object?>(array);
+        var copy = TheoryDataHelper.ReverseShallowCopy<object?>(array);
         Assert.True(array is null == copy is null);
         int alpha = Hasher.Combine<object?>(array);
         int beta = Hasher.Combine<object?>(copy);
@@ -172,7 +177,7 @@ public class HasherTests
             }
         }
     }
-    
+
     [Fact]
     public void NullHashingIsConsistent()
     {
@@ -186,7 +191,7 @@ public class HasherTests
         int epsilon = Hasher.Combine<object?>((IEnumerable<object?>)null!);
         Assert.Equal(alpha, epsilon);
     }
-    
+
     [Fact]
     public void EmptyHashingIsConsistent()
     {
@@ -198,7 +203,7 @@ public class HasherTests
         int delta = Hasher.Combine<object?>(Enumerable.Empty<object?>());
         Assert.Equal(alpha, delta);
     }
-   
+
     [Fact]
     public void NullHashIsDifferentThanEmptyHash()
     {
@@ -206,18 +211,18 @@ public class HasherTests
         var nullHash = Hasher.GetHashCode<object?>(null);
         Assert.NotEqual(emptyHash, nullHash);
     }
-    
+
     [Fact]
     public void AllWaysToCombineHashesAreTheSame()
     {
-        var theoryObjects = TheoryHelper.Data.Objects;
+        var theoryObjects = CommonTheoryData.Objects.SelectMany(o => o).ToList();
 
         IEnumerable<object?> dataEnumerable = theoryObjects.AsEnumerable();
         object?[] dataArray = theoryObjects.ToArray();
         Span<object?> dataSpan = dataArray.AsSpan();
 
         Hasher hasher;
-        
+
         hasher = new Hasher();
         hasher.AddMany<object?>(dataSpan);
         int alpha = hasher.ToHashCode();
@@ -231,24 +236,23 @@ public class HasherTests
         hasher.AddMany<object?>(dataEnumerable);
         int gamma = hasher.ToHashCode();
         Assert.Equal(alpha, gamma);
-        
+
         hasher = new Hasher();
-        for (var i = 0; i < theoryObjects.Length; i++)
+        for (var i = 0; i < theoryObjects.Count; i++)
         {
             hasher.Add<object?>(theoryObjects[i]);
         }
+
         int delta = hasher.ToHashCode();
         Assert.Equal(alpha, delta);
 
         int epsilon = Hasher.Combine<object?>(dataSpan);
         Assert.Equal(alpha, epsilon);
-        
+
         int zeta = Hasher.Combine<object?>(dataArray);
         Assert.Equal(alpha, zeta);
-        
+
         int eta = Hasher.Combine<object?>(dataEnumerable);
         Assert.Equal(alpha, eta);
-
     }
 }
-
