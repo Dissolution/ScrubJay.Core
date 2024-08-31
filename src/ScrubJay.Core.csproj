@@ -52,6 +52,7 @@
     <!-- Global Usings -->
     <ItemGroup>
         <Using Include="System.ComponentModel"/>
+        <Using Include="System.Diagnostics"/>
         <Using Include="System.Diagnostics.CodeAnalysis"/>
         <Using Include="System.Numerics"/>
         <Using Include="System.Runtime.CompilerServices"/>
@@ -60,6 +61,8 @@
         
         <Using Include="ScrubJay.GlobalHelper" Static="true"/>
         <Using Include="ScrubJay.Extensions"/>
+        
+        <Using Include="JetBrains.Annotations"/>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net481' ">

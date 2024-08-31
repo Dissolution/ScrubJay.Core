@@ -1,10 +1,11 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
-using ScrubJay.Collections;
+using ScrubJay.Buffers;
 using ScrubJay.Extensions;
+
 // ReSharper disable AccessToDisposedClosure
 
-namespace ScrubJay.Tests.Collections;
+namespace ScrubJay.Tests.Buffers;
 
 public class ObjectPoolTests
 {

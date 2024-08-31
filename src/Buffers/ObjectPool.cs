@@ -1,6 +1,6 @@
 ﻿using ScrubJay.Utilities;
 
-namespace ScrubJay.Collections;
+namespace ScrubJay.Buffers;
 
 /// <summary>
 /// Static methods for creating <see cref="ObjectPool{T}"/> instances

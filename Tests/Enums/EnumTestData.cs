@@ -100,7 +100,7 @@ public static class EnumTestData
     public static class Flagged
     {
         [Flags]
-        public enum EFSbyte : sbyte
+        public enum EfSbyte : sbyte
         {
             Default = 0,
             Alpha = 1 << 0,
@@ -111,7 +111,7 @@ public static class EnumTestData
         }
 
         [Flags]
-        public enum EFByte : byte
+        public enum EfByte : byte
         {
             Default = 0,
             Alpha = 1 << 0,
@@ -122,7 +122,7 @@ public static class EnumTestData
         }
         
         [Flags]
-        public enum EFShort : short
+        public enum EfShort : short
         {
             Default = 0,
             Alpha = 1 << 0,
@@ -133,7 +133,7 @@ public static class EnumTestData
         }
 
         [Flags]
-        public enum EFUshort : ushort
+        public enum EfUshort : ushort
         {
             Default = 0,
             Alpha = 1 << 0,
@@ -144,7 +144,7 @@ public static class EnumTestData
         }
         
         [Flags]
-        public enum EFInt : int
+        public enum EfInt : int
         {
             Default = 0,
             Alpha = 1 << 0,
@@ -155,7 +155,7 @@ public static class EnumTestData
         }
 
         [Flags]
-        public enum EFUint : uint
+        public enum EfUint : uint
         {
             Default = 0,
             Alpha = 1 << 0,
@@ -166,7 +166,7 @@ public static class EnumTestData
         }
         
         [Flags]
-        public enum EFLong : long
+        public enum EfLong : long
         {
             Default = 0,
             Alpha = 1 << 0,
@@ -177,7 +177,7 @@ public static class EnumTestData
         }
 
         [Flags]
-        public enum EFUlong : ulong
+        public enum EfUlong : ulong
         {
             Default = 0,
             Alpha = 1 << 0,

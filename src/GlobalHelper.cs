@@ -1,4 +1,6 @@
-﻿namespace ScrubJay;
+﻿global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+
+namespace ScrubJay;
 
 /// <summary>
 /// Global helper methods to support <see cref="Option{T}"/> and <see cref="Result{TOk, TError}"/>

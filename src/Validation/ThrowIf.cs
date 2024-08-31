@@ -3,7 +3,7 @@
 public static class ThrowIf
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Null<T>([AllowNull, NotNull] T value,
+    public static void Null<T>([AllowNull, System.Diagnostics.CodeAnalysis.NotNull] T value,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
     {

@@ -184,13 +184,13 @@ public class ResultTests
     public void ImplicitOkWorks()
     {
         Result<int, Exception> r1 = 147;
-        Assert.True(r1.IsOk(out var r1ok));
-        Assert.Equal(147, r1ok);
+        Assert.True(r1.IsOk(out var r1Ok));
+        Assert.Equal(147, r1Ok);
 
         var nl = new List<int>();
         Result<List<int>?, InvalidOperationException?> r2 = nl;
-        Assert.True(r2.IsOk(out var r2ok));
-        Assert.Equal(nl, r2ok);
+        Assert.True(r2.IsOk(out var r2Ok));
+        Assert.Equal(nl, r2Ok);
     }
     
     [Fact]
@@ -198,22 +198,22 @@ public class ResultTests
     {
         var ex1 = new Exception();
         Result<int, Exception> r1 = ex1;
-        Assert.True(r1.IsError(out var r1error));
-        Assert.Equal(ex1, r1error);
+        Assert.True(r1.IsError(out var r1Error));
+        Assert.Equal(ex1, r1Error);
 
         var ex2 = new InvalidOperationException();
         Result<int, Exception> r2 = ex2;
-        Assert.True(r2.IsError(out var r2error));
-        Assert.Equal(ex2, r2error);
+        Assert.True(r2.IsError(out var r2Error));
+        Assert.Equal(ex2, r2Error);
         
         var ex3 = new List<int>();
         Result<int, IEnumerable> r3 = ex3;
-        Assert.True(r3.IsError(out var r3error));
-        Assert.Equal(ex3, r3error);
+        Assert.True(r3.IsError(out var r3Error));
+        Assert.Equal(ex3, r3Error);
         
         Result<byte, Exception?> r4 = null;
-        Assert.True(r4.IsError(out var r4error));
-        Assert.Null(r4error);
+        Assert.True(r4.IsError(out var r4Error));
+        Assert.Null(r4Error);
     }
 
     [Theory]
@@ -285,18 +285,18 @@ public class ResultTests
     public void OkWorks()
     {
         Result<int, Exception> r1 = Result<int, Exception>.Ok(147);
-        Assert.True(r1.IsOk(out var r1ok));
-        Assert.Equal(147, r1ok);
+        Assert.True(r1.IsOk(out var r1Ok));
+        Assert.Equal(147, r1Ok);
         Assert.False(r1.IsError());
 
         Result<byte, byte> r2 = Result<byte, byte>.Ok(147);
-        Assert.True(r2.IsOk(out var r2ok));
-        Assert.Equal(147, r2ok);
+        Assert.True(r2.IsOk(out var r2Ok));
+        Assert.Equal(147, r2Ok);
         Assert.False(r2.IsError());
 
         Result<List<int>?, Exception?> r3 = Result<List<int>?, Exception?>.Ok(null);
-        Assert.True(r3.IsOk(out var r3ok));
-        Assert.Null(r3ok);
+        Assert.True(r3.IsOk(out var r3Ok));
+        Assert.Null(r3Ok);
         Assert.False(r3.IsError());
     }
     
@@ -306,18 +306,18 @@ public class ResultTests
         var ex = new InvalidOperationException("BAD");
         
         Result<int, Exception> r1 = Result<int, Exception>.Error(ex);
-        Assert.True(r1.IsError(out var r1error));
-        Assert.Equal(ex, r1error);
+        Assert.True(r1.IsError(out var r1Error));
+        Assert.Equal(ex, r1Error);
         Assert.False(r1.IsOk());
 
         Result<byte, byte> r2 = Result<byte, byte>.Error(147);
-        Assert.True(r2.IsError(out var r2error));
-        Assert.Equal(147, r2error);
+        Assert.True(r2.IsError(out var r2Error));
+        Assert.Equal(147, r2Error);
         Assert.False(r2.IsOk());
 
         Result<List<int>?, Exception?> r3 = Result<List<int>?, Exception?>.Error(null);
-        Assert.True(r3.IsError(out var r3error));
-        Assert.Null(r3error);
+        Assert.True(r3.IsError(out var r3Error));
+        Assert.Null(r3Error);
         Assert.False(r3.IsOk());
     }
 }

@@ -20,14 +20,14 @@ public class EnumExtensionsTests
             typeof(NonFlagged.ELong),
             typeof(NonFlagged.EUlong),
 
-            typeof(Flagged.EFSbyte),
-            typeof(Flagged.EFByte),
-            typeof(Flagged.EFShort),
-            typeof(Flagged.EFUshort),
-            typeof(Flagged.EFInt),
-            typeof(Flagged.EFUint),
-            typeof(Flagged.EFLong),
-            typeof(Flagged.EFUlong),
+            typeof(Flagged.EfSbyte),
+            typeof(Flagged.EfByte),
+            typeof(Flagged.EfShort),
+            typeof(Flagged.EfUshort),
+            typeof(Flagged.EfInt),
+            typeof(Flagged.EfUint),
+            typeof(Flagged.EfLong),
+            typeof(Flagged.EfUlong),
         };
 
         foreach (var enumType in enumTypes)

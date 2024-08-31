@@ -39,19 +39,19 @@ public class EnumerableExtensionsTests
     }
 
 
-    private sealed class BadEnumerable_Null : IEnumerable<int>, IEnumerable
+    private sealed class BadEnumerableNull : IEnumerable<int>, IEnumerable
     {
         IEnumerator IEnumerable.GetEnumerator() => null!;
         public IEnumerator<int> GetEnumerator() => null!;
     }
 
-    private sealed class BadEnumerable_Throw : IEnumerable<int>, IEnumerable
+    private sealed class BadEnumerableThrow : IEnumerable<int>, IEnumerable
     {
         IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
         public IEnumerator<int> GetEnumerator() => throw new NotSupportedException();
     }
 
-    private sealed class BadEnumerable_Bad : IEnumerable<int>, IEnumerable
+    private sealed class BadEnumerableBad : IEnumerable<int>, IEnumerable
     {
         IEnumerator IEnumerable.GetEnumerator() => new BadEnumerator();
         public IEnumerator<int> GetEnumerator() => new BadEnumerator();
@@ -70,11 +70,11 @@ public class EnumerableExtensionsTests
     {
         null!,
         new int[3] { 0, 1, 2 },
-        new BadEnumerable_Null(),
+        new BadEnumerableNull(),
         new List<int> { 1, 2, 3 },
-        new BadEnumerable_Throw(),
+        new BadEnumerableThrow(),
         Enumerable.Range(0, 5),
-        new BadEnumerable_Bad(),
+        new BadEnumerableBad(),
     };
 
     [Theory]

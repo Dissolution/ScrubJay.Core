@@ -3,7 +3,7 @@ using ScrubJay.Validation;
 
 // ReSharper disable MethodOverloadWithOptionalParameter
 
-namespace ScrubJay.Collections;
+namespace ScrubJay.Buffers;
 
 /// <summary>
 /// A pool of <typeparamref name="T"/> instances
