@@ -3,7 +3,7 @@ namespace JetBrains.Annotations;
 
 /// <inheritdoc cref="JetBrains.Annotations.MustDisposeResourceAttribute"/>
 /// <remarks>
-/// The only difference is this can target a Struct
+/// This version of <see cref="MustDisposeResourceAttribute"/> supports struct targets
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 internal sealed class MustDisposeResourceAttribute : Attribute

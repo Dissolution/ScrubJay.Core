@@ -1,12 +1,11 @@
 ﻿// ReSharper disable InconsistentNaming
-
-using JetBrains.Annotations;
 using ScrubJay.Utilities;
 
 namespace ScrubJay;
 
 // <a href="https://doc.rust-lang.org/std/option/index.html">Rust's Option</a>
 
+[PublicAPI]
 public readonly struct Option<T> :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Option<T>, Option<T>, bool>,
@@ -62,13 +61,14 @@ public readonly struct Option<T> :
     /// <summary>
     /// Gets the None option
     /// </summary>
-    public static Option<T> None => default;
+    public static readonly Option<T> None; // == default == default(None) == None.Default
     
     /// <summary>
     /// Creates a new <see cref="Option{T}"/>.Some containing <paramref name="value"/>
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some(T value) => new(value);
 
     
@@ -86,6 +86,7 @@ public readonly struct Option<T> :
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSome() => _isSome;
 
     /// <summary>
@@ -94,8 +95,10 @@ public readonly struct Option<T> :
     /// <param name="predicate"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSomeAnd(Func<T, bool> predicate) => _isSome && predicate(_value!);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSome([MaybeNullWhen(false)] out T value)
     {
         if (_isSome)
@@ -113,6 +116,7 @@ public readonly struct Option<T> :
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_none"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsNone() => !_isSome;
 
 
@@ -122,6 +126,7 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T SomeOrThrow(string? errorMessage = null)
     {
         if (_isSome)
@@ -135,6 +140,7 @@ public readonly struct Option<T> :
     /// <param name="value"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T SomeOr(T value)
     {
         if (_isSome)
@@ -148,6 +154,7 @@ public readonly struct Option<T> :
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_default"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T? SomeOrDefault()
     {
         {
@@ -163,6 +170,7 @@ public readonly struct Option<T> :
     /// <param name="getValue"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T SomeOrElse(Func<T> getValue)
     {
         if (_isSome)
@@ -264,6 +272,7 @@ public readonly struct Option<T> :
         return getDefaultValue();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Match(Action<T> onSome, Action onNone)
     {
         if (_isSome)
@@ -276,6 +285,7 @@ public readonly struct Option<T> :
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Match(Action<T> onSome, Action<Option.None> onNone)
     {
         if (_isSome)
@@ -288,6 +298,7 @@ public readonly struct Option<T> :
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
     {
         if (_isSome)
@@ -300,6 +311,7 @@ public readonly struct Option<T> :
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TResult Match<TResult>(Func<T, TResult> some, Func<Option.None, TResult> none)
     {
         if (_isSome)

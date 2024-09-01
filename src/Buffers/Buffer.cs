@@ -8,10 +8,10 @@ public delegate int UseAvailable<T>(Span<T> emptyBuffer);
 /// <summary>
 /// 
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">The <see cref="Type"/> of items stored in this <see cref="Buffer{T}"/></typeparam>
 /// <remarks>
 /// Heavily inspired by <see cref="T:System.Collections.Generic.ValueListBuilder{T}"/><br/>
-/// <a href="https://github.com/dotnet/runtime/blob/a9ed4168626c14b4d74db0d8c205c69e56fc45ed/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/ValueListBuilder.cs"/>
+/// <a href="https://github.com/dotnet/runtime/blob/release/8.0/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/ValueListBuilder.cs"/>
 /// </remarks> 
 [MustDisposeResource]
 public ref struct Buffer<T> // : IDisposable
@@ -293,7 +293,7 @@ public ref struct Buffer<T> // : IDisposable
 
     public BufferEnumerator GetEnumerator() => new(this);
     
-    public ref struct BufferEnumerator // : IEnumerator<T>, IEnumerator, IDisposable
+    public ref struct BufferEnumerator
     {
         private readonly ReadOnlySpan<T> _items;
         private int _index;
@@ -325,6 +325,16 @@ public ref struct Buffer<T> // : IDisposable
                 return false;
             _index = newIndex;
             return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Option<T> TryMoveNext()
+        {
+            int newIndex = _index + 1;
+            if (newIndex >= _items.Length)
+                return None;
+            _index = newIndex;
+            return Some(_items[newIndex]);
         }
     }
 }
