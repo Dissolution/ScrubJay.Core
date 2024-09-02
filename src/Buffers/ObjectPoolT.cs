@@ -283,6 +283,11 @@ public sealed class ObjectPool<T> : IDisposable
         /// </exception>
         public T Instance => _instance ?? throw new ObjectDisposedException(nameof(PoolInstance));
 
+        /// <summary>
+        /// Has this <see cref="PoolInstance"/> been disposed?
+        /// </summary>
+        public bool IsDisposed => _instance is null;
+        
         internal PoolInstance(ObjectPool<T> pool, T instance)
         {
             Debug.Assert(instance is not null);
@@ -310,7 +315,7 @@ public sealed class ObjectPool<T> : IDisposable
     /// </param>
     public void Borrow(Action<T> instanceAction)
     {
-        ThrowIf.Null(instanceAction);
+        Validate.IsNotNull(instanceAction).OkOrThrow();
         T instance = Rent();
         instanceAction.Invoke(instance);
         Return(instance);
@@ -327,7 +332,7 @@ public sealed class ObjectPool<T> : IDisposable
     /// </param>
     public TResult Borrow<TResult>(Func<T, TResult> instanceFunc)
     {
-        ThrowIf.Null(instanceFunc);
+        Validate.IsNotNull(instanceFunc).OkOrThrow();
         T instance = Rent();
         TResult result = instanceFunc.Invoke(instance);
         Return(instance);

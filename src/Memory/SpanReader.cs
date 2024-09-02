@@ -145,9 +145,9 @@ public ref struct SpanReader<T>
 
     public ReadOnlySpan<T> TakeUntil(T match) => TakeWhile(item => !EqualityComparer<T>.Default.Equals(item, match));
 
-    public ReadOnlySpan<T> TakeAny(params T[] matches) => TakeWhile(item => matches.Contains(item));
+    public ReadOnlySpan<T> TakeWhileAny(params T[] matches) => TakeWhile(item => matches.Contains(item));
 
-    public ReadOnlySpan<T> TakeAny(IReadOnlyCollection<T> matches) => TakeWhile(item => matches.Contains(item));
+    public ReadOnlySpan<T> TakeWhileAny(IReadOnlyCollection<T> matches) => TakeWhile(item => matches.Contains(item));
 
     public ReadOnlySpan<T> TakeAll() => TakeWhile(static _ => true);
 

@@ -21,7 +21,7 @@ public static class Equate
             .GetProperty("Default", BindingFlags.Public | BindingFlags.Static)
             .ThrowIfNull()
             .GetValue(null)
-            .AsValid<IEqualityComparer>();
+            .ThrowIfNot<IEqualityComparer>();
     }
 
     public static IEqualityComparer GetEqualityComparer(Type type)

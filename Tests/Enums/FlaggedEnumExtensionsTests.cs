@@ -207,7 +207,7 @@ public class FlaggedEnumExtensionsTests
     {
         var flags = Enum
             .GetValues(typeof(TEnum))
-            .AsValid<TEnum[]>()
+            .ThrowIfNot<TEnum[]>()
             .Where(flag =>
             {
                 var value = FlagsEnumExtensions.ToUInt64(flag);
@@ -230,7 +230,7 @@ public class FlaggedEnumExtensionsTests
         
         var flags = Enum
             .GetValues(typeof(TEnum))
-            .AsValid<TEnum[]>()
+            .ThrowIfNot<TEnum[]>()
             .Where(flag => 
             {
                 var value = FlagsEnumExtensions.ToUInt64(flag);

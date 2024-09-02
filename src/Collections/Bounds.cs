@@ -12,7 +12,7 @@ public readonly struct Bounds<T> :
     IParsable<Bounds<T>>,
 #endif
 #if NET6_0_OR_GREATER
-    //ISpanFormattable,
+    ISpanFormattable,
 #endif
     IEquatable<Bounds<T>>,
     IFormattable
@@ -20,10 +20,21 @@ public readonly struct Bounds<T> :
     public static bool operator ==(Bounds<T> left, Bounds<T> right) => left.Equals(right);
 
     public static bool operator !=(Bounds<T> left, Bounds<T> right) => !left.Equals(right);
-    
-    #if NET7_0_OR_GREATER
+
+#if NET7_0_OR_GREATER
     static Bounds<T> IParsable<Bounds<T>>.Parse(string s, IFormatProvider? provider)
     {
+        SpanReader<char> reader = new(s);
+        reader.SkipWhile(char.IsWhiteSpace);
+        if (!reader.TryTake().IsSome(out var minInclusivityMarker))
+            throw new ArgumentException(null, nameof(s));
+        bool minInclusive = minInclusivityMarker switch
+        {
+            '(' => false,
+            '[' => true,
+            _ => throw new ArgumentException(null, nameof(s)),
+        };
+        var min = reader.TakeUntil(',');
         throw new NotImplementedException();
     }
 
@@ -203,6 +214,56 @@ public readonly struct Bounds<T> :
         return Hasher.Combine(Minimum, MinimumIsInclusive, Maximum, MaximumIsInclusive);
     }
 
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format = default, IFormatProvider? provider = default)
+    {
+        SpanWriter<char> writer = new(destination);
+
+        if (Minimum.IsSome(out var min))
+        {
+            if (MinimumIsInclusive)
+            {
+                if (!writer.TryWrite('['))
+                    goto Fail;
+            }
+            else
+            {
+                if (!writer.TryWrite('('))
+                    goto Fail;
+            }
+
+            if (!writer.TryWriteFormatted<T>(min, format.ToString(), provider))
+                goto Fail;
+        }
+
+        if (!writer.TryWrite(".."))
+            goto Fail;
+
+        if (Maximum.IsSome(out var max))
+        {
+            if (!writer.TryWriteFormatted<T>(max, format.ToString(), provider))
+                goto Fail;
+
+            if (MaximumIsInclusive)
+            {
+                if (!writer.TryWrite(']'))
+                    goto Fail;
+            }
+            else
+            {
+                if (!writer.TryWrite(')'))
+                    goto Fail;
+            }
+        }
+
+        charsWritten = writer.Count;
+        return true;
+        
+    Fail:
+        writer.Clear();
+        charsWritten = 0;
+        return false;
+    }
+
     public string ToString(string? format, IFormatProvider? _ = default)
     {
         if (format is null)
@@ -224,11 +285,11 @@ public readonly struct Bounds<T> :
         }
 
         text.AppendLiteral("..");
-        
+
         if (Maximum.IsSome(out var max))
         {
             text.AppendFormatted<T>(max, format);
-            
+
             if (MaximumIsInclusive)
             {
                 text.AppendFormatted(']');

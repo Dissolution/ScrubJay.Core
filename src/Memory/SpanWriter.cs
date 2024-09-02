@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics;
+using ScrubJay.Buffers;
 
 namespace ScrubJay.Memory;
+
+public delegate bool SpanWriterTryWrite<T>(ref SpanWriter<T> writer);
 
 public ref struct SpanWriter<T>
 {
@@ -13,7 +16,16 @@ public ref struct SpanWriter<T>
         get => _span.Length;
     }
 
-    public int Count => _position;
+    public int Count
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _position;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal set => _position = value.Clamp(0, Capacity);
+    }
+
+    internal Span<T> Written => _span.Slice(0, _position);
+    internal Span<T> Available => _span.Slice(_position);
     
     public SpanWriter(Span<T> span)
     {
@@ -29,6 +41,24 @@ public ref struct SpanWriter<T>
         _position = position;
     }
 
+
+
+    public bool Chain(params SpanWriterTryWrite<T>[] writes)
+    {
+        for (int i = 0; i < writes.Length; i++)
+        {
+            if (!writes[i](ref this))
+                return false;
+        }
+        return true;
+    }
+
+    public void UseAvailable(UseAvailable<T> useAvailable)
+    {
+        int used = useAvailable(_span.Slice(_position));
+        _position += used;
+    }
+    
     public bool TryWrite(T item)
     {
         int pos = _position;
@@ -43,7 +73,7 @@ public ref struct SpanWriter<T>
         return false;
     }
 
-    public bool TryWriteMany(ReadOnlySpan<T> items)
+    public bool TryWriteMany(scoped ReadOnlySpan<T> items)
     {
         int pos = _position;
         int newPos = pos + items.Length;
@@ -97,6 +127,12 @@ public ref struct SpanWriter<T>
         }
         return new ArgumentException("Cannot write an uncountable collection", nameof(items));
     }
+
+    public void Clear()
+    {
+        _span.Slice(0, _position).Clear();
+    }
+    
     
     public bool TryCopyTo(Span<T> span) => AsSpan().TryCopyTo(span);
     

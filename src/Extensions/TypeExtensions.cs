@@ -90,9 +90,9 @@ public static class TypeExtensions
     /// </summary>
     /// <param name="type">The <see cref="Type"/> to examine</param>
     /// <returns>
-    /// <c>true</c> if instances of this <see cref="Type"/> can contain <c>null</c> (such as classes and Nullable&lt;&gt;)<br/>
+    /// <c>true</c> if instances of this <see cref="Type"/> can contain <c>null</c> (such as classes, interfaces, and <see cref="Nullable{T}"/>)<br/>
     /// <c>false</c> if they cannot (value types)
-    /// </returns>
+    /// </returns>                     
     public static bool CanContainNull(this Type? type)
     {
         if (type is null) return true;

@@ -20,7 +20,7 @@ public static class Compare
             .GetProperty("Default", BindingFlags.Public | BindingFlags.Static)
             .ThrowIfNull()
             .GetValue(null)
-            .AsValid<IComparer>();
+            .ThrowIfNot<IComparer>();
     }
 
     public static IComparer GetComparer(Type type)
@@ -30,7 +30,7 @@ public static class Compare
 
     public static IComparer<T> GetComparer<T>()
     {
-        return _comparers.GetOrAdd<T>(static t => FindComparer(t)).AsValid<IComparer<T>>();
+        return _comparers.GetOrAdd<T>(static t => FindComparer(t)).ThrowIfNot<IComparer<T>>();
     }
 
     public static IComparer<T> CreateComparer<T>(Func<T?, T?, int> compare)

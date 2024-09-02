@@ -2,12 +2,15 @@
 
 namespace ScrubJay.Buffers;
 
+/// <summary>
+/// <see cref="ArrayPool{T}"/> manager
+/// </summary>
 public static class ArrayPool
 {
     public const int MIN_CAPACITY = 16; // tested
 
     public const int MAX_CAPACITY = 0X7FFFFFC7; // == Array.MaxLength
-
+    
     public static T[] Rent<T>()
     {
         return ArrayPool<T>.Shared.Rent(MIN_CAPACITY);

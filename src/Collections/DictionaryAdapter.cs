@@ -7,7 +7,14 @@ namespace ScrubJay.Collections;
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TValue"></typeparam>
-public sealed class DictionaryAdapter<TKey, TValue> : IDictionary<TKey, TValue>
+[PublicAPI]
+public sealed class DictionaryAdapter<TKey, TValue> : 
+    IDictionary<TKey, TValue>,
+    IReadOnlyDictionary<TKey, TValue>,
+    ICollection<KeyValuePair<TKey, TValue>>,
+    IReadOnlyCollection<KeyValuePair<TKey, TValue>>,
+    IEnumerable<KeyValuePair<TKey, TValue>>,
+    IEnumerable
     where TKey : notnull
 {
     [return: NotNullIfNotNull(nameof(objKey))]
@@ -40,17 +47,17 @@ public sealed class DictionaryAdapter<TKey, TValue> : IDictionary<TKey, TValue>
         set => _dictionary[key] = value;
     }
 
-
     ICollection<TKey> IDictionary<TKey, TValue>.Keys => _dictionary.Keys.Cast<TKey>().ToHashSet();
-#if NET481 || NETSTANDARD2_0 || NETSTANDARD2_1
-/// <inheritdoc cref="IDictionary{TKey,TValue}.Keys"/>
-    public IReadOnlyCollection<TKey> Keys => _dictionary.Keys.Cast<TKey>().ToHashSet();
-#else
+
+    IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => _dictionary.Keys.Cast<TKey>();
+    
     /// <inheritdoc cref="IDictionary{TKey,TValue}.Keys"/>
-    public IReadOnlySet<TKey> Keys => _dictionary.Keys.Cast<TKey>().ToHashSet();
-#endif
+    public IReadOnlyCollection<TKey> Keys => _dictionary.Keys.Cast<TKey>().ToHashSet();
+
 
     ICollection<TValue> IDictionary<TKey, TValue>.Values => _dictionary.Values.Cast<TValue>().ToList();
+
+    IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => _dictionary.Values.Cast<TValue>();
 
     /// <inheritdoc cref="IDictionary{TKey,TValue}.Values"/>
     public IReadOnlyCollection<TValue> Values => _dictionary.Values.Cast<TValue>().ToList();
@@ -102,7 +109,7 @@ public sealed class DictionaryAdapter<TKey, TValue> : IDictionary<TKey, TValue>
 
     void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
-        ThrowIf.Null(array);
+        Validate.ThrowIfNull(array);
         if ((uint)arrayIndex + Count > array.Length)
             throw new ArgumentOutOfRangeException(nameof(arrayIndex));
 

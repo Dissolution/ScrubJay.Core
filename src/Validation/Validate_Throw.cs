@@ -1,6 +1,6 @@
 ﻿namespace ScrubJay.Validation;
 
-public static class ThrowExtensions
+public static partial class Validate
 {
     /// <summary>
     /// Returns <paramref name="value"/> or throws an <see cref="ArgumentNullException"/> if it is <c>null</c>
@@ -50,7 +50,7 @@ public static class ThrowExtensions
     /// Thrown is <paramref name="obj"/> is not a valid <typeparamref name="TOut"/> value
     /// </exception>
     [return: NotNull]
-    public static TOut AsValid<TOut>(
+    public static TOut ThrowIfNot<TOut>(
         [AllowNull, NotNull]
         this object? obj,
         [CallerArgumentExpression(nameof(obj))]
@@ -64,17 +64,17 @@ public static class ThrowExtensions
         };
     }
 
-//
-//    [return: NotNullIfNotNull(nameof(obj))]
-//    public static TOut? AsNullValid<TOut>(
-//        this object? obj,
-//        [CallerArgumentExpression(nameof(obj))]
-//        string? objName = null)
-//    {
-//        if (obj.CanBe<TOut>(out var output))
-//            return output;
-//        throw new ArgumentException(
-//            $"The given {obj?.GetType().Name} value is not a valid {typeof(TOut).Name} instance",
-//            objName);
-//    }
+
+    [return: NotNullIfNotNull(nameof(obj))]
+    public static TOut? ThrowIfCannotBe<TOut>(
+        this object? obj,
+        [CallerArgumentExpression(nameof(obj))]
+        string? objName = null)
+    {
+        if (obj.CanBe<TOut>(out var output))
+            return output;
+        throw new ArgumentException(
+            $"The given {obj?.GetType().Name} value is not a valid {typeof(TOut).Name} instance",
+            objName);
+    }
 }
