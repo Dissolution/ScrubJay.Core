@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using ScrubJay.Extensions;
+﻿using System.Reflection;
 
 namespace ScrubJay.Tests;
 
@@ -18,18 +16,16 @@ public static class CommonTheoryData
         default(Option.None),
         // struct
         IntPtr.Zero,
-        // Nullable
-        //(Nullable<int>)null,
         (Nullable<int>)147,
         // char
         '❤',
         // string
-        //(string?)null,
         string.Empty,
         "Sphinx of black quartz, judge my vow.",
         "❤️",
         // array
         new byte[4] { 0, 147, 13, 101 },
+        // delegate
         new Action(static () => { }),
         // object itself
         new object(),

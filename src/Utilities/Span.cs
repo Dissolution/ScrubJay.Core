@@ -1,6 +1,4 @@
-﻿using ScrubJay.Validation;
-
-namespace ScrubJay.Utilities;
+﻿namespace ScrubJay.Utilities;
 
 public static class Span
 {
@@ -66,37 +64,30 @@ public static class Span
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Copy<T>(scoped ReadOnlySpan<T> source, T[]? destination)
     {
-        Validate.ThrowIfNull(destination);
         source.CopyTo(destination);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Copy<T>(T[]? source, Span<T> destination)
     {
-        Validate.ThrowIfNull(source);
         new ReadOnlySpan<T>(source).CopyTo(destination);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Copy<T>(T[]? source, T[]? destination)
     {
-        Validate.ThrowIfNull(source);
-        Validate.ThrowIfNull(destination);
         new ReadOnlySpan<T>(source).CopyTo(destination);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Copy(string? str, Span<char> destination)
     {
-        Validate.ThrowIfNull(str);
         str.AsSpan().CopyTo(destination);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Copy(string? str, char[]? destination)
     {
-        Validate.ThrowIfNull(str);
-        Validate.ThrowIfNull(destination);
         str.AsSpan().CopyTo(destination);
     }
 }

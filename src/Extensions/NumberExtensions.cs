@@ -6,7 +6,7 @@ public static class NumberExtensions
 {
     public static int Clamp(this int number, Bounds<int> bounds)
     {
-        return bounds.Clamp(number);
+        return bounds.Clamped(number);
     }
 
     public static int Clamp(this int number, int inclusiveMin, int inclusiveMax)

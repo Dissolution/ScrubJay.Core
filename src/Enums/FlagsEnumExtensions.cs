@@ -4,7 +4,6 @@
 using InlineIL;
 #endif
 
-using System.Diagnostics;
 using static InlineIL.IL;
 
 
@@ -17,6 +16,7 @@ namespace ScrubJay.Enums;
 /// There is no way to constrict these extensions to flagged enums,
 /// so beware of odd behavior for non-flagged enums
 /// </remarks>
+[PublicAPI]
 public static class FlagsEnumExtensions
 {
     /// <summary>

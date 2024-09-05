@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace ScrubJay.Tests;
+﻿namespace ScrubJay.Tests;
 
 internal static class TheoryDataHelper
 {

@@ -1,9 +1,7 @@
-using ScrubJay.Validation;
-
 namespace ScrubJay.Collections;
 
 /// <summary>
-/// An adapter for <see cref="IDictionary"/> to a typed <see cref="IDictionary{TKey,TValue}"/>
+/// An adapter to consume an <see cref="IDictionary"/> with generically-typed Keys and Values
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TValue"></typeparam>
@@ -18,7 +16,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
     where TKey : notnull
 {
     [return: NotNullIfNotNull(nameof(objKey))]
-    private static TKey ConvertObjKey(
+    private static TKey ObjectToKey(
         [AllowNull, NotNull] object? objKey,
         [CallerArgumentExpression(nameof(objKey))]
         string? keyName = null)
@@ -31,7 +29,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
         };
     }
     [return: NotNullIfNotNull(nameof(objValue))]
-    private static TValue? ConvertObjValue(object? objValue)
+    private static TValue? ObjectToValue(object? objValue)
     {
         if (objValue.CanBe<TValue>(out var value))
             return value;
@@ -43,7 +41,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
     public TValue this[TKey key]
     {
-        get => ConvertObjValue(_dictionary[key])!;
+        get => ObjectToValue(_dictionary[key])!;
         set => _dictionary[key] = value;
     }
 
@@ -85,14 +83,14 @@ public sealed class DictionaryAdapter<TKey, TValue> :
     public bool Contains(TKey key, TValue value)
     {
         if (!_dictionary.Contains((object)key)) return false;
-        var existingValue = ConvertObjValue(_dictionary[key]);
+        var existingValue = ObjectToValue(_dictionary[key]);
         return EqualityComparer<TValue>.Default.Equals(existingValue, value);
     }
 
     public bool Contains(KeyValuePair<TKey, TValue> pair)
     {
         if (!_dictionary.Contains((object)pair.Key)) return false;
-        var existingValue = ConvertObjValue(_dictionary[pair.Key]);
+        var existingValue = ObjectToValue(_dictionary[pair.Key]);
         return EqualityComparer<TValue>.Default.Equals(existingValue, pair.Value);
     }
 
@@ -100,7 +98,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
     {
         if (_dictionary.Contains(key))
         {
-            value = ConvertObjValue(_dictionary[key])!;
+            value = ObjectToValue(_dictionary[key])!;
             return true;
         }
         value = default!;
@@ -109,13 +107,11 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
     void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
-        Validate.ThrowIfNull(array);
-        if ((uint)arrayIndex + Count > array.Length)
-            throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-
+        Validate.CopyTo(_dictionary.Count, array, arrayIndex).OkOrThrow();
+        
         foreach (DictionaryEntry entry in _dictionary)
         {
-            array[arrayIndex++] = new(ConvertObjKey(entry.Key), ConvertObjValue(entry.Value)!);
+            array[arrayIndex++] = new(ObjectToKey(entry.Key), ObjectToValue(entry.Value)!);
         }
     }
 
@@ -154,6 +150,6 @@ public sealed class DictionaryAdapter<TKey, TValue> :
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _dictionary
         .Cast<DictionaryEntry>()
-        .Select(entry => new KeyValuePair<TKey, TValue>(ConvertObjKey(entry.Key), ConvertObjValue(entry.Value)!))
+        .Select(entry => new KeyValuePair<TKey, TValue>(ObjectToKey(entry.Key), ObjectToValue(entry.Value)!))
         .GetEnumerator();
 }

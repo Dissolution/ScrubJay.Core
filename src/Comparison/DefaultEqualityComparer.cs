@@ -1,6 +1,4 @@
-﻿using ScrubJay.Utilities;
-
-namespace ScrubJay.Comparison;
+﻿namespace ScrubJay.Comparison;
 
 #pragma warning disable CS8604
 public sealed class DefaultEqualityComparer : IEqualityComparer

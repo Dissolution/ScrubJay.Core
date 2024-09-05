@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
-using JetBrains.Annotations;
 using ScrubJay.Collections;
-using ScrubJay.Utilities;
-using ScrubJay.Validation;
+
 // ReSharper disable MethodOverloadWithOptionalParameter
 // ReSharper disable InvokeAsExtensionMethod
 
@@ -30,12 +28,11 @@ public static class Compare
 
     public static IComparer<T> GetComparer<T>()
     {
-        return _comparers.GetOrAdd<T>(static t => FindComparer(t)).ThrowIfNot<IComparer<T>>();
+        return _comparers.GetOrAdd<T>(static _ => Comparer<T>.Default).ThrowIfNot<IComparer<T>>();
     }
 
     public static IComparer<T> CreateComparer<T>(Func<T?, T?, int> compare)
         => Comparer<T>.Create((x, y) => compare(x, y));
-
     
 
     public static int Values<T>(T? left, T? right) => GetComparer<T>().Compare(left!, right!);

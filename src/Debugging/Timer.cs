@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace ScrubJay.Debugging;
 
 public static class Timer

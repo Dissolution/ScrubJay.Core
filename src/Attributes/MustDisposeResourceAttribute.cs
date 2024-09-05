@@ -5,7 +5,7 @@ namespace JetBrains.Annotations;
 /// <remarks>
 /// This version of <see cref="MustDisposeResourceAttribute"/> supports struct targets
 /// </remarks>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.ReturnValue)]
 internal sealed class MustDisposeResourceAttribute : Attribute
 {
     public bool Value { get; }

@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace ScrubJay.Extensions;
 
 /// <summary>
@@ -7,17 +5,17 @@ namespace ScrubJay.Extensions;
 /// </summary>
 public static class EnumerableExtensions
 {
-#if NETSTANDARD2_0
-    public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
-    {
-        return new HashSet<T>(source);
-    }
-    public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source, IEqualityComparer<T>? itemComparer)
-    {
-        return new HashSet<T>(source, itemComparer);
-    }
-#endif
-    
+// #if NETSTANDARD2_0
+//     public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
+//     {
+//         return new HashSet<T>(source);
+//     }
+//     public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source, IEqualityComparer<T>? itemComparer)
+//     {
+//         return new HashSet<T>(source, itemComparer);
+//     }
+// #endif
+
     /// <summary>
     /// A Predicate against <paramref name="input"/> that also produces <paramref name="output"/>
     /// </summary>
@@ -52,20 +50,16 @@ public static class EnumerableExtensions
     /// <typeparam name="TIn"></typeparam>
     /// <typeparam name="TOut"></typeparam>
     /// <returns></returns>
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
-        this IEnumerable<TIn> enumerable,
-        Func<TIn, Option<TOut>> selectWhere)
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> enumerable, Func<TIn, Option<TOut>> selectWhere)
     {
         return enumerable.SelectMany(i => selectWhere(i));
     }
 
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut, TError>(
-        this IEnumerable<TIn> enumerable,
-        Func<TIn, Result<TOut, TError>> selectWhere)
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut, TError>(this IEnumerable<TIn> enumerable, Func<TIn, Result<TOut, TError>> selectWhere)
     {
         return enumerable.SelectMany(i => selectWhere(i));
     }
-    
+
     public static T One<T>(this IEnumerable<T> enumerable)
     {
         using var e = enumerable.GetEnumerator();
@@ -80,19 +74,22 @@ public static class EnumerableExtensions
     [return: NotNullIfNotNull(nameof(defaultValue))]
     public static T? OneOrDefault<T>(this IEnumerable<T>? source, T? defaultValue = default)
     {
-        if (source is null) return defaultValue;
+        if (source is null)
+            return defaultValue;
         using var e = source.GetEnumerator();
-        if (!e.MoveNext()) return defaultValue;
+        if (!e.MoveNext())
+            return defaultValue;
         T value = e.Current;
-        if (e.MoveNext()) return defaultValue;
+        if (e.MoveNext())
+            return defaultValue;
         return value;
     }
 
     [return: NotNullIfNotNull(nameof(defaultValue))]
-    public static T? OneOrDefault<T>(this IEnumerable<T>? source,
-        Func<T, bool> predicate, T? defaultValue = default)
+    public static T? OneOrDefault<T>(this IEnumerable<T>? source, Func<T, bool> predicate, T? defaultValue = default)
     {
-        if (source is null) return defaultValue;
+        if (source is null)
+            return defaultValue;
         using var e = source.GetEnumerator();
         while (e.MoveNext())
         {
@@ -155,9 +152,7 @@ public static class EnumerableExtensions
     }
 
 
-    public static IEnumerable<T> OrderBy<T>(
-        this IEnumerable<T> enumerable,
-        T[] itemOrder)
+    public static IEnumerable<T> OrderBy<T>(this IEnumerable<T> enumerable, T[] itemOrder)
         where T : IEquatable<T>
     {
         return enumerable.OrderBy(e => Array.IndexOf(itemOrder, e));
@@ -196,29 +191,29 @@ public static class EnumerableExtensions
     }
 
 #if !NET6_0_OR_GREATER
-    public static bool TryGetNonEnumeratedCount<T>([NoEnumeration] this IEnumerable<T> enumerable, out int count)
-    {
-        if (enumerable is ICollection<T> collectionT)
-        {
-            count = collectionT.Count;
-            return true;
-        }
-
-        if (enumerable is IReadOnlyCollection<T> roCollection)
-        {
-            count = roCollection.Count;
-            return true;
-        }
-
-        if (enumerable is ICollection collection)
-        {
-            count = collection.Count;
-            return true;
-        }
-        
-        count = 0;
-        return false;
-    }
+    // public static bool TryGetNonEnumeratedCount<T>([NoEnumeration] this IEnumerable<T> enumerable, out int count)
+    // {
+    //     if (enumerable is ICollection<T> collectionT)
+    //     {
+    //         count = collectionT.Count;
+    //         return true;
+    //     }
+    //
+    //     if (enumerable is IReadOnlyCollection<T> roCollection)
+    //     {
+    //         count = roCollection.Count;
+    //         return true;
+    //     }
+    //
+    //     if (enumerable is ICollection collection)
+    //     {
+    //         count = collection.Count;
+    //         return true;
+    //     }
+    //
+    //     count = 0;
+    //     return false;
+    // }
 
     /// <summary>
     /// Split the elements of a sequence into chunks of size at most <paramref name="size"/>.
@@ -306,7 +301,8 @@ public static class EnumerableExtensions
                 }
 
                 yield return array;
-            } while (i >= size && e.MoveNext());
+            }
+            while (i >= size && e.MoveNext());
         }
     }
 
@@ -316,56 +312,141 @@ public static class EnumerableExtensions
     /// A deep wrapper for <see cref="IEnumerable{T}"/> that ignores all thrown exceptions
     /// at every level of enumeration, only returning values that could be acquired without error
     /// </summary>
-    public static IEnumerable<T> SafeEnumerate<T>(this IEnumerable<T>? enumerable)
+    public static UnbreakableEnumerable<T> UnbreakableEnumerate<T>(this IEnumerable<T>? enumerable) => new UnbreakableEnumerable<T>(enumerable);
+}
+
+[PublicAPI]
+public class UnbreakableEnumerable<T> : IEnumerable<T>
+{
+    private IEnumerable<T>? _enumerable;
+
+    public UnbreakableEnumerable(IEnumerable<T>? enumerable)
     {
-        if (enumerable is null) yield break;
-        IEnumerator<T>? enumerator = null;
-        try
-        {
-            enumerator = enumerable.GetEnumerator();
-        }
-        catch (Exception)
-        {
-            enumerator?.SafeDispose();
-            yield break;
-        }
+        _enumerable = enumerable;
+    }
 
-        if (enumerator is null)
-            yield break;
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
-        while (true)
+    public UnbreakableEnumerator GetEnumerator()
+    {
+        IEnumerator<T>? enumerator;
+        if (_enumerable is null)
         {
-            // try to move next
+            enumerator = new NoEnumerator();
+        }
+        else
+        {
             try
             {
-                if (!enumerator.MoveNext())
-                {
-                    // stop enumerating
-                    enumerator.SafeDispose();
-                    yield break;
-                }
+                enumerator = _enumerable!.GetEnumerator();
             }
-            catch (Exception)
+            catch
             {
-                // ignore this, stop enumerating
-                enumerator.SafeDispose();
-                yield break;
+                enumerator = new NoEnumerator();
             }
+        }
 
-            // try to get current value
+        return new UnbreakableEnumerator(enumerator);
+    }
+
+    private sealed class NoEnumerator : IEnumerator<T>
+    {
+        object? IEnumerator.Current => throw new InvalidOperationException();
+
+        public T Current => throw new InvalidOperationException();
+
+        public void Dispose()
+        {
+        }
+
+        public bool MoveNext() => false;
+
+        public void Reset()
+        {
+        }
+    }
+
+    public class UnbreakableEnumerator : IEnumerator<T>
+    {
+        private IEnumerator<T>? _enumerator;
+        private Option<T> _current = None;
+
+        object? IEnumerator.Current => Current;
+
+        public T Current => _current.SomeOrThrow("Enumeration has no value to yield");
+
+
+        public UnbreakableEnumerator(IEnumerator<T> enumerator)
+        {
+            _enumerator = enumerator;
+        }
+
+        public bool MoveNext()
+        {
+            return (_current = TryMoveNext());
+        }
+
+        public Option<T> TryMoveNext()
+        {
+            if (_enumerator is null)
+                return None;
+
+            bool moved;
             T current;
+
+            while (true)
+            {
+                try
+                {
+                    moved = _enumerator.MoveNext();
+                }
+                catch
+                {
+                    return None;
+                }
+
+                // If we could not move next, we are done enumerating
+                if (!moved)
+                    return None;
+
+                // Try to access current
+                try
+                {
+                    current = _enumerator.Current;
+                }
+                catch
+                {
+                    // We need to try the next item
+                    continue;
+                }
+
+                // Have it!
+                return Some(current);
+            }
+        }
+
+        void IEnumerator.Reset() => TryReset();
+
+        public Result<Unit, Exception> TryReset()
+        {
+            if (_enumerator is null)
+                return new ObjectDisposedException(nameof(UnbreakableEnumerator));
             try
             {
-                current = enumerator.Current;
+                _enumerator.Reset();
+                return Unit.Default;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // ignore this, continue enumerating
-                continue;
+                return ex;
             }
+        }
 
-            // finally, yield the value
-            yield return current;
+        public void Dispose()
+        {
+            Result.TryDispose(_enumerator);
+            _enumerator = null;
         }
     }
 }

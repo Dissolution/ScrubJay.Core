@@ -1,4 +1,5 @@
 ﻿global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+global using TextBuffer = ScrubJay.Buffers.Buffer<char>;
 
 namespace ScrubJay;
 
@@ -22,18 +23,11 @@ public static class GlobalHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => default;
     }
-
-    // public static Result.Ok Ok
-    // {
-    //     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    //     get => default;
-    // }
-
+    
     /// <inheritdoc cref="Option{T}.Some"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
     
-   
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: NotNullIfNotNull(nameof(value))]
     public static T? Capture<T>(T? value, [NotNullIfNotNull(nameof(value))] out T? captured)

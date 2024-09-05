@@ -5,19 +5,14 @@ namespace ScrubJay.Extensions;
 /// </summary>
 public static class GenericExtensions
 {
-    public static bool Is<TIn, TOut>(this TIn input, [MaybeNullWhen(false)] out TOut output)
+    public static Option<TOut> As<TIn, TOut>(this TIn input)
         where TOut : class
     {
         if (input is TOut out2)
         {
-            output = out2;
-            return true;
+            return Some(out2);
         }
-        else
-        {
-            output = default;
-            return false;
-        }
+        return None;
     }
     
 }

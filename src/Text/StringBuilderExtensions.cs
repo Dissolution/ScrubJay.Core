@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace ScrubJay.Extensions;
+namespace ScrubJay.Text;
 
 /// <summary>
 /// Extensions on <see cref="StringBuilder"/>

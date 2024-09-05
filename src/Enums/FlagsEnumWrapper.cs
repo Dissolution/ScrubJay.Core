@@ -1,17 +1,19 @@
 ﻿namespace ScrubJay.Enums;
 
-public readonly struct FlagsEnumWrapper<TEnum> : 
-    IEquatable<TEnum>, IEquatable<FlagsEnumWrapper<TEnum>>,
-    IComparable<TEnum>, IComparable<FlagsEnumWrapper<TEnum>>,
-    IFormattable
+public readonly struct FlagsEnumWrapper<TEnum> :
 #if NET7_0_OR_GREATER
-    , IEqualityOperators<FlagsEnumWrapper<TEnum>, TEnum, bool>
-    , IComparisonOperators<FlagsEnumWrapper<TEnum>, TEnum, bool>
-    , IBitwiseOperators<FlagsEnumWrapper<TEnum>, TEnum, TEnum>
-    , ISpanParsable<FlagsEnumWrapper<TEnum>>
-    , IParsable<FlagsEnumWrapper<TEnum>>
-    , ISpanFormattable
+    IEqualityOperators<FlagsEnumWrapper<TEnum>, TEnum, bool>,
+    IComparisonOperators<FlagsEnumWrapper<TEnum>, TEnum, bool>,
+    IBitwiseOperators<FlagsEnumWrapper<TEnum>, TEnum, TEnum>,
+    ISpanParsable<FlagsEnumWrapper<TEnum>>,
+    IParsable<FlagsEnumWrapper<TEnum>>,
+    ISpanFormattable,
 #endif
+    IEquatable<TEnum>,
+    IEquatable<FlagsEnumWrapper<TEnum>>,
+    IComparable<TEnum>,
+    IComparable<FlagsEnumWrapper<TEnum>>,
+    IFormattable
     where TEnum : struct, Enum
 {
     public static implicit operator TEnum(FlagsEnumWrapper<TEnum> enumWrapper) => enumWrapper._enum;
@@ -39,9 +41,7 @@ public readonly struct FlagsEnumWrapper<TEnum> :
     public static TEnum operator ~(FlagsEnumWrapper<TEnum> value) => FlagsEnumExtensions.Not(value._enum);
 
 #if NET7_0_OR_GREATER
-    static FlagsEnumWrapper<TEnum> ISpanParsable<FlagsEnumWrapper<TEnum>>.Parse(
-        ReadOnlySpan<char> text,
-        IFormatProvider? _)
+    static FlagsEnumWrapper<TEnum> ISpanParsable<FlagsEnumWrapper<TEnum>>.Parse(ReadOnlySpan<char> text, IFormatProvider? _)
     {
         if (TryParse(text, out var value))
             return value;
@@ -55,23 +55,14 @@ public readonly struct FlagsEnumWrapper<TEnum> :
         throw new ArgumentException($"Cannot parse '{str}' to a {typeof(FlagsEnumWrapper<TEnum>)}", nameof(str));
     }
 
-    static bool ISpanParsable<FlagsEnumWrapper<TEnum>>.TryParse(
-        ReadOnlySpan<char> text,
-        IFormatProvider? _,
-        out FlagsEnumWrapper<TEnum> enumWrapper) => TryParse(text, out enumWrapper);
+    static bool ISpanParsable<FlagsEnumWrapper<TEnum>>.TryParse(ReadOnlySpan<char> text, IFormatProvider? _, out FlagsEnumWrapper<TEnum> enumWrapper) => TryParse(text, out enumWrapper);
 
-    static bool IParsable<FlagsEnumWrapper<TEnum>>.TryParse(
-        [AllowNull, NotNullWhen(true)] string? str,
-        IFormatProvider? _,
-        out FlagsEnumWrapper<TEnum> enumWrapper) => TryParse(str, out enumWrapper);
+    static bool IParsable<FlagsEnumWrapper<TEnum>>.TryParse([AllowNull, NotNullWhen(true)] string? str, IFormatProvider? _, out FlagsEnumWrapper<TEnum> enumWrapper) => TryParse(str, out enumWrapper);
 
 
     public static bool TryParse(ReadOnlySpan<char> text, out FlagsEnumWrapper<TEnum> enumWrapper)
     {
-        if (Enum.TryParse<TEnum>(
-            text,
-            true,
-            out var @enum))
+        if (Enum.TryParse<TEnum>(text, true, out var @enum))
         {
             enumWrapper = new(@enum);
             return true;
@@ -101,9 +92,7 @@ public readonly struct FlagsEnumWrapper<TEnum> :
     }
 #endif
 
-    public static bool TryParse(
-        [AllowNull, NotNullWhen(true)] string? str,
-        out FlagsEnumWrapper<TEnum> enumWrapper) => TryParse(str.AsSpan(), out enumWrapper);
+    public static bool TryParse([AllowNull, NotNullWhen(true)] string? str, out FlagsEnumWrapper<TEnum> enumWrapper) => TryParse(str.AsSpan(), out enumWrapper);
 
 
     private readonly TEnum _enum;
@@ -177,9 +166,7 @@ public readonly struct FlagsEnumWrapper<TEnum> :
         return _enum.GetHashCode();
     }
 
-    public bool TryFormat(
-        Span<char> destination, out int charsWritten,
-        ReadOnlySpan<char> format, IFormatProvider? provider)
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
     {
         throw new NotImplementedException();
     }

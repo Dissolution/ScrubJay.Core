@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using ScrubJay.Buffers;
+﻿using ScrubJay.Buffers;
 
 namespace ScrubJay.Memory;
 
@@ -10,6 +9,10 @@ public ref struct SpanWriter<T>
     private readonly Span<T> _span;
     private int _position;
 
+    public ref T this[Index index] => ref AsSpan()[index];
+    
+    public Span<T> this[Range range] => AsSpan()[range];
+    
     private int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,6 +99,86 @@ public ref struct SpanWriter<T>
         if (newPos <= Capacity)
         {
             items.CopyTo(_span[pos..]);
+            _position = newPos;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryWriteMany(ICollection<T>? items)
+    {
+        if (items is null)
+            return true;
+        int pos = _position;
+        int newPos = pos + items.Count;
+        if (newPos <= Capacity)
+        {
+            foreach (T item in items)
+            {
+                _span[pos] = item;
+                pos += 1;
+            }
+            Debug.Assert(pos == newPos);
+            _position = newPos;
+            return true;
+        }
+
+        return false;
+    }
+    
+    public bool TryWriteMany(IReadOnlyCollection<T>? items)
+    {
+        if (items is null)
+            return true;
+        int pos = _position;
+        int newPos = pos + items.Count;
+        if (newPos <= Capacity)
+        {
+            foreach (T item in items)
+            {
+                _span[pos] = item;
+                pos += 1;
+            }
+            Debug.Assert(pos == newPos);
+            _position = newPos;
+            return true;
+        }
+
+        return false;
+    }
+    
+    public bool TryWriteMany(IList<T>? items)
+    {
+        if (items is null)
+            return true;
+        int pos = _position;
+        int newPos = pos + items.Count;
+        if (newPos <= Capacity)
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                _span[pos + i] = items[i];
+            }
+            _position = newPos;
+            return true;
+        }
+
+        return false;
+    }
+    
+    public bool TryWriteMany(IReadOnlyList<T>? items)
+    {
+        if (items is null)
+            return true;
+        int pos = _position;
+        int newPos = pos + items.Count;
+        if (newPos <= Capacity)
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                _span[pos + i] = items[i];
+            }
             _position = newPos;
             return true;
         }

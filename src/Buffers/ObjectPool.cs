@@ -1,10 +1,9 @@
-﻿using ScrubJay.Utilities;
-
-namespace ScrubJay.Buffers;
+﻿namespace ScrubJay.Buffers;
 
 /// <summary>
 /// Static methods for creating <see cref="ObjectPool{T}"/> instances
 /// </summary>
+[PublicAPI]
 public static class ObjectPool
 {
     /// <summary>
@@ -15,12 +14,12 @@ public static class ObjectPool
     /// </remarks>
     internal static readonly int DefaultCapacity = 1 + (2 * Environment.ProcessorCount);
 
-    internal const int MIN_CAPACITY = 1;
+    public const int MIN_CAPACITY = 1;
     
     /// <summary>
     /// The maximum capacity for a pool
     /// </summary>
-    internal const int MAX_CAPACITY = 0X7FFFFFC7; // == Array.MaxLength
+    public const int MAX_CAPACITY = 0X7FFFFFC7; // == Array.MaxLength
     
     
     

@@ -4,10 +4,10 @@
 /// Extensions on <see cref="SpanReader{T}"/>
 /// </summary>
 /// <remarks>
-/// These methods are not on <see cref="SpanReader{T}"/> itself so that we can constrain
-/// the generic type further
+/// These methods are extensions because they work on a constrained <see cref="SpanReader{T}"/> 
 /// </remarks>
-public static class ReadOnlySpanEnumeratorExtensions
+[PublicAPI]
+public static class SpanReaderExtensions
 {
 #region IEquatable
 

@@ -1,7 +1,4 @@
-﻿using JetBrains.Annotations;
-using ScrubJay.Utilities;
-
-namespace ScrubJay;
+﻿namespace ScrubJay;
 
 /// <summary>
 /// <c>Result&lt;TOk, TError&gt;</c> is the type used for returning and propagating errors<br/>
@@ -226,6 +223,13 @@ public readonly struct Result<TOk, TError> :
         }
 
         return Result<TNewOk, TError>.Error(_error!);
+    }
+    
+    public Result<TNewOk, TError> MapOk<TNewOk>(Func<TOk, Result<TNewOk, TError>> map)
+    {
+        if (_isOk)
+            return map(_ok!);
+        return _error!;
     }
 
     /// <summary>

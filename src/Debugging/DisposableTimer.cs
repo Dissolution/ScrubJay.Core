@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace ScrubJay.Debugging;
+﻿namespace ScrubJay.Debugging;
 
 public class DisposableTimer : IDisposable
 {

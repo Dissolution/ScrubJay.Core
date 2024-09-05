@@ -1,12 +1,17 @@
 ﻿// ReSharper disable InvokeAsExtensionMethod
+
 namespace ScrubJay.Enums;
 
-public readonly struct EnumWrapper<TEnum>
-    : IEquatable<TEnum>
+/// <summary>
+/// A wrapper around a <typeparamref name="TEnum"/> value that exposes interfaces and additional operations
+/// </summary>
+/// <typeparam name="TEnum"></typeparam>
+public readonly struct EnumWrapper<TEnum> :
 #if NET7_0_OR_GREATER
-        , IEqualityOperators<EnumWrapper<TEnum>, TEnum, bool>
-        , IComparisonOperators<EnumWrapper<TEnum>, TEnum, bool>
+    IEqualityOperators<EnumWrapper<TEnum>, TEnum, bool>,
+    IComparisonOperators<EnumWrapper<TEnum>, TEnum, bool>,
 #endif
+    IEquatable<TEnum>
     where TEnum : struct, Enum
 {
     public static implicit operator TEnum(EnumWrapper<TEnum> enumWrapper) => enumWrapper._enum;

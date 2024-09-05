@@ -1,9 +1,8 @@
 ﻿// ReSharper disable InconsistentNaming
 
-using JetBrains.Annotations;
 using ScrubJay.Comparison;
+using ScrubJay.Buffers;
 using ScrubJay.Text;
-using ScrubJay.Utilities;
 
 
 namespace ScrubJay;
@@ -372,18 +371,18 @@ public readonly ref struct SpanOption<T>
     {
         if (_isSome)
         {
-            var text = new InterpolatedStringHandler();
-            text.AppendLiteral("Some(");
+            var text = new Buffer<char>();
+            text.Append("Some(");
             if (_span.Length > 0)
             {
                 text.AppendFormatted<T>(_span[0]);
                 for (var i = 1; i < _span.Length; i++)
                 {
-                    text.AppendLiteral(", ");
+                    text.Append(", ");
                     text.AppendFormatted<T>(_span[i]);
                 }
             }
-            text.AppendLiteral(')');
+            text.Append(')');
             return text.ToStringAndDispose();
         }
 

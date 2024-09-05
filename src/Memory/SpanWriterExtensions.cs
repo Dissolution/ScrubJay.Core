@@ -1,5 +1,12 @@
 ﻿namespace ScrubJay.Memory;
 
+/// <summary>
+/// Extensions on <see cref="SpanWriter{T}"/>
+/// </summary>
+/// <remarks>
+/// These methods are extensions because they work on a constrained <see cref="SpanWriter{T}"/> 
+/// </remarks>
+[PublicAPI]
 public static class SpanWriterExtensions
 {
     public static bool TryWriteFormatted<T>(this SpanWriter<char> spanWriter, T? value, string? format = null, IFormatProvider? provider = null)

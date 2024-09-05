@@ -3,7 +3,8 @@
 namespace ScrubJay.Collections;
 
 /// <summary>
-/// A <see cref="ConcurrentDictionary{TKey,TValue}"/> where <c>TKey</c> is <see cref="Type"/>
+/// A <see cref="ConcurrentDictionary{TKey,TValue}"/> where <c>TKey</c> is <see cref="Type"/> that supports using a generic type
+/// instead of a key
 /// </summary>
 /// <typeparam name="TValue">
 /// The <see cref="Type"/> of values associated with the <see cref="Type"/> keys

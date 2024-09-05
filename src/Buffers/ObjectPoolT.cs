@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using ScrubJay.Validation;
+﻿using ScrubJay.Collections;
 
 // ReSharper disable MethodOverloadWithOptionalParameter
 
@@ -148,6 +147,8 @@ public sealed class ObjectPool<T> : IDisposable
                 totalCapacity,
                 $"Pool Capacity must be between {ObjectPool.MIN_CAPACITY} and {ObjectPool.MAX_CAPACITY}");
         }
+
+        Validate.InBounds(totalCapacity, Bounds.IncMinMax(ObjectPool.MIN_CAPACITY, ObjectPool.MAX_CAPACITY)).OkOrThrow();
 
         _instanceFactory = factory ?? throw new ArgumentNullException(nameof(factory));
         _cleanInstance = clean;

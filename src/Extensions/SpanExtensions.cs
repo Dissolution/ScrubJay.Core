@@ -1,5 +1,3 @@
-using ScrubJay.Utilities;
-
 namespace ScrubJay.Extensions;
 
 /// <summary>
@@ -254,59 +252,27 @@ public static class SpanExtensions
         }
     }
 #endregion
-
-    public static bool TryGet<T>(this Span<T> span, int index, [MaybeNullWhen(false)] out T item)
-    {
-        if ((uint)index < span.Length)
-        {
-            item = span[index];
-            return true;
-        }
-
-        item = default;
-        return false;
-    }
-
-    public static bool TryGet<T>(this ReadOnlySpan<T> span, int index, [MaybeNullWhen(false)] out T item)
-    {
-        if ((uint)index < span.Length)
-        {
-            item = span[index];
-            return true;
-        }
-
-        item = default;
-        return false;
-    }
     
     public static Result<T, Exception> TryGet<T>(this Span<T> span, 
-        int index,
-        [CallerArgumentExpression(nameof(span))]
-        string? spanName = null,
+        Index index,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
     {
-        if (span.Length == 0)
-            return new ArgumentException($"{spanName} is empty", spanName);
-        if (index < 0 || index >= span.Length)
-            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} must be between 0 and {span.Length - 1}");
+        if (Validate.Index(index, span.Length, indexName).IsError(out var ex))
+            return ex;
         return span[index];
     }
     
-    public static Result<Option.None, Exception> TrySet<T>(this Span<T> span, 
-        int index,
+    public static Result<T, Exception> TrySet<T>(this Span<T> span, 
+        Index index,
         T value,
-        [CallerArgumentExpression(nameof(span))]
-        string? spanName = null,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
     {
-        if (span.Length == 0)
-            return new ArgumentException($"{spanName} is empty", spanName);
-        if (index < 0 || index >= span.Length)
-            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} must be between 0 and {span.Length - 1}");
+        if (Validate.Index(index, span.Length, indexName).IsError(out var ex))
+            return ex;
         span[index] = value;
-        return None;
+        return value;
     }
 
 
