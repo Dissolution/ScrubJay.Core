@@ -1,21 +1,13 @@
+using ScrubJay.Collections;
+
 namespace ScrubJay.Extensions;
 
 /// <summary>
 /// Extensions on <see cref="IEnumerable{T}"/> and <see cref="IEnumerable"/>
 /// </summary>
+[PublicAPI]
 public static class EnumerableExtensions
 {
-// #if NETSTANDARD2_0
-//     public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
-//     {
-//         return new HashSet<T>(source);
-//     }
-//     public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source, IEqualityComparer<T>? itemComparer)
-//     {
-//         return new HashSet<T>(source, itemComparer);
-//     }
-// #endif
-
     /// <summary>
     /// A Predicate against <paramref name="input"/> that also produces <paramref name="output"/>
     /// </summary>
@@ -333,7 +325,7 @@ public class UnbreakableEnumerable<T> : IEnumerable<T>
         IEnumerator<T>? enumerator;
         if (_enumerable is null)
         {
-            enumerator = new NoEnumerator();
+            enumerator = EmptyEnumerator<T>.Instance;
         }
         else
         {
@@ -343,34 +335,19 @@ public class UnbreakableEnumerable<T> : IEnumerable<T>
             }
             catch
             {
-                enumerator = new NoEnumerator();
+                enumerator = EmptyEnumerator<T>.Instance;
             }
         }
 
         return new UnbreakableEnumerator(enumerator);
     }
 
-    private sealed class NoEnumerator : IEnumerator<T>
-    {
-        object? IEnumerator.Current => throw new InvalidOperationException();
-
-        public T Current => throw new InvalidOperationException();
-
-        public void Dispose()
-        {
-        }
-
-        public bool MoveNext() => false;
-
-        public void Reset()
-        {
-        }
-    }
+  
 
     public class UnbreakableEnumerator : IEnumerator<T>
     {
         private IEnumerator<T>? _enumerator;
-        private Option<T> _current = None;
+        private Option<T> _current = default;
 
         object? IEnumerator.Current => Current;
 
@@ -390,7 +367,7 @@ public class UnbreakableEnumerable<T> : IEnumerable<T>
         public Option<T> TryMoveNext()
         {
             if (_enumerator is null)
-                return None;
+                return default;
 
             bool moved;
             T current;
@@ -403,12 +380,12 @@ public class UnbreakableEnumerable<T> : IEnumerable<T>
                 }
                 catch
                 {
-                    return None;
+                    return default;
                 }
 
                 // If we could not move next, we are done enumerating
                 if (!moved)
-                    return None;
+                    return default;
 
                 // Try to access current
                 try

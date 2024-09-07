@@ -12,7 +12,8 @@ public static class GenericExtensions
         {
             return Some(out2);
         }
-        return None;
+
+        return default;
     }
     
 }

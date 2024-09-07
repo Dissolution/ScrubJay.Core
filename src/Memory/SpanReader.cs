@@ -55,30 +55,30 @@ public ref struct SpanReader<T>
     {
         if (_position < _span.Length)
             return Some(_span[_position]);
-        return None;
+        return default;
     }
 
     public T Peek() => TryPeek().SomeOrThrow($"There was not an item to Peek");
 
     /// <summary>
-    /// Try to peek at the next <paramref name="count"/> <paramref name="items"/>
+    /// Try to peek at the next <paramref name="count"/> items
     /// </summary>
     /// <param name="count"></param>
     /// <param name="items"></param>
     /// <returns></returns>
-    public SpanOption<T> TryPeek(int count)
+    public OptionReadOnlySpan<T> TryPeek(int count)
     {
         if (count < 0)
-            return None;
+            return default;
 
         int pos = _position;
         var span = _span;
         if (pos + count <= span.Length)
         {
-            return SpanOption<T>.Some(span.Slice(pos, count));
+            return OptionReadOnlySpan<T>.Some(span.Slice(pos, count));
         }
 
-        return None;
+        return default;
     }
 
     public ReadOnlySpan<T> Peek(int count) => TryPeek(count).SomeOrThrow($"There were not {count} items to Peek");
@@ -97,15 +97,15 @@ public ref struct SpanReader<T>
             return Some(span[index]);
         }
 
-        return None;
+        return default;
     }
 
     public T Take() => TryTake().SomeOrThrow($"There was not an item to Take");
     
-    public SpanOption<T> TryTake(int count)
+    public OptionReadOnlySpan<T> TryTake(int count)
     {
         if (count < 0)
-            return None;
+            return default;
 
         int pos = _position;
         int newPos = pos + count;
@@ -114,10 +114,10 @@ public ref struct SpanReader<T>
         {
             var taken = span.Slice(pos, count);
             _position = newPos;
-            return SpanOption<T>.Some(taken);
+            return OptionReadOnlySpan<T>.Some(taken);
         }
 
-        return None;
+        return default;
     }
     
     public ReadOnlySpan<T> Take(int count) => TryTake(count).SomeOrThrow($"There were not {count} items to Take");

@@ -62,7 +62,7 @@ public static partial class Validate
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be >= {minInclusive}");
     }
 
-    public static Result<Unit, Exception> Args(Validations validations) => validations.GetResult();
+    public static Result<Unit, Exception> Args(Validations validations) => validations.Result;
 
 
     public static Result<Unit, Exception> CopyTo<T>(int count, T[]? array, int arrayIndex = 0, [CallerArgumentExpression(nameof(count))] string? countName = null, [CallerArgumentExpression(nameof(array))] string? arrayName = null, [CallerArgumentExpression(nameof(arrayIndex))] string? arrayIndexName = null)
@@ -75,76 +75,9 @@ public static partial class Validate
             () =>
             {
                 if (count + arrayIndex <= array!.Length)
-                    return Unit.Default;
+                    return Unit();
                 return new ArgumentOutOfRangeException(arrayName, array, $"Cannot fit {count} items into [{array.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}");
             },
-        };
-    }
-}
-
-public class Validations : IEnumerable
-{
-    public static implicit operator Result<Unit, Exception>(Validations validations) => validations.GetResult();
-    
-    private Exception? _exception = null;
-
-    public Validations() { }
-    
-    public void Add(Result<Unit, Exception> result)
-    {
-        if (_exception is not null)
-            return; // we've already failed
-
-        if (result.IsError(out var ex))
-        {
-            _exception = ex;
-        }
-    }
-    
-    public void Add<T>(Result<T, Exception> result)
-    {
-        if (_exception is not null)
-            return; // we've already failed
-
-        if (result.IsError(out var ex))
-        {
-            _exception = ex;
-        }
-    }
-
-    public void Add(Func<Result<Unit, Exception>> getResult)
-    {
-        if (_exception is not null)
-            return; // we've already failed
-
-        var result = getResult();
-        if (result.IsError(out var ex))
-        {
-            _exception = ex;
-        }
-    }
-
-    public void Add<T>(Func<Result<T, Exception>> getResult)
-    {
-        if (_exception is not null)
-            return; // we've already failed
-
-        var result = getResult();
-        if (result.IsError(out var ex))
-        {
-            _exception = ex;
-        }
-    }
-
-    public IEnumerator GetEnumerator()
-    {
-        yield break;
-    }
-
-    public Result<Unit, Exception> GetResult()
-    {
-        if (_exception is not null)
-            return _exception;
-        return Unit.Default;
+        }.Result;
     }
 }

@@ -2,14 +2,19 @@
 // ReSharper disable MergeCastWithTypeCheck
 namespace ScrubJay.Text;
 
+[PublicAPI]
 public static class TextBufferExtensions
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Append(this ref TextBuffer buffer, char ch) => buffer.Add(ch);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Append(this ref TextBuffer buffer, string? str) => buffer.AddMany(str.AsSpan());
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Append(this ref TextBuffer buffer, scoped ReadOnlySpan<char> text) => buffer.AddMany(text);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Append(this ref TextBuffer buffer, params char[]? characters) => buffer.AddMany(characters);
-
-    public static void AppendFormatted<T>(this ref TextBuffer buffer, T value, string? format = null, IFormatProvider? provider = null)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void AppendFormatted<T>(this ref TextBuffer buffer, T? value, string? format = null, IFormatProvider? provider = null)
     {
         string? str;
         if (value is IFormattable)
@@ -40,6 +45,7 @@ public static class TextBufferExtensions
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [HandlesResourceDisposal]
     public static string ToStringAndDispose(this ref TextBuffer buffer)
     {

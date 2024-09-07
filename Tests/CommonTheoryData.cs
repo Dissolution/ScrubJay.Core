@@ -13,7 +13,7 @@ public static class CommonTheoryData
         // primitive
         (byte)147,
         // custom primitive
-        default(Option.None),
+        default(None),
         // struct
         IntPtr.Zero,
         (Nullable<int>)147,

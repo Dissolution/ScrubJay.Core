@@ -5,9 +5,11 @@
 /// </summary>
 /// <remarks>
 /// Based upon F# and Rust's Unit types<br/>
-/// In C#, <c>void</c> cannot be used as a generic type, thus why <see cref="Func{TResult}"/> and <see cref="Action"/> exist<br/>
-/// (as we cannot do <c>Func&lt;void&gt;</c>)<br/>
-/// You can use <see cref="Unit"/> for this task
+/// In C#, <c>void</c> cannot be used as a generic type, thus why <see cref="Func{TResult}"/> and <see cref="Action"/> are separate<br/>
+/// (as <c>Func&lt;void&gt;</c> is invalid)<br/>
+/// You can use <see cref="Unit"/> for this and similar tasks:<br/>
+/// - <c>Func&lt;Unit&gt;</c><br/>
+/// - <c>Result&lt;Unit, Exception&gt;</c><br/>
 /// </remarks>
 [PublicAPI]
 public readonly struct Unit :
@@ -19,14 +21,15 @@ public readonly struct Unit :
     IComparable<Unit>
 {
     // ValueTuple would be written as '()' (if the C# compiler allowed it), and is virtually the same as Unit already
+    // so we support implicit conversions between them
     
     public static implicit operator Unit(ValueTuple _) => default;
     public static implicit operator ValueTuple(Unit _) => default;
     
     // All units are exactly the same
     
-    public static bool operator ==(Unit first, Unit second) => true;
-    public static bool operator !=(Unit first, Unit second) => false;
+    public static bool operator ==(Unit left, Unit right) => true;
+    public static bool operator !=(Unit left, Unit right) => false;
     public static bool operator >(Unit left, Unit right) => false;
     public static bool operator >=(Unit left, Unit right) => true;
     public static bool operator <(Unit left, Unit right) => false;

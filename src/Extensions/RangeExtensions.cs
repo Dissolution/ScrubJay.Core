@@ -28,6 +28,6 @@ public static class RangeExtensions
             }
         }
 
-        return None;
+        return default;
     }
 }

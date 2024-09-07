@@ -86,7 +86,7 @@ public static class SpanReaderExtensions
 #endif
         }
 
-        return None;
+        return default;
     }
 
     public static Option<T> TryTakeValue<T>(this ref SpanReader<byte> spanReader)
@@ -102,7 +102,7 @@ public static class SpanReaderExtensions
 #endif
         }
 
-        return None;
+        return default;
     }
 
     public static T TakeValue<T>(this ref SpanReader<byte> byteEnumerator)

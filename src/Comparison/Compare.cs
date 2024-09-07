@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using ScrubJay.Collections;
+using System.Collections;
 
 // ReSharper disable MethodOverloadWithOptionalParameter
 // ReSharper disable InvokeAsExtensionMethod

@@ -101,6 +101,13 @@ public readonly struct Result<TOk, TError> :
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_ok"/>
     public bool IsOk() => _isOk;
 
+    /// <summary>
+    /// Returns <c>true</c> and <paramref name="ok"/> if this Result is Ok
+    /// </summary>
+    /// <param name="ok">
+    /// If this is an Ok result, the Ok value, otherwise default(<typeparamref name="TOk"/>)
+    /// </param>
+    /// <returns></returns>
     public bool IsOk([MaybeNullWhen(false)] out TOk ok)
     {
         if (_isOk)
@@ -191,7 +198,7 @@ public readonly struct Result<TOk, TError> :
             return Some(_ok!);
         }
 
-        return None;
+        return default;
     }
 
     public bool IsSuccess([MaybeNullWhen(false)] out TOk ok, [MaybeNullWhen(true)] out TError error)
@@ -342,7 +349,7 @@ public readonly struct Result<TOk, TError> :
     {
         if (!_isOk)
             return Some(_error!);
-        return None;
+        return default;
     }
 
     public bool IsFailure([MaybeNullWhen(false)] out TError error, [MaybeNullWhen(true)] out TOk ok)
@@ -422,7 +429,7 @@ public readonly struct Result<TOk, TError> :
             return Some(_ok!);
         }
 
-        return None;
+        return default;
     }
 
 #region Compare

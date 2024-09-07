@@ -1,79 +1,72 @@
 ﻿// ReSharper disable InconsistentNaming
 
+using ScrubJay.Comparison;
+using ScrubJay.Text;
+
 namespace ScrubJay;
 
-// <a href="https://doc.rust-lang.org/std/option/index.html">Rust's Option</a>
-
-/// <summary>
-/// An Option represents an optional value, every Option is either:<br/>
-/// <see cref="Some"/> and contains a <typeparamref name="T"/> value
-/// or <see cref="None"/>, and does not.
-/// </summary>
-/// <typeparam name="T">
-/// The <see cref="Type"/> of value associated with a <see cref="Some"/> Option
-/// </typeparam>
 [PublicAPI]
-public readonly struct Option<T> :
+public readonly ref struct OptionReadOnlySpan<T> //:
 /* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */    
 #if NET7_0_OR_GREATER
-    IEqualityOperators<Option<T>, Option<T>, bool>,
-    IEqualityOperators<Option<T>, None, bool>,
-    //IEqualityOperators<Option<T>, T, bool>,
+    //IEqualityOperators<OptionReadOnlySpan<T>, OptionReadOnlySpan<T>, bool>,
+    //IEqualityOperators<OptionReadOnlySpan<T>, None, bool>,
+    //IEqualityOperators<OptionReadOnlySpan<T>, ReadOnlySpan<T>, bool>,
 #endif
-    IEquatable<Option<T>>,
-    IEquatable<None>,
-    //IEquatable<T>,
+    //IEquatable<OptionReadOnlySpan<T>>,
+    //IEquatable<None>,
+    //IEquatable<ReadOnlySpan<T>>,
 #if NET7_0_OR_GREATER
-    IComparisonOperators<Option<T>, Option<T>, bool>,
-    IComparisonOperators<Option<T>, None, bool>,
-    //IComparisonOperators<Option<T>, T, bool>,
+    //IComparisonOperators<OptionReadOnlySpan<T>, OptionReadOnlySpan<T>, bool>,
+    //IComparisonOperators<OptionReadOnlySpan<T>, None, bool>,
+    //IComparisonOperators<OptionReadOnlySpan<T>, ReadOnlySpan<T>, bool>,
 #endif
-    IComparable<Option<T>>,
-    IComparable<None>,
-    //IComparable<T>,
-    IEnumerable<T>,
-    IEnumerable
+    //IComparable<OptionReadOnlySpan<T>>,
+    //IComparable<None>,
+    //IComparable<ReadOnlySpan<T>>,
+    //IEnumerable<ReadOnlySpan<T>>,
+    //IEnumerable
 {
 #region Operators
     // Treat Option like a boolean: some == true, none == false
     // Allow us to cast from None or a T value directly to an Option
     
-    public static implicit operator bool(Option<T> option) => option._isSome;
-    public static implicit operator Option<T>(None _) => None;
-    public static implicit operator Option<T>(T some) => Some(some);
+    public static implicit operator bool(OptionReadOnlySpan<T> option) => option._isSome;
+    public static implicit operator OptionReadOnlySpan<T>(None _) => None;
+    public static implicit operator OptionReadOnlySpan<T>(ReadOnlySpan<T> some) => Some(some);
 
-    public static bool operator true(Option<T> option) => option._isSome;
-    public static bool operator false(Option<T> option) => !option._isSome;
+    public static bool operator true(OptionReadOnlySpan<T> option) => option._isSome;
+    public static bool operator false(OptionReadOnlySpan<T> option) => !option._isSome;
 
     // We pass equality and comparison down to T values
     
-    public static bool operator ==(Option<T> left, Option<T> right) => left.Equals(right);
-    public static bool operator !=(Option<T> left, Option<T> right) => !left.Equals(right);
-    public static bool operator >(Option<T> left, Option<T> right) => left.CompareTo(right) > 0;
-    public static bool operator >=(Option<T> left, Option<T> right) => left.CompareTo(right) >= 0;
-    public static bool operator <(Option<T> left, Option<T> right) => left.CompareTo(right) < 0;
-    public static bool operator <=(Option<T> left, Option<T> right) => left.CompareTo(right) <= 0;
+    public static bool operator ==(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.Equals(right);
+    public static bool operator !=(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => !left.Equals(right);
+    public static bool operator >(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.CompareTo(right) > 0;
+    public static bool operator >=(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.CompareTo(right) >= 0;
+    public static bool operator <(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.CompareTo(right) < 0;
+    public static bool operator <=(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.CompareTo(right) <= 0;
 
-    public static bool operator ==(Option<T> option, None none) => option.IsNone();
-    public static bool operator !=(Option<T> option, None none) => option.IsSome();
-    public static bool operator >(Option<T> option, None none) => option.CompareTo(none) > 0;
-    public static bool operator >=(Option<T> option, None none) => option.CompareTo(none) >= 0;
-    public static bool operator <(Option<T> option, None none) => option.CompareTo(none) < 0;
-    public static bool operator <=(Option<T> option, None none) => option.CompareTo(none) <= 0;
+    public static bool operator ==(OptionReadOnlySpan<T> option, None none) => option.IsNone();
+    public static bool operator !=(OptionReadOnlySpan<T> option, None none) => option.IsSome();
+    public static bool operator >(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) > 0;
+    public static bool operator >=(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) >= 0;
+    public static bool operator <(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) < 0;
+    public static bool operator <=(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) <= 0;
 
-    public static bool operator ==(Option<T> option, T? some) => option.Equals(some);
-    public static bool operator !=(Option<T> option, T? some) => !option.Equals(some);
-    public static bool operator >(Option<T> option, T some) => option.CompareTo(some) > 0;
-    public static bool operator >=(Option<T> option, T some) => option.CompareTo(some) >= 0;
-    public static bool operator <(Option<T> option, T some) => option.CompareTo(some) < 0;
-    public static bool operator <=(Option<T> option, T some) => option.CompareTo(some) <= 0;
+    public static bool operator ==(OptionReadOnlySpan<T> option, ReadOnlySpan<T> some) => option.Equals(some);
+    public static bool operator !=(OptionReadOnlySpan<T> option, ReadOnlySpan<T> some) => !option.Equals(some);
+    public static bool operator >(OptionReadOnlySpan<T> option, ReadOnlySpan<T> some) => option.CompareTo(some) > 0;
+    public static bool operator >=(OptionReadOnlySpan<T> option, ReadOnlySpan<T> some) => option.CompareTo(some) >= 0;
+    public static bool operator <(OptionReadOnlySpan<T> option, ReadOnlySpan<T> some) => option.CompareTo(some) < 0;
+    public static bool operator <=(OptionReadOnlySpan<T> option, ReadOnlySpan<T> some) => option.CompareTo(some) <= 0;
 
 #endregion
 
     /// <summary>
     /// Gets the None option
     /// </summary>
-    public static readonly Option<T> None; // == default == default(None) == None.Default
+    public static OptionReadOnlySpan<T> None => default;
     
     /// <summary>
     /// Creates a new <see cref="Option{T}"/>.Some containing <paramref name="value"/>
@@ -81,16 +74,16 @@ public readonly struct Option<T> :
     /// <param name="value"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> Some(T value) => new(value);
+    public static OptionReadOnlySpan<T> Some(ReadOnlySpan<T> value) => new(value);
 
     
     // Is this Option.Some?
     // if someone does default(Option), this will be false, so default(Option) == None
     private readonly bool _isSome;
     // If this is Option.Some, the value
-    private readonly T? _value;
+    private readonly ReadOnlySpan<T> _value;
 
-    private Option(T value)
+    private OptionReadOnlySpan(ReadOnlySpan<T> value)
     {
         _isSome = true;
         _value = value;
@@ -111,14 +104,14 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSomeAnd(Func<T, bool> predicate) => _isSome && predicate(_value!);
+    public bool IsSomeAnd(RSpanFunc<T, bool> predicate) => _isSome && predicate(_value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSome([MaybeNullWhen(false)] out T value)
+    public bool IsSome(out ReadOnlySpan<T> value)
     {
         if (_isSome)
         {
-            value = _value!;
+            value = _value;
             return true;
         }
 
@@ -142,10 +135,10 @@ public readonly struct Option<T> :
     /// <exception cref="InvalidOperationException"></exception>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T SomeOrThrow(string? errorMessage = null)
+    public ReadOnlySpan<T> SomeOrThrow(string? errorMessage = null)
     {
         if (_isSome)
-            return _value!;
+            return _value;
         throw new InvalidOperationException(errorMessage ?? "This option is not some");
     }
 
@@ -156,10 +149,10 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T SomeOr(T value)
+    public ReadOnlySpan<T> SomeOr(ReadOnlySpan<T> value)
     {
         if (_isSome)
-            return _value!;
+            return _value;
         return value;
     }
 
@@ -170,12 +163,12 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_default"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T? SomeOrDefault()
+    public ReadOnlySpan<T> SomeOrDefault()
     {
         {
             if (_isSome)
-                return _value!;
-            return default(T);
+                return _value;
+            return ReadOnlySpan<T>.Empty;
         }
     }
 
@@ -186,7 +179,7 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T SomeOrElse(Func<T> getValue)
+    public ReadOnlySpan<T> SomeOrElse(FuncRSpan<T> getValue)
     {
         if (_isSome)
             return _value!;
@@ -196,52 +189,17 @@ public readonly struct Option<T> :
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="err"></param>
-    /// <typeparam name="TError"></typeparam>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or"/>
-    public Result<T, TError> OkOr<TError>(TError err)
-    {
-        if (_isSome)
-            return Result<T, TError>.Ok(_value!);
-        return Result<T, TError>.Error(err);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="getErr"></param>
-    /// <typeparam name="TError"></typeparam>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or_else"/>
-    public Result<T, TError> OkOrElse<TError>(Func<TError> getErr)
-    {
-        if (_isSome)
-            return Result<T, TError>.Ok(_value!);
-        return Result<T, TError>.Error(getErr());
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="predicate"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
-    public Option<T> Filter(Func<T, bool> predicate)
+    public OptionReadOnlySpan<T> Filter(RSpanFunc<T, bool> predicate)
     {
         if (IsSome(out var value) && predicate(value))
             return this;
         return None;
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="map"></param>
-    /// <typeparam name="U"></typeparam>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map"/>
-    public Option<U> Map<U>(Func<T, U> map)
+    
+    public Option<U> Map<U>(RSpanFunc<T, U> map)
     {
         if (IsSome(out var value))
         {
@@ -249,6 +207,16 @@ public readonly struct Option<T> :
         }
 
         return Option<U>.None;
+    }
+    
+    public OptionReadOnlySpan<U> Map<U>(RSpanFuncRSpan<T, U> map)
+    {
+        if (IsSome(out var value))
+        {
+            return OptionReadOnlySpan<U>.Some(map(value));
+        }
+
+        return OptionReadOnlySpan<U>.None;
     }
 
     /// <summary>
@@ -259,7 +227,7 @@ public readonly struct Option<T> :
     /// <typeparam name="U"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
-    public U MapOr<U>(Func<T, U> map, U defaultValue)
+    public U MapOr<U>(RSpanFunc<T, U> map, U defaultValue)
     {
         if (IsSome(out var value))
         {
@@ -277,7 +245,7 @@ public readonly struct Option<T> :
     /// <typeparam name="U"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
-    public U MapOrElse<U>(Func<T, U> map, Func<U> getDefaultValue)
+    public U MapOrElse<U>(RSpanFunc<T, U> map, Func<U> getDefaultValue)
     {
         if (IsSome(out var value))
         {
@@ -288,7 +256,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(Action<T> onSome, Action onNone)
+    public void Match(RSpanAction<T> onSome, Action onNone)
     {
         if (_isSome)
         {
@@ -301,7 +269,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(Action<T> onSome, Action<None> onNone)
+    public void Match(RSpanAction<T> onSome, Action<None> onNone)
     {
         if (_isSome)
         {
@@ -314,7 +282,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
+    public TResult Match<TResult>(RSpanFunc<T, TResult> some, Func<TResult> none)
     {
         if (_isSome)
         {
@@ -327,7 +295,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(Func<T, TResult> some, Func<None, TResult> none)
+    public TResult Match<TResult>(RSpanFunc<T, TResult> some, Func<None, TResult> none)
     {
         if (_isSome)
         {
@@ -339,23 +307,17 @@ public readonly struct Option<T> :
         }
     }
 
-    public Result<T, Exception> AsResult()
-    {
-        if (_isSome)
-            return _value!;
-        return new InvalidOperationException("None");
-    }
 
 #region Compare
 
-    public int CompareTo(Option<T> other)
+    public int CompareTo(OptionReadOnlySpan<T> other)
     {
         // None compares as less than any Some
         if (_isSome)
         {
             if (other._isSome)
             {
-                return Comparer<T>.Default.Compare(_value!, other._value!);
+                return Compare.Sequence(_value, other._value);
             }
             else // y is none
             {
@@ -376,11 +338,11 @@ public readonly struct Option<T> :
         }
     }
 
-    public int CompareTo(T? other)
+    public int CompareTo(ReadOnlySpan<T> other)
     {
         if (_isSome)
         {
-            return Comparer<T>.Default.Compare(_value!, other!);
+            return Compare.Sequence(_value, other);
         }
         else
         {
@@ -407,8 +369,7 @@ public readonly struct Option<T> :
     {
         return obj switch
         {
-            Option<T> option => CompareTo(option),
-            T some => CompareTo(some),
+            T[] array => CompareTo(array.AsSpan()),
             None none => CompareTo(none),
             _ => 1, // unknown values sort before
         };
@@ -418,13 +379,13 @@ public readonly struct Option<T> :
 
 #region Equals
 
-    public bool Equals(Option<T> other)
+    public bool Equals(OptionReadOnlySpan<T> other)
     {
         if (_isSome)
         {
             if (other._isSome)
             {
-                return EqualityComparer<T>.Default.Equals(_value!, other._value!);
+                return Equate.Sequence(_value, other._value);
             }
             else // y is none
             {
@@ -445,9 +406,9 @@ public readonly struct Option<T> :
         }
     }
 
-    public bool Equals(T? value)
+    public bool Equals(ReadOnlySpan<T> value)
     {
-        return _isSome && EqualityComparer<T>.Default.Equals(_value!, value!);
+        return _isSome && Equate.Sequence(_value, value);
     }
 
     public bool Equals(None none) => !_isSome;
@@ -456,8 +417,7 @@ public readonly struct Option<T> :
     {
         return obj switch
         {
-            Option<T> option => Equals(option),
-            T value => Equals(value),
+            T[] array => Equals(array.AsSpan()),
             None none => Equals(none),
             _ => false,
         };
@@ -474,29 +434,27 @@ public readonly struct Option<T> :
 
     public override string ToString()
     {
-        return Match(static value => $"Some({value})", static () => nameof(None));
+        if (_isSome)
+            return InterpolatedStringHandler.Render($"Some({_value})");
+        return nameof(None);
     }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
-    public OptionEnumerator GetEnumerator() => new OptionEnumerator(this);
+    public OptionReadOnlySpanEnumerator GetEnumerator() => new OptionReadOnlySpanEnumerator(this);
 
     [MustDisposeResource(false)]
-    public struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
+    public ref struct OptionReadOnlySpanEnumerator // : IEnumerator<T>, IEnumerator, IDisposable
     {
         private bool _yielded;
-        private readonly T _value;
+        private readonly ReadOnlySpan<T> _value;
+        
+        public ReadOnlySpan<T> Current => _value;
 
-        object? IEnumerator.Current => _value;
-        public T Current => _value;
-
-        public OptionEnumerator(Option<T> option)
+        public OptionReadOnlySpanEnumerator(OptionReadOnlySpan<T> option)
         {
             if (option._isSome)
             {
@@ -516,13 +474,6 @@ public readonly struct Option<T> :
                 return false;
             _yielded = true;
             return true;
-        }
-
-        void IEnumerator.Reset() => throw new NotSupportedException();
-
-        void IDisposable.Dispose()
-        {
-            // Do nothing
         }
     }
 }

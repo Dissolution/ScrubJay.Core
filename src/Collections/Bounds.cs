@@ -11,7 +11,7 @@ public static class Bounds
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Bounds<T> Any<T>() => new(None, false, None, false);
+    public static Bounds<T> Any<T>() => new(None(), false, None(), false);
 
     /// <summary>
     /// Get <see cref="Bounds{T}"/> that starts at a <paramref name="minimum"/> value and has no upper bound
@@ -20,7 +20,7 @@ public static class Bounds
     /// <param name="minIsInclusive"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Bounds<T> StartAt<T>(T minimum, bool minIsInclusive = true) => new Bounds<T>(minimum, minIsInclusive, None, default);
+    public static Bounds<T> StartAt<T>(T minimum, bool minIsInclusive = true) => new Bounds<T>(minimum, minIsInclusive, None(), default);
 
     /// <summary>
     /// Get <see cref="Bounds{T}"/> that ends at a <paramref name="maximum"/> value and has no lower bound
@@ -29,7 +29,7 @@ public static class Bounds
     /// <param name="maxIsInclusive"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Bounds<T> EndAt<T>(T maximum, bool maxIsInclusive = true) => new Bounds<T>(None, false, maximum, maxIsInclusive);
+    public static Bounds<T> EndAt<T>(T maximum, bool maxIsInclusive = true) => new Bounds<T>(None(), false, maximum, maxIsInclusive);
 
     public static Bounds<T> Create<T>(Option<T> minimum, bool minIsInclusive, Option<T> maximum, bool maxIsInclusive) => new Bounds<T>(minimum, minIsInclusive, maximum, maxIsInclusive);
 

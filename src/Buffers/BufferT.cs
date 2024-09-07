@@ -493,13 +493,13 @@ public ref struct Buffer<T>
             }
         }
 
-        return None;
+        return default;
     }
 
     public Option<T> TryRemoveAt(Index index)
     {
         if (!Validate.Index(index, _position).IsOk(out var offset))
-            return None;
+            return default;
         T item = _span[offset];
         Span.SelfCopy(_span, (offset + 1).., offset..);
         return Some(item);
@@ -517,7 +517,7 @@ public ref struct Buffer<T>
     public Option<T[]> TryRemoveMany(Range range)
     {
         if (!Validate.Range(range, _position).IsOk(out var ol))
-            return None;
+            return default;
         (int offset, int length) = ol;
         T[] items = _span.Slice(offset, length).ToArray();
         Span.SelfCopy(_span, (offset + length).., offset..);
@@ -528,7 +528,7 @@ public ref struct Buffer<T>
     {
         int newPos = _position - 1;
         if (newPos < 0)
-            return None;
+            return default;
         _position = newPos;
         return Some(_span[newPos]);
     }
@@ -678,7 +678,7 @@ public ref struct Buffer<T>
         {
             int newIndex = _index + 1;
             if (newIndex >= _items.Length)
-                return None;
+                return default;
             _index = newIndex;
             return Some(_items[newIndex]);
         }
@@ -760,7 +760,7 @@ public ref struct Buffer<T>
             {
                 int newIndex = _index + 1;
                 if (newIndex >= _count)
-                    return None;
+                    return default;
                 _index = newIndex;
                 return Some(_items![newIndex]);
             }

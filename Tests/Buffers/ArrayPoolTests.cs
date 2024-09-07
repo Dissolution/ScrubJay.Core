@@ -13,7 +13,7 @@ public class ArrayPoolTests
         typeof(Guid),
         typeof(int),
         typeof(ulong),
-        typeof(Option.None),
+        typeof(None),
         typeof(object),
         typeof(string),
         typeof(List<int>),
