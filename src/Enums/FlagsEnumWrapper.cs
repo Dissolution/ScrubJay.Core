@@ -5,8 +5,8 @@ public readonly struct FlagsEnumWrapper<TEnum> :
     IEqualityOperators<FlagsEnumWrapper<TEnum>, TEnum, bool>,
     IComparisonOperators<FlagsEnumWrapper<TEnum>, TEnum, bool>,
     IBitwiseOperators<FlagsEnumWrapper<TEnum>, TEnum, TEnum>,
-    ISpanParsable<FlagsEnumWrapper<TEnum>>,
-    IParsable<FlagsEnumWrapper<TEnum>>,
+    //ISpanParsable<FlagsEnumWrapper<TEnum>>,
+    //IParsable<FlagsEnumWrapper<TEnum>>,
     ISpanFormattable,
 #endif
     IEquatable<TEnum>,
@@ -39,61 +39,8 @@ public readonly struct FlagsEnumWrapper<TEnum> :
     public static TEnum operator ^(FlagsEnumWrapper<TEnum> left, TEnum right) => FlagsEnumExtensions.Xor(left._enum, right);
 
     public static TEnum operator ~(FlagsEnumWrapper<TEnum> value) => FlagsEnumExtensions.Not(value._enum);
-
-#if NET7_0_OR_GREATER
-    static FlagsEnumWrapper<TEnum> ISpanParsable<FlagsEnumWrapper<TEnum>>.Parse(ReadOnlySpan<char> text, IFormatProvider? _)
-    {
-        if (TryParse(text, out var value))
-            return value;
-        throw new ArgumentException($"Cannot parse '{text}' to a {typeof(FlagsEnumWrapper<TEnum>)}", nameof(text));
-    }
-
-    static FlagsEnumWrapper<TEnum> IParsable<FlagsEnumWrapper<TEnum>>.Parse([AllowNull, NotNull] string? str, IFormatProvider? _)
-    {
-        if (TryParse(str, out var value))
-            return value;
-        throw new ArgumentException($"Cannot parse '{str}' to a {typeof(FlagsEnumWrapper<TEnum>)}", nameof(str));
-    }
-
-    static bool ISpanParsable<FlagsEnumWrapper<TEnum>>.TryParse(ReadOnlySpan<char> text, IFormatProvider? _, out FlagsEnumWrapper<TEnum> enumWrapper) => TryParse(text, out enumWrapper);
-
-    static bool IParsable<FlagsEnumWrapper<TEnum>>.TryParse([AllowNull, NotNullWhen(true)] string? str, IFormatProvider? _, out FlagsEnumWrapper<TEnum> enumWrapper) => TryParse(str, out enumWrapper);
-
-
-    public static bool TryParse(ReadOnlySpan<char> text, out FlagsEnumWrapper<TEnum> enumWrapper)
-    {
-        if (Enum.TryParse<TEnum>(text, true, out var @enum))
-        {
-            enumWrapper = new(@enum);
-            return true;
-        }
-
-        //TODO: Other parsing!
-
-        enumWrapper = default;
-        return false;
-    }
-#else
-    public static bool TryParse(ReadOnlySpan<char> text, out FlagsEnumWrapper<TEnum> enumWrapper)
-    {
-        if (Enum.TryParse<TEnum>(
-            text.ToString(),        // Have to allocate
-            true,
-            out var @enum))
-        {
-            enumWrapper = new(@enum);
-            return true;
-        }
-
-        //TODO: Other parsing!
-
-        enumWrapper = default;
-        return false;
-    }
-#endif
-
-    public static bool TryParse([AllowNull, NotNullWhen(true)] string? str, out FlagsEnumWrapper<TEnum> enumWrapper) => TryParse(str.AsSpan(), out enumWrapper);
-
+    
+    
 
     private readonly TEnum _enum;
 

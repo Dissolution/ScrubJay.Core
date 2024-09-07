@@ -1,4 +1,6 @@
-﻿using System.Buffers;
+﻿#pragma warning disable S4136, CA1002
+
+using System.Buffers;
 
 namespace ScrubJay.Buffers;
 
@@ -493,13 +495,13 @@ public ref struct Buffer<T>
             }
         }
 
-        return default;
+        return None<int>();
     }
 
     public Option<T> TryRemoveAt(Index index)
     {
         if (!Validate.Index(index, _position).IsOk(out var offset))
-            return default;
+            return None<T>();
         T item = _span[offset];
         Span.SelfCopy(_span, (offset + 1).., offset..);
         return Some(item);
@@ -517,7 +519,7 @@ public ref struct Buffer<T>
     public Option<T[]> TryRemoveMany(Range range)
     {
         if (!Validate.Range(range, _position).IsOk(out var ol))
-            return default;
+            return None<T[]>();
         (int offset, int length) = ol;
         T[] items = _span.Slice(offset, length).ToArray();
         Span.SelfCopy(_span, (offset + length).., offset..);
@@ -528,7 +530,7 @@ public ref struct Buffer<T>
     {
         int newPos = _position - 1;
         if (newPos < 0)
-            return default;
+            return None<T>();
         _position = newPos;
         return Some(_span[newPos]);
     }
@@ -639,6 +641,7 @@ public ref struct Buffer<T>
     /// An <see cref="IEnumerator{T}"/> over the items in a <see cref="Buffer{T}"/>
     /// </summary>
     [PublicAPI]
+    [StructLayout(LayoutKind.Auto)]
     public ref struct BufferEnumerator
     {
         private readonly ReadOnlySpan<T> _items;
@@ -678,7 +681,7 @@ public ref struct Buffer<T>
         {
             int newIndex = _index + 1;
             if (newIndex >= _items.Length)
-                return default;
+                return None<T>();
             _index = newIndex;
             return Some(_items[newIndex]);
         }
@@ -724,8 +727,7 @@ public ref struct Buffer<T>
             {
                 get
                 {
-                    if (_items is null)
-                        throw new ObjectDisposedException(nameof(BufferEnumerableEnumerator));
+                    Validate.ThrowIfDisposed(_items is null, this);
                     if (_index < 0)
                         throw new InvalidOperationException("Enumeration has not yet started");
                     if (_index >= _count)
@@ -760,7 +762,7 @@ public ref struct Buffer<T>
             {
                 int newIndex = _index + 1;
                 if (newIndex >= _count)
-                    return default;
+                    return None<T>();
                 _index = newIndex;
                 return Some(_items![newIndex]);
             }

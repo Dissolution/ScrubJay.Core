@@ -1,6 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <RootNamespace>ScrubJay</RootNamespace>
+        <AssemblyName>ScrubJay.Core</AssemblyName>
+        
         <TargetFrameworks>
             <!-- All supported .Net Core versions ~~ https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core -->
             net8.0;net7.0;net6.0;
@@ -14,14 +17,38 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-        <RootNamespace>ScrubJay</RootNamespace>
-        <AssemblyName>ScrubJay.Core</AssemblyName>
+        <!-- Static Code Analysis -->
+        <AnalysisLevel>latest</AnalysisLevel>
+        <AnalysisMode>All</AnalysisMode>
+        <!-- <TreatWarningsAsErrors>true</TreatWarningsAsErrors> -->
+        <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
         <!-- Ensure that all Polyfilled types are public -->
         <PolyPublic>true</PolyPublic>
 
         <!-- Quiet Warnings -->
-        <NoWarn>CS0436</NoWarn>
+        <NoWarn>
+            CS0436;
+            MA0048;
+            CA1000;
+            CA1716;
+            CA2225;
+            S1939;
+            MA0077;
+            MA0094;
+            CA1710;
+            CA1051;
+            CA1034;
+            CA1725;
+            CA1062; <!-- Externallay visible methods should validate parameters to not be null -->
+            S927;   <!-- Rename parameter to match interface declaration -->
+            S1133;  <!-- Remove depreciated code [Obsolete] -->
+            S2930;  <!-- Dispose when no longer needed ~ does not respect any attributes and gives false positives -->
+            S3267;  <!-- Loops should be simplified with Where -->
+            MA0061; S1006;  <!-- Remove default parameters on overrides to match signature -->
+            CA2237; <!-- Add [Serializable] to types -->
+        </NoWarn>
 
         <!--        &lt;!&ndash; Setup NuGet &ndash;&gt;-->
         <!--        <IsPackable>true</IsPackable>-->
@@ -93,18 +120,34 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="InlineIL.Fody" Version="1.8.0">
+        <PackageReference Include="InlineIL.Fody" Version="1.9.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0">
+        <PackageReference Include="JetBrains.Annotations" Version="2024.2.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Polyfill" Version="6.0.0">
+        <PackageReference Include="Polyfill" Version="6.5.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
 
+    <!-- Static Code Analyzers -->
+    <ItemGroup>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.163">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.12.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+    
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
             <_Parameter1>ScrubJay.Core.Tests</_Parameter1>

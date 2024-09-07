@@ -1,3 +1,5 @@
+#pragma warning disable S2365
+
 namespace ScrubJay.Collections;
 
 /// <summary>
@@ -17,7 +19,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 {
     [return: NotNullIfNotNull(nameof(objKey))]
     private static TKey ObjectToKey(
-        [AllowNull, NotNull] object? objKey,
+        [NotNull] object? objKey,
         [CallerArgumentExpression(nameof(objKey))]
         string? keyName = null)
     {
@@ -25,15 +27,18 @@ public sealed class DictionaryAdapter<TKey, TValue> :
         {
             null => throw new ArgumentNullException(keyName, "Key cannot be null"),
             TKey key => key,
-            _ => throw new ArgumentException($"Key '{objKey}' is not a '{typeof(TKey).Name}'"),
+            _ => throw new ArgumentException($"Key '{objKey}' is not a '{typeof(TKey).Name}'", keyName),
         };
     }
     [return: NotNullIfNotNull(nameof(objValue))]
-    private static TValue? ObjectToValue(object? objValue)
+    private static TValue? ObjectToValue(
+        object? objValue,
+        [CallerArgumentExpression(nameof(objValue))]
+        string? valueName = null)
     {
         if (objValue.CanBe<TValue>(out var value))
             return value;
-        throw new ArgumentException($"Value '{objValue}' is not a '{typeof(TValue).Name}'");
+        throw new ArgumentException($"Value '{objValue}' is not a '{typeof(TValue).Name}'", valueName);
     }
 
 

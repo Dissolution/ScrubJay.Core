@@ -1,220 +1,137 @@
-﻿using ScrubJay.Buffers;
-using ScrubJay.Memory;
-using ScrubJay.Text;
+﻿using ScrubJay.Text;
 
 namespace ScrubJay.Collections;
 
-/// <summary>
-/// Bounding conditional for <typeparamref name="T"/> values
-/// </summary>
-/// <typeparam name="T"></typeparam>
 [PublicAPI]
+[StructLayout(LayoutKind.Auto)]
 public readonly struct Bounds<T> :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Bounds<T>, Bounds<T>, bool>,
 #endif
-    IEquatable<Bounds<T>>,
-    IFormattable
+IEquatable<Bounds<T>>
 {
     public static bool operator ==(Bounds<T> left, Bounds<T> right) => left.Equals(right);
-    public static bool operator !=(Bounds<T> left, Bounds<T> right) => !left.Equals(right);
+    public static bool operator !=(Bounds<T> left, Bounds<T> right) => !left.Equals(right);   
 
+    public readonly Option<Bound<T>> Lower;
+    public readonly Option<Bound<T>> Upper;
 
-    public readonly Option<T> Minimum;
-    public readonly bool MinimumIsInclusive;
-
-    public readonly Option<T> Maximum;
-    public readonly bool MaximumIsInclusive;
-
-    public bool IsUnbounded => Minimum.IsNone() || Maximum.IsNone();
-
-    public Bounds(Option<T> minimum, bool minimumIsInclusive, Option<T> maximum, bool maximumIsInclusive)
+    public Bounds(Option<Bound<T>> lower, Option<Bound<T>> upper)
     {
-        this.Minimum = minimum;
-        this.MinimumIsInclusive = minimumIsInclusive;
-        this.Maximum = maximum;
-        this.MaximumIsInclusive = maximumIsInclusive;
+        this.Lower = lower;
+        this.Upper = upper;
     }
 
     public bool Contains(T? value)
     {
-        if (Minimum.IsSome(out var min))
+        if (Lower.IsSome(out Bound<T> lowerBounds))
         {
-            if (value is null)
-                return false;
-
-            int c = Comparer<T>.Default.Compare(value, min);
-            if (MinimumIsInclusive)
+            (T lower, bool lowerInc) = lowerBounds;
+            if (lowerInc)
             {
-                if (c < 0)
-                {
+                if (Comparer<T>.Default.Compare(value!, lower!) < 0)
                     return false;
-                }
             }
             else
             {
-                if (c <= 0)
-                {
+                if (Comparer<T>.Default.Compare(value!, lower!) <= 0)
                     return false;
-                }
             }
         }
 
-        if (Maximum.IsSome(out var max))
+        if (Upper.IsSome(out Bound<T> upperBounds))
         {
-            if (value is null)
-                return false;
-
-            int c = Comparer<T>.Default.Compare(value, max);
-            if (MaximumIsInclusive)
+            (T upper, bool upperInc) = upperBounds;
+            if (upperInc)
             {
-                if (c > 0)
-                {
+                if (Comparer<T>.Default.Compare(value!, upper!) > 0)
                     return false;
-                }
             }
             else
             {
-                if (c >= 0)
-                {
+                if (Comparer<T>.Default.Compare(value!, upper!) >= 0)
                     return false;
-                }
             }
         }
 
-        // Any value matches None, None
-        return true;
+        return false;
     }
 
-    public T Clamped(T value)
+    [return: NotNullIfNotNull(nameof(value))]
+    public T? Clamped(T? value)
     {
-        if (Minimum.IsSome(out var min))
+        if (Lower.IsSome(out Bound<T> lowerBounds))
         {
-            int c = Comparer<T>.Default.Compare(value, min);
-            if (MinimumIsInclusive)
+            (T lower, bool lowerInc) = lowerBounds;
+            if (lowerInc)
             {
-                if (c < 0)
-                {
-                    return min;
-                }
+                if (Comparer<T>.Default.Compare(value!, lower!) < 0)
+                    return lower;
             }
             else
             {
-                if (c <= 0)
-                {
-                    return min;
-                }
+                if (Comparer<T>.Default.Compare(value!, lower!) <= 0)
+                    return lower;
             }
         }
 
-        if (Maximum.IsSome(out var max))
+        if (Upper.IsSome(out Bound<T> upperBounds))
         {
-            int c = Comparer<T>.Default.Compare(value, max);
-            if (MaximumIsInclusive)
+            (T upper, bool upperInc) = upperBounds;
+            if (upperInc)
             {
-                if (c > 0)
-                {
-                    return max;
-                }
+                if (Comparer<T>.Default.Compare(value!, upper!) > 0)
+                    return upper;
             }
             else
             {
-                if (c >= 0)
-                {
-                    return max;
-                }
+                if (Comparer<T>.Default.Compare(value!, upper!) >= 0)
+                    return upper;
             }
         }
 
         return value;
     }
 
-    public void Clamp(ref T value)
-    {
-        value = Clamped(value);
-    }
+    public bool Equals(Bounds<T> other) => other.Lower.Equals(this.Lower) && other.Upper.Equals(this.Upper);
 
-    public bool Equals(Bounds<T> other)
-    {
-        return other.MinimumIsInclusive == MinimumIsInclusive && other.MaximumIsInclusive == MaximumIsInclusive && other.Minimum == Minimum && other.Maximum == Maximum;
-    }
+    public override bool Equals([NotNullWhen(true)] object? obj) => obj is Bounds<T> bounds && Equals(bounds);
 
-    public override bool Equals(object? obj) => obj is Bounds<T> bounds && Equals(bounds);
+    public override int GetHashCode() => Hasher.Combine(Lower, Upper);
 
-    public override int GetHashCode()
-    {
-        return Hasher.Combine(Minimum, MinimumIsInclusive, Maximum, MaximumIsInclusive);
-    }
-
-    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format = default, IFormatProvider? provider = default)
-    {
-        SpanWriter<char> writer = new(destination);
-
-        if (Minimum.IsSome(out var min))
-        {
-            if (MinimumIsInclusive)
-            {
-                if (!writer.TryWrite('['))
-                    goto Fail;
-            }
-            else
-            {
-                if (!writer.TryWrite('('))
-                    goto Fail;
-            }
-
-            if (!writer.TryWriteFormatted<T>(min, format.ToString(), provider))
-                goto Fail;
-        }
-
-        if (!writer.TryWrite(".."))
-            goto Fail;
-
-        if (Maximum.IsSome(out var max))
-        {
-            if (!writer.TryWriteFormatted<T>(max, format.ToString(), provider))
-                goto Fail;
-
-            if (MaximumIsInclusive)
-            {
-                if (!writer.TryWrite(']'))
-                    goto Fail;
-            }
-            else
-            {
-                if (!writer.TryWrite(')'))
-                    goto Fail;
-            }
-        }
-
-        charsWritten = writer.Count;
-        return true;
-
-    Fail:
-        writer.Clear();
-        charsWritten = 0;
-        return false;
-    }
-
-    public string ToString(string? format, IFormatProvider? _ = default)
+    public override string ToString()
     {
         var text = new TextBuffer();
-        if (Minimum.IsSome(out var min))
+        
+        if (Lower.IsSome(out var lower))
         {
-            text.Append(MinimumIsInclusive ? '[' : '(');
-            text.AppendFormatted<T>(min, format);
+            if (lower.IsInclusive)
+            {
+                text.Append('[');
+            }
+            else
+            {
+                text.Append('(');
+            }
+            text.AppendFormatted<T>(lower.Value);
         }
-
-        text.Append(", ");
-
-        if (Maximum.IsSome(out var max))
+        
+        text.Append("..");
+        
+        if (Upper.IsSome(out var upper))
         {
-            text.AppendFormatted<T>(max, format);
-            text.Append(MaximumIsInclusive ? ']' : ')');
+            text.AppendFormatted<T>(upper.Value);
+            
+            if (upper.IsInclusive)
+            {
+                text.Append(']');
+            }
+            else
+            {
+                text.Append(')');
+            }
         }
 
         return text.ToStringAndDispose();
     }
-
-    public override string ToString() => ToString(default, default);
 }

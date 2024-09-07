@@ -79,14 +79,16 @@ public static class SpanReaderExtensions
         int size = Unsafe.SizeOf<T>();
         if (spanReader.TryPeek(size).IsSome(out var bytes))
         {
+            T value;
 #if NET8_0_OR_GREATER
-            return Unsafe.ReadUnaligned<T>(in bytes.GetPinnableReference());
+            value = Unsafe.ReadUnaligned<T>(in bytes.GetPinnableReference());
 #else
-            return Unsafe.ReadUnaligned<T>(ref Unsafe.AsRef<byte>(in bytes.GetPinnableReference()));
+            value = Unsafe.ReadUnaligned<T>(ref Unsafe.AsRef<byte>(in bytes.GetPinnableReference()));
 #endif
+            return Some(value);
         }
 
-        return default;
+        return None<T>();
     }
 
     public static Option<T> TryTakeValue<T>(this ref SpanReader<byte> spanReader)
@@ -95,14 +97,16 @@ public static class SpanReaderExtensions
         int size = Unsafe.SizeOf<T>();
         if (spanReader.TryTake(size).IsSome(out var bytes))
         {
+            T value;
 #if NET8_0_OR_GREATER
-            return Unsafe.ReadUnaligned<T>(in bytes.GetPinnableReference());
+            value = Unsafe.ReadUnaligned<T>(in bytes.GetPinnableReference());
 #else
-            return Unsafe.ReadUnaligned<T>(ref Unsafe.AsRef<byte>(in bytes.GetPinnableReference()));
+            value = Unsafe.ReadUnaligned<T>(ref Unsafe.AsRef<byte>(in bytes.GetPinnableReference()));
 #endif
+            return Some(value);
         }
 
-        return default;
+        return None<T>();
     }
 
     public static T TakeValue<T>(this ref SpanReader<byte> byteEnumerator)

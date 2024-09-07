@@ -14,6 +14,7 @@
 /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html"/><br/>
 /// </remarks>
 [PublicAPI]
+[StructLayout(LayoutKind.Auto)]
 public readonly struct Result<TOk, TError> :
 /* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */
 #if NET7_0_OR_GREATER
@@ -166,11 +167,9 @@ public readonly struct Result<TOk, TError> :
     /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap_or_default"/>
     public TOk? OkOrDefault()
     {
-        {
-            if (_isOk)
+        if (_isOk)
                 return _ok!;
-            return default(TOk);
-        }
+        return default(TOk);
     }
 
     /// <summary>
@@ -198,7 +197,7 @@ public readonly struct Result<TOk, TError> :
             return Some(_ok!);
         }
 
-        return default;
+        return None<TOk>();
     }
 
     public bool IsSuccess([MaybeNullWhen(false)] out TOk ok, [MaybeNullWhen(true)] out TError error)
@@ -349,7 +348,7 @@ public readonly struct Result<TOk, TError> :
     {
         if (!_isOk)
             return Some(_error!);
-        return default;
+        return None<TError>();
     }
 
     public bool IsFailure([MaybeNullWhen(false)] out TError error, [MaybeNullWhen(true)] out TOk ok)
@@ -421,17 +420,7 @@ public readonly struct Result<TOk, TError> :
             return onOk(_ok!);
         return onError(_error!);
     }
-
-    public Option<TOk> AsOption()
-    {
-        if (_isOk)
-        {
-            return Some(_ok!);
-        }
-
-        return default;
-    }
-
+    
 #region Compare
 
     public int CompareTo(Result<TOk, TError> result)
@@ -575,6 +564,7 @@ public readonly struct Result<TOk, TError> :
 
 
     [MustDisposeResource(false)]
+    [StructLayout(LayoutKind.Auto)]
     public struct ResultEnumerator : IEnumerator<TOk>, IEnumerator, IDisposable
     {
         private bool _yielded;

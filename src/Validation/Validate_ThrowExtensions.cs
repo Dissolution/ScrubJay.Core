@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Validation;
+﻿using ObjectDisposedException = System.ObjectDisposedException;
+
+namespace ScrubJay.Validation;
 
 public static partial class Validate
 {
@@ -21,13 +23,11 @@ public static partial class Validate
     /// Thrown if <paramref name="value"/> is <c>null</c>
     /// </exception>
     [return: NotNull]
-    public static T ThrowIfNull<T>(
-        [AllowNull, NotNull] this T value,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
+    public static T ThrowIfNull<T>([AllowNull, NotNull] this T value, [CallerArgumentExpression(nameof(value))] string? valueName = null)
         where T : class?
     {
-        if (value is not null) return value;
+        if (value is not null)
+            return value;
         throw new ArgumentNullException(valueName);
     }
 
@@ -50,11 +50,7 @@ public static partial class Validate
     /// Thrown is <paramref name="obj"/> is not a valid <typeparamref name="TOut"/> value
     /// </exception>
     [return: NotNull]
-    public static TOut ThrowIfNot<TOut>(
-        [AllowNull, NotNull]
-        this object? obj,
-        [CallerArgumentExpression(nameof(obj))]
-        string? objName = null)
+    public static TOut ThrowIfNot<TOut>([AllowNull, NotNull] this object? obj, [CallerArgumentExpression(nameof(obj))] string? objName = null)
     {
         return obj switch
         {
@@ -66,15 +62,21 @@ public static partial class Validate
 
 
     [return: NotNullIfNotNull(nameof(obj))]
-    public static TOut? ThrowIfCannotBe<TOut>(
-        this object? obj,
-        [CallerArgumentExpression(nameof(obj))]
-        string? objName = null)
+    public static TOut? ThrowIfCannotBe<TOut>(this object? obj, [CallerArgumentExpression(nameof(obj))] string? objName = null)
     {
         if (obj.CanBe<TOut>(out var output))
             return output;
-        throw new ArgumentException(
-            $"The given {obj?.GetType().Name} value is not a valid {typeof(TOut).Name} instance",
-            objName);
+        throw new ArgumentException($"The given {obj?.GetType().Name} value is not a valid {typeof(TOut).Name} instance", objName);
     }
+
+#pragma warning disable CA1513
+    [StackTraceHidden]
+    public static void ThrowIfDisposed([DoesNotReturnIf(true)] bool condition, object instance)
+    {
+        if (condition)
+        {
+            throw new ObjectDisposedException(instance.GetType().FullName);
+        }
+    }
+#pragma warning restore CA1513
 }

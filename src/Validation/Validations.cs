@@ -5,9 +5,9 @@ namespace ScrubJay.Validation;
 /// <summary>
 /// A collection of sequential validations
 /// </summary>
-public class Validations : IEnumerable
+public sealed class Validations : IEnumerable<Unit>, IEnumerable
 {
-    protected Option<Exception> _hasException = default;
+    private Option<Exception> _hasException;
 
     public Result<Unit, Exception> Result
     {
@@ -36,5 +36,6 @@ public class Validations : IEnumerable
 
     public void Add<T>(Func<Result<T, Exception>> getResult) => Add<T>(getResult());
 
-    public IEnumerator GetEnumerator() => EmptyEnumerator<Unit>.Instance;
+    IEnumerator IEnumerable.GetEnumerator() => EmptyEnumerator<Unit>.Instance;
+    IEnumerator<Unit> IEnumerable<Unit>.GetEnumerator() => EmptyEnumerator<Unit>.Instance;
 }

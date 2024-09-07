@@ -148,11 +148,9 @@ public static class FlagsEnumExtensions
         int f = 0;
         int maxBits = Unsafe.SizeOf<TEnum>() * 8;
         ulong enumValue = ToUInt64(@enum);
-        //string enumValueBits = Convert.ToString((long)enumValue, 2);
         for (var shift = 0; shift < maxBits; shift++)
         {
             ulong mask = 1UL << shift;
-            //string maskBits = Convert.ToString((long)mask, 2);
             if ((enumValue & mask) != 0UL)
             {
                 var flag = FromUInt64<TEnum>(mask);

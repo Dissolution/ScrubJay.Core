@@ -38,7 +38,7 @@ public static partial class Validate
     }
 
 
-    public static Result<T, Exception> IsNotNull<T>([AllowNull] T? value, [CallerArgumentExpression(nameof(value))] string? valueName = null)
+    public static Result<T, Exception> IsNotNull<T>([AllowNull, NotNullWhen(true)] T? value, [CallerArgumentExpression(nameof(value))] string? valueName = null)
         where T : notnull
     {
         if (value is not null)
@@ -71,7 +71,7 @@ public static partial class Validate
         {
             IsGreaterOrEqualThan(count, 0, null, countName),
             IsNotNull(array, arrayName),
-            InBounds(arrayIndex, Bounds.For(array!)),
+            InBounds(arrayIndex, Bounds.ForLength(array!.Length)),
             () =>
             {
                 if (count + arrayIndex <= array!.Length)

@@ -1,10 +1,13 @@
-﻿// ReSharper disable UseSwitchCasePatternVariable
+﻿#pragma warning disable S3247
+
+// ReSharper disable UseSwitchCasePatternVariable
 // ReSharper disable MergeCastWithTypeCheck
 namespace ScrubJay.Extensions;
 
 /// <summary>
 /// Extensions on <see cref="object"/>
 /// </summary>
+[PublicAPI]
 public static class ObjectExtensions
 {
     /// <summary>
@@ -44,17 +47,13 @@ public static class ObjectExtensions
     /// <returns></returns>
     public static bool CanBe<T>(this object? input, out T? output)
     {
-        switch (input)
+        if (input is T)
         {
-            case T:
-                output = (T)input;
-                return true;
-            case null when typeof(T).CanContainNull():
-                output = default;
-                return true;
-            default:
-                output = default;
-                return false;
+            output = (T)input;
+            return true;
         }
+
+        output = default;
+        return typeof(T).CanContainNull();
     }
 }

@@ -44,6 +44,8 @@ namespace ScrubJay.Utilities;
 /// <summary>
 /// Hasher is a hashcode generator for use in many dotnet environments<br />
 /// </summary>
+[PublicAPI]
+[StructLayout(LayoutKind.Auto)]
 public ref struct Hasher
 {
     private const uint PRIME1 = 0x9E3779B1U;
@@ -577,7 +579,7 @@ public ref struct Hasher
     {
         uint length = _length;
 
-        // position refers to the *next* queue position in this method, so position == 1 means that _queue1 is populated;
+        // position refers to the *next* queue position in this method, so position == 1 means that _queue1 is populated
         // _queue2 would have been populated on the next call to Add()
         uint position = length % 4;
 
@@ -604,16 +606,12 @@ public ref struct Hasher
         hash = HashFinalize(hash);
         return (int)hash;
     }
-
-#pragma warning disable CS0809
-    [Obsolete("Use ToHashCode to retrieve the computed hash code", true)]
+    
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override int GetHashCode() => throw new NotSupportedException();
-
-    [Obsolete("Hasher is a mutable struct and should not be compared", true)]
+    public override int GetHashCode() => ToHashCode();
+    
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object? _) => throw new NotSupportedException();
-#pragma warning restore CS0809
+    public override bool Equals(object? _) => false;
 
     public override string ToString()
     {

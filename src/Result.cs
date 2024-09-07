@@ -1,4 +1,6 @@
-﻿namespace ScrubJay;
+﻿#pragma warning disable CA1031
+
+namespace ScrubJay;
 
 [PublicAPI]
 public static class Result

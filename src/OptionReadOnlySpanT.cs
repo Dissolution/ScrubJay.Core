@@ -5,6 +5,7 @@ using ScrubJay.Text;
 
 namespace ScrubJay;
 
+[StructLayout(LayoutKind.Auto)]
 [PublicAPI]
 public readonly ref struct OptionReadOnlySpan<T> //:
 /* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */    
@@ -97,15 +98,6 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSome() => _isSome;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSomeAnd(RSpanFunc<T, bool> predicate) => _isSome && predicate(_value);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSome(out ReadOnlySpan<T> value)
     {
@@ -118,6 +110,15 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         value = default;
         return false;
     }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsSomeAnd(RSpanFunc<T, bool> predicate) => _isSome && predicate(_value);
 
     /// <summary>
     /// 
@@ -165,11 +166,9 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<T> SomeOrDefault()
     {
-        {
-            if (_isSome)
+        if (_isSome)
                 return _value;
-            return ReadOnlySpan<T>.Empty;
-        }
+        return ReadOnlySpan<T>.Empty;
     }
 
     /// <summary>
@@ -199,24 +198,24 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         return None;
     }
     
-    public Option<U> Map<U>(RSpanFunc<T, U> map)
+    public Option<TNew> Map<TNew>(RSpanFunc<T, TNew> map)
     {
         if (IsSome(out var value))
         {
-            return Some<U>(map(value));
+            return Some<TNew>(map(value));
         }
 
-        return Option<U>.None;
+        return Option<TNew>.None;
     }
     
-    public OptionReadOnlySpan<U> Map<U>(RSpanFuncRSpan<T, U> map)
+    public OptionReadOnlySpan<TNew> Map<TNew>(RSpanFuncRSpan<T, TNew> map)
     {
         if (IsSome(out var value))
         {
-            return OptionReadOnlySpan<U>.Some(map(value));
+            return OptionReadOnlySpan<TNew>.Some(map(value));
         }
 
-        return OptionReadOnlySpan<U>.None;
+        return OptionReadOnlySpan<TNew>.None;
     }
 
     /// <summary>
@@ -224,10 +223,10 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// </summary>
     /// <param name="map"></param>
     /// <param name="defaultValue"></param>
-    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
-    public U MapOr<U>(RSpanFunc<T, U> map, U defaultValue)
+    public TNew MapOr<TNew>(RSpanFunc<T, TNew> map, TNew defaultValue)
     {
         if (IsSome(out var value))
         {
@@ -242,10 +241,10 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// </summary>
     /// <param name="map"></param>
     /// <param name="getDefaultValue"></param>
-    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
-    public U MapOrElse<U>(RSpanFunc<T, U> map, Func<U> getDefaultValue)
+    public TNew MapOrElse<TNew>(RSpanFunc<T, TNew> map, Func<TNew> getDefaultValue)
     {
         if (IsSome(out var value))
         {
@@ -435,7 +434,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     public override string ToString()
     {
         if (_isSome)
-            return InterpolatedStringHandler.Render($"Some({_value})");
+            return $"Some({_value.ToString()})";
         return nameof(None);
     }
 
@@ -447,6 +446,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     public OptionReadOnlySpanEnumerator GetEnumerator() => new OptionReadOnlySpanEnumerator(this);
 
     [MustDisposeResource(false)]
+    [StructLayout(LayoutKind.Auto)]
     public ref struct OptionReadOnlySpanEnumerator // : IEnumerator<T>, IEnumerator, IDisposable
     {
         private bool _yielded;

@@ -10,6 +10,7 @@ namespace ScrubJay.Memory;
 /// <typeparam name="T">
 /// <see cref="Type"/>s of items stored in the <see cref="ReadOnlySpan{T}"/>
 /// </typeparam>
+[StructLayout(LayoutKind.Auto)]
 public ref struct SpanReader<T>
 {
     private readonly ReadOnlySpan<T> _span;
@@ -55,11 +56,9 @@ public ref struct SpanReader<T>
     {
         if (_position < _span.Length)
             return Some(_span[_position]);
-        return default;
+        return None<T>();
     }
-
-    public T Peek() => TryPeek().SomeOrThrow($"There was not an item to Peek");
-
+    
     /// <summary>
     /// Try to peek at the next <paramref name="count"/> items
     /// </summary>
@@ -81,6 +80,8 @@ public ref struct SpanReader<T>
         return default;
     }
 
+    public T Peek() => TryPeek().SomeOrThrow($"There was not an item to Peek");
+    
     public ReadOnlySpan<T> Peek(int count) => TryPeek(count).SomeOrThrow($"There were not {count} items to Peek");
 
 #endregion
@@ -97,10 +98,8 @@ public ref struct SpanReader<T>
             return Some(span[index]);
         }
 
-        return default;
+        return None<T>();
     }
-
-    public T Take() => TryTake().SomeOrThrow($"There was not an item to Take");
     
     public OptionReadOnlySpan<T> TryTake(int count)
     {
@@ -119,6 +118,8 @@ public ref struct SpanReader<T>
 
         return default;
     }
+    
+    public T Take() => TryTake().SomeOrThrow($"There was not an item to Take");
     
     public ReadOnlySpan<T> Take(int count) => TryTake(count).SomeOrThrow($"There were not {count} items to Take");
     
@@ -156,11 +157,11 @@ public ref struct SpanReader<T>
 #region Skip
 
     public bool TrySkip() => TryTake();
-
-    public void Skip() => TryTake().SomeOrThrow($"There was not an item to Skip");
-
+    
     public bool TrySkip(int count) => TryTake(count);
 
+    public void Skip() => TryTake().SomeOrThrow($"There was not an item to Skip");
+    
     public void Skip(int count) => TryTake(count).SomeOrThrow($"There were not ${count} items to Skip");
 
     public void SkipWhile(Func<T, bool> itemPredicate)

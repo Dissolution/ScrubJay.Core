@@ -1,5 +1,3 @@
-using ScrubJay.Collections;
-
 namespace ScrubJay.Extensions;
 
 /// <summary>
@@ -150,20 +148,6 @@ public static class EnumerableExtensions
         return enumerable.OrderBy(e => Array.IndexOf(itemOrder, e));
     }
 
-//    public static IEnumerable<T> OrderBy<T, TSub>(this IEnumerable<T> enumerable,
-//        Func<T, TSub> selectSub,
-//        TSub[] subItemOrder)
-//        where TSub : IEquatable<TSub>
-//    {
-//        return enumerable
-//            .OrderBy(selectSub, Relate.Compare.CreateComparer<TSub>((x, y) =>
-//            {
-//                var xIndex = subItemOrder.FirstIndexOf(x);
-//                var yIndex = subItemOrder.FirstIndexOf(y);
-//                return xIndex.CompareTo(yIndex);
-//            }));
-//    }
-
     public static void Consume<T>(this IEnumerable<T> enumerable, Action<T> perItem)
     {
         if (enumerable is IList<T> list)
@@ -182,248 +166,65 @@ public static class EnumerableExtensions
         }
     }
 
-#if !NET6_0_OR_GREATER
-    // public static bool TryGetNonEnumeratedCount<T>([NoEnumeration] this IEnumerable<T> enumerable, out int count)
-    // {
-    //     if (enumerable is ICollection<T> collectionT)
-    //     {
-    //         count = collectionT.Count;
-    //         return true;
-    //     }
-    //
-    //     if (enumerable is IReadOnlyCollection<T> roCollection)
-    //     {
-    //         count = roCollection.Count;
-    //         return true;
-    //     }
-    //
-    //     if (enumerable is ICollection collection)
-    //     {
-    //         count = collection.Count;
-    //         return true;
-    //     }
-    //
-    //     count = 0;
-    //     return false;
-    // }
+    public static int SequenceCompareTo<TSource>(this IEnumerable<TSource>? first, IEnumerable<TSource>? second)
+        => SequenceCompareTo(first, second, null);
 
-    /// <summary>
-    /// Split the elements of a sequence into chunks of size at most <paramref name="size"/>.
-    /// </summary>
-    /// <remarks>
-    /// Every chunk except the last will be of size <paramref name="size"/>.
-    /// The last chunk will contain the remaining elements and may be of a smaller size.
-    /// </remarks>
-    /// <param name="source">
-    /// An <see cref="IEnumerable{T}"/> whose elements to chunk.
-    /// </param>
-    /// <param name="size">
-    /// Maximum size of each chunk.
-    /// </param>
-    /// <typeparam name="TSource">
-    /// The type of the elements of source.
-    /// </typeparam>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}"/> that contains the elements the input sequence split into chunks of size <paramref name="size"/>.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// <paramref name="source"/> is null.
-    /// </exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// <paramref name="size"/> is below 1.
-    /// </exception>
-    public static IEnumerable<TSource[]> Chunk<TSource>(this IEnumerable<TSource> source, int size)
+    public static int SequenceCompareTo<TSource>(this IEnumerable<TSource>? first, IEnumerable<TSource>? second, IComparer<TSource>? comparer)
     {
-        if (source is null)
-            throw new ArgumentNullException(nameof(source));
-        if (size < 1)
-            throw new ArgumentOutOfRangeException(nameof(size));
-        return ChunkIterator(source, size);
-    }
+        if (ReferenceEquals(first, second))
+            return 0;
+        if (first is null)
+            return -1;
+        if (second is null)
+            return 1;
 
-    private static IEnumerable<TSource[]> ChunkIterator<TSource>(IEnumerable<TSource> source, int size)
-    {
-        using IEnumerator<TSource> e = source.GetEnumerator();
-
-        // Before allocating anything, make sure there's at least one element.
-        if (e.MoveNext())
+        int c;
+        
+        if (first is ICollection<TSource> firstCol && second is ICollection<TSource> secondCol)
         {
-            // Now that we know we have at least one item, allocate an initial storage array. This is not
-            // the array we'll yield.  It starts out small in order to avoid significantly overallocating
-            // when the source has many fewer elements than the chunk size.
-            int arraySize = Math.Min(size, 4);
-            int i;
-            do
+            c = firstCol.Count.CompareTo(secondCol.Count);
+            if (c != 0)
+                return c;
+            
+            if (firstCol is IList<TSource> firstList && secondCol is IList<TSource> secondList)
             {
-                var array = new TSource[arraySize];
+                comparer ??= Comparer<TSource>.Default;
 
-                // Store the first item.
-                array[0] = e.Current;
-                i = 1;
-
-                if (size != array.Length)
+                int count = firstCol.Count;
+                for (int i = 0; i < count; i++)
                 {
-                    // This is the first chunk. As we fill the array, grow it as needed.
-                    for (; i < size && e.MoveNext(); i++)
-                    {
-                        if (i >= array.Length)
-                        {
-                            arraySize = (int)Math.Min((uint)size, 2 * (uint)array.Length);
-                            Array.Resize(ref array, arraySize);
-                        }
-
-                        array[i] = e.Current;
-                    }
-                }
-                else
-                {
-                    // For all but the first chunk, the array will already be correctly sized.
-                    // We can just store into it until either it's full or MoveNext returns false.
-                    TSource[] local = array; // avoid bounds checks by using cached local (`array` is lifted to iterator object as a field)
-                    //Debug.Assert(local.Length == size);
-                    for (; (uint)i < (uint)local.Length && e.MoveNext(); i++)
-                    {
-                        local[i] = e.Current;
-                    }
+                    c = comparer.Compare(firstList[i], secondList[i]);
+                    if (c != 0)
+                        return c;
                 }
 
-                if (i != array.Length)
-                {
-                    Array.Resize(ref array, i);
-                }
-
-                yield return array;
+                return 0;
             }
-            while (i >= size && e.MoveNext());
+        }
+
+        using IEnumerator<TSource> e1 = first.GetEnumerator();
+        using IEnumerator<TSource> e2 = second.GetEnumerator();
+        
+        comparer ??= Comparer<TSource>.Default;
+
+        while (true)
+        {
+            bool e1Moved = e1.MoveNext();
+            bool e2Moved = e2.MoveNext();
+            if (e1Moved != e2Moved)
+                return e1Moved ? 1 : -1; // different counts
+            if (!e1Moved)
+                return 0; // same items, same count
+            c = comparer.Compare(e1.Current, e2.Current);
+            if (c != 0)
+                return c;
         }
     }
 
-#endif
 
     /// <summary>
     /// A deep wrapper for <see cref="IEnumerable{T}"/> that ignores all thrown exceptions
     /// at every level of enumeration, only returning values that could be acquired without error
     /// </summary>
     public static UnbreakableEnumerable<T> UnbreakableEnumerate<T>(this IEnumerable<T>? enumerable) => new UnbreakableEnumerable<T>(enumerable);
-}
-
-[PublicAPI]
-public class UnbreakableEnumerable<T> : IEnumerable<T>
-{
-    private IEnumerable<T>? _enumerable;
-
-    public UnbreakableEnumerable(IEnumerable<T>? enumerable)
-    {
-        _enumerable = enumerable;
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
-    public UnbreakableEnumerator GetEnumerator()
-    {
-        IEnumerator<T>? enumerator;
-        if (_enumerable is null)
-        {
-            enumerator = EmptyEnumerator<T>.Instance;
-        }
-        else
-        {
-            try
-            {
-                enumerator = _enumerable!.GetEnumerator();
-            }
-            catch
-            {
-                enumerator = EmptyEnumerator<T>.Instance;
-            }
-        }
-
-        return new UnbreakableEnumerator(enumerator);
-    }
-
-  
-
-    public class UnbreakableEnumerator : IEnumerator<T>
-    {
-        private IEnumerator<T>? _enumerator;
-        private Option<T> _current = default;
-
-        object? IEnumerator.Current => Current;
-
-        public T Current => _current.SomeOrThrow("Enumeration has no value to yield");
-
-
-        public UnbreakableEnumerator(IEnumerator<T> enumerator)
-        {
-            _enumerator = enumerator;
-        }
-
-        public bool MoveNext()
-        {
-            return (_current = TryMoveNext());
-        }
-
-        public Option<T> TryMoveNext()
-        {
-            if (_enumerator is null)
-                return default;
-
-            bool moved;
-            T current;
-
-            while (true)
-            {
-                try
-                {
-                    moved = _enumerator.MoveNext();
-                }
-                catch
-                {
-                    return default;
-                }
-
-                // If we could not move next, we are done enumerating
-                if (!moved)
-                    return default;
-
-                // Try to access current
-                try
-                {
-                    current = _enumerator.Current;
-                }
-                catch
-                {
-                    // We need to try the next item
-                    continue;
-                }
-
-                // Have it!
-                return Some(current);
-            }
-        }
-
-        void IEnumerator.Reset() => TryReset();
-
-        public Result<Unit, Exception> TryReset()
-        {
-            if (_enumerator is null)
-                return new ObjectDisposedException(nameof(UnbreakableEnumerator));
-            try
-            {
-                _enumerator.Reset();
-                return Unit.Default;
-            }
-            catch (Exception ex)
-            {
-                return ex;
-            }
-        }
-
-        public void Dispose()
-        {
-            Result.TryDispose(_enumerator);
-            _enumerator = null;
-        }
-    }
 }

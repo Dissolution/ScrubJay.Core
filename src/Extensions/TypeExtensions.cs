@@ -27,6 +27,19 @@ public static class TypeExtensions
     }
 
     /// <summary>
+    /// Does this <see cref="Type"/> have the given <paramref name="genericTypeDefinition"/>?
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="genericTypeDefinition"></param>
+    /// <returns></returns>
+    public static bool HasGenericTypeDefinition(this Type? type, Type? genericTypeDefinition)
+    {
+        if (type is null || !type.IsGenericType || genericTypeDefinition is null)
+            return false;
+        return type.GetGenericTypeDefinition() == genericTypeDefinition;
+    }
+    
+    /// <summary>
     /// Does <c>this</c> <paramref name="type"/> implement the <paramref name="checkType"/>?
     /// </summary>
     /// <param name="type">The <see cref="Type"/> to examine</param>
@@ -45,20 +58,20 @@ public static class TypeExtensions
         if (checkType.IsGenericTypeDefinition)
         {
             // Check direct (List<T> : List<>)
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == checkType)
+            if (type.HasGenericTypeDefinition(checkType))
                 return true;
 
             // Check my base types
             foreach (var baseType in type.GetBaseTypes())
             {
-                if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == checkType)
+                if (baseType.HasGenericTypeDefinition(checkType))
                     return true;
             }
 
             // Check my interfaces
-            foreach (var iface in type.GetInterfaces())
+            foreach (var interfaceType in type.GetInterfaces())
             {
-                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == checkType)
+                if (interfaceType.HasGenericTypeDefinition(checkType))
                     return true;
             }
         }
@@ -86,13 +99,17 @@ public static class TypeExtensions
     }
     
     /// <summary>
-    /// Can values of this <see cref="Type"/> contain <c>null</c>?
+    /// Can instances of this <see cref="Type"/> be <c>null</c>?
     /// </summary>
     /// <param name="type">The <see cref="Type"/> to examine</param>
     /// <returns>
-    /// <c>true</c> if instances of this <see cref="Type"/> can contain <c>null</c> (such as classes, interfaces, and <see cref="Nullable{T}"/>)<br/>
-    /// <c>false</c> if they cannot (value types)
-    /// </returns>                     
+    /// <c>true</c> if instances of this <see cref="Type"/> can contain <c>null</c><br/>
+    /// <c>false</c> if they cannot
+    /// </returns>
+    /// <remarks>
+    /// <c>class</c>, <c>interface</c>, and <see cref="Nullable{T}"/> instances can contain <c>null</c><br/>
+    /// <c>enum</c>, <c>struct</c>, and other value types instances cannot
+    /// </remarks>
     public static bool CanContainNull(this Type? type)
     {
         if (type is null) return true;
@@ -100,67 +117,5 @@ public static class TypeExtensions
         if (type.IsValueType)
             return Nullable.GetUnderlyingType(type) is not null;
         return true; // non-value types can always contain null
-    }
-
-    /// <summary>
-    /// Is this <see cref="Type"/> a <see cref="Nullable{T}"/>?
-    /// </summary>
-    public static bool IsNullable([AllowNull, NotNullWhen(true)] this Type? type)
-    {
-        return type is { IsValueType: true, IsGenericType: true }
-            && type.GetGenericTypeDefinition() == typeof(Nullable<>);
-    }
-
-    /// <summary>
-    /// Is this <see cref="Type"/> a <see cref="Nullable{T}"/>?<br/>
-    /// If so, also return the <paramref name="underlyingType"/>
-    /// </summary>
-    public static bool IsNullable(this Type? type, [NotNullWhen(true)] out Type? underlyingType)
-    {
-        if (type.IsNullable())
-        {
-            underlyingType = type.GetGenericArguments()[0];
-            return true;
-        }
-
-        underlyingType = null;
-        return false;
-    }
-
-    /// <inheritdoc cref="Type.MakeGenericType"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Type MakeGenericType<T>(this Type type)
-    {
-        return type.MakeGenericType(typeof(T));
-    }
-
-    /// <summary>
-    /// Is this <see cref="Type"/> a <c>ref</c>?<br/>
-    /// If so, also return the <paramref name="underlyingType"/>
-    /// </summary>
-    /// <param name="type"></param>
-    /// <param name="underlyingType"></param>
-    /// <returns></returns>
-    public static bool IsByRef(this Type? type, [NotNullWhen(true)] out Type? underlyingType)
-    {
-        if (type is null)
-        {
-            underlyingType = null;
-            return false;
-        }
-
-        if (type.IsByRef)
-        {
-            underlyingType = type.GetElementType()!;
-            return true;
-        }
-
-        underlyingType = type;
-        return false;
-    }
-
-    public static IReadOnlyList<MemberInfo> AllMembers(this Type type)
-    {
-        return type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
     }
 }

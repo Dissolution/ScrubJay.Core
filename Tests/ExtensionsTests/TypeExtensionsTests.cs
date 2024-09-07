@@ -13,7 +13,7 @@ public class TypeExtensionsTests
 
     private class NestedTestList<T> : TestList<T>, IList<T>;
     
-    public static TheoryData<Type?> TheoryTypes() => new()
+    public static TheoryData<Type?> TestTypes { get; } = new()
     {
         null,
         typeof(void),
@@ -21,6 +21,7 @@ public class TypeExtensionsTests
         typeof(void*),
         typeof(byte*),
         typeof(object),
+        typeof(None),
         typeof(ValueType),
         typeof(TypeExtensions),
         typeof(IEnumerable),
@@ -32,15 +33,15 @@ public class TypeExtensionsTests
         typeof(NestedTestList<DateTime>),
         typeof(AttributeTargets),
         typeof((int Id, string Name)),
-        // ReSharper disable once StringLiteralTypo
         (new { Id = 3, Name = "TJ"}).GetType(),
     };
 
+    // support for testing
     private static T? GetDefault<T>() => default(T);
 
 
     [Theory]
-    [MemberData(nameof(TheoryTypes))]
+    [MemberData(nameof(TestTypes))]
     public void GetBaseTypes_Works(Type? type)
     {
         var baseTypesList = TypeExtensions.GetBaseTypes(type).ToList();
@@ -65,14 +66,14 @@ public class TypeExtensionsTests
     // }
 
     [Theory]
-    [MemberData(nameof(TheoryTypes))]
+    [MemberData(nameof(TestTypes))]
     public void Implements_Self_AllShould(Type? type)
     {
         Assert.True(TypeExtensions.Implements(type, type));
     }
 
     [Theory]
-    [MemberData(nameof(TheoryTypes))]
+    [MemberData(nameof(TestTypes))]
     public void Implements_Object_MostShould(Type? type)
     {
 
@@ -97,7 +98,7 @@ public class TypeExtensionsTests
     }
 
     [Theory]
-    [MemberData(nameof(TheoryTypes))]
+    [MemberData(nameof(TestTypes))]
     public void Implements_BaseClasses_AllShould(Type? type)
     {
         foreach (Type baseType in type.GetBaseTypes())
@@ -112,7 +113,7 @@ public class TypeExtensionsTests
     }
 
     [Theory]
-    [MemberData(nameof(TheoryTypes))]
+    [MemberData(nameof(TestTypes))]
     public void Implements_Interfaces_AllShould(Type? type)
     {
         if (type is null) return;
@@ -128,7 +129,7 @@ public class TypeExtensionsTests
     }
 
     [Theory]
-    [MemberData(nameof(TheoryTypes))]
+    [MemberData(nameof(TestTypes))]
     public void Type_CanContainNull_Works(Type? type)
     {
         bool canBeNull = TypeExtensions.CanContainNull(type);

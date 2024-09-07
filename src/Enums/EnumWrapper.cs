@@ -11,6 +11,9 @@ public readonly struct EnumWrapper<TEnum> :
     IEqualityOperators<EnumWrapper<TEnum>, TEnum, bool>,
     IComparisonOperators<EnumWrapper<TEnum>, TEnum, bool>,
 #endif
+    IComparable<EnumWrapper<TEnum>>,
+    IComparable<TEnum>,
+    IEquatable<EnumWrapper<TEnum>>,
     IEquatable<TEnum>
     where TEnum : struct, Enum
 {
@@ -31,6 +34,16 @@ public readonly struct EnumWrapper<TEnum> :
     public EnumWrapper(TEnum @enum)
     {
         _enum = @enum;
+    }
+
+    public int CompareTo(EnumWrapper<TEnum> other)
+    {
+        return EnumExtensions.CompareTo(_enum, other._enum);
+    }
+
+    public int CompareTo(TEnum other)
+    {
+        return EnumExtensions.CompareTo(_enum, other);
     }
 
     public bool Equals(EnumWrapper<TEnum> enumWrapper)

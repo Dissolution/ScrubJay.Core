@@ -13,6 +13,7 @@ namespace ScrubJay;
 /// The <see cref="Type"/> of value associated with a <see cref="Some"/> Option
 /// </typeparam>
 [PublicAPI]
+[StructLayout(LayoutKind.Auto)]
 public readonly struct Option<T> :
 /* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */    
 #if NET7_0_OR_GREATER
@@ -40,7 +41,6 @@ public readonly struct Option<T> :
     
     public static implicit operator bool(Option<T> option) => option._isSome;
     public static implicit operator Option<T>(None _) => None;
-    public static implicit operator Option<T>(T some) => Some(some);
 
     public static bool operator true(Option<T> option) => option._isSome;
     public static bool operator false(Option<T> option) => !option._isSome;
@@ -104,15 +104,6 @@ public readonly struct Option<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSome() => _isSome;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSomeAnd(Func<T, bool> predicate) => _isSome && predicate(_value!);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSome([MaybeNullWhen(false)] out T value)
     {
@@ -125,6 +116,16 @@ public readonly struct Option<T> :
         value = default;
         return false;
     }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsSomeAnd(Func<T, bool> predicate) => _isSome && predicate(_value!);
+
 
     /// <summary>
     /// 
@@ -172,11 +173,9 @@ public readonly struct Option<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T? SomeOrDefault()
     {
-        {
-            if (_isSome)
+        if (_isSome)
                 return _value!;
-            return default(T);
-        }
+        return default(T);
     }
 
     /// <summary>
@@ -238,17 +237,17 @@ public readonly struct Option<T> :
     /// 
     /// </summary>
     /// <param name="map"></param>
-    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map"/>
-    public Option<U> Map<U>(Func<T, U> map)
+    public Option<TNew> Map<TNew>(Func<T, TNew> map)
     {
         if (IsSome(out var value))
         {
-            return Some<U>(map(value));
+            return Some<TNew>(map(value));
         }
 
-        return Option<U>.None;
+        return Option<TNew>.None;
     }
 
     /// <summary>
@@ -256,10 +255,10 @@ public readonly struct Option<T> :
     /// </summary>
     /// <param name="map"></param>
     /// <param name="defaultValue"></param>
-    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
-    public U MapOr<U>(Func<T, U> map, U defaultValue)
+    public TNew MapOr<TNew>(Func<T, TNew> map, TNew defaultValue)
     {
         if (IsSome(out var value))
         {
@@ -274,10 +273,10 @@ public readonly struct Option<T> :
     /// </summary>
     /// <param name="map"></param>
     /// <param name="getDefaultValue"></param>
-    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
-    public U MapOrElse<U>(Func<T, U> map, Func<U> getDefaultValue)
+    public TNew MapOrElse<TNew>(Func<T, TNew> map, Func<TNew> getDefaultValue)
     {
         if (IsSome(out var value))
         {
@@ -488,6 +487,7 @@ public readonly struct Option<T> :
     public OptionEnumerator GetEnumerator() => new OptionEnumerator(this);
 
     [MustDisposeResource(false)]
+    [StructLayout(LayoutKind.Auto)]
     public struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
     {
         private bool _yielded;

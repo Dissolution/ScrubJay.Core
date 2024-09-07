@@ -25,6 +25,9 @@ public static class GlobalHelper
     public static None None() => default(None);
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Option<T> None<T>() => Option<T>.None;
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Unit Unit() => default(Unit);
     
     /// <inheritdoc cref="Option{T}.Some"/>

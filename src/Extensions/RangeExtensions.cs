@@ -1,5 +1,9 @@
 ﻿namespace ScrubJay.Extensions;
 
+/// <summary>
+/// Extensions on <see cref="Range"/>
+/// </summary>
+[PublicAPI]
 public static class RangeExtensions
 {
     /// <summary>
@@ -28,6 +32,6 @@ public static class RangeExtensions
             }
         }
 
-        return default;
+        return Option<int>.None;
     }
 }

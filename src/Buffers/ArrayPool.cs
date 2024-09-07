@@ -11,15 +11,15 @@ public static class ArrayPool
     /// <summary>
     /// The minimum capacity of an array returned from <see cref="Rent{T}()"/>
     /// </summary>
-    public const int MIN_CAPACITY = 16; // tested
+    public const int MinCapacity = 16; // tested
 
     /// <summary>
     /// The maximum capacity of an array returned from <see cref="Rent{T}()"/>
     /// </summary>
-    public const int MAX_CAPACITY = 0X7FFFFFC7; // == Array.MaxLength
+    public const int MaxCapacity = 0X7FFFFFC7; // == Array.MaxLength
     
     /// <summary>
-    /// Rents a <c>T[]</c> with at least a <see cref="Array.Length"/> of <see cref="MIN_CAPACITY"/>
+    /// Rents a <c>T[]</c> with at least a <see cref="Array.Length"/> of <see cref="MinCapacity"/>
     /// from <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
     /// that should be <see cref="Return{T}">Returned</see>
     /// </summary>
@@ -28,7 +28,7 @@ public static class ArrayPool
     /// </typeparam>
     public static T[] Rent<T>()
     {
-        return ArrayPool<T>.Shared.Rent(MIN_CAPACITY);
+        return ArrayPool<T>.Shared.Rent(MinCapacity);
     }
 
     /// <summary>
@@ -44,13 +44,13 @@ public static class ArrayPool
     /// </param>
     public static T[] Rent<T>(int minLength)
     {
-        if (minLength < MIN_CAPACITY)
+        if (minLength < MinCapacity)
         {
-            minLength = MIN_CAPACITY;
+            minLength = MinCapacity;
         }
-        else if (minLength > MAX_CAPACITY)
+        else if (minLength > MaxCapacity)
         {
-            minLength = MAX_CAPACITY;
+            minLength = MaxCapacity;
         }
 
         return ArrayPool<T>.Shared.Rent(minLength);

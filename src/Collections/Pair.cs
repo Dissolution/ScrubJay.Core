@@ -7,72 +7,74 @@ namespace ScrubJay.Collections;
 /// <summary>
 /// Represents a Pair of related Values
 /// </summary>
-/// <typeparam name="K"></typeparam>
-/// <typeparam name="V"></typeparam>
-public readonly struct KeyValue<K, V> :
+/// <typeparam name="TKey"></typeparam>
+/// <typeparam name="TValue"></typeparam>
+[PublicAPI]
+[StructLayout(LayoutKind.Auto)]
+public readonly struct KeyValue<TKey, TValue> :
 #if NET7_0_OR_GREATER
-    IEqualityOperators<KeyValue<K, V>, KeyValue<K, V>, bool>,
+    IEqualityOperators<KeyValue<TKey, TValue>, KeyValue<TKey, TValue>, bool>,
 #endif
-    IEquatable<KeyValue<K, V>>,
-    IEquatable<KeyValuePair<K, V>>,
-    IEquatable<Tuple<K, V>>,
-    IEquatable<ValueTuple<K, V>>,
+    IEquatable<KeyValue<TKey, TValue>>,
+    IEquatable<KeyValuePair<TKey, TValue>>,
+    IEquatable<Tuple<TKey, TValue>>,
+    IEquatable<ValueTuple<TKey, TValue>>,
     IFormattable
 {
-    public static implicit operator KeyValue<K, V>(KeyValuePair<K, V> keyValuePair) => new(keyValuePair.Key, keyValuePair.Value);
-    public static implicit operator KeyValue<K, V>(Tuple<K, V> tuple) => new(tuple.Item1, tuple.Item2);
-    public static implicit operator KeyValue<K, V>(ValueTuple<K, V> tuple) => new(tuple.Item1, tuple.Item2);
+    public static implicit operator KeyValue<TKey, TValue>(KeyValuePair<TKey, TValue> keyValuePair) => new(keyValuePair.Key, keyValuePair.Value);
+    public static implicit operator KeyValue<TKey, TValue>(Tuple<TKey, TValue> tuple) => new(tuple.Item1, tuple.Item2);
+    public static implicit operator KeyValue<TKey, TValue>(ValueTuple<TKey, TValue> tuple) => new(tuple.Item1, tuple.Item2);
 
-    public static implicit operator KeyValuePair<K, V>(KeyValue<K, V> keyValue) => new(keyValue.Key, keyValue.Value);
-    public static implicit operator Tuple<K, V>(KeyValue<K, V> keyValue) => new(keyValue.Key, keyValue.Value);
-    public static implicit operator ValueTuple<K, V>(KeyValue<K, V> keyValue) => new(keyValue.Key, keyValue.Value);
+    public static implicit operator KeyValuePair<TKey, TValue>(KeyValue<TKey, TValue> keyValue) => new(keyValue.Key, keyValue.Value);
+    public static implicit operator Tuple<TKey, TValue>(KeyValue<TKey, TValue> keyValue) => new(keyValue.Key, keyValue.Value);
+    public static implicit operator ValueTuple<TKey, TValue>(KeyValue<TKey, TValue> keyValue) => new(keyValue.Key, keyValue.Value);
 
-    public static bool operator ==(KeyValue<K, V> left, KeyValue<K, V> right) => left.Equals(right);
-    public static bool operator !=(KeyValue<K, V> left, KeyValue<K, V> right) => !left.Equals(right);
+    public static bool operator ==(KeyValue<TKey, TValue> left, KeyValue<TKey, TValue> right) => left.Equals(right);
+    public static bool operator !=(KeyValue<TKey, TValue> left, KeyValue<TKey, TValue> right) => !left.Equals(right);
 
     
-    public readonly K Key;
-    public readonly V Value;
+    public readonly TKey Key;
+    public readonly TValue Value;
 
-    public KeyValue(K key, V value)
+    public KeyValue(TKey key, TValue value)
     {
         Key = key;
         Value = value;
     }
 
-    public bool Equals(KeyValue<K, V> other)
+    public bool Equals(KeyValue<TKey, TValue> other)
     {
-        return EqualityComparer<K>.Default.Equals(other.Key, Key) && EqualityComparer<V>.Default.Equals(other.Value, Value);
+        return EqualityComparer<TKey>.Default.Equals(other.Key, Key) && EqualityComparer<TValue>.Default.Equals(other.Value, Value);
     }
 
-    public bool Equals(KeyValuePair<K, V> other)
+    public bool Equals(KeyValuePair<TKey, TValue> other)
     {
-        return EqualityComparer<K>.Default.Equals(other.Key, Key) && EqualityComparer<V>.Default.Equals(other.Value, Value);
+        return EqualityComparer<TKey>.Default.Equals(other.Key, Key) && EqualityComparer<TValue>.Default.Equals(other.Value, Value);
     }
 
-    public bool Equals(Tuple<K, V>? other)
+    public bool Equals(Tuple<TKey, TValue>? other)
     {
-        return other is not null && EqualityComparer<K>.Default.Equals(other.Item1, Key) && EqualityComparer<V>.Default.Equals(other.Item2, Value);
+        return other is not null && EqualityComparer<TKey>.Default.Equals(other.Item1, Key) && EqualityComparer<TValue>.Default.Equals(other.Item2, Value);
     }
 
-    public bool Equals(ValueTuple<K, V> other)
+    public bool Equals(ValueTuple<TKey, TValue> other)
     {
-        return EqualityComparer<K>.Default.Equals(other.Item1, Key) && EqualityComparer<V>.Default.Equals(other.Item2, Value);
+        return EqualityComparer<TKey>.Default.Equals(other.Item1, Key) && EqualityComparer<TValue>.Default.Equals(other.Item2, Value);
     }
 
     public override bool Equals(object? obj)
         => obj switch
         {
-            KeyValue<K, V> pair => Equals(pair),
-            KeyValuePair<K, V> keyValuePair => Equals(keyValuePair),
-            Tuple<K, V> tuple => Equals(tuple),
-            ValueTuple<K, V> valueTuple => Equals(valueTuple),
+            KeyValue<TKey, TValue> pair => Equals(pair),
+            KeyValuePair<TKey, TValue> keyValuePair => Equals(keyValuePair),
+            Tuple<TKey, TValue> tuple => Equals(tuple),
+            ValueTuple<TKey, TValue> valueTuple => Equals(valueTuple),
             _ => false,
         };
 
     public override int GetHashCode()
     {
-        return Hasher.Combine<K, V>(Key, Value);
+        return Hasher.Combine<TKey, TValue>(Key, Value);
     }
 
     public string ToString(string? format, IFormatProvider? provider = default)

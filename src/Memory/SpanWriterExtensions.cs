@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Memory;
+﻿#pragma warning disable S3247
+
+namespace ScrubJay.Memory;
 
 /// <summary>
 /// Extensions on <see cref="SpanWriter{T}"/>

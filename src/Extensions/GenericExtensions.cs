@@ -13,7 +13,7 @@ public static class GenericExtensions
             return Some(out2);
         }
 
-        return default;
+        return None<TOut>();
     }
     
 }

@@ -38,7 +38,7 @@ public readonly struct Unit :
     /// <summary>
     /// The <see cref="Unit"/> value
     /// </summary>
-    public static readonly Unit Default = default;
+    public static readonly Unit Default;
 
     public int CompareTo(Unit unit) => 0;
     public bool Equals(Unit unit) => true;

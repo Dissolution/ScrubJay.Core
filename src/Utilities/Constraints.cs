@@ -1,4 +1,6 @@
-﻿// ReSharper disable UnusedTypeParameter
+﻿#pragma warning disable CA1034, S2326, CA1711
+
+// ReSharper disable UnusedTypeParameter
 namespace ScrubJay.Utilities;
 
 /// <summary>

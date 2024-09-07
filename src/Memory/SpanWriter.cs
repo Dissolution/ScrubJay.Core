@@ -4,6 +4,7 @@ namespace ScrubJay.Memory;
 
 public delegate bool SpanWriterTryWrite<T>(ref SpanWriter<T> writer);
 
+[StructLayout(LayoutKind.Auto)]
 public ref struct SpanWriter<T>
 {
     private readonly Span<T> _span;

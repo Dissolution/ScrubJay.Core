@@ -1,4 +1,6 @@
-﻿// constrained call avoiding boxing for value types
+﻿#pragma warning disable S3247
+
+// constrained call avoiding boxing for value types
 // ReSharper disable MergeCastWithTypeCheck
 namespace ScrubJay.Text;
 

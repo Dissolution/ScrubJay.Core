@@ -11,13 +11,6 @@ public static class StringBuilderPool
 
     public static StringBuilder Rent() => _pool.Rent();
     
-    public static IDisposable Borrow(out StringBuilder builder)
-    {
-        var instance = _pool.GetInstance();
-        builder = instance.Instance;
-        return instance;
-    }
-
     public static string ToStringAndReturn(this StringBuilder? builder)
     {
         var str = builder?.ToString();
@@ -25,6 +18,13 @@ public static class StringBuilderPool
         return str ?? "";
     }
     public static void Return(this StringBuilder? builder) => _pool.Return(builder);
+    
+    public static IDisposable Borrow(out StringBuilder builder)
+    {
+        var instance = _pool.GetInstance();
+        builder = instance.Instance;
+        return instance;
+    }
     
     public static string Borrow(Action<StringBuilder> build)
     {

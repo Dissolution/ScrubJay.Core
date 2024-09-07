@@ -1,59 +1,38 @@
 ﻿namespace ScrubJay.Collections;
 
-/// <summary>
-/// Utility methods for creating <see cref="Bounds{T}"/>
-/// </summary>
 [PublicAPI]
 public static class Bounds
 {
-    /// <summary>
-    /// Get <see cref="Bounds{T}"/> that match any value
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public static Bounds<T> Any<T>() => new(None(), false, None(), false);
-
-    /// <summary>
-    /// Get <see cref="Bounds{T}"/> that starts at a <paramref name="minimum"/> value and has no upper bound
-    /// </summary>
-    /// <param name="minimum"></param>
-    /// <param name="minIsInclusive"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public static Bounds<T> StartAt<T>(T minimum, bool minIsInclusive = true) => new Bounds<T>(minimum, minIsInclusive, None(), default);
-
-    /// <summary>
-    /// Get <see cref="Bounds{T}"/> that ends at a <paramref name="maximum"/> value and has no lower bound
-    /// </summary>
-    /// <param name="maximum"></param>
-    /// <param name="maxIsInclusive"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public static Bounds<T> EndAt<T>(T maximum, bool maxIsInclusive = true) => new Bounds<T>(None(), false, maximum, maxIsInclusive);
-
-    public static Bounds<T> Create<T>(Option<T> minimum, bool minIsInclusive, Option<T> maximum, bool maxIsInclusive) => new Bounds<T>(minimum, minIsInclusive, maximum, maxIsInclusive);
-
-    public static Bounds<T> IncMinMax<T>(T inclusiveMinimum, T inclusiveMaximum) => new Bounds<T>(inclusiveMinimum, true, inclusiveMaximum, true);
-
+    public static Bounds<T> Any<T>() => new Bounds<T>(Option.None(), Option.None());
+    public static Bounds<T> None<T>() => new Bounds<T>(Some(Bound.Exclusive(default(T)!)), Some(Bound.Exclusive(default(T)!)));
+    public static Bounds<T> StartAt<T>(T minimum, bool inclusive = true) => new Bounds<T>(Some(new Bound<T>(minimum, inclusive)), Option.None());
+    public static Bounds<T> EndAt<T>(T maximum, bool inclusive = false) => new Bounds<T>(Option.None(), Some(new Bound<T>(maximum, inclusive)));
+    public static Bounds<T> Create<T>(Bound<T> minimum, Bound<T> maximum) => new(Some(minimum), Some(maximum));
     
-    public static Bounds<int> FromRange(Range range)
+    public static Option<Bounds<int>> FromRange(Range range)
     {
         if (range.Start.IsFromEnd || range.End.IsFromEnd)
-            throw new ArgumentOutOfRangeException(nameof(range), range, "Range Start and End must be specified from 0");
-        return Create<int>(range.Start.Value, true, range.End.Value, false);
+            return Option.None();
+        return Some(Create(Bound.Inclusive(range.Start.Value), Bound.Exclusive(range.End.Value)));
     }
+    
+    public static Bounds<int> ForLength(int length) => Create<int>(Bound.Inclusive(0), Bound.Exclusive(length));
 
-    public static Bounds<int> From<T>(ReadOnlySpan<T> span) => new Bounds<int>(0, true, span.Length, false);
+    public static Bounds<int> For<T>(ReadOnlySpan<T> span) => ForLength(span.Length);
     
-    public static Bounds<int> For<T>(T[] array) => new Bounds<int>(0, true, array.Length, false);
-    
-    public static Bounds<int> From<T>(ICollection<T> collection)
+    public static Option<Bounds<int>> For<T>(T[]? array)
     {
-        return new(0, true, collection.Count, false);
+        if (array is null)
+            return Option.None();
+        return Some(ForLength(array.Length));
     }
     
-    public static Bounds<int> From<T>(IReadOnlyCollection<T> collection)
+    public static Option<Bounds<int>> For<T>(IEnumerable<T>? enumerable)
     {
-        return new(0, true, collection.Count, false);
+        if (enumerable is null)
+            return Option.None();
+        if (enumerable.TryGetNonEnumeratedCount(out int count))
+            return Some(ForLength(count));
+        return Option.None();
     }
 }

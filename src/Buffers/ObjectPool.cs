@@ -14,12 +14,12 @@ public static class ObjectPool
     /// </remarks>
     internal static readonly int DefaultCapacity = 1 + (2 * Environment.ProcessorCount);
 
-    public const int MIN_CAPACITY = 1;
+    public const int MinCapacity = 1;
     
     /// <summary>
     /// The maximum capacity for a pool
     /// </summary>
-    public const int MAX_CAPACITY = 0X7FFFFFC7; // == Array.MaxLength
+    public const int MaxCapacity = 0X7FFFFFC7; // == Array.MaxLength
     
     
     

@@ -1,4 +1,6 @@
-﻿using ScrubJay.Collections;
+﻿#pragma warning disable S1066
+
+using ScrubJay.Collections;
 
 // ReSharper disable MethodOverloadWithOptionalParameter
 
@@ -140,15 +142,15 @@ public sealed class ObjectPool<T> : IDisposable
         Action<T>? clean = null,
         Action<T>? dispose = null)
     {
-        if (totalCapacity is < ObjectPool.MIN_CAPACITY or > ObjectPool.MAX_CAPACITY)
+        if (totalCapacity is < ObjectPool.MinCapacity or > ObjectPool.MaxCapacity)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(totalCapacity),
                 totalCapacity,
-                $"Pool Capacity must be between {ObjectPool.MIN_CAPACITY} and {ObjectPool.MAX_CAPACITY}");
+                $"Pool Capacity must be between {ObjectPool.MinCapacity} and {ObjectPool.MaxCapacity}");
         }
 
-        Validate.InBounds(totalCapacity, Bounds.IncMinMax(ObjectPool.MIN_CAPACITY, ObjectPool.MAX_CAPACITY)).OkOrThrow();
+        Validate.InBounds(totalCapacity, Bounds.Create(Bound.Inclusive(ObjectPool.MinCapacity), Bound.Inclusive(ObjectPool.MaxCapacity))).OkOrThrow();
 
         _instanceFactory = factory ?? throw new ArgumentNullException(nameof(factory));
         _cleanInstance = clean;
@@ -216,8 +218,7 @@ public sealed class ObjectPool<T> : IDisposable
     public T Rent()
     {
         // Always check if we've been disposed
-        if (_instances is null)
-            throw new ObjectDisposedException(GetType().Name);
+        Validate.ThrowIfDisposed(_instances is null, this);
 
         // Check if we can satisfy with the first instance
         T? instance = _firstInstance;
@@ -264,46 +265,11 @@ public sealed class ObjectPool<T> : IDisposable
     }
 
     /// <summary>
-    /// Gets a <see cref="PoolInstance"/> that will return its <see cref="PoolInstance.Instance">Instance</see> when it is <see cref="PoolInstance.Dispose">Disposed</see>
+    /// Gets a <see cref="PoolInstance{T}"/> that will return its <see cref="PoolInstance{T}.Instance">Instance</see> when it is <see cref="PoolInstance{T}.Dispose">Disposed</see>
     /// </summary>
-    public PoolInstance GetInstance()
+    public PoolInstance<T> GetInstance()
     {
-        return new PoolInstance(this, Rent());
-    }
-
-    public sealed class PoolInstance : IDisposable
-    {
-        private readonly ObjectPool<T> _pool;
-        private T? _instance;
-
-        /// <summary>
-        /// Gets the instance that this <see cref="PoolInstance"/> manages
-        /// </summary>
-        /// <exception cref="ObjectDisposedException">
-        /// Thrown if this <see cref="PoolInstance"/> has been <see cref="Dispose">Disposed</see>
-        /// </exception>
-        public T Instance => _instance ?? throw new ObjectDisposedException(nameof(PoolInstance));
-
-        /// <summary>
-        /// Has this <see cref="PoolInstance"/> been disposed?
-        /// </summary>
-        public bool IsDisposed => _instance is null;
-        
-        internal PoolInstance(ObjectPool<T> pool, T instance)
-        {
-            Debug.Assert(instance is not null);
-            _pool = pool;
-            _instance = instance;
-        }
-
-        /// <summary>
-        /// Disposes this <see cref="PoolInstance"/> by returning <see cref="Instance"/> to its source <see cref="ObjectPool{T}"/>
-        /// </summary>
-        public void Dispose()
-        {
-            T? instance = Interlocked.Exchange(ref _instance, null);
-            _pool.Return(instance);
-        }
+        return new PoolInstance<T>(this, Rent());
     }
 
     /// <summary>

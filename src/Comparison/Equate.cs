@@ -1,15 +1,20 @@
 ﻿using System.Reflection;
 using ScrubJay.Collections;
 
-// ReSharper disable MethodOverloadWithOptionalParameter
 // ReSharper disable InvokeAsExtensionMethod
 
 namespace ScrubJay.Comparison;
 
+/// <summary>
+/// A helper for all Equality Comparison
+/// </summary>
 [PublicAPI]
 public static class Equate
 {
-    private static readonly ConcurrentTypeMap<IEqualityComparer> _equalityComparers = new();
+    private static readonly ConcurrentTypeMap<IEqualityComparer> _equalityComparers = new()
+    {
+        [typeof(object)] = ObjectComparer.Default,
+    };
 
     private static IEqualityComparer FindEqualityComparer(Type type)
     {
@@ -21,12 +26,21 @@ public static class Equate
             .ThrowIfNot<IEqualityComparer>();
     }
 
-    public static IEqualityComparer GetEqualityComparer(Type type)
+    public static IEqualityComparer GetEqualityComparer(Type? type)
     {
+        if (type is null) return ObjectComparer.Default;
         return _equalityComparers.GetOrAdd(type, static t => FindEqualityComparer(t));
     }
-    public static DefaultEqualityComparer GetEqualityComparer(object? _ = default) => DefaultEqualityComparer.Instance;
-    public static DefaultEqualityComparer<T> GetEqualityComparer<T>(T? _ = default) => DefaultEqualityComparer<T>.Instance;
+
+    public static IEqualityComparer<T> GetEqualityComparer<T>()
+    {
+        return _equalityComparers.GetOrAdd<T>(static _ => EqualityComparer<T>.Default).ThrowIfNot<IEqualityComparer<T>>();
+    }
+    
+    
+    public static IEqualityComparer GetEqualityComparerFor(object? obj) => GetEqualityComparer(obj?.GetType());
+    
+    public static IEqualityComparer<T> GetEqualityComparerFor<T>(T? _) => GetEqualityComparer<T>();
 
     public static IEqualityComparer<T> CreateEqualityComparer<T>(Func<T?, T?, bool> equals, Func<T?, int> getHashCode)
         => new FuncEqualityComparer<T>(equals, getHashCode);
@@ -35,71 +49,59 @@ public static class Equate
     
     public static bool Values<T>(T? left, T? right) => GetEqualityComparer<T>().Equals(left!, right!);
 
-    public static bool Objects(object? left, object? right)
-    {
-        if (ReferenceEquals(left, right))
-            return true;
-        if (left is not null)
-        {
-            return GetEqualityComparer(left.GetType()).Equals(left, right);
-        }
-        else
-        {
-            return GetEqualityComparer(right!.GetType()).Equals(right, left);
-        }
-    }
+    public static bool Objects(object? left, object? right) => ObjectComparer.Equals(left, right);
 
 #region Sequence
 #region IEquatable
-    public static bool Sequence<T>(T[]? left, T[]? right, Constraints.IsEquatable<T> _ = default)
+    public static bool EquatableSequence<T>(T[]? left, T[]? right)
         where T : IEquatable<T>
     {
         return MemoryExtensions.SequenceEqual<T>(left.AsSpan(), right.AsSpan());
     }
 
-    public static bool Sequence<T>(Span<T> left, T[]? right, Constraints.IsEquatable<T> _ = default)
+    public static bool EquatableSequence<T>(Span<T> left, T[]? right)
         where T : IEquatable<T>
     {
         return MemoryExtensions.SequenceEqual<T>(left, right.AsSpan());
     }
 
-    public static bool Sequence<T>(ReadOnlySpan<T> left, T[]? right, Constraints.IsEquatable<T> _ = default)
+    public static bool EquatableSequence<T>(ReadOnlySpan<T> left, T[]? right)
         where T : IEquatable<T>
     {
         return MemoryExtensions.SequenceEqual<T>(left, right.AsSpan());
     }
 
-    public static bool Sequence<T>(T[]? left, Span<T> right, Constraints.IsEquatable<T> _ = default)
+    public static bool EquatableSequence<T>(T[]? left, Span<T> right)
         where T : IEquatable<T>
     {
         return MemoryExtensions.SequenceEqual<T>(left.AsSpan(), right);
     }
 
-    public static bool Sequence<T>(Span<T> left, Span<T> right, Constraints.IsEquatable<T> _ = default)
+    public static bool EquatableSequence<T>(Span<T> left, Span<T> right)
         where T : IEquatable<T>
     {
         return MemoryExtensions.SequenceEqual<T>(left, right);
     }
 
-    public static bool Sequence<T>(ReadOnlySpan<T> left, Span<T> right, Constraints.IsEquatable<T> _ = default)
+    public static bool EquatableSequence<T>(ReadOnlySpan<T> left, Span<T> right)
         where T : IEquatable<T>
     {
         return MemoryExtensions.SequenceEqual<T>(left, right);
     }
 
-    public static bool Sequence<T>(T[]? left, ReadOnlySpan<T> right, Constraints.IsEquatable<T> _ = default)
+    public static bool EquatableSequence<T>(T[]? left, ReadOnlySpan<T> right)
         where T : IEquatable<T>
     {
         return MemoryExtensions.SequenceEqual<T>(left.AsSpan(), right);
     }
 
-    public static bool Sequence<T>(Span<T> left, ReadOnlySpan<T> right, Constraints.IsEquatable<T> _ = default)
+    public static bool EquatableSequence<T>(Span<T> left, ReadOnlySpan<T> right)
         where T : IEquatable<T>
     {
         return MemoryExtensions.SequenceEqual<T>(left, right);
     }
 
-    public static bool Sequence<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right, Constraints.IsEquatable<T> _ = default)
+    public static bool EquatableSequence<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)
         where T : IEquatable<T>
     {
         return MemoryExtensions.SequenceEqual<T>(left, right);
@@ -327,7 +329,7 @@ public static class Equate
 #region Text
     public static bool Text(string? left, string? right)
     {
-        return string.Equals(left, right);
+        return string.Equals(left, right, StringComparison.Ordinal);
     }
 
     public static bool Text(string? left, ReadOnlySpan<char> right)

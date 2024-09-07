@@ -1,3 +1,5 @@
+#pragma warning disable S2933
+
 namespace ScrubJay.Collections;
 
 public sealed class BoundedIndices : IEnumerator<int[]>
@@ -100,7 +102,7 @@ public sealed class BoundedIndices : IEnumerator<int[]>
         Reset();
     }
 
-    void IDisposable.Dispose() { /* Do nothing */ }
+    public void Dispose() { /* Do nothing */ }
 
     /// <summary>
     /// Try to increment <see cref="_indices"/> by rolling forward exactly one item
@@ -140,8 +142,7 @@ public sealed class BoundedIndices : IEnumerator<int[]>
                 // if we're not the rightmost index, reset the index to the right to its lower
                 if (d < endDimension)
                 {
-                    d += 1;
-                    indices[d] = lowerBounds[d];
+                    indices[d+1] = lowerBounds[d+1];
                 }
                 return true;
             }
