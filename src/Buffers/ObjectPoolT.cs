@@ -25,6 +25,7 @@ namespace ScrubJay.Buffers;
 /// - When this pool is Disposed, all instances will also be disposed.<br/>
 ///   - Any further returned instances will be cleaned, disposed, and discarded.<br/>
 /// </remarks>
+[PublicAPI]
 public sealed class ObjectPool<T> : IDisposable
     where T : class
 {

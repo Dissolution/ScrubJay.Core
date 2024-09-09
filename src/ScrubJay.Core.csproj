@@ -20,8 +20,6 @@
         <!-- Static Code Analysis -->
         <AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>All</AnalysisMode>
-        <!-- <TreatWarningsAsErrors>true</TreatWarningsAsErrors> -->
-        <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
         <!-- Ensure that all Polyfilled types are public -->
@@ -48,6 +46,8 @@
             S3267;  <!-- Loops should be simplified with Where -->
             MA0061; S1006;  <!-- Remove default parameters on overrides to match signature -->
             CA2237; <!-- Add [Serializable] to types -->
+            S3963; CA1810;  <!-- Inline static fields -->
+            CA1305; <!-- Localization Related -->
         </NoWarn>
 
         <!--        &lt;!&ndash; Setup NuGet &ndash;&gt;-->
@@ -87,6 +87,7 @@
         <Using Include="System.Collections"/>
 
         <Using Include="ScrubJay.GlobalHelper" Static="true"/>
+        <Using Include="ScrubJay.Buffers"/>
         <Using Include="ScrubJay.Extensions"/>
         <Using Include="ScrubJay.Utilities"/>
         <Using Include="ScrubJay.Validation"/>

@@ -105,28 +105,6 @@ public static class EnumerableExtensions
     }
 
     /// <summary>
-    /// Enumerates exactly two elements from <paramref name="source"/>
-    /// </summary>
-    /// <param name="source"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static IEnumerable<T> Two<T>(this IEnumerable<T> source)
-    {
-        using var e = source.GetEnumerator();
-        if (!e.MoveNext())
-            throw new ArgumentException("There are no elements", nameof(source));
-        T firstValue = e.Current;
-        if (!e.MoveNext())
-            throw new ArgumentException("There is only one element", nameof(source));
-        T secondValue = e.Current;
-        if (e.MoveNext())
-            throw new ArgumentException("There are more than two elements", nameof(source));
-        yield return firstValue;
-        yield return secondValue;
-    }
-
-    /// <summary>
     /// Enumerates over the non-<c>null</c> items in <paramref name="source"/>
     /// </summary>
     public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?>? source)
@@ -166,9 +144,9 @@ public static class EnumerableExtensions
         }
     }
 
-    public static int SequenceCompareTo<TSource>(this IEnumerable<TSource>? first, IEnumerable<TSource>? second)
-        => SequenceCompareTo(first, second, null);
+    public static int SequenceCompareTo<TSource>(this IEnumerable<TSource>? first, IEnumerable<TSource>? second) => SequenceCompareTo(first, second, null);
 
+#pragma warning disable S3776
     public static int SequenceCompareTo<TSource>(this IEnumerable<TSource>? first, IEnumerable<TSource>? second, IComparer<TSource>? comparer)
     {
         if (ReferenceEquals(first, second))
@@ -179,13 +157,13 @@ public static class EnumerableExtensions
             return 1;
 
         int c;
-        
+
         if (first is ICollection<TSource> firstCol && second is ICollection<TSource> secondCol)
         {
             c = firstCol.Count.CompareTo(secondCol.Count);
             if (c != 0)
                 return c;
-            
+
             if (firstCol is IList<TSource> firstList && secondCol is IList<TSource> secondList)
             {
                 comparer ??= Comparer<TSource>.Default;
@@ -204,7 +182,7 @@ public static class EnumerableExtensions
 
         using IEnumerator<TSource> e1 = first.GetEnumerator();
         using IEnumerator<TSource> e2 = second.GetEnumerator();
-        
+
         comparer ??= Comparer<TSource>.Default;
 
         while (true)
@@ -220,7 +198,7 @@ public static class EnumerableExtensions
                 return c;
         }
     }
-
+#pragma warning restore S3776
 
     /// <summary>
     /// A deep wrapper for <see cref="IEnumerable{T}"/> that ignores all thrown exceptions

@@ -4,8 +4,6 @@ using System.Buffers;
 
 namespace ScrubJay.Buffers;
 
-
-
 /// <summary>
 /// A Buffer is<br/>
 /// - A stack-based collection (like <see cref="Span{T}"/>)<br/>
@@ -597,13 +595,15 @@ public ref struct Buffer<T>
         return array;
     }
     
+    #pragma warning disable MA0016
     public List<T> ToList()
     {
         List<T> list = new List<T>(Capacity);
         list.AddRange(Written);
         return list;
     }
-
+#pragma warning restore MA0016
+    
     /// <summary>
     /// Clears this <see cref="Buffer{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
     /// </summary>

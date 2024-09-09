@@ -24,9 +24,11 @@ public class FlaggedEnumExtensionsTests
         };
 
         foreach (var enumType in enumTypes)
-        foreach (var data in GetEnumTestData(enumType, paramCount))
         {
-            yield return data;
+            foreach (var data in GetEnumTestData(enumType, paramCount))
+            {
+                yield return data;
+            }
         }
     }
 
@@ -65,7 +67,7 @@ public class FlaggedEnumExtensionsTests
                 .Convert<TEnum>())
             .Compile()
             .Invoke(@enum);
-        var extResult = FlagsEnumExtensions.Not<TEnum>(@enum);
+        var extResult = FlagsEnumExtensions.BitwiseComplement<TEnum>(@enum);
         Assert.Equal(notResult, extResult);
     }
     

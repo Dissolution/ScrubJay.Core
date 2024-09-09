@@ -1,5 +1,6 @@
 ﻿namespace ScrubJay.Buffers;
 
+[PublicAPI]
 public sealed class PoolInstance<T> : IDisposable
     where T : class
 {

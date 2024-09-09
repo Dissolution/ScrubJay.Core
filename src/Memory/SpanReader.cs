@@ -10,6 +10,7 @@ namespace ScrubJay.Memory;
 /// <typeparam name="T">
 /// <see cref="Type"/>s of items stored in the <see cref="ReadOnlySpan{T}"/>
 /// </typeparam>
+[PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public ref struct SpanReader<T>
 {
@@ -58,12 +59,11 @@ public ref struct SpanReader<T>
             return Some(_span[_position]);
         return None<T>();
     }
-    
+
     /// <summary>
     /// Try to peek at the next <paramref name="count"/> items
     /// </summary>
     /// <param name="count"></param>
-    /// <param name="items"></param>
     /// <returns></returns>
     public OptionReadOnlySpan<T> TryPeek(int count)
     {
@@ -81,7 +81,7 @@ public ref struct SpanReader<T>
     }
 
     public T Peek() => TryPeek().SomeOrThrow($"There was not an item to Peek");
-    
+
     public ReadOnlySpan<T> Peek(int count) => TryPeek(count).SomeOrThrow($"There were not {count} items to Peek");
 
 #endregion
@@ -100,7 +100,7 @@ public ref struct SpanReader<T>
 
         return None<T>();
     }
-    
+
     public OptionReadOnlySpan<T> TryTake(int count)
     {
         if (count < 0)
@@ -118,11 +118,11 @@ public ref struct SpanReader<T>
 
         return default;
     }
-    
+
     public T Take() => TryTake().SomeOrThrow($"There was not an item to Take");
-    
+
     public ReadOnlySpan<T> Take(int count) => TryTake(count).SomeOrThrow($"There were not {count} items to Take");
-    
+
 
     public ReadOnlySpan<T> TakeWhile(Func<T, bool> itemPredicate)
     {
@@ -157,11 +157,11 @@ public ref struct SpanReader<T>
 #region Skip
 
     public bool TrySkip() => TryTake();
-    
+
     public bool TrySkip(int count) => TryTake(count);
 
     public void Skip() => TryTake().SomeOrThrow($"There was not an item to Skip");
-    
+
     public void Skip(int count) => TryTake(count).SomeOrThrow($"There were not ${count} items to Skip");
 
     public void SkipWhile(Func<T, bool> itemPredicate)
@@ -202,6 +202,8 @@ public ref struct SpanReader<T>
 
 #endregion
 
+#pragma warning disable MA0051
+    // ReSharper disable once CognitiveComplexity
     public override string ToString()
     {
         /* We want to show our position in the source span like this:
@@ -210,29 +212,30 @@ public ref struct SpanReader<T>
          */
 
         string delimiter;
-        int capture;
+        int captureCount;
         if (typeof(T) == typeof(char))
         {
             delimiter = string.Empty;
-            capture = 16;
+            captureCount = 20;
         }
         else
         {
-            delimiter = ",";
-            capture = 4;
+            delimiter = ", ";
+            captureCount = 5;
         }
 
-        var text = StringBuilderPool.Rent();
+        var text = new TextBuffer();
 
         int index = _position;
         var span = _span;
 
         // Previously read items
-        int prevIndex = index - capture;
+        int prevIndex = index - captureCount;
         // If we have more before this, indicate with ellipsis
         if (prevIndex > 0)
         {
-            text.Append('…').Append(delimiter);
+            text.Append('…');
+            text.Append(delimiter);
         }
         // Otherwise, cap at a min zero
         else
@@ -247,14 +250,14 @@ public ref struct SpanReader<T>
                 text.Append(delimiter);
             }
 
-            text.Append(span[i]);
+            text.AppendFormatted<T>(span[i]);
         }
 
         // position indicator
-        text.Append(" ⌖ ");
+        text.Append(" ^ ");
 
         // items yet to be read
-        int nextIndex = index + capture;
+        int nextIndex = index + captureCount;
 
         // if we have more after, we're going to end with an ellipsis
         bool postpendEllipsis;
@@ -276,14 +279,16 @@ public ref struct SpanReader<T>
                 text.Append(delimiter);
             }
 
-            text.Append(span[i]);
+            text.AppendFormatted<T>(span[i]);
         }
 
         if (postpendEllipsis)
         {
-            text.Append(delimiter).Append('…');
+            text.Append(delimiter);
+            text.Append('…');
         }
 
-        return text.ToStringAndReturn();
+        return text.ToStringAndDispose();
     }
+#pragma warning restore MA0051
 }

@@ -1,9 +1,13 @@
 ﻿#pragma warning disable S3247
 
+
 // constrained call avoiding boxing for value types
 // ReSharper disable MergeCastWithTypeCheck
 namespace ScrubJay.Text;
 
+/// <summary>
+/// Extensions on <see cref="Buffer{T}">Buffers</see> that contain <see cref="char">chars</see>
+/// </summary>
 [PublicAPI]
 public static class TextBufferExtensions
 {

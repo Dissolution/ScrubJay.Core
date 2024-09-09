@@ -31,9 +31,11 @@ public class EnumExtensionsTests
         };
 
         foreach (var enumType in enumTypes)
-        foreach (var data in GetEnumTestData(enumType, paramCount))
         {
-            yield return data;
+            foreach (var data in GetEnumTestData(enumType, paramCount))
+            {
+                yield return data;
+            }
         }
     }
 
@@ -54,7 +56,7 @@ public class EnumExtensionsTests
         where TEnum : struct, Enum
     {
         var equal = EqualityComparer<TEnum>.Default.Equals(left, right);
-        var extEqual = EnumExtensions.Equal(left, right);
+        var extEqual = EnumExtensions.IsEqual(left, right);
         Assert.Equal(equal, extEqual);
     }
 

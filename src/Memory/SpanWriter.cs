@@ -1,6 +1,4 @@
-﻿using ScrubJay.Buffers;
-
-namespace ScrubJay.Memory;
+﻿namespace ScrubJay.Memory;
 
 public delegate bool SpanWriterTryWrite<T>(ref SpanWriter<T> writer);
 
@@ -44,8 +42,6 @@ public ref struct SpanWriter<T>
         _span = span;
         _position = position;
     }
-
-
 
     public bool Chain(params SpanWriterTryWrite<T>[] writes)
     {

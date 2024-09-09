@@ -1,3 +1,5 @@
+#pragma warning disable S3776, MA0051
+
 using ScrubJay.Comparison;
 
 namespace ScrubJay.Extensions;
@@ -70,7 +72,8 @@ public static class SpanExtensions
 #endif
 
     public static bool SequenceEqual<T>(this Span<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null) => SequenceEqual<T>((ReadOnlySpan<T>)left, right, itemComparer);
-
+    
+    // ReSharper disable once CognitiveComplexity
     public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null)
     {
         if (right is null)
@@ -105,7 +108,7 @@ public static class SpanExtensions
 
             return true;
         }
-        else  // have to enumerate
+        else // have to enumerate
         {
             using var e = right.GetEnumerator();
             for (var i = 0; i < count; i++)
@@ -160,97 +163,75 @@ public static class SpanExtensions
     }
 
     public static int SequenceCompareTo<T>(this Span<T> left, IEnumerable<T>? right) => SequenceCompareTo<T>((ReadOnlySpan<T>)left, right);
-
+    
+    // ReSharper disable once CognitiveComplexity
     public static int SequenceCompareTo<T>(this ReadOnlySpan<T> left, IEnumerable<T>? right, IComparer<T>? comparer = null)
     {
         if (right is null)
             return 1; // null sorts first
+
         comparer ??= Comparer<T>.Default;
+        int c;
+
         int count = left.Length;
-        switch (right)
+        if (right is ICollection<T> collection)
         {
-            case IList<T> list:
+            c = count.CompareTo(collection.Count);
+            if (c != 0)
+                return c;
+
+            if (right is IList<T> list)
             {
-                int minLength = Math.Min(count, list.Count);
-                int c;
-                for (int i = 0; i < minLength; i++)
+                for (int i = 0; i < count; i++)
                 {
                     c = comparer.Compare(left[i], list[i]);
                     if (c != 0)
                         return c;
                 }
-
-                return count.CompareTo(list.Count);
             }
-            case IReadOnlyList<T> roList:
+            else
             {
-                int minLength = Math.Min(count, roList.Count);
-                int c;
-                for (int i = 0; i < minLength; i++)
-                {
-                    c = comparer.Compare(left[i], roList[i]);
-                    if (c != 0)
-                        return c;
-                }
-
-                return count.CompareTo(roList.Count);
-            }
-            case ICollection<T> collection:
-            {
-                int minLength = Math.Min(count, collection.Count);
-                int c;
                 using var e = collection.GetEnumerator();
-                for (int i = 0; i < minLength; i++)
-                {
-                    e.MoveNext();
-                    c = comparer.Compare(left[i], e.Current);
-                    if (c != 0)
-                        return c;
-                }
-
-                return count.CompareTo(collection.Count);
-            }
-            case IReadOnlyCollection<T> roCollection:
-            {
-                int minLength = Math.Min(count, roCollection.Count);
-                int c;
-                using var e = roCollection.GetEnumerator();
-                for (int i = 0; i < minLength; i++)
-                {
-                    e.MoveNext();
-                    c = comparer.Compare(left[i], e.Current);
-                    if (c != 0)
-                        return c;
-                }
-
-                return count.CompareTo(roCollection.Count);
-            }
-            default:
-            {
-                int c;
-                using var e = right.GetEnumerator();
                 for (int i = 0; i < count; i++)
                 {
-                    if (!e.MoveNext())
-                    {
-                        // right is shorter
-                        return 1;
-                    }
-
+#if DEBUG
+                    bool moved = e.MoveNext();
+                    Debug.Assert(moved);
+#else
+                    e.MoveNext();
+#endif
                     c = comparer.Compare(left[i], e.Current);
                     if (c != 0)
                         return c;
                 }
+            }
 
-                if (e.MoveNext())
+            return 0; // equal
+        }
+        else
+        {
+            using var e = right.GetEnumerator();
+            for (int i = 0; i < count; i++)
+            {
+                if (!e.MoveNext())
                 {
-                    // right is longer
-                    return -1;
+                    // right is shorter
+                    return 1;
                 }
 
-                // same
-                return 0;
+                c = comparer.Compare(left[i], e.Current);
+                if (c != 0)
+                    return c;
             }
+
+            if (e.MoveNext())
+            {
+                // right is longer
+                return -1;
+            }
+
+            // same
+            return 0;
         }
     }
 

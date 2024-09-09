@@ -432,7 +432,7 @@ public readonly struct Option<T> :
         }
         else // x is none
         {
-            if (_isSome)
+            if (other._isSome)
             {
                 return false;
             }
@@ -467,7 +467,7 @@ public readonly struct Option<T> :
     public override int GetHashCode()
     {
         if (_isSome)
-            return Hasher.Combine(_value);
+            return Hasher.GetHashCode<T>(_value);
         return 0;
     }
 

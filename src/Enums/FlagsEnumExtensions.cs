@@ -33,6 +33,18 @@ public static class FlagsEnumExtensions
         Emit.Conv_U8();
         return Return<ulong>();
     }
+    
+    /// <summary>
+    /// Returns a <see cref="long"/> representation of this <see cref="Enum"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static long ToInt64<TEnum>(this TEnum @enum)
+        where TEnum : struct, Enum
+    {
+        Emit.Ldarg(nameof(@enum));
+        Emit.Conv_I8();
+        return Return<long>();
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TEnum FromUInt64<TEnum>(ulong value)
@@ -49,7 +61,7 @@ public static class FlagsEnumExtensions
     /// Also known as the inverse or bitwise complement
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum Not<TEnum>(this TEnum @enum)
+    public static TEnum BitwiseComplement<TEnum>(this TEnum @enum)
         where TEnum : struct, Enum
     {
         Emit.Ldarg(nameof(@enum));
@@ -188,14 +200,14 @@ public static class FlagsEnumExtensions
     public static void RemoveFlag<TEnum>(this ref TEnum @enum, TEnum flag)
         where TEnum : struct, Enum
     {
-        @enum = And(@enum, Not(flag));
+        @enum = And(@enum, BitwiseComplement(flag));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TEnum WithoutFlag<TEnum>(this TEnum @enum, TEnum flag)
         where TEnum : struct, Enum
     {
-        return And(@enum, Not(flag));
+        return And(@enum, BitwiseComplement(flag));
     }
 
 
@@ -256,7 +268,7 @@ public static class FlagsEnumExtensions
         where TEnum : struct, Enum
     {
         return @enum.And(flag)
-            .Equal(flag);
+            .IsEqual(flag);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -265,7 +277,7 @@ public static class FlagsEnumExtensions
     {
         TEnum flag = flag1.Or(flag2);
         return @enum.And(flag)
-            .Equal(flag);
+            .IsEqual(flag);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -275,7 +287,7 @@ public static class FlagsEnumExtensions
         TEnum flag = flag1.Or(flag2)
             .Or(flag3);
         return @enum.And(flag)
-            .Equal(flag);
+            .IsEqual(flag);
     }
 
     public static bool HasAllFlags<TEnum>(this TEnum @enum, params TEnum[] flags)
@@ -288,6 +300,6 @@ public static class FlagsEnumExtensions
         }
 
         return @enum.And(flag)
-            .Equal(flag);
+            .IsEqual(flag);
     }
 }

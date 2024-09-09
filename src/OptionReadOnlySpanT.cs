@@ -1,7 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
 using ScrubJay.Comparison;
-using ScrubJay.Text;
 
 namespace ScrubJay;
 
@@ -393,13 +392,12 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         }
         else // x is none
         {
-            if (_isSome)
+            if (other._isSome)
             {
                 return false;
             }
             else
             {
-                // None == None
                 return true;
             }
         }

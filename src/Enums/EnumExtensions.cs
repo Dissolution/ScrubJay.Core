@@ -54,7 +54,7 @@ public static class EnumExtensions
     /// <c>false</c> if they do not
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equal<TEnum>(this TEnum @enum, TEnum other)
+    public static bool IsEqual<TEnum>(this TEnum @enum, TEnum other)
         where TEnum : struct, Enum
     {
         Emit.Ldarg(nameof(@enum));
@@ -65,7 +65,7 @@ public static class EnumExtensions
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool NotEqual<TEnum>(this TEnum @enum, TEnum other)
-        where TEnum : struct, Enum => !Equal<TEnum>(@enum, other);
+        where TEnum : struct, Enum => !IsEqual<TEnum>(@enum, other);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool LessThan<TEnum>(this TEnum @enum, TEnum other)
