@@ -3,6 +3,7 @@ namespace ScrubJay.Extensions;
 /// <summary>
 /// Extensions on <b>all</b> values
 /// </summary>
+[PublicAPI]
 public static class GenericExtensions
 {
     public static Option<TOut> As<TIn, TOut>(this TIn input)

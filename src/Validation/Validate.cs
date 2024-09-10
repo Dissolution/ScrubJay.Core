@@ -38,7 +38,7 @@ public static partial class Validate
     }
 
 
-    public static Result<T, Exception> IsNotNull<T>([AllowNull, NotNullWhen(true)] T? value, [CallerArgumentExpression(nameof(value))] string? valueName = null)
+    public static Result<T, Exception> IsNotNull<T>([NotNullWhen(true)] T? value, [CallerArgumentExpression(nameof(value))] string? valueName = null)
         where T : notnull
     {
         if (value is not null)

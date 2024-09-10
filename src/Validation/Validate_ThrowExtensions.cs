@@ -50,7 +50,7 @@ public static partial class Validate
     /// Thrown is <paramref name="obj"/> is not a valid <typeparamref name="TOut"/> value
     /// </exception>
     [return: NotNull]
-    public static TOut ThrowIfNot<TOut>([AllowNull, NotNull] this object? obj, [CallerArgumentExpression(nameof(obj))] string? objName = null)
+    public static TOut ThrowIfNot<TOut>([NotNull] this object? obj, [CallerArgumentExpression(nameof(obj))] string? objName = null)
     {
         return obj switch
         {

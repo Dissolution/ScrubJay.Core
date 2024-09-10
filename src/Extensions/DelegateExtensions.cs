@@ -1,8 +1,11 @@
+#pragma warning disable S2436
+
 namespace ScrubJay.Extensions;
 
 /// <summary>
 /// Extensions on <see cref="Delegate"/> and <c>delegate</c>
 /// </summary>
+[PublicAPI]
 public static class DelegateExtensions
 {
     public static Func<Unit> ToUnitFunc(this Action action)

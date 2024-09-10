@@ -2,6 +2,7 @@
 
 namespace ScrubJay.Extensions;
 
+[PublicAPI]
 public static class NumberExtensions
 {
     public static int Clamp(this int number, Bounds<int> bounds)

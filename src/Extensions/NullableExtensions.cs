@@ -3,6 +3,7 @@ namespace ScrubJay.Extensions;
 /// <summary>
 /// Extensions on <see cref="Nullable{T}"/>
 /// </summary>
+[PublicAPI]
 public static class NullableExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

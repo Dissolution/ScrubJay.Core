@@ -5,6 +5,7 @@ namespace ScrubJay.Extensions;
 /// <summary>
 /// Extensions on <see cref="Type"/> and <see cref="TypeInfo"/>
 /// </summary>
+[PublicAPI]
 public static class TypeExtensions
 {
     /// <summary>

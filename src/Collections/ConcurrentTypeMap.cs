@@ -12,7 +12,6 @@ namespace ScrubJay.Collections;
 public class ConcurrentTypeMap<TValue> : ConcurrentDictionary<Type, TValue>
 {
     public ConcurrentTypeMap()
-        : base()
     {
     }
 

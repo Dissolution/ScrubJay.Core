@@ -49,26 +49,40 @@ public ref struct Buffer<T>
         get => _span.Slice(_position);
     }
 
+    /// <summary>
+    /// Returns a reference to the item in this buffer at the given <paramref name="index"/>
+    /// </summary>
+    /// <exception cref="IndexOutOfRangeException">
+    /// Thrown when <paramref name="index"/> is invalid
+    /// </exception>
     public ref T this[int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref _span[index];
     }
 
+    /// <summary>
+    /// Returns a reference to the item in this buffer at the given <see cref="Index"/>
+    /// </summary>
+    /// <exception cref="IndexOutOfRangeException">
+    /// Thrown when <paramref name="index"/> is invalid
+    /// </exception>
     public ref T this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _span[index.GetOffset(_position)];
+        get => ref _span[index];
     }
 
+    /// <summary>
+    /// Returns a <see cref="Span{T}"/> reference to the items at the given <see cref="Range"/>
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="range"/> is invalid
+    /// </exception>
     public Span<T> this[Range range]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            (int offset, int length) = range.GetOffsetAndLength(_position);
-            return _span.Slice(offset, length);
-        }
+        get => _span[range];
     }
 
     /// <summary>
@@ -101,7 +115,7 @@ public ref struct Buffer<T>
         Debug.Assert(initialPosition >= 0 && initialPosition <= Capacity);
         _position = initialPosition;
     }
-    
+
     internal Buffer(Span<T> initialSpan, int initialPosition)
     {
         _span = initialSpan;
@@ -174,7 +188,7 @@ public ref struct Buffer<T>
     {
         GrowTo(Capacity * 2);
     }
-    
+
     /// <summary>
     /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least <paramref name="minCapacity"/>
     /// </summary>
@@ -276,7 +290,8 @@ public ref struct Buffer<T>
     {
         if (items is null)
             return;
-        
+
+        // ReSharper disable PossibleMultipleEnumeration
         if (items.TryGetNonEnumeratedCount(out int count))
         {
             int newPos = _position + count;
@@ -302,6 +317,7 @@ public ref struct Buffer<T>
                 Add(item);
             }
         }
+        // ReSharper restore PossibleMultipleEnumeration
     }
 
     /// <summary>
@@ -339,7 +355,7 @@ public ref struct Buffer<T>
     public void InsertMany(Index index, scoped ReadOnlySpan<T> items)
     {
         int itemCount = items.Length;
-        
+
         if (itemCount == 0)
             return;
 
@@ -396,6 +412,7 @@ public ref struct Buffer<T>
             return;
         }
 
+        // ReSharper disable PossibleMultipleEnumeration
         if (items.TryGetNonEnumeratedCount(out int count))
         {
             if (count == 0)
@@ -424,6 +441,7 @@ public ref struct Buffer<T>
             // Enumerate to a temporary buffer, then insert
             InsertManyEnumerable(index, items);
         }
+        // ReSharper restore PossibleMultipleEnumeration
     }
 
     /// <summary>
@@ -513,7 +531,7 @@ public ref struct Buffer<T>
         Span.SelfCopy(this.Written, (offset + length).., offset..);
         return true;
     }
-    
+
     public Option<T[]> TryRemoveMany(Range range)
     {
         if (!Validate.Range(range, _position).IsOk(out var ol))
@@ -594,8 +612,8 @@ public ref struct Buffer<T>
         Span.Copy(_span.Slice(0, pos), array);
         return array;
     }
-    
-    #pragma warning disable MA0016
+
+#pragma warning disable MA0016
     public List<T> ToList()
     {
         List<T> list = new List<T>(Capacity);
@@ -603,7 +621,7 @@ public ref struct Buffer<T>
         return list;
     }
 #pragma warning restore MA0016
-    
+
     /// <summary>
     /// Clears this <see cref="Buffer{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
     /// </summary>
@@ -633,6 +651,7 @@ public ref struct Buffer<T>
         {
             Grow();
         }
+
         Debug.Assert(_array is not null);
         return new BufferEnumerable(_array!, _position);
     }
@@ -706,7 +725,7 @@ public ref struct Buffer<T>
             _items = null;
             _count = 0; // stops enumeration
         }
-        
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
@@ -735,7 +754,7 @@ public ref struct Buffer<T>
                     return _items[_index];
                 }
             }
-            
+
             public int Index
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -748,7 +767,7 @@ public ref struct Buffer<T>
                 _count = enumerable._count;
                 _index = -1;
             }
-            
+
             public bool MoveNext()
             {
                 int newIndex = _index + 1;
@@ -757,7 +776,7 @@ public ref struct Buffer<T>
                 _index = newIndex;
                 return true;
             }
-            
+
             public Option<T> TryMoveNext()
             {
                 int newIndex = _index + 1;
@@ -771,7 +790,7 @@ public ref struct Buffer<T>
             {
                 _index = -1;
             }
-            
+
             public void Dispose()
             {
                 // Clear my references

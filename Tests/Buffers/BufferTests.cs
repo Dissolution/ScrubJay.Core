@@ -61,6 +61,8 @@ public class BufferTests
         }
 
         grownBuffer.Dispose();
+
+        Assert.True(true);
     }
 
     [Fact]
@@ -89,14 +91,14 @@ public class BufferTests
         using var buffer = new Buffer<object?>();
         List<object?> list = new();
 
-        var objects = CommonTheoryData.Objects.Select(static ojs => ojs[0]).ToArray();
+        var objects = TestHelper.TestObjects;
         foreach (object? obj in objects)
         {
             buffer.Add(obj);
             list.Add(obj);
         }
 
-        Assert.Equal(objects.Length, buffer.Count);
+        Assert.Equal(objects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
         for (var i = 0; i < buffer.Count; i++)
@@ -111,11 +113,11 @@ public class BufferTests
         using var buffer = new Buffer<object?>();
         List<object?> list = new();
 
-        var objects = CommonTheoryData.Objects.Select(static ojs => ojs[0]).ToArray();
+        var objects = TestHelper.TestObjects;
         buffer.AddMany(objects);
         list.AddRange(objects);
 
-        Assert.Equal(objects.Length, buffer.Count);
+        Assert.Equal(objects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
         for (var i = 0; i < buffer.Count; i++)

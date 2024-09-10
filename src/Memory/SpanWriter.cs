@@ -188,6 +188,7 @@ public ref struct SpanWriter<T>
         if (items is null)
             return 0;
 
+        // ReSharper disable PossibleMultipleEnumeration
         if (items.TryGetNonEnumeratedCount(out int count))
         {
             int pos = _position;
@@ -206,6 +207,7 @@ public ref struct SpanWriter<T>
             return new ArgumentException($"Cannot write {count} items", nameof(items));
         }
         return new ArgumentException("Cannot write an uncountable collection", nameof(items));
+        // ReSharper restore PossibleMultipleEnumeration
     }
 
     public void Clear()

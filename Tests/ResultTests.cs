@@ -2,6 +2,8 @@
 using System.Reflection;
 using NIExResult = ScrubJay.Result<int?, System.Exception?>;
 
+// ReSharper disable VariableCanBeNotNullable
+
 namespace ScrubJay.Tests;
 
 public class ResultTests
@@ -10,15 +12,15 @@ public class ResultTests
     {
         Result<int, Exception?>.Ok(147),
         Result<BindingFlags, Exception?>.Ok(BindingFlags.ExactBinding),
-        Result<None, Exception?>.Ok(default),
+        Result<Unit, Exception?>.Ok(default),
         Result<string, Exception?>.Ok("ABC"),
         Result<EventArgs?, Exception?>.Ok(null),
         Result<int, Exception?>.Error(null),
         Result<int, Exception?>.Error(new Exception("Bad")),
         Result<BindingFlags, Exception?>.Error(null),
         Result<BindingFlags, Exception?>.Error(new Exception("Bad")),
-        Result<None, Exception?>.Error(null),
-        Result<None, Exception?>.Error(new Exception("Bad")),
+        Result<Unit, Exception?>.Error(null),
+        Result<Unit, Exception?>.Error(new Exception("Bad")),
         Result<string, Exception?>.Error(null),
         Result<string, Exception?>.Error(new Exception("Bad")),
         Result<EventArgs?, Exception?>.Error(null),
@@ -45,7 +47,7 @@ public class ResultTests
 
         result = new Result<object?, object>();
         Assert.False(result);
-        
+
         result = Activator.CreateInstance<Result<object?, object?>>()!;
         Assert.False(result);
     }
@@ -100,7 +102,13 @@ public class ResultTests
             result = Result<IEnumerable?, IEnumerable<int>?>.Error(null);
             Assert.False(result);
 
-            result = Result<IEnumerable?, IEnumerable<int>?>.Error(new List<int> { 1, 4, 7, });
+            result = Result<IEnumerable?, IEnumerable<int>?>.Error(
+                new List<int>
+                {
+                    1,
+                    4,
+                    7,
+                });
             Assert.False(result);
         }
     }
@@ -113,8 +121,8 @@ public class ResultTests
         objectResult = new object();
         Assert.True(objectResult.IsOk());
 
-        int? nullNullablInt = null;
-        Result<int?, Exception> nullableResult = nullNullablInt;
+        int? nullNullableInt = null;
+        Result<int?, Exception> nullableResult = nullNullableInt;
         Assert.True(nullableResult.IsOk());
         int? nonnullNullableInt = 147;
         nullableResult = nonnullNullableInt;
@@ -170,7 +178,7 @@ public class ResultTests
             Assert.Equal<T>(ok, e.Current);
             Assert.False(e.MoveNext());
         }
-        else if (result.IsError(out var error))
+        else if (result.IsError())
         {
             Assert.False(e.MoveNext());
         }
@@ -179,8 +187,8 @@ public class ResultTests
             Assert.Fail();
         }
     }
-    
-        [Fact]
+
+    [Fact]
     public void ImplicitOkWorks()
     {
         Result<int, Exception> r1 = 147;
@@ -192,7 +200,7 @@ public class ResultTests
         Assert.True(r2.IsOk(out var r2Ok));
         Assert.Equal(nl, r2Ok);
     }
-    
+
     [Fact]
     public void ImplicitErrorWorks()
     {
@@ -205,12 +213,12 @@ public class ResultTests
         Result<int, Exception> r2 = ex2;
         Assert.True(r2.IsError(out var r2Error));
         Assert.Equal(ex2, r2Error);
-        
+
         var ex3 = new List<int>();
         Result<int, IEnumerable> r3 = ex3;
         Assert.True(r3.IsError(out var r3Error));
         Assert.Equal(ex3, r3Error);
-        
+
         Result<byte, Exception?> r4 = null;
         Assert.True(r4.IsError(out var r4Error));
         Assert.Null(r4Error);
@@ -229,15 +237,16 @@ public class ResultTests
             Assert.True(result.IsError());
         }
     }
-    
-    
+
+
+#pragma warning disable S1125
     [Theory]
     [MemberData(nameof(ResultsData))]
     public void OpEqualsWorks<TOk, TError>(Result<TOk, TError> result)
     {
         // ReSharper disable once EqualExpressionComparison
         Assert.True(result == result);
-        result.Match(ok =>
+        if (result.IsOk(out var ok))
         {
             Assert.True(result == ok);
             Assert.True(ok == result);
@@ -245,24 +254,27 @@ public class ResultTests
             Assert.True(true == result);
             Assert.False(result == false);
             Assert.False(false == result);
-        }, error =>
+        }
+        else
         {
-            Assert.True(result == error);
-            Assert.True(error == result);
+            var isError = result.IsError(out var error);
+            Assert.True(isError);
+            Assert.True(result == error!);
+            Assert.True(error! == result);
             Assert.True(result == false);
             Assert.True(false == result);
             Assert.False(result == true);
             Assert.False(true == result);
-        });
+        }
     }
-    
+
     [Theory]
     [MemberData(nameof(ResultsData))]
     public void OpNotEqualsWorks<TOk, TError>(Result<TOk, TError> result)
     {
         // ReSharper disable once EqualExpressionComparison
         Assert.False(result != result);
-        result.Match(ok =>
+        if (result.IsOk(out var ok))
         {
             Assert.False(result != ok);
             Assert.False(ok != result);
@@ -270,16 +282,20 @@ public class ResultTests
             Assert.False(true != result);
             Assert.True(result != false);
             Assert.True(false != result);
-        }, error =>
+        }
+        else
         {
-            Assert.False(result != error);
-            Assert.False(error != result);
+            var isError = result.IsError(out var error);
+            Assert.True(isError);
+            Assert.False(result != error!);
+            Assert.False(error! != result);
             Assert.False(result != false);
             Assert.False(false != result);
             Assert.True(result != true);
             Assert.True(true != result);
-        });
+        }
     }
+#pragma warning restore S1125
 
     [Fact]
     public void OkWorks()
@@ -299,12 +315,12 @@ public class ResultTests
         Assert.Null(r3Ok);
         Assert.False(r3.IsError());
     }
-    
+
     [Fact]
     public void ErrorWorks()
     {
         var ex = new InvalidOperationException("BAD");
-        
+
         Result<int, Exception> r1 = Result<int, Exception>.Error(ex);
         Assert.True(r1.IsError(out var r1Error));
         Assert.Equal(ex, r1Error);

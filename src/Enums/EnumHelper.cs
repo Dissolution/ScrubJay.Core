@@ -87,7 +87,7 @@ public static class EnumHelper<TEnum>
                 name = descAttr.Description;
             }
 
-            name ??= System.Enum.GetName(type, member);
+            name ??= Enum.GetName(type, member);
             name ??= field.Name;
 
             _names[(TEnum)member] = name;

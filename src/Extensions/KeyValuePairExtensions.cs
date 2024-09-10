@@ -1,5 +1,6 @@
 ﻿namespace ScrubJay.Extensions;
 
+[PublicAPI]
 public static class KeyValuePairExtensions
 {
 #if NET481 || NETSTANDARD2_0

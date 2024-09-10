@@ -2,11 +2,6 @@
 
 public static class EnumTestData
 {
-    static EnumTestData()
-    {
-
-    }
-    
     public static class NonFlagged
     {
         // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/types#836-integral-types
@@ -102,7 +97,7 @@ public static class EnumTestData
         [Flags]
         public enum EfSbyte : sbyte
         {
-            Default = 0,
+            None = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
@@ -113,7 +108,7 @@ public static class EnumTestData
         [Flags]
         public enum EfByte : byte
         {
-            Default = 0,
+            None = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
@@ -124,7 +119,7 @@ public static class EnumTestData
         [Flags]
         public enum EfShort : short
         {
-            Default = 0,
+            None = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
@@ -135,7 +130,7 @@ public static class EnumTestData
         [Flags]
         public enum EfUshort : ushort
         {
-            Default = 0,
+            None = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
@@ -146,7 +141,7 @@ public static class EnumTestData
         [Flags]
         public enum EfInt : int
         {
-            Default = 0,
+            None = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
@@ -157,7 +152,7 @@ public static class EnumTestData
         [Flags]
         public enum EfUint : uint
         {
-            Default = 0,
+            None = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
@@ -168,7 +163,7 @@ public static class EnumTestData
         [Flags]
         public enum EfLong : long
         {
-            Default = 0,
+            None = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,
@@ -179,7 +174,7 @@ public static class EnumTestData
         [Flags]
         public enum EfUlong : ulong
         {
-            Default = 0,
+            None = 0,
             Alpha = 1 << 0,
             Beta = 1 << 1,
             Gamma = 1 << 2,

@@ -2,10 +2,10 @@
 
 namespace ScrubJay.Tests;
 
-public static class CommonTheoryData
+public static class TestHelper
 {
-    public static TheoryData<object?> Objects { get; } = new()
-    {
+    public static IReadOnlyList<object?> TestObjects { get; } =
+    [
         // null
         (object?)null,
         // enum
@@ -30,13 +30,18 @@ public static class CommonTheoryData
         // object itself
         new object(),
         // type
-        typeof(CommonTheoryData),
+        typeof(TestHelper),
         // exception
         new Exception("TheoryHelper.TheoryObjects"),
         // old net stuff
         DBNull.Value,
         // anonymous object
-        new { Id = 147, Name = "TJ", IsAdmin = true, },
+        new
+        {
+            Id = 147,
+            Name = "TJ",
+            IsAdmin = true,
+        },
         // simple dictionary
         new Dictionary<int, string>
         {
@@ -62,32 +67,17 @@ public static class CommonTheoryData
         },
         // complex class
         AppDomain.CurrentDomain,
-    };
+    ];
 
-    public static TheoryData<Type> AllKnownTypes { get; }
+    public static IReadOnlyCollection<Type> AllKnownTypes { get; }
 
-    static CommonTheoryData()
+    static TestHelper()
     {
-        HashSet<Type> allTypes = new();
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        for (var a = 0; a < assemblies.Length; a++)
-        {
-            Assembly assembly;
-            Type[] assemblyTypes;
-            try
-            {
-                assembly = assemblies[a];
-                assemblyTypes = assembly.GetTypes(); // All types, not just Public
-                for (var t = 0; t < assemblyTypes.Length; t++)
-                {
-                    allTypes.Add(assemblyTypes[t]);
-                }
-            }
-            catch (Exception)
-            {
-                // Ignore any exceptions, Assemblies can be tricky
-            }
-        }
-        AllKnownTypes = new TheoryData<Type>(allTypes);
+        AllKnownTypes = AppDomain
+            .CurrentDomain
+            .GetAssemblies()
+            // Assemblies can be tricky to access
+            .SelectMany(assembly => Result.TryFunc(assembly, static a => a.GetTypes()).OkOr([]))
+            .ToHashSet();
     }
 }

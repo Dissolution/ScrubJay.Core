@@ -1,8 +1,6 @@
 ﻿#pragma warning disable CA1031
 
-using ScrubJay.Collections;
-
-namespace ScrubJay.Extensions;
+namespace ScrubJay.Collections;
 
 [PublicAPI]
 public sealed class UnbreakableEnumerable<T> : IEnumerable<T>

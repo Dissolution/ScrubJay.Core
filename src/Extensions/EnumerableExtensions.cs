@@ -1,3 +1,5 @@
+using ScrubJay.Collections;
+
 namespace ScrubJay.Extensions;
 
 /// <summary>

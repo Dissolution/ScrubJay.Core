@@ -154,14 +154,14 @@ public class ObjectPoolTests
                     Assert.Equal("", sb.ToString());
                     sb.Append(Guid.NewGuid());
                     Assert.True(sb.Length > 0);
-                    string? str = sb.ToString();
+                    string str = sb.ToString();
                     Assert.NotNull(str);
                     pool.Return(sb);
                     return str;
                 });
         }
         var results = await Task.WhenAll(tasks);
-        Assert.True(results.All(str => !string.IsNullOrWhiteSpace(str)));
+        Assert.True(Array.TrueForAll(results, str => !string.IsNullOrWhiteSpace(str)));
         Assert.Equal(COUNT, results.Distinct().Count());
     }
 }
