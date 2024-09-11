@@ -86,6 +86,58 @@ public class BufferTests
     }
 
     [Fact]
+    public void IntIndexerWorks()
+    {
+        using var buffer = Buffer.FromSpan([0, 1, 2, 3, 4, 5, 6, 7]);
+
+        for (var i = 0; i < buffer.Count; i++)
+        {
+            ref int refItem = ref buffer[i];
+            Assert.Equal(i, refItem);
+            refItem = 147;
+            Assert.Equal(147, refItem);
+            Assert.Equal(147, buffer[i]);
+        }
+
+        Assert.All(buffer.ToEnumerable(), static b => Assert.Equal(147, b));
+    }
+
+    [Fact]
+    public void IndexIndexerWorks()
+    {
+        using var buffer = Buffer.FromSpan([0, 1, 2, 3, 4, 5, 6, 7]);
+        int bufferCount = buffer.Count;
+
+        for (var i = 1; i <= bufferCount; i++)
+        {
+            Index index = ^i;
+            ref int refItem = ref buffer[index];
+            Assert.Equal(bufferCount - i, refItem);
+            refItem = 147;
+            Assert.Equal(147, refItem);
+            Assert.Equal(147, buffer[index]);
+        }
+
+        Assert.All(buffer.ToEnumerable(), static b => Assert.Equal(147, b));
+    }
+
+    [Fact]
+    public void RangeIndexerWorks()
+    {
+        using var buffer = Buffer.FromSpan([0, 1, 2, 3, 4, 5, 6, 7]);
+
+#if !NET48_OR_GREATER
+        Assert.Equal<int>(buffer[0..2], [0, 1]);
+        Assert.Equal<int>(buffer[3..5], [3, 4]);
+        Assert.Equal<int>(buffer[..^4], [0, 1, 2, 3]);
+#else
+        Assert.Equal<int>(buffer[0..2].ToArray(), [0, 1]);
+        Assert.Equal<int>(buffer[3..5].ToArray(), [3, 4]);
+        Assert.Equal<int>(buffer[..^4].ToArray(), [0, 1, 2, 3]);
+#endif
+    }
+
+    [Fact]
     public void AddWorks()
     {
         using var buffer = new Buffer<object?>();
@@ -108,13 +160,51 @@ public class BufferTests
     }
 
     [Fact]
-    public void AddManyWorks()
+    public void AddManySpanWorks()
+    {
+        using var buffer = new Buffer<object?>();
+        List<object?> list = new();
+
+        Span<object?> objects = TestHelper.TestObjects.ToArray();
+        buffer.AddMany(objects);
+        list.AddRange(TestHelper.TestObjects);
+
+        Assert.Equal(TestHelper.TestObjects.Count, buffer.Count);
+        Assert.Equal(list.Count, buffer.Count);
+
+        for (var i = 0; i < buffer.Count; i++)
+        {
+            Assert.Equal(objects[i], buffer[i]);
+        }
+    }
+    
+    [Fact]
+    public void AddManyCountableWorks()
     {
         using var buffer = new Buffer<object?>();
         List<object?> list = new();
 
         var objects = TestHelper.TestObjects;
         buffer.AddMany(objects);
+        list.AddRange(objects);
+
+        Assert.Equal(objects.Count, buffer.Count);
+        Assert.Equal(list.Count, buffer.Count);
+
+        for (var i = 0; i < buffer.Count; i++)
+        {
+            Assert.Equal(objects[i], buffer[i]);
+        }
+    }
+    
+    [Fact]
+    public void AddManyUncountableWorks()
+    {
+        using var buffer = new Buffer<object?>();
+        List<object?> list = new();
+
+        var objects = TestHelper.TestObjects;
+        buffer.AddMany(objects.AsEnumerable());
         list.AddRange(objects);
 
         Assert.Equal(objects.Count, buffer.Count);
@@ -221,6 +311,54 @@ public class BufferTests
         Assert.Equal(endArray, bufferArray);
     }
 
+    [Fact]
+    public void ContainsWorks()
+    {
+        using var intBuffer = Buffer.FromSpan<int>([0, 1, 2, 3, 4, 5, 6, 7]);
+
+        for (var i = -10; i <= 20; i++)
+        {
+            if (i is >= 0 and <= 7)
+            {
+                Assert.True(intBuffer.Contains(i));
+            }
+            else
+            {
+                Assert.False(intBuffer.Contains(i));
+            }
+        }
+
+        Span<Guid> guids = [Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()];
+        using var guidBuffer = Buffer.FromSpan<Guid>(guids);
+
+        for (var i = 0; i < 100; i++)
+        {
+            Assert.False(guidBuffer.Contains(Guid.NewGuid()));
+        }
+
+        foreach (var guid in guids)
+        {
+            Assert.True(guidBuffer.Contains(guid));
+        }
+
+
+        using var recordBuffer = new Buffer<TestClassRecord>();
+        List<TestClassRecord> records = new List<TestClassRecord>();
+        for (var i = 0; i < 10; i++)
+        {
+            var obj = new TestClassRecord(i, "Record #{i}", i % 2 == 0);
+            recordBuffer.Add(obj);
+            records.Add(obj);
+        }
+
+        foreach (var record in records)
+        {
+            Assert.True(recordBuffer.Contains(record));
+            Assert.False(recordBuffer.Contains(record with { IsAdmin = !record.IsAdmin }));
+        }
+    }
+    
+    
     [Fact]
     public void ToEnumerableWorks()
     {

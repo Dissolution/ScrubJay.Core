@@ -54,7 +54,7 @@ IEquatable<Bounds<T>>
             }
         }
 
-        return false;
+        return true;
     }
 
     [return: NotNullIfNotNull(nameof(value))]

@@ -308,6 +308,7 @@ public ref struct Buffer<T>
             }
 
             Debug.Assert(a == count);
+            _position = newPos;
         }
         else
         {

@@ -80,4 +80,8 @@ public static class TestHelper
             .SelectMany(assembly => Result.TryFunc(assembly, static a => a.GetTypes()).OkOr([]))
             .ToHashSet();
     }
+    
+
 }
+
+public record class TestClassRecord(int Id, string Name, bool IsAdmin);

@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <AssemblyName>ScrubJay.Core.Tests</AssemblyName>
+        <RootNamespace>ScrubJay.Tests</RootNamespace>
+        
         <TargetFrameworks>net8.0;net7.0;net6.0;net481;</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -8,8 +11,6 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <AssemblyName>ScrubJay.Core.Tests</AssemblyName>
-        <RootNamespace>ScrubJay.Tests</RootNamespace>
         
         <NoWarn>xUnit1037; CS1718</NoWarn>
         
@@ -47,18 +48,4 @@
         <Using Include="System.Diagnostics"/>
         <Using Include="System.Diagnostics.CodeAnalysis"/>
     </ItemGroup>
-
-    <!-- PolySharp ~ Support for newer language versions in older versions -->
-    <ItemGroup>
-        <PackageReference Include="PolySharp" Version="1.14.1">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Collections\" />
-    </ItemGroup>
-    <PropertyGroup>
-        <PolySharpUsePublicAccessibilityForGeneratedTypes>true</PolySharpUsePublicAccessibilityForGeneratedTypes>
-    </PropertyGroup>
 </Project>
