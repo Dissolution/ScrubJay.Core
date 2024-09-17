@@ -1,4 +1,6 @@
-﻿using ScrubJay.Collections;
+﻿#pragma warning disable S907, S3236
+
+using ScrubJay.Collections;
 
 namespace ScrubJay.Validation;
 
@@ -7,6 +9,17 @@ namespace ScrubJay.Validation;
 /// </summary>
 public static partial class Validate
 {
+#region Index
+
+    public static Result<int, Exception> Index(int index, int length, [CallerArgumentExpression(nameof(index))] string? indexName = null, [CallerArgumentExpression(nameof(length))] string? lengthName = null)
+    {
+        return new Validations()
+        {
+            IsGreaterOrEqualThan(length, 0, valueName: lengthName),
+            InBounds(index, Bounds.ForLength(length), indexName),
+        }.GetResult(index);
+    }
+
     public static Result<int, Exception> Index(Index index, int length, [CallerArgumentExpression(nameof(index))] string? indexName = null, [CallerArgumentExpression(nameof(length))] string? lengthName = null)
     {
         if (length < 0)
@@ -27,14 +40,74 @@ public static partial class Validate
         return offset;
     }
 
+#endregion
+
+    public static Result<(int Offset, int Length), Exception> Range(int offset, int length, 
+        int available,
+        [CallerArgumentExpression(nameof(offset))] string? offsetName = null, 
+        [CallerArgumentExpression(nameof(length))] string? lengthName = null, 
+        [CallerArgumentExpression(nameof(available))] string? availableName = null)
+    {
+        return new Validations
+        {
+            IsGreaterOrEqualThan(available, 0, valueName: availableName),
+            InInclusiveLength(offset, available, valueName: offsetName),
+            IsGreaterOrEqualThan(length, 0, valueName: lengthName),
+            InInclusiveLength(offset + length, available, valueName: "Offset + Length"),
+        }.GetResult((offset, length));
+    }
+
+    public static Result<(int Offset, int Length), Exception> Range(Index index, int length, int available, [CallerArgumentExpression(nameof(index))] string? indexName = null, [CallerArgumentExpression(nameof(length))] string? lengthName = null, [CallerArgumentExpression(nameof(available))] string? availableName = null)
+    {
+        if (available < 0)
+            return new ArgumentOutOfRangeException(availableName, available, "Available must be zero or greater");
+        int offset = index.GetOffset(length);
+        if (offset < 0 || offset >= available)
+            return new ArgumentOutOfRangeException(indexName, index, $"Index must be in the range [0, {available})");
+        if (length < 0 || offset + length > available)
+            return new ArgumentOutOfRangeException(lengthName, length, $"Offset + Length must be in [0, {available}]");
+        return (offset, length);
+    }
+
     public static Result<(int Offset, int Length), Exception> Range(Range range, int length, [CallerArgumentExpression(nameof(range))] string? rangeName = null, [CallerArgumentExpression(nameof(length))] string? lengthName = null)
     {
         if (length < 0)
             return new ArgumentOutOfRangeException(lengthName, length, "Length must be zero or greater");
         var (offset, count) = range.GetOffsetAndLength(length);
-        if (offset < 0 || offset >= length)
-            return new ArgumentOutOfRangeException(rangeName, range, $"Range must be in [0, {length})");
-        return (offset, count);
+        if (offset >= 0 && offset < length)
+            return (offset, count);
+        return new ArgumentOutOfRangeException(rangeName, range, $"Range must be in [0, {length})");
+    }
+
+    public static Result<(int Offset, int Length), Exception> Range<T>(Range range, ReadOnlySpan<T> span, [CallerArgumentExpression(nameof(range))] string? rangeName = null, [CallerArgumentExpression(nameof(span))] string? spanName = null)
+    {
+        int spanLen = span.Length;
+        var (offset, count) = range.GetOffsetAndLength(spanLen);
+        if (offset >= 0 && offset < spanLen)
+            return (offset, count);
+        return new ArgumentOutOfRangeException(rangeName, range, $"Range must be in [0, {spanLen})");
+    }
+
+    public static Result<(int Offset, int Length), Exception> Range<T>(Range range, T[]? array, [CallerArgumentExpression(nameof(range))] string? rangeName = null, [CallerArgumentExpression(nameof(array))] string? arrayName = null)
+    {
+        if (array is null)
+            return new ArgumentNullException(arrayName);
+        int arrayLen = array.Length;
+        var (offset, count) = range.GetOffsetAndLength(arrayLen);
+        if (offset >= 0 && offset < arrayLen)
+            return (offset, count);
+        return new ArgumentOutOfRangeException(rangeName, range, $"Range must be in [0, {arrayLen})");
+    }
+
+    public static Result<(int Offset, int Length), Exception> Range<T>(Range range, ICollection<T>? collection, [CallerArgumentExpression(nameof(range))] string? rangeName = null, [CallerArgumentExpression(nameof(collection))] string? collectionName = null)
+    {
+        if (collection is null)
+            return new ArgumentNullException(collectionName);
+        int collectionCount = collection.Count;
+        var (offset, count) = range.GetOffsetAndLength(collectionCount);
+        if (offset >= 0 && offset < collectionCount)
+            return (offset, count);
+        return new ArgumentOutOfRangeException(rangeName, range, $"Range must be in [0, {collectionCount})");
     }
 
 
@@ -54,6 +127,45 @@ public static partial class Validate
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {bounds}");
     }
 
+    public static Result<T, Exception> InInclusiveLength<T>(
+        T value,
+        T inclusiveMaximum,
+        IComparer<T>? valueComparer = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        valueComparer ??= Comparer<T>.Default;
+
+        int c = valueComparer.Compare(value, default(T)!);
+        if (c < 0)
+            goto FAIL;
+        c = valueComparer.Compare(value, inclusiveMaximum);
+        if (c > 0)
+            goto FAIL;
+        return value;
+    FAIL:
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {inclusiveMaximum}]");
+    }
+
+    public static Result<T, Exception> InExclusiveLength<T>(
+        T value,
+        T exclusiveMaximum,
+        IComparer<T>? valueComparer = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        valueComparer ??= Comparer<T>.Default;
+
+        int c = valueComparer.Compare(value, default(T)!);
+        if (c < 0)
+            return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveMaximum})");
+        c = valueComparer.Compare(value, exclusiveMaximum);
+        if (c >= 0)
+            return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveMaximum})");
+        return value;
+    }
+
+
     public static Result<T, Exception> IsGreaterOrEqualThan<T>(T value, T minInclusive, IComparer<T>? valueComparer = null, [CallerArgumentExpression(nameof(value))] string? valueName = null)
     {
         int c = (valueComparer ?? Comparer<T>.Default).Compare(value, minInclusive);
@@ -62,7 +174,8 @@ public static partial class Validate
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be >= {minInclusive}");
     }
 
-    public static Result<Unit, Exception> Args(Validations validations) => validations.Result;
+
+    public static Result<Unit, Exception> Args(Validations validations) => validations.GetResult();
 
 
     public static Result<Unit, Exception> CopyTo<T>(int count, T[]? array, int arrayIndex = 0, [CallerArgumentExpression(nameof(count))] string? countName = null, [CallerArgumentExpression(nameof(array))] string? arrayName = null, [CallerArgumentExpression(nameof(arrayIndex))] string? arrayIndexName = null)
@@ -78,6 +191,6 @@ public static partial class Validate
                     return Unit();
                 return new ArgumentOutOfRangeException(arrayName, array, $"Cannot fit {count} items into [{array.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}");
             },
-        }.Result;
+        }.GetResult();
     }
 }

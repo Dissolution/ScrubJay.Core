@@ -76,4 +76,14 @@ public delegate Span<TSOut> RSpanFuncWSpan<TSIn, in T1, in T2, in T3, TSOut>(Rea
 public delegate Span<TSOut> RSpanFuncWSpan<TSIn, in T1, in T2, in T3, in T4, TSOut>(ReadOnlySpan<TSIn> span, T1 arg1, T2 arg2, T3 arg3, T4 arg4);
 
 
+/// <summary>
+/// A delegate that acts upon upon an item reference
+/// </summary>
+/// <typeparam name="T">
+/// The <see cref="Type"/> of <paramref name="item"/> being referenced
+/// </typeparam>
+/// <param name="item">
+/// The item being used by <c>ref</c>
+/// </param>
+public delegate void RefItem<T>(ref T item);
 

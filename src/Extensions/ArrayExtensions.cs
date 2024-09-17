@@ -3,6 +3,18 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class ArrayExtensions
 {
+    #if NET48_OR_GREATER || NETSTANDARD2_0
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this T[]? array, Range range)
+    {
+        if (array is null)
+            return [];
+        (int start, int length) = range.GetOffsetAndLength(array.Length);
+        return new Span<T>(array, start, length);
+    }
+    #endif
+    
+    
     /// <inheritdoc cref="Array.ConvertAll{TInput,TOutput}"/>
     public static TOutput[] ConvertAll<TInput, TOutput>(this TInput[] array, Converter<TInput, TOutput> converter)
     {

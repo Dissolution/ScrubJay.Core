@@ -1,56 +1,56 @@
 ﻿#pragma warning disable S4136, CA1002
 
 using System.Buffers;
+using ScrubJay.Comparison;
 
-namespace ScrubJay.Buffers;
+namespace ScrubJay.Collections;
 
-/// <summary>
-/// A Buffer is<br/>
-/// - A stack-based collection (like <see cref="Span{T}"/>)<br/>
-/// - That can grow as required (like <see cref="IList{T}"/>)<br/>
-/// - That uses <see cref="ArrayPool{T}"/> to avoid excess allocation<br/>
-/// - And thus must be disposed in order to return that array
-/// </summary>
-/// <typeparam name="T">The <see cref="Type"/> of items stored in this <see cref="Buffer{T}"/></typeparam>
-/// <remarks>
-/// Heavily inspired by <see cref="T:System.Collections.Generic.ValueListBuilder{T}"/><br/>
-/// <a href="https://github.com/dotnet/runtime/blob/release/8.0/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/ValueListBuilder.cs"/>
-/// </remarks>
 [PublicAPI]
 [MustDisposeResource]
-public ref struct Buffer<T>
-    /* Roughly implements :
+public sealed class Vector<T> :
      IList<T>, IReadOnlyList<T>,
      ICollection<T>, IReadOnlyCollection<T>,
      IEnumerable<T>,
      IDisposable
-     */
 {
-    // implicitly let us use Buffer anyplace that wants a Span
-    public static implicit operator Span<T>(Buffer<T> buffer) => buffer.Written;
+    // implicitly let us use Vector anyplace that wants a Span
+    public static implicit operator Span<T>(Vector<T> vector) => vector.Written;
 
-
-    internal Span<T> _span;
-    internal T[]? _array;
+    private T[] _array;
     private int _position;
 
     /// <summary>
-    /// Get the <see cref="Span{T}"/> of items in this <see cref="Buffer{T}"/>
+    /// Get the <see cref="Span{T}"/> of items in this <see cref="Vector{T}"/>
     /// </summary>
     public Span<T> Written
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _span.Slice(0, _position);
+        get => _array.AsSpan(0, _position);
     }
 
     internal Span<T> Available
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _span.Slice(_position);
+        get => _array.AsSpan(_position);
+    }
+
+    bool ICollection<T>.IsReadOnly => false;
+
+    /// <inheritdoc cref="IReadOnlyList{T}.this"/>
+    T IReadOnlyList<T>.this[int index]
+    {
+        get => this[index];
+    }
+    
+    /// <inheritdoc cref="IList{T}.this"/>
+    T IList<T>.this[int index]
+    {
+        get => this[index];
+        set => this[index] = value;
     }
 
     /// <summary>
-    /// Returns a reference to the item in this buffer at the given <paramref name="index"/>
+    /// Returns a reference to the item in this vector at the given <paramref name="index"/>
     /// </summary>
     /// <exception cref="IndexOutOfRangeException">
     /// Thrown when <paramref name="index"/> is invalid
@@ -58,11 +58,11 @@ public ref struct Buffer<T>
     public ref T this[int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _span[index];
+        get => ref _array[index];
     }
 
     /// <summary>
-    /// Returns a reference to the item in this buffer at the given <see cref="Index"/>
+    /// Returns a reference to the item in this vector at the given <see cref="Index"/>
     /// </summary>
     /// <exception cref="IndexOutOfRangeException">
     /// Thrown when <paramref name="index"/> is invalid
@@ -70,7 +70,7 @@ public ref struct Buffer<T>
     public ref T this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _span[index];
+        get => ref _array[index];
     }
 
     /// <summary>
@@ -82,78 +82,77 @@ public ref struct Buffer<T>
     public Span<T> this[Range range]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _span[range];
+        get => _array.AsSpan(range);
     }
 
     /// <summary>
-    /// Gets the number of items in this <see cref="Buffer{T}"/>
+    /// Gets the number of items in this <see cref="Vector{T}"/>
     /// </summary>
     public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _position;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal set
-        {
-            Debug.Assert(value >= 0 && value < Capacity);
-            _position = value;
-        }
     }
 
     /// <summary>
-    /// Gets the current capacity for this <see cref="Buffer{T}"/>, which will be increased as needed
+    /// Gets the current capacity for this <see cref="Vector{T}"/>, which will be increased as needed
     /// </summary>
     public int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _span.Length;
+        get => _array.Length;
     }
 
-    internal Buffer(T[] initialArray, int initialPosition)
+    internal Vector(T[] initialArray, int initialPosition)
     {
-        _span = _array = initialArray;
+       _array = initialArray;
         Debug.Assert(initialPosition >= 0 && initialPosition <= Capacity);
         _position = initialPosition;
     }
-
-    internal Buffer(Span<T> initialSpan, int initialPosition)
-    {
-        _span = initialSpan;
-        _array = null;
-        Debug.Assert(initialPosition >= 0 && initialPosition <= Capacity);
-        _position = initialPosition;
-    }
-
+    
     /// <summary>
-    /// Create a new, empty Buffer that has not allocated anything
+    /// Create a new, empty Vector that has not allocated anything
     /// </summary>
-    public Buffer()
+    public Vector()
     {
-        _span = _array = null;
+        _array = [];
         _position = 0;
     }
 
     /// <summary>
-    /// Create a new, empty Buffer with at least a starting <see cref="Capacity"/> of <paramref name="minCapacity"/>
+    /// Create a new, empty Vector with at least a starting <see cref="Capacity"/> of <paramref name="minCapacity"/>
     /// </summary>
     /// <param name="minCapacity">
-    /// The minimum starting capacity the Buffer may have (but may end up larger)
+    /// The minimum starting capacity the Vector may have (but may end up larger)
     /// </param>
     /// <remarks>
     /// If <paramref name="minCapacity"/> is greater than 0, an array will be rented from <see cref="ArrayPool{T}"/>
     /// </remarks>
-    public Buffer(int minCapacity)
+    public Vector(int minCapacity)
     {
         if (minCapacity <= 0)
         {
-            _span = _array = null;
+            _array = [];
         }
         else
         {
-            _span = _array = ArrayPool.Rent<T>(minCapacity);
+            _array = ArrayPool.Rent<T>(minCapacity);
         }
 
         _position = 0;
+    }
+
+    public Vector(T item)
+    {
+        _array = [item];
+        _position = 1;
+    }
+    
+    public Vector(scoped ReadOnlySpan<T> items)
+    {
+        _array = ArrayPool.Rent<T>(items.Length);
+        Sequence.CopyTo(items, _array);
+        _position = 1;
     }
 
     /// <summary>
@@ -173,35 +172,32 @@ public ref struct Buffer<T>
         T[] newArray = ArrayPool.Rent<T>(newCapacity);
         Sequence.CopyTo(Written, newArray);
 
-        T[]? toReturn = _array;
-        _span = _array = newArray;
+        T[] toReturn = _array;
+        _array = newArray;
         ArrayPool.Return(toReturn);
     }
 
     /// <summary>
-    /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least twice its current value
+    /// Grows the <see cref="Capacity"/> of this <see cref="Vector{T}"/> to at least <paramref name="minCapacity"/>
     /// </summary>
-    /// <remarks>
-    /// This method causes a rental from <see cref="ArrayPool{T}"/>
-    /// </remarks>
-    public void Grow()
+    /// <param name="minCapacity">
+    /// The minimum value <see cref="Capacity"/> must be<br/>
+    /// If set to the <c>default</c> of <c>-1</c>, the <see cref="Capacity"/> will be at least doubled
+    /// </param>
+    public void GrowCapacity(int minCapacity = -1)
     {
-        GrowTo(Capacity * 2);
-    }
-
-    /// <summary>
-    /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least <paramref name="minCapacity"/>
-    /// </summary>
-    public void GrowCapacity(int minCapacity)
-    {
-        if (minCapacity > Capacity)
+        if (minCapacity == -1)
+        {
+            GrowTo(Capacity * 2);
+        }
+        else if (minCapacity > Capacity)
         {
             GrowTo(minCapacity);
         }
     }
 
     /// <summary>
-    /// Grows this Buffer and then add an item
+    /// Grows this Vector and then add an item
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void AddGrow(T item)
@@ -209,18 +205,18 @@ public ref struct Buffer<T>
         int pos = _position;
         Debug.Assert(pos == Capacity);
         GrowBy(1);
-        _span[pos] = item;
+        _array[pos] = item;
         _position = pos + 1;
     }
 
     /// <summary>
-    /// Add a new <paramref name="item"/> to this <see cref="Buffer{T}"/>
+    /// Add a new <paramref name="item"/> to this <see cref="Vector{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T item)
     {
         int pos = _position;
-        Span<T> span = _span;
+        Span<T> span = _array;
 
         if (pos < span.Length)
         {
@@ -234,7 +230,7 @@ public ref struct Buffer<T>
     }
 
     /// <summary>
-    /// Grow this buffer and then add <paramref name="count"/> items from <paramref name="source"/>
+    /// Grow this vector and then add <paramref name="count"/> items from <paramref name="source"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void AddManyGrow(scoped ReadOnlySpan<T> source, int count)
@@ -247,7 +243,7 @@ public ref struct Buffer<T>
     }
 
     /// <summary>
-    /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
+    /// Adds the given <paramref name="items"/> to this <see cref="Vector{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddMany(scoped ReadOnlySpan<T> items)
@@ -278,26 +274,41 @@ public ref struct Buffer<T>
     }
 
     /// <summary>
-    /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
+    /// Adds the given <paramref name="items"/> to this <see cref="Vector{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddMany(params T[]? items) => AddMany(items.AsSpan());
 
     /// <summary>
-    /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
+    /// Adds the given <paramref name="items"/> to this <see cref="Vector{T}"/>
     /// </summary>
     public void AddMany(IEnumerable<T>? items)
     {
         if (items is null)
             return;
 
-        // ReSharper disable PossibleMultipleEnumeration
-        if (items.TryGetNonEnumeratedCount(out int count))
+        int itemCount;
+        if (items is ICollection<T> collection)
         {
-            int newPos = _position + count;
+            itemCount = collection.Count;
+
+            int pos = _position;
+            int newPos = pos + itemCount;
             if (newPos > Capacity)
             {
-                GrowBy(count);
+                GrowBy(itemCount);
+            }
+
+            collection.CopyTo(_array, pos);
+            _position = newPos;
+        }
+        // ReSharper disable PossibleMultipleEnumeration
+        else if (items.TryGetNonEnumeratedCount(out itemCount))
+        {
+            int newPos = _position + itemCount;
+            if (newPos > Capacity)
+            {
+                GrowBy(itemCount);
             }
 
             var avail = Available;
@@ -307,7 +318,7 @@ public ref struct Buffer<T>
                 avail[a++] = item;
             }
 
-            Debug.Assert(a == count);
+            Debug.Assert(a == itemCount);
             _position = newPos;
         }
         else
@@ -321,8 +332,10 @@ public ref struct Buffer<T>
         // ReSharper restore PossibleMultipleEnumeration
     }
 
+    void IList<T>.Insert(int index, T item) => Insert(index, item);
+
     /// <summary>
-    /// Inserts an <paramref name="item"/> into this <see cref="Buffer{T}"/> at <paramref name="index"/>
+    /// Inserts an <paramref name="item"/> into this <see cref="Vector{T}"/> at <paramref name="index"/>
     /// </summary>
     /// <param name="index">The <see cref="Index"/> to insert the <paramref name="item"/></param>
     /// <param name="item">The item to insert</param>
@@ -342,14 +355,14 @@ public ref struct Buffer<T>
                 GrowBy(1);
             }
 
-            Sequence.SelfCopy(_span, offset..pos, (offset + 1)..);
-            _span[offset] = item;
+            Sequence.SelfCopy(_array, offset..pos, (offset + 1)..);
+            _array[offset] = item;
             _position = newPos;
         }
     }
 
     /// <summary>
-    /// Inserts multiple <paramref name="items"/> into this <see cref="Buffer{T}"/> at <paramref name="index"/>
+    /// Inserts multiple <paramref name="items"/> into this <see cref="Vector{T}"/> at <paramref name="index"/>
     /// </summary>
     /// <param name="index">The <see cref="Index"/> to insert the <paramref name="items"/></param>
     /// <param name="items">The <see cref="ReadOnlySpan{T}"/> of items to insert</param>
@@ -379,8 +392,8 @@ public ref struct Buffer<T>
                     GrowBy(itemCount);
                 }
 
-                Sequence.SelfCopy(_span, offset.._position, (offset + itemCount)..);
-                Sequence.CopyTo(items, _span.Slice(offset, itemCount));
+                Sequence.SelfCopy(_array.AsSpan(), offset.._position, (offset + itemCount)..);
+                Sequence.CopyTo(items, _array.AsSpan(offset, itemCount));
                 _position = newPos;
             }
         }
@@ -390,13 +403,10 @@ public ref struct Buffer<T>
 
     private void InsertManyEnumerable(Index index, IEnumerable<T> items)
     {
-        using var buffer = new Buffer<T>();
-        foreach (var item in items)
-        {
-            buffer.Add(item);
-        }
-
-        InsertMany(index, buffer.AsSpan());
+        // Copy everything to a temporary vector, then insert
+        using var vector = new Buffer<T>();
+        vector.AddMany(items);
+        InsertMany(index, vector.AsSpan());
     }
 
     public void InsertMany(Index index, IEnumerable<T>? items)
@@ -412,62 +422,70 @@ public ref struct Buffer<T>
             AddMany(items);
             return;
         }
-
-        // ReSharper disable PossibleMultipleEnumeration
-        if (items.TryGetNonEnumeratedCount(out int count))
+        
+        int itemCount;
+        if (items is ICollection<T> collection)
         {
-            if (count == 0)
+            itemCount = collection.Count;
+            if (itemCount == 0)
                 return;
-
-            int newPos = pos + count;
-            if (newPos >= Capacity)
+            
+            int newPos = pos + itemCount;
+            if (newPos > Capacity)
             {
-                GrowBy(count);
+                GrowBy(itemCount);
             }
-
-            var span = _span;
-
-            Sequence.SelfCopy(span, offset..pos, (offset + count)..);
-            int i = offset;
-            foreach (T item in items)
-            {
-                span[i++] = item;
-            }
-
-            Debug.Assert(i == (offset + count));
+            
+            Sequence.SelfCopy(_array, offset..pos, (offset + itemCount)..);
             _position = newPos;
         }
         else
         {
-            // Enumerate to a temporary buffer, then insert
+            // Enumerate to a temporary vector, then insert
             InsertManyEnumerable(index, items);
         }
         // ReSharper restore PossibleMultipleEnumeration
     }
 
+    public void Sort(IComparer<T>? itemComparer = default)
+    {
+        Array.Sort(_array, 0, _position, itemComparer);
+    }
+    
+    public void Sort(Comparison<T> itemComparison)
+    {
+        Array.Sort(_array, 0, _position, Compare.CreateComparer<T>(itemComparison));
+    }
+    
+    
+
     /// <summary>
-    /// Does this <see cref="Buffer{T}"/> contain any instances of the <paramref name="item"/>?
+    /// Does this <see cref="Vector{T}"/> contain any instances of the <paramref name="item"/>?
     /// </summary>
     /// <param name="item">
     /// The item to scan for using <see cref="EqualityComparer{T}"/>.<see cref="EqualityComparer{T}.Default"/>
     /// </param>
     /// <returns>
-    /// <c>true</c> if this buffer contains an instance of <paramref name="item"/><br/>
+    /// <c>true</c> if this vector contains an instance of <paramref name="item"/><br/>
     /// <c>false</c> if it does not
     /// </returns>
     public bool Contains(T item)
     {
         for (var i = 0; i < _position; i++)
         {
-            if (EqualityComparer<T>.Default.Equals(item, _span[i]))
+            if (EqualityComparer<T>.Default.Equals(item, _array[i]))
                 return true;
         }
 
         return false;
     }
 
+    public bool Contains(Func<T, bool> itemPredicate) => TryFindIndex(itemPredicate).IsSome();
+
+    int IList<T>.IndexOf(T item) => TryFindIndex(item).SomeOr(-1);
+
     /// <summary>
-    /// Try to find an <paramref name="item"/> in this <see cref="Buffer{T}"/>
+    /// Try to find an <paramref name="item"/> in this <see cref="Vector{T}"/>
     /// </summary>
     /// <param name="item">The item to search for</param>
     /// <param name="firstToLast">
@@ -475,7 +493,7 @@ public ref struct Buffer<T>
     /// <c>false</c>: Search from high to low indices<br/>
     /// </param>
     /// <param name="offset">
-    /// The <see cref="Index"/> offset in this Buffer to start the search from
+    /// The <see cref="Index"/> offset in this Vector to start the search from
     /// </param>
     /// <param name="itemComparer">
     /// An optional <see cref="IEqualityComparer{T}"/> to use for <paramref name="item"/> comparison instead of
@@ -487,9 +505,11 @@ public ref struct Buffer<T>
     public Option<int> TryFindIndex(T item, bool firstToLast = true, Index offset = default, IEqualityComparer<T>? itemComparer = null)
     {
         var pos = _position;
-        var span = _span;
+        Span<T> span = _array;
 
-        var index = Validate.Index(offset, pos).OkOrThrow();
+        if (!Validate.Index(offset, pos).IsOk(out var index))
+            return None<int>();
+       
         itemComparer ??= EqualityComparer<T>.Default;
         if (firstToLast)
         {
@@ -515,12 +535,96 @@ public ref struct Buffer<T>
         return None<int>();
     }
 
+    
+    public Option<int> TryFindIndex(
+        Func<T, bool>? itemPredicate, 
+        bool firstToLast = true,
+        Index offset = default)
+    {
+        if (itemPredicate is null)
+            return None<int>();
+        
+        var pos = _position;
+        Span<T> span = _array;
+
+        if (!Validate.Index(offset, pos).IsOk(out var index))
+            return None<int>();
+       
+        if (firstToLast)
+        {
+            for (; index < pos; index++)
+            {
+                if (itemPredicate(span[index]))
+                {
+                    return Some(index);
+                }
+            }
+        }
+        else
+        {
+            for (; index >= 0; index--)
+            {
+                if (itemPredicate(span[index]))
+                {
+                    return Some(index);
+                }
+            }
+        }
+
+        return None<int>();
+    }
+
+    public Option<T> TryFind(
+        Func<T, bool>? itemPredicate, 
+        bool firstToLast = true,
+        Index offset = default)
+    {
+        if (itemPredicate is null)
+            return None<T>();
+        
+        var pos = _position;
+        Span<T> span = _array;
+
+        if (!Validate.Index(offset, pos).IsOk(out var index))
+            return None<T>();
+
+        T item;
+        if (firstToLast)
+        {
+            for (; index < pos; index++)
+            {
+                item = span[index];
+                if (itemPredicate(item))
+                {
+                    return Some(item);
+                }
+            }
+        }
+        else
+        {
+            for (; index >= 0; index--)
+            {
+                item = span[index];
+                if (itemPredicate(item))
+                {
+                    return Some(item);
+                }
+            }
+        }
+
+        return None<T>();
+    }
+    
+    void IList<T>.RemoveAt(int index) => TryRemoveAt(index);
+
+    bool ICollection<T>.Remove(T item) => TryFindIndex(item).Map(i => TryRemoveAt(i));
+
     public Option<T> TryRemoveAt(Index index)
     {
         if (!Validate.Index(index, _position).IsOk(out var offset))
             return None<T>();
-        T item = _span[offset];
-        Sequence.SelfCopy(_span, (offset + 1).., offset..);
+        T item = _array[offset];
+        Sequence.SelfCopy(_array, (offset + 1).., offset..);
         return Some(item);
     }
 
@@ -538,10 +642,46 @@ public ref struct Buffer<T>
         if (!Validate.Range(range, _position).IsOk(out var ol))
             return None<T[]>();
         (int offset, int length) = ol;
-        T[] items = _span.Slice(offset, length).ToArray();
-        Sequence.SelfCopy(_span, (offset + length).., offset..);
+        T[] items = _array.AsSpan(offset, length).ToArray();
+        Sequence.SelfCopy(_array.AsSpan(), (offset + length).., offset..);
         return Some(items);
     }
+
+    public int RemoveWhere(Func<T, bool>? itemPredicate)
+    {
+        if (itemPredicate is null)
+            return 0;
+        
+        int freeIndex = 0;   // the first free slot in items array
+        int pos = _position;
+        Span<T> array = _array;
+        
+        // Find the first item which needs to be removed.
+        while (freeIndex < pos && !itemPredicate(array[freeIndex])) 
+            freeIndex++;
+        
+        if (freeIndex >= pos) 
+            return 0;
+
+        int current = freeIndex + 1;
+        while (current < pos)
+        {
+            // Find the first item which needs to be kept.
+            while (current < pos && itemPredicate(array[current]))
+                current++;
+
+            if (current < pos)
+            {
+                // copy item to the free slot.
+                array[freeIndex++] = array[current++];
+            }
+        }
+
+        int removedCount = pos - freeIndex;
+        _position = freeIndex;
+        return removedCount;
+    }
+    
 
     public Option<T> TryRemoveLast()
     {
@@ -549,7 +689,7 @@ public ref struct Buffer<T>
         if (newPos < 0)
             return None<T>();
         _position = newPos;
-        return Some(_span[newPos]);
+        return Some(_array[newPos]);
     }
 
     public void Clear()
@@ -563,7 +703,7 @@ public ref struct Buffer<T>
         int pos = _position;
         GrowBy(length);
         _position = pos + length;
-        return _span.Slice(pos, length);
+        return _array.AsSpan(pos, length);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -573,7 +713,7 @@ public ref struct Buffer<T>
             return Span<T>.Empty;
 
         int pos = _position;
-        Span<T> span = _span;
+        Span<T> span = _array;
         if (pos + length <= span.Length)
         {
             _position = pos + length;
@@ -587,30 +727,39 @@ public ref struct Buffer<T>
 
     public void Allocate(UseAvailable<T> useAvailable)
     {
-        var available = _span.Slice(_position);
+        var available = _array.AsSpan(_position);
         int used = useAvailable(available);
         if (used < 0 || used > available.Length)
             throw new InvalidOperationException("Cannot use an invalid number of available items");
         _position += used;
     }
 
+    void ICollection<T>.CopyTo(T[] array, int arrayIndex)
+    {
+        Validate.CopyTo(_position, array, arrayIndex).OkOrThrow();
+        Written.CopyTo(array.AsSpan(arrayIndex));
+    }
+    
+    public bool TryCopyTo(Span<T> span) => Written.TryCopyTo(span);
+    
+    
     /// <summary>
-    /// Get the <see cref="Span{T}"/> of written items in this <see cref="Buffer{T}"/>
+    /// Get the <see cref="Span{T}"/> of written items in this <see cref="Vector{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan()
     {
-        return _span.Slice(0, _position);
+        return _array.AsSpan(0, _position);
     }
 
     /// <summary>
-    /// Copy the items in this <see cref="Buffer{T}"/> to a new <c>T[]</c>
+    /// Copy the items in this <see cref="Vector{T}"/> to a new <c>T[]</c>
     /// </summary>
     public T[] ToArray()
     {
         int pos = _position;
         T[] array = new T[pos];
-        Sequence.CopyTo(_span.Slice(0, pos), array);
+        Sequence.CopyTo(_array.AsSpan(0, pos), array);
         return array;
     }
 
@@ -623,8 +772,45 @@ public ref struct Buffer<T>
     }
 #pragma warning restore MA0016
 
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        for (var i = 0; i < _position; i++)
+        {
+            yield return _array[i];
+        }
+    }
+
+    public IEnumerable<T> Where(Func<T, bool>? itemPredicate)
+    {
+        if (itemPredicate is null)
+            yield break;
+        int pos = _position;
+        var array = _array;
+        T item;
+        for (int i = 0; i < pos; i++)
+        {
+            item = array[i];
+            if (itemPredicate(item))
+                yield return item;
+        }
+    }
+
+    public void ForEach(RefItem<T>? perItem)
+    {
+        if (perItem is null)
+            return;
+        int pos = _position;
+        var array = _array;
+        for (int i = 0; i < pos; i++)
+        {
+            perItem(ref array[i]);
+        }
+    }
+
     /// <summary>
-    /// Clears this <see cref="Buffer{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
+    /// Clears this <see cref="Vector{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
     /// </summary>
     [HandlesResourceDisposal]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -633,7 +819,7 @@ public ref struct Buffer<T>
         T[]? toReturn = _array;
         // defensive clear
         _position = 0;
-        _span = _array = null;
+        _array = [];
         ArrayPool.Return(toReturn, true);
     }
 
@@ -642,163 +828,4 @@ public ref struct Buffer<T>
     public override int GetHashCode() => Hasher.Combine<T>(Written);
 
     public override string ToString() => Written.ToString();
-
-    public BufferEnumerator GetEnumerator() => new(this);
-
-    public BufferEnumerable ToEnumerable()
-    {
-        // If we have not yet allocated an array, we have to
-        if (_array is null)
-        {
-            Grow();
-        }
-
-        Debug.Assert(_array is not null);
-        return new BufferEnumerable(_array!, _position);
-    }
-
-    /// <summary>
-    /// An <see cref="IEnumerator{T}"/> over the items in a <see cref="Buffer{T}"/>
-    /// </summary>
-    [PublicAPI]
-    [StructLayout(LayoutKind.Auto)]
-    public ref struct BufferEnumerator
-    {
-        private readonly ReadOnlySpan<T> _items;
-        private int _index;
-
-        public readonly ref readonly T Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => ref _items[_index];
-        }
-
-        public readonly int Index
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _index;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal BufferEnumerator(Buffer<T> buffer)
-        {
-            _items = buffer.AsSpan();
-            _index = -1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext()
-        {
-            int newIndex = _index + 1;
-            if (newIndex >= _items.Length)
-                return false;
-            _index = newIndex;
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Option<T> TryMoveNext()
-        {
-            int newIndex = _index + 1;
-            if (newIndex >= _items.Length)
-                return None<T>();
-            _index = newIndex;
-            return Some(_items[newIndex]);
-        }
-    }
-
-
-    [PublicAPI]
-    [MustDisposeResource(false)]
-    public sealed class BufferEnumerable : IEnumerable<T>, IDisposable
-    {
-        private T[]? _items;
-        private int _count;
-
-        internal BufferEnumerable(T[] items, int count)
-        {
-            _items = items;
-            _count = count;
-        }
-
-        public void Dispose()
-        {
-            _items = null;
-            _count = 0; // stops enumeration
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
-        public BufferEnumerableEnumerator GetEnumerator() => new(this);
-
-        [PublicAPI]
-        [MustDisposeResource(false)]
-        public sealed class BufferEnumerableEnumerator : IEnumerator<T>, IEnumerator, IDisposable
-        {
-            private T[]? _items;
-            private int _count;
-            private int _index;
-
-            object? IEnumerator.Current => Current;
-
-            public T Current
-            {
-                get
-                {
-                    Validate.ThrowIfDisposed(_items is null, this);
-                    if (_index < 0)
-                        throw new InvalidOperationException("Enumeration has not yet started");
-                    if (_index >= _count)
-                        throw new InvalidOperationException("Enumeration has finished");
-                    return _items[_index];
-                }
-            }
-
-            public int Index
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => _index;
-            }
-
-            internal BufferEnumerableEnumerator(BufferEnumerable enumerable)
-            {
-                _items = enumerable._items;
-                _count = enumerable._count;
-                _index = -1;
-            }
-
-            public bool MoveNext()
-            {
-                int newIndex = _index + 1;
-                if (newIndex >= _count)
-                    return false;
-                _index = newIndex;
-                return true;
-            }
-
-            public Option<T> TryMoveNext()
-            {
-                int newIndex = _index + 1;
-                if (newIndex >= _count)
-                    return None<T>();
-                _index = newIndex;
-                return Some(_items![newIndex]);
-            }
-
-            public void Reset()
-            {
-                _index = -1;
-            }
-
-            public void Dispose()
-            {
-                // Clear my references
-                _count = 0; // stops enumeration
-                _index = -1;
-                _items = null;
-            }
-        }
-    }
 }

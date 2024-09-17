@@ -1,10 +1,11 @@
-﻿using ObjectDisposedException = System.ObjectDisposedException;
+﻿namespace ScrubJay.Validation;
 
-namespace ScrubJay.Validation;
-
-public static partial class Validate
+/// <summary>
+/// Extensions related to validation
+/// </summary>
+public static class ValidationExtensions
 {
-    /// <summary>
+     /// <summary>
     /// Returns <paramref name="value"/> or throws an <see cref="ArgumentNullException"/> if it is <c>null</c>
     /// </summary>
     /// <typeparam name="T">
@@ -68,15 +69,4 @@ public static partial class Validate
             return output;
         throw new ArgumentException($"The given {obj?.GetType().Name} value is not a valid {typeof(TOut).Name} instance", objName);
     }
-
-#pragma warning disable CA1513
-    [StackTraceHidden]
-    public static void ThrowIfDisposed([DoesNotReturnIf(true)] bool condition, object instance)
-    {
-        if (condition)
-        {
-            throw new ObjectDisposedException(instance.GetType().FullName);
-        }
-    }
-#pragma warning restore CA1513
 }

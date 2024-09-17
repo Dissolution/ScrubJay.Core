@@ -39,7 +39,9 @@ public readonly struct Option<T> :
     // Treat Option like a boolean: some == true, none == false
     // Allow us to cast from None or a T value directly to an Option
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Option<T> option) => option._isSome;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Option<T>(None _) => None;
 
     public static bool operator true(Option<T> option) => option._isSome;

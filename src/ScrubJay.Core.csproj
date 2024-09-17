@@ -5,12 +5,15 @@
         <AssemblyName>ScrubJay.Core</AssemblyName>
         
         <TargetFrameworks>
-            <!-- All supported .Net Core versions ~~ https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core -->
-            net8.0;net7.0;net6.0;
-            <!-- Support for both .Net Standard versions ~~ .Net Standard 2.0 so we can be consumed by Source Generators, which are currently limited to that version -->
-            netstandard2.1;netstandard2.0;
-            <!-- Only supported version of .Net Framework ~~ https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
+            <!-- Only supported version of .Net Framework -->
+            <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
             net481;
+            <!-- Support for both .Net Standard versions -->
+            <!-- .Net Standard 2.0 so we can be consumed by Source Generators, which are currently limited to that version -->
+            netstandard2.0;netstandard2.1;
+            <!-- All supported .Net Core versions -->
+            <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core -->
+            net6.0;net7.0;net8.0;            
         </TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -27,6 +30,7 @@
 
         <!-- Quiet Warnings -->
         <NoWarn>
+            $(NoWarn);
             CS0436;
             MA0048;
             CA1000;
@@ -48,25 +52,27 @@
             CA2237; <!-- Add [Serializable] to types -->
             S3963; CA1810;  <!-- Inline static fields -->
             CA1305; <!-- Localization Related -->
+            CP0001;CP0002;
         </NoWarn>
 
-        <!--        &lt;!&ndash; Setup NuGet &ndash;&gt;-->
-        <!--        <IsPackable>true</IsPackable>-->
-        <!--        <EnablePackageValidation>true</EnablePackageValidation>-->
-        <!--        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>-->
-        <!--        &lt;!&ndash; NuGet Package Information &ndash;&gt;-->
-        <!--        <Title>ScrubJay Core Libraries</Title>-->
-        <!--        <Authors>Timothy Jay</Authors>-->
-        <!--        <Description>-->
-        <!--            The core shared library for all ScrubJay namespaces.-->
-        <!--        </Description>-->
-        <!--        <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Core</RepositoryUrl>-->
-        <!--        <RepositoryType>git</RepositoryType>-->
-        <!--        <PackageReadmeFile>README.md</PackageReadmeFile>-->
-        <!--        <PackageLicenseExpression>MIT</PackageLicenseExpression>-->
-        <!--        <PackageIcon>jay.png</PackageIcon>-->
-        <!--        <PackageOutputPath>..\packages\</PackageOutputPath>-->
-        <!--        <PackageVersion>0.0.5-alpha</PackageVersion>-->
+        <!-- Setup NuGet -->
+        <IsPackable>true</IsPackable>
+        <EnablePackageValidation>false</EnablePackageValidation>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        
+        <!-- NuGet Package Information -->
+        <Title>ScrubJay Core Libraries</Title>
+        <Authors>Timothy Jay</Authors>
+        <Description>
+            The core shared library for all ScrubJay namespaces.
+        </Description>
+        <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Core</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageIcon>jay.png</PackageIcon>
+        <PackageOutputPath>..\packages\</PackageOutputPath>
+        <PackageVersion>0.1.0-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- NuGet -->
@@ -117,7 +123,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Fody" Version="6.8.1">
+        <PackageReference Include="Fody" Version="6.8.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -127,7 +133,7 @@
         <PackageReference Include="JetBrains.Annotations" Version="2024.2.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Polyfill" Version="6.5.0">
+        <PackageReference Include="Polyfill" Version="6.7.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -143,7 +149,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Roslynator.Analyzers" Version="4.12.4">
+        <PackageReference Include="Roslynator.Analyzers" Version="4.12.5">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

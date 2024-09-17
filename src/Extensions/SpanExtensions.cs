@@ -11,12 +11,6 @@ namespace ScrubJay.Extensions;
 public static class SpanExtensions
 {
     /// <summary>
-    /// A delegate that acts upon an item reference
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public delegate void RefItem<T>(ref T item);
-
-    /// <summary>
     /// Performs the given <paramref name="perItem"/> action on each item in the <see cref="Span{T}"/>
     /// </summary>
     /// <param name="span">

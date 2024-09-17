@@ -47,7 +47,9 @@ public static class Compare
 
     public static IComparer<T> CreateComparer<T>(Func<T?, T?, int> compare)
         => Comparer<T>.Create((x, y) => compare(x, y));
-    
+    public static IComparer<T> CreateComparer<T>(Comparison<T> comparison)
+        => Comparer<T>.Create((x, y) => comparison(x, y));
+
 
     public static int Values<T>(T? left, T? right) => GetComparer<T>().Compare(left!, right!);
 
