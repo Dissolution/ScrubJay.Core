@@ -816,7 +816,7 @@ public sealed class Vector<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-        T[]? toReturn = _array;
+        T[] toReturn = _array;
         // defensive clear
         _position = 0;
         _array = [];

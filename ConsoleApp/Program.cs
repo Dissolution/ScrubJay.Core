@@ -1,12 +1,12 @@
-﻿// ReSharper disable UnusedVariable
+﻿#pragma warning disable S1481, CS0168
+// ReSharper disable UnusedVariable
 
 using System.Diagnostics;
 using ScrubJay;
-using ScrubJay.Collections;
 
 
-List<int> list = [1,2,3];
-var listSlice = ListSlice.Of(list, 2,1);
+Result<int, ICloneable> result;
 
-Console.WriteLine(listSlice);
+ICloneable thing = default!;
+Console.WriteLine(thing);
 Debugger.Break();

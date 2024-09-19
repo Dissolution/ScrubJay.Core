@@ -41,6 +41,9 @@ public readonly struct Result<TOk, TError> :
     public static implicit operator bool(Result<TOk, TError> result) => result._isOk;
     public static implicit operator Result<TOk, TError>(TOk ok) => Ok(ok);
     public static implicit operator Result<TOk, TError>(TError error) => Error(error);
+    
+    public static implicit operator Result<TOk, TError>(Ok<TOk> ok) => Ok(ok.Value);
+    public static implicit operator Result<TOk, TError>(Error<TError> error) => Error(error.Value);
 
     public static bool operator true(Result<TOk, TError> result) => result._isOk;
     public static bool operator false(Result<TOk, TError> result) => !result._isOk;

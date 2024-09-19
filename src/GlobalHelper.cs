@@ -34,4 +34,10 @@ public static class GlobalHelper
     /// <inheritdoc cref="Option{T}.Some"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Ok<T> Ok<T>(T value) => new Ok<T>(value);
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Error<T> Error<T>(T value) => new Error<T>(value);
 }
