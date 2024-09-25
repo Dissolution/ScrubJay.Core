@@ -236,7 +236,7 @@ public static class SpanExtensions
     {
         int offset = index.GetOffset(span.Length);
         if (offset < 0 || offset >= span.Length)
-            return Option<T>.None;
+            return None();
         return Some(span[offset]);
     }
 
@@ -245,7 +245,7 @@ public static class SpanExtensions
     {
         int offset = index.GetOffset(span.Length);
         if (offset < 0 || offset >= span.Length)
-            return Option<T>.None;
+            return None();
         return Some(span[offset]);
     }
 

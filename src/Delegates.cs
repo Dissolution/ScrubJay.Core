@@ -87,3 +87,14 @@ public delegate Span<TSOut> RSpanFuncWSpan<TSIn, in T1, in T2, in T3, in T4, TSO
 /// </param>
 public delegate void RefItem<T>(ref T item);
 
+/// <summary>
+/// A delegate that represents access to an available, unwritten portion of a <see cref="Span{T}"/>
+/// </summary>
+/// <param name="emptyBuffer">
+/// The available <see cref="Span{T}"/>
+/// </param>
+/// <returns>
+/// The number of items added to <paramref name="emptyBuffer"/>
+/// </returns>
+public delegate int UseAvailable<T>(Span<T> emptyBuffer);
+

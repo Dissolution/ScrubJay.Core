@@ -42,4 +42,12 @@ public static class ArrayExtensions
             .MapOk(arr => Validate.Index(index, arr.Length, indexName))
             .MapOk(offset => array![offset] = item);
     }
+    
+    /// <summary>
+    /// Returns <c>true</c> if <paramref name="array"/> is <c>null</c> or has a Length of 0
+    /// </summary>
+    public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this T[]? array)
+    {
+        return array is null || array.Length == 0;
+    }
 }

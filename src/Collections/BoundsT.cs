@@ -101,7 +101,7 @@ IEquatable<Bounds<T>>
 
     public override string ToString()
     {
-        var text = new TextBuffer();
+        var text = new TextSpanBuffer();
         
         if (Lower.IsSome(out var lower))
         {

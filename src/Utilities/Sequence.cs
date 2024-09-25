@@ -15,6 +15,8 @@ public static class Sequence
         array.AsSpan(source).CopyTo(array.AsSpan(destination));
     }
 
+#region TryCopyTo
+
     /* Permutations of:
      * Input:
      * ReadOnlySpan<T>, T[]?, IEnumerable<T>, string?*
@@ -185,6 +187,8 @@ public static class Sequence
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryCopyTo(string? source, IList<char>? destination) => TryCopyTo(source.AsSpan(), destination);
 
+#endregion
+
 #region CopyTo
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -211,7 +215,7 @@ public static class Sequence
 
         if (sourceCount > destination.Count)
             throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destination.Count}", nameof(destination));
-        
+
         for (var i = 0; i < sourceCount; i++)
         {
             destination[i] = source[i];
@@ -231,7 +235,7 @@ public static class Sequence
     {
         if (source is null)
             return;
-        
+
         int destinationLength = destination.Length;
 
         if (source is ICollection<T> collection)
@@ -277,7 +281,7 @@ public static class Sequence
                     return;
                 throw new ArgumentNullException(nameof(destination));
             }
-            
+
             int destinationLength = destination.Length;
             if (sourceCount > destinationLength)
                 throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destinationLength}", nameof(destination));
@@ -317,6 +321,7 @@ public static class Sequence
                     return;
                 throw new ArgumentNullException(nameof(destination));
             }
+
             int destinationLength = destination.Count;
             if (sourceCount > destinationLength)
                 throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destinationLength}", nameof(destination));
@@ -354,6 +359,86 @@ public static class Sequence
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void CopyTo(string? source, IList<char>? destination) => CopyTo(source.AsSpan(), destination);
+
+#endregion
+
+#region Comparison
+    
+    public static int CompareTo<TSource>(IEnumerable<TSource>? left, IEnumerable<TSource>? right, IComparer<TSource>? itemComparer = null)
+    {
+        if (ReferenceEquals(left, right))
+            return 0;
+        if (left is null)
+            return -1;
+        if (right is null)
+            return 1;
+
+        int c;
+        itemComparer ??= Comparer<TSource>.Default;
+
+        if (left is ICollection<TSource> leftCollection && right is ICollection<TSource> rightCollection)
+        {
+            int count = leftCollection.Count;
+            c = count.CompareTo(rightCollection.Count);
+            if (c != 0)
+                return c;
+
+            if (leftCollection is IList<TSource> firstList && rightCollection is IList<TSource> secondList)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    c = itemComparer.Compare(firstList[i], secondList[i]);
+                    if (c != 0)
+                        return c;
+                }
+
+                return 0;
+            }
+            else
+            {
+                // Enumerate, but we know they enumerate the same number of times
+                using IEnumerator<TSource> leftEnumerator = left.GetEnumerator();
+                using IEnumerator<TSource> rightEnumerator = right.GetEnumerator();
+
+                for (int i = 0; i < count; i++)
+                {
+#if DEBUG
+                    bool leftMoved = leftEnumerator.MoveNext();
+                    bool rightMoved = rightEnumerator.MoveNext();
+                    Debug.Assert(leftMoved);
+                    Debug.Assert(rightMoved);
+#else
+                    leftEnumerator.MoveNext();
+                    rightEnumerator.MoveNext();
+#endif
+                    c = itemComparer.Compare(leftEnumerator.Current, rightEnumerator.Current);
+                    if (c != 0)
+                        return c;
+                }
+                
+                return 0;
+            }
+        }
+        else
+        {
+            // Enumerate
+            using IEnumerator<TSource> leftEnumerator = left.GetEnumerator();
+            using IEnumerator<TSource> rightEnumerator = right.GetEnumerator();
+
+            while (true)
+            {
+                bool leftMoved = leftEnumerator.MoveNext();
+                bool rightMoved = rightEnumerator.MoveNext();
+                if (leftMoved != rightMoved)
+                    return leftMoved ? 1 : -1; // different counts
+                if (!leftMoved)
+                    return 0; // same items, same count
+                c = itemComparer.Compare(leftEnumerator.Current, rightEnumerator.Current);
+                if (c != 0)
+                    return c;
+            }
+        }
+    }
 
 #endregion
 }

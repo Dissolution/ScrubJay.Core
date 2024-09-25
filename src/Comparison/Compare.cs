@@ -240,7 +240,7 @@ public static class Compare
         => SpanExtensions.SequenceCompareTo<T>(right, left, comparer);
 
     public static int Sequence<T>(IEnumerable<T>? left, IEnumerable<T>? right, IComparer<T>? comparer = default) 
-        => EnumerableExtensions.SequenceCompareTo<T>(left, right, comparer);
+        => ScrubJay.Utilities.Sequence.CompareTo<T>(left, right, comparer);
 #endregion
 #endregion
 

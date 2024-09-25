@@ -103,7 +103,7 @@ public static class EnumHelper<TEnum>
         if (flags.Length == 0 || flags.Length == 1)
             return @enum.ToString();
 
-        var text = new TextBuffer();
+        var text = new TextSpanBuffer();
         text.Append(GetName(flags[0]));
         for (var i = 1; i < flags.Length; i++)
         {

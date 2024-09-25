@@ -1,5 +1,5 @@
 ﻿global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
-global using TextBuffer = ScrubJay.Buffers.Buffer<char>;
+global using TextSpanBuffer = ScrubJay.Buffers.SpanBuffer<char>;
 global using FormatWriter = ScrubJay.Memory.SpanWriter<char>;
 
 namespace ScrubJay;
@@ -26,7 +26,7 @@ public static class GlobalHelper
     public static None None() => default(None);
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None<T>() => Option<T>.None;
+    public static Option<T> None<T>() => default(Option<T>);
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Unit Unit() => default(Unit);

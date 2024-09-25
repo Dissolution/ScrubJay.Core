@@ -32,7 +32,15 @@ public readonly struct None :
     public static bool operator !=(None left, None right) => false;
         
     public bool Equals(None _) => true;
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is None;
+
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        if (obj is None)
+            return true;
+        if (obj is bool isSome)
+            return !isSome;
+        return false;
+    }
     public override int GetHashCode() => 0;
     public override string ToString() => nameof(None);
 }

@@ -79,7 +79,7 @@ public readonly struct KeyValue<TKey, TValue> :
 
     public string ToString(string? format, IFormatProvider? provider = default)
     {
-        var buffer = new TextBuffer();
+        var buffer = new TextSpanBuffer();
         buffer.Append('[');
         buffer.AppendFormatted(Key, format, provider);
         buffer.Append(", ");

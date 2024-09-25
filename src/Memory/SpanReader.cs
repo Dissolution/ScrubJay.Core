@@ -4,7 +4,7 @@ namespace ScrubJay.Memory;
 
 /// <summary>
 /// A <see cref="SpanReader{T}"/> wraps a <see cref="ReadOnlySpan{T}"/>
-/// and provides methods to Peek, Skip, and Take <typeparamref name="T"/> item(s) from it
+/// and provides methods to Peek, Skip, and Take item(s) from it
 /// in forward-only reads that 'consume' the span
 /// </summary>
 /// <typeparam name="T">
@@ -14,109 +14,183 @@ namespace ScrubJay.Memory;
 [StructLayout(LayoutKind.Auto)]
 public ref struct SpanReader<T>
 {
+    /// <summary>
+    /// Returns a <see cref="SpanReader{T}"/> intended for use as an <see cref="IEnumerator{T}"/> proxy over the given <see cref="ReadOnlySpan{T}"/>
+    /// </summary>
+    /// <param name="span"></param>
+    /// <returns></returns>
+    public static SpanReader<T> AsEnumerator(ReadOnlySpan<T> span)
+    {
+        return new SpanReader<T>(span, -1);
+    }
+    
+    
     private readonly ReadOnlySpan<T> _span;
     private int _position;
 
+
+    /// <summary>
+    /// Gets a <see cref="ReadOnlySpan{T}"/> over the already read items
+    /// </summary>
     public ReadOnlySpan<T> ReadSpan => _span.Slice(0, _position);
+
+    /// <summary>
+    /// Gets the total number of items that have been read
+    /// </summary>
     public int ReadCount => _position;
 
+    /// <summary>
+    /// Gets a <see cref="ReadOnlySpan{T}"/> over the items remaining to be read
+    /// </summary>
     public ReadOnlySpan<T> RemainingSpan => _span.Slice(_position);
+
+    /// <summary>
+    /// Gets the total number of items remaining to be read
+    /// </summary>
     public int RemainingCount => _span.Length - _position;
 
+    /// <summary>
+    /// Gets the current read position
+    /// </summary>
     public int Position
     {
         get => _position;
+        // Support for Extensions
         internal set => _position = value;
+    }
+
+    private SpanReader(ReadOnlySpan<T> span, int position)
+    {
+        Debug.Assert(position == -1); // remove if we ever have another use than as an Enumerator proxy
+        _span = span;
+        _position = position;
     }
 
     /// <summary>
     /// Create a new <see cref="SpanReader{T}"/> that reads from the given <paramref name="span"/>
     /// </summary>
-    /// <param name="span"></param>
+    /// <param name="span">
+    /// The <see cref="ReadOnlySpan{T}"/> to read from
+    /// </param>
     public SpanReader(ReadOnlySpan<T> span)
     {
         _span = span;
         _position = 0;
     }
 
-    public SpanReader(ReadOnlySpan<T> span, int position)
+    /// <summary>
+    /// Create a new <see cref="SpanReader{T}"/> that reads from the given <paramref name="span"/>
+    /// </summary>
+    /// <param name="span">
+    /// The <see cref="ReadOnlySpan{T}"/> to read from
+    /// </param>
+    /// <param name="offset">
+    /// The <see cref="Index"/> offset to start reading from
+    /// </param>
+    public SpanReader(ReadOnlySpan<T> span, Index offset)
     {
-        if (position < 0 || position >= span.Length)
-            throw new ArgumentOutOfRangeException(nameof(position), position, "Position must be within the span");
         _span = span;
-        _position = position;
+        _position = Validate.Index(offset, span.Length).OkOrThrow();
     }
 
 #region Peek
 
     /// <summary>
-    /// Tries to peek at the next item
+    /// Try to peek at the next item
     /// </summary>
-    /// <returns></returns>
+    /// <returns>
+    /// A <see cref="Option{T}.Some"/> containing the next item<br/>
+    /// A <see cref="Option{T}.None"/> if there are no more items
+    /// </returns>
     public Option<T> TryPeek()
     {
-        if (_position < _span.Length)
-            return Some(_span[_position]);
-        return None<T>();
+        int pos = _position;
+        var span = _span;
+        if ((uint)pos < span.Length)
+        {
+            return Option<T>.Some(span[pos]);
+        }
+
+        return None();
     }
 
     /// <summary>
     /// Try to peek at the next <paramref name="count"/> items
     /// </summary>
-    /// <param name="count"></param>
-    /// <returns></returns>
+    /// <param name="count">
+    /// The number of items to peek at
+    /// </param>
+    /// <returns>
+    /// A <see cref="OptionReadOnlySpan{T}.Some"/> containing the next items<br/>
+    /// A <see cref="OptionReadOnlySpan{T}.None"/> if there are not at least <paramref name="count"/> items
+    /// </returns>
     public OptionReadOnlySpan<T> TryPeek(int count)
     {
-        if (count < 0)
-            return default;
-
         int pos = _position;
         var span = _span;
-        if (pos + count <= span.Length)
+        if ((uint)pos + (uint)count <= span.Length)
         {
             return OptionReadOnlySpan<T>.Some(span.Slice(pos, count));
         }
-
-        return default;
+        return OptionReadOnlySpan<T>.None();
     }
 
-    public T Peek() => TryPeek().SomeOrThrow($"There was not an item to Peek");
+    /// <summary>
+    /// Peek at the next item
+    /// </summary>
+    /// <returns>
+    /// The next item
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if there are no items left
+    /// </exception>
+    public T Peek() => TryPeek().SomeOrThrow("Cannot Peek(): No items remain");
 
-    public ReadOnlySpan<T> Peek(int count) => TryPeek(count).SomeOrThrow($"There were not {count} items to Peek");
+    /// <summary>
+    /// Peek at the next <paramref name="count"/> items
+    /// </summary>
+    /// <param name="count">
+    /// The number of items to peek at
+    /// </param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if there are not at least <paramref name="count"/> items
+    /// </exception>
+    public ReadOnlySpan<T> Peek(int count) => TryPeek(count).SomeOrThrow($"Cannot Peek({count}): Not enough items remain");
 
 #endregion
 
 #region Take
 
+    /// <summary>
+    /// Try to take the next item
+    /// </summary>
+    /// <returns>
+    /// A <see cref="Option{T}.Some"/> containing the next item<br/>
+    /// A <see cref="Option{T}.None"/> if there are no more items
+    /// </returns>
     public Option<T> TryTake()
     {
-        int index = _position;
-        var span = _span;
-        if (index < span.Length)
+        int pos = _position;
+        if (pos < _span.Length)
         {
-            _position = index + 1;
-            return Some(span[index]);
+            _position = pos + 1;
+            return Some(_span[pos]);
         }
 
-        return None<T>();
+        return None();
     }
 
     public OptionReadOnlySpan<T> TryTake(int count)
     {
-        if (count < 0)
-            return default;
-
         int pos = _position;
-        int newPos = pos + count;
         var span = _span;
-        if (newPos <= span.Length)
+        if ((uint)pos + (uint)count <= span.Length)
         {
-            var taken = span.Slice(pos, count);
-            _position = newPos;
-            return OptionReadOnlySpan<T>.Some(taken);
+            _position = pos + count;
+            return OptionReadOnlySpan<T>.Some(span.Slice(pos, count));
         }
-
-        return default;
+        return OptionReadOnlySpan<T>.None();
     }
 
     public T Take() => TryTake().SomeOrThrow($"There was not an item to Take");
@@ -152,7 +226,6 @@ public ref struct SpanReader<T>
     public ReadOnlySpan<T> TakeAll() => TakeWhile(static _ => true);
 
 #endregion
-
 
 #region Skip
 
@@ -191,17 +264,6 @@ public ref struct SpanReader<T>
 
 #endregion
 
-
-#region IEnumerator Support
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public T Current => _span[_position];
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool MoveNext() => TrySkip();
-
-#endregion
-
 #pragma warning disable MA0051
     // ReSharper disable once CognitiveComplexity
     public override string ToString()
@@ -224,7 +286,7 @@ public ref struct SpanReader<T>
             captureCount = 5;
         }
 
-        var text = new TextBuffer();
+        var text = new TextSpanBuffer();
 
         int index = _position;
         var span = _span;

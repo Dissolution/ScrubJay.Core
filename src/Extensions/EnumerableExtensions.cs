@@ -107,6 +107,52 @@ public static class EnumerableExtensions
     }
 
     /// <summary>
+    /// Returns an <see cref="Option{T}"/> possibly containing the first value in this <see cref="IEnumerable{T}"/>
+    /// </summary>
+    /// <returns>
+    /// A <see cref="Option{T}.Some"/> containing the first value or<br/>
+    /// A <see cref="Option{T}.None"/> if <paramref name="enumerable"/> is <c>null</c> or has no values
+    /// </returns>
+    public static Option<T> FirstOption<T>(this IEnumerable<T>? enumerable)
+    {
+        if (enumerable is null) return None();
+        using var e = enumerable.GetEnumerator();
+        return !e.MoveNext() ? None() : Some(e.Current);
+    }
+
+    /// <summary>
+    /// Returns an <see cref="Option{T}"/> possibly containing the minimum value in an <see cref="IEnumerable{T}"/>
+    /// </summary>
+    /// <param name="enumerable">
+    /// The <see cref="IEnumerable{T}"/> to get the minimum value of<br/>
+    /// If <c>null</c>, <see cref="None"/> will be returned
+    /// </param>
+    /// <param name="itemComparer">
+    /// The optional <see cref="IComparer{T}"/> to use for item comparison
+    /// </param>
+    /// <returns>
+    /// A <see cref="Option{T}.Some"/> containing the minimum value or<br/>
+    /// A <see cref="Option{T}.None"/> if <paramref name="enumerable"/> is <c>null</c> or has no values
+    /// </returns>
+    public static Option<T> MinOption<T>(this IEnumerable<T>? enumerable, IComparer<T>? itemComparer = null)
+    {
+        if (enumerable is null) return None();
+        using var e = enumerable.GetEnumerator();
+        if (!e.MoveNext()) return None();
+        itemComparer ??= Comparer<T>.Default;
+        T min = e.Current;
+        while (e.MoveNext())
+        {
+            if (itemComparer.Compare(e.Current, min) < 0)
+            {
+                min = e.Current;
+            }
+        }
+        return Some(min);
+    }
+    
+
+    /// <summary>
     /// Enumerates over the non-<c>null</c> items in <paramref name="source"/>
     /// </summary>
     public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?>? source)
@@ -128,78 +174,40 @@ public static class EnumerableExtensions
         return enumerable.OrderBy(e => Array.IndexOf(itemOrder, e));
     }
 
-    public static void Consume<T>(this IEnumerable<T> enumerable, Action<T> perItem)
+    /// <summary>
+    /// Consume this <see cref="IEnumerable{T}"/> by performing an <see cref="Action{T}"/> on each of its values
+    /// </summary>
+    /// <param name="enumerable">
+    /// The <see cref="IEnumerable{T}"/> to consume (after which further enumeration will fail)
+    /// </param>
+    /// <param name="perItem">
+    /// An <see cref="Action{T}"/> to invoke upon each value in the <see cref="IEnumerable{T}"/>
+    /// </param>
+    public static void Consume<T>(this IEnumerable<T>? enumerable, Action<T> perItem)
     {
-        if (enumerable is IList<T> list)
+        switch (enumerable)
         {
-            for (var i = 0; i < list.Count; i++)
+            case null:
+                return;
+            case IList<T> list:
             {
-                perItem(list[i]);
-            }
-        }
-        else
-        {
-            foreach (T item in enumerable)
-            {
-                perItem(item);
-            }
-        }
-    }
-
-    public static int SequenceCompareTo<TSource>(this IEnumerable<TSource>? first, IEnumerable<TSource>? second) => SequenceCompareTo(first, second, null);
-
-#pragma warning disable S3776
-    public static int SequenceCompareTo<TSource>(this IEnumerable<TSource>? first, IEnumerable<TSource>? second, IComparer<TSource>? comparer)
-    {
-        if (ReferenceEquals(first, second))
-            return 0;
-        if (first is null)
-            return -1;
-        if (second is null)
-            return 1;
-
-        int c;
-
-        if (first is ICollection<TSource> firstCol && second is ICollection<TSource> secondCol)
-        {
-            c = firstCol.Count.CompareTo(secondCol.Count);
-            if (c != 0)
-                return c;
-
-            if (firstCol is IList<TSource> firstList && secondCol is IList<TSource> secondList)
-            {
-                comparer ??= Comparer<TSource>.Default;
-
-                int count = firstCol.Count;
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < list.Count; i++)
                 {
-                    c = comparer.Compare(firstList[i], secondList[i]);
-                    if (c != 0)
-                        return c;
+                    perItem(list[i]);
                 }
-
-                return 0;
+                break;
+            }
+            default:
+            {
+                foreach (T item in enumerable)
+                {
+                    perItem(item);
+                }
+                break;
             }
         }
-
-        using IEnumerator<TSource> e1 = first.GetEnumerator();
-        using IEnumerator<TSource> e2 = second.GetEnumerator();
-
-        comparer ??= Comparer<TSource>.Default;
-
-        while (true)
-        {
-            bool e1Moved = e1.MoveNext();
-            bool e2Moved = e2.MoveNext();
-            if (e1Moved != e2Moved)
-                return e1Moved ? 1 : -1; // different counts
-            if (!e1Moved)
-                return 0; // same items, same count
-            c = comparer.Compare(e1.Current, e2.Current);
-            if (c != 0)
-                return c;
-        }
     }
+
 #pragma warning restore S3776
 
     /// <summary>

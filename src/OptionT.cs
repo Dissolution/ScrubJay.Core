@@ -42,7 +42,10 @@ public readonly struct Option<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Option<T> option) => option._isSome;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Option<T>(None _) => None;
+    public static implicit operator Option<T>(None _) => None();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Option<T>(Some<T> some) => Some(some.Value);
 
     public static bool operator true(Option<T> option) => option._isSome;
     public static bool operator false(Option<T> option) => !option._isSome;
@@ -75,7 +78,8 @@ public readonly struct Option<T> :
     /// <summary>
     /// Gets the None option
     /// </summary>
-    public static readonly Option<T> None; // == default == default(None) == None.Default
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Option<T> None() => default;
     
     /// <summary>
     /// Creates a new <see cref="Option{T}"/>.Some containing <paramref name="value"/>
@@ -232,7 +236,7 @@ public readonly struct Option<T> :
     {
         if (IsSome(out var value) && predicate(value))
             return this;
-        return None;
+        return None();
     }
 
     /// <summary>
@@ -249,7 +253,7 @@ public readonly struct Option<T> :
             return Some<TNew>(map(value));
         }
 
-        return Option<TNew>.None;
+        return Option<TNew>.None();
     }
 
     /// <summary>

@@ -6,21 +6,21 @@
 namespace ScrubJay.Text;
 
 /// <summary>
-/// Extensions on <see cref="Buffer{T}">Buffers</see> that contain <see cref="char">chars</see>
+/// Extensions on <see cref="SpanBuffer{T}">Buffers</see> that contain <see cref="char">chars</see>
 /// </summary>
 [PublicAPI]
-public static class TextBufferExtensions
+public static class TextSpanBufferExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Append(this ref TextBuffer buffer, char ch) => buffer.Add(ch);
+    public static void Append(this ref TextSpanBuffer spanBuffer, char ch) => spanBuffer.Add(ch);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Append(this ref TextBuffer buffer, string? str) => buffer.AddMany(str.AsSpan());
+    public static void Append(this ref TextSpanBuffer spanBuffer, string? str) => spanBuffer.AddMany(str.AsSpan());
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Append(this ref TextBuffer buffer, scoped ReadOnlySpan<char> text) => buffer.AddMany(text);
+    public static void Append(this ref TextSpanBuffer spanBuffer, scoped ReadOnlySpan<char> text) => spanBuffer.AddMany(text);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Append(this ref TextBuffer buffer, params char[]? characters) => buffer.AddMany(characters);
+    public static void Append(this ref TextSpanBuffer spanBuffer, params char[]? characters) => spanBuffer.AddMany(characters);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void AppendFormatted<T>(this ref TextBuffer buffer, T? value, string? format = null, IFormatProvider? provider = null)
+    public static void AppendFormatted<T>(this ref TextSpanBuffer spanBuffer, T? value, string? format = null, IFormatProvider? provider = null)
     {
         string? str;
         if (value is IFormattable)
@@ -29,12 +29,12 @@ public static class TextBufferExtensions
             if (value is ISpanFormattable)
             {
                 int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(buffer.Available, out charsWritten, format, provider))
+                while (!((ISpanFormattable)value).TryFormat(spanBuffer.Available, out charsWritten, format, provider))
                 {
-                    buffer.Grow();
+                    spanBuffer.Grow();
                 }
 
-                buffer.Count += charsWritten;
+                spanBuffer.Count += charsWritten;
                 return;
             }
 #endif
@@ -47,16 +47,16 @@ public static class TextBufferExtensions
 
         if (str is not null)
         {
-            buffer.AddMany(str.AsSpan());
+            spanBuffer.AddMany(str.AsSpan());
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [HandlesResourceDisposal]
-    public static string ToStringAndDispose(this ref TextBuffer buffer)
+    public static string ToStringAndDispose(this ref TextSpanBuffer spanBuffer)
     {
-        string result = buffer.Written.ToString();
-        buffer.Dispose();
+        string result = spanBuffer.Written.ToString();
+        spanBuffer.Dispose();
         return result;
     }
 }

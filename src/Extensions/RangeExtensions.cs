@@ -32,6 +32,6 @@ public static class RangeExtensions
             }
         }
 
-        return Option<int>.None;
+        return None();
     }
 }

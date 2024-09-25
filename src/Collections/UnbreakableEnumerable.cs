@@ -67,12 +67,12 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>
                 }
                 catch (Exception)
                 {
-                    return Option<T>.None;
+                    return None();
                 }
 
                 // If we could not move next, we are done enumerating
                 if (!moved)
-                    return Option<T>.None;
+                    return None();
 
                 // Try to access current
                 try

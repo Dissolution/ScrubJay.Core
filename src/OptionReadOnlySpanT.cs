@@ -1,6 +1,7 @@
 ﻿// ReSharper disable InconsistentNaming
 
 using ScrubJay.Comparison;
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace ScrubJay;
 
@@ -32,7 +33,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     // Allow us to cast from None or a T value directly to an Option
     
     public static implicit operator bool(OptionReadOnlySpan<T> option) => option._isSome;
-    public static implicit operator OptionReadOnlySpan<T>(None _) => None;
+    public static implicit operator OptionReadOnlySpan<T>(None _) => None();
     public static implicit operator OptionReadOnlySpan<T>(ReadOnlySpan<T> some) => Some(some);
 
     public static bool operator true(OptionReadOnlySpan<T> option) => option._isSome;
@@ -66,7 +67,8 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// <summary>
     /// Gets the None option
     /// </summary>
-    public static OptionReadOnlySpan<T> None => default;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static OptionReadOnlySpan<T> None() => default;
     
     /// <summary>
     /// Creates a new <see cref="Option{T}"/>.Some containing <paramref name="value"/>
@@ -194,7 +196,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     {
         if (IsSome(out var value) && predicate(value))
             return this;
-        return None;
+        return default;
     }
     
     public Option<TNew> Map<TNew>(RSpanFunc<T, TNew> map)
@@ -204,7 +206,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
             return Some<TNew>(map(value));
         }
 
-        return Option<TNew>.None;
+        return default;
     }
     
     public OptionReadOnlySpan<TNew> Map<TNew>(RSpanFuncRSpan<T, TNew> map)
@@ -214,7 +216,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
             return OptionReadOnlySpan<TNew>.Some(map(value));
         }
 
-        return OptionReadOnlySpan<TNew>.None;
+        return default;
     }
 
     /// <summary>
