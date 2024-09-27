@@ -1,58 +1,58 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
-using Buffer = ScrubJay.Buffers.Buffer;
 
 namespace ScrubJay.Tests.Buffers;
 
-public class BufferTests
+public class SpanBufferTests
 {
     [Fact]
     public void EmptyBufferDoesNotAllocate()
     {
-        using Buffer<int> defaultBuffer = default;
+        using SpanBuffer<int> defaultBuffer = default;
         Assert.Null(defaultBuffer._array);
         Assert.Equal(0, defaultBuffer._span.Length);
 
-        using Buffer<char> newBuffer = new Buffer<char>();
+        using SpanBuffer<char> newBuffer = new SpanBuffer<char>();
         Assert.Null(newBuffer._array);
         Assert.Equal(0, newBuffer._span.Length);
 
-        using Buffer<DateTime> emptyBuffer = new(0);
+        using SpanBuffer<DateTime> emptyBuffer = new(0);
         Assert.Null(emptyBuffer._array);
         Assert.Equal(0, emptyBuffer._span.Length);
     }
 
     [Fact]
-    public void BufferCanBeDisposed()
+    public void SpanBufferCanBeDisposed()
     {
-        Buffer<int> defaultBuffer = default;
+        SpanBuffer<int> defaultBuffer = default;
         defaultBuffer.Dispose();
 
-        Buffer<char> newBuffer = new Buffer<char>();
+        SpanBuffer<char> newBuffer = new SpanBuffer<char>();
         newBuffer.Dispose();
 
-        Buffer<DateTime> emptyBuffer = new(0);
+        SpanBuffer<DateTime> emptyBuffer = new(0);
         emptyBuffer.Dispose();
 
-        Buffer<byte> ungrownEmptyStackBuffer = Buffer.FromStackAlloc(stackalloc byte[32]);
+        SpanBuffer<byte> ungrownEmptyStackBuffer = stackalloc byte[32];
         ungrownEmptyStackBuffer.Dispose();
 
-        Buffer<byte> ungrownStackBuffer = Buffer.FromStackAlloc(stackalloc byte[32]);
+        SpanBuffer<byte> ungrownStackBuffer = stackalloc byte[32];
         ungrownStackBuffer.AddMany(1, 4, 7);
         ungrownStackBuffer.Dispose();
 
-        Buffer<object> ungrownEmptyBuffer = new(32);
+        SpanBuffer<object> ungrownEmptyBuffer = new(32);
         ungrownEmptyBuffer.Dispose();
 
-        Buffer<object> ungrownBuffer = new(32);
+        SpanBuffer<object> ungrownBuffer = new(32);
         ungrownBuffer.AddMany("Eat", BindingFlags.Static, DateTime.Now);
         ungrownBuffer.Dispose();
 
-        Buffer<byte> grownStackBuffer = Buffer.FromStackAlloc(stackalloc byte[32]);
+        SpanBuffer<byte> grownStackBuffer = stackalloc byte[32];
         grownStackBuffer.AddMany(Enumerable.Range(0, 147).Select(static i => (byte)i));
         grownStackBuffer.Dispose();
 
-        Buffer<object> grownBuffer = new(32);
+        SpanBuffer<object> grownBuffer = new(32);
         for (var i = 0; i < 10; i++)
         {
             grownBuffer.AddMany(
@@ -66,9 +66,9 @@ public class BufferTests
     }
 
     [Fact]
-    public void BufferCanGrow()
+    public void SpanBufferCanGrow()
     {
-        using var buffer = new Buffer<int>(1);
+        using var buffer = new SpanBuffer<int>(1);
         Assert.Equal(0, buffer.Count);
         Assert.Equal(ArrayPool.MinCapacity, buffer.Capacity);
 
@@ -88,7 +88,8 @@ public class BufferTests
     [Fact]
     public void IntIndexerWorks()
     {
-        using var buffer = Buffer.FromSpan([0, 1, 2, 3, 4, 5, 6, 7]);
+        using SpanBuffer<int> buffer = new();
+        buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
         for (var i = 0; i < buffer.Count; i++)
         {
@@ -99,13 +100,14 @@ public class BufferTests
             Assert.Equal(147, buffer[i]);
         }
 
-        Assert.All(buffer.ToEnumerable(), static b => Assert.Equal(147, b));
+        Assert.All(buffer.ToArray(), static b => Assert.Equal(147, b));
     }
 
     [Fact]
     public void IndexIndexerWorks()
     {
-        using var buffer = Buffer.FromSpan([0, 1, 2, 3, 4, 5, 6, 7]);
+        using SpanBuffer<int> buffer = new();
+        buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
         int bufferCount = buffer.Count;
 
         for (var i = 1; i <= bufferCount; i++)
@@ -118,13 +120,14 @@ public class BufferTests
             Assert.Equal(147, buffer[index]);
         }
 
-        Assert.All(buffer.ToEnumerable(), static b => Assert.Equal(147, b));
+        Assert.All(buffer.ToArray(), static b => Assert.Equal(147, b));
     }
 
     [Fact]
     public void RangeIndexerWorks()
     {
-        using var buffer = Buffer.FromSpan([0, 1, 2, 3, 4, 5, 6, 7]);
+        using SpanBuffer<int> buffer = new();
+        buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
 #if !NET48_OR_GREATER
         Assert.Equal<int>(buffer[0..2], [0, 1]);
@@ -140,7 +143,7 @@ public class BufferTests
     [Fact]
     public void AddWorks()
     {
-        using var buffer = new Buffer<object?>();
+        using var buffer = new SpanBuffer<object?>();
         List<object?> list = new();
 
         var objects = TestHelper.TestObjects;
@@ -162,7 +165,7 @@ public class BufferTests
     [Fact]
     public void AddManySpanWorks()
     {
-        using var buffer = new Buffer<object?>();
+        using var buffer = new SpanBuffer<object?>();
         List<object?> list = new();
 
         Span<object?> objects = TestHelper.TestObjects.ToArray();
@@ -177,11 +180,11 @@ public class BufferTests
             Assert.Equal(objects[i], buffer[i]);
         }
     }
-    
+
     [Fact]
     public void AddManyCountableWorks()
     {
-        using var buffer = new Buffer<object?>();
+        using var buffer = new SpanBuffer<object?>();
         List<object?> list = new();
 
         var objects = TestHelper.TestObjects;
@@ -196,11 +199,11 @@ public class BufferTests
             Assert.Equal(objects[i], buffer[i]);
         }
     }
-    
+
     [Fact]
     public void AddManyUncountableWorks()
     {
-        using var buffer = new Buffer<object?>();
+        using var buffer = new SpanBuffer<object?>();
         List<object?> list = new();
 
         var objects = TestHelper.TestObjects;
@@ -222,11 +225,11 @@ public class BufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [147, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new Buffer<byte>();
+        using var buffer = new SpanBuffer<byte>();
         buffer.AddMany(startArray);
 
         Index index = 0;
-        buffer.Insert(index, 147);
+        buffer.TryInsert(index, 147);
         var bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -238,11 +241,11 @@ public class BufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 147, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new Buffer<byte>();
+        using var buffer = new SpanBuffer<byte>();
         buffer.AddMany(startArray);
 
         Index index = 8;
-        buffer.Insert(index, 147);
+        buffer.TryInsert(index, 147);
         var bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -254,11 +257,11 @@ public class BufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 147];
 
-        using var buffer = new Buffer<byte>();
+        using var buffer = new SpanBuffer<byte>();
         buffer.AddMany(startArray);
 
         Index index = ^0;
-        buffer.Insert(index, 147);
+        buffer.TryInsert(index, 147);
         var bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -270,11 +273,11 @@ public class BufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [255, 250, 245, 240, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new Buffer<byte>();
+        using var buffer = new SpanBuffer<byte>();
         buffer.AddMany(startArray);
 
         Index index = 0;
-        buffer.InsertMany(index, [255, 250, 245, 240]);
+        buffer.TryInsertMany(index, [255, 250, 245, 240]);
         var bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -286,11 +289,11 @@ public class BufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 255, 250, 245, 240, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new Buffer<byte>();
+        using var buffer = new SpanBuffer<byte>();
         buffer.AddMany(startArray);
 
         Index index = 8;
-        buffer.InsertMany(index, [255, 250, 245, 240]);
+        buffer.TryInsertMany(index, [255, 250, 245, 240]);
         var bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -302,19 +305,78 @@ public class BufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 255, 250, 245, 240];
 
-        using var buffer = Buffer.FromSpan<byte>(startArray);
+        using SpanBuffer<byte> buffer = new();
+        buffer.AddMany(startArray);
 
         Index index = ^0;
-        buffer.InsertMany(index, [255, 250, 245, 240]);
+        buffer.TryInsertMany(index, [255, 250, 245, 240]);
+        var bufferArray = buffer.ToArray();
+        Assert.Equal(endArray.Length, buffer.Count);
+        Assert.Equal(endArray, bufferArray);
+    }
+    
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static IEnumerable<byte> EnumerateInsertBytes()
+    {
+        yield return 0;
+        yield return 111;
+        yield return 147;
+        yield return 255;
+    }
+    
+    [Fact]
+    public void InsertManyEnumerableStartWorks()
+    {
+        byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        byte[] endArray = [0, 111, 147, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+        using var buffer = new SpanBuffer<byte>();
+        buffer.AddMany(startArray);
+
+        Index index = 0;
+        buffer.TryInsertMany(index, EnumerateInsertBytes());
         var bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
 
     [Fact]
+    public void InsertManyEnumerableMiddleWorks()
+    {
+        byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 0, 111, 147, 255, 8, 9, 10, 11, 12, 13, 14, 15];
+
+        using var buffer = new SpanBuffer<byte>();
+        buffer.AddMany(startArray);
+
+        Index index = 8;
+        buffer.TryInsertMany(index, EnumerateInsertBytes());
+        var bufferArray = buffer.ToArray();
+        Assert.Equal(endArray.Length, buffer.Count);
+        Assert.Equal(endArray, bufferArray);
+    }
+
+    [Fact]
+    public void InsertManyEnumerableEndWorks()
+    {
+        byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 111, 147, 255];
+
+        using SpanBuffer<byte> buffer = new();
+        buffer.AddMany(startArray);
+
+        Index index = ^0;
+        buffer.TryInsertMany(index, EnumerateInsertBytes());
+        var bufferArray = buffer.ToArray();
+        Assert.Equal(endArray.Length, buffer.Count);
+        Assert.Equal(endArray, bufferArray);
+    }
+    
+    [Fact]
     public void ContainsWorks()
     {
-        using var intBuffer = Buffer.FromSpan<int>([0, 1, 2, 3, 4, 5, 6, 7]);
+        using SpanBuffer<int> intBuffer = new();
+        intBuffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
         for (var i = -10; i <= 20; i++)
         {
@@ -329,7 +391,8 @@ public class BufferTests
         }
 
         Span<Guid> guids = [Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()];
-        using var guidBuffer = Buffer.FromSpan<Guid>(guids);
+        using var guidBuffer = new SpanBuffer<Guid>();
+        guidBuffer.AddMany(guids);
 
         for (var i = 0; i < 100; i++)
         {
@@ -342,7 +405,7 @@ public class BufferTests
         }
 
 
-        using var recordBuffer = new Buffer<TestClassRecord>();
+        using var recordBuffer = new SpanBuffer<TestClassRecord>();
         List<TestClassRecord> records = new List<TestClassRecord>();
         for (var i = 0; i < 10; i++)
         {
@@ -357,14 +420,17 @@ public class BufferTests
             Assert.False(recordBuffer.Contains(record with { IsAdmin = !record.IsAdmin }));
         }
     }
-    
-    
+
+
     [Fact]
     public void ToEnumerableWorks()
     {
-        using Buffer<int> buffer = Buffer.FromSpan([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+        using SpanBuffer<int> buffer = new();
+        buffer.AddMany(
+            0, 1, 2, 3, 4, 5, 6, 7,
+            8, 9, 10, 11, 12, 13, 14, 15);
 
-        var midItems = buffer.ToEnumerable().Skip(4).Take(4).ToList();
+        var midItems = buffer.ToArray().Skip(4).Take(4).ToList();
         Assert.Equal([4, 5, 6, 7], midItems);
     }
 }

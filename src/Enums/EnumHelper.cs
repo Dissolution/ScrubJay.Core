@@ -2,7 +2,6 @@
 // ReSharper disable StaticMemberInGenericType
 
 using System.Reflection;
-using ScrubJay.Text;
 
 namespace ScrubJay.Enums;
 
@@ -94,6 +93,12 @@ public static class EnumHelper<TEnum>
         }
     }
 
+    /// <summary>
+    /// Gets a display Name for a <typeparamref name="TEnum"/>
+    /// </summary>
+    /// <param name="enum">
+    /// The <c>enum</c> to get the Name of
+    /// </param>
     public static string GetName(TEnum @enum)
     {
         if (_names.TryGetValue(@enum, out var name))
@@ -103,14 +108,14 @@ public static class EnumHelper<TEnum>
         if (flags.Length == 0 || flags.Length == 1)
             return @enum.ToString();
 
-        var text = new TextSpanBuffer();
-        text.Append(GetName(flags[0]));
+        var text = new DefaultInterpolatedStringHandler(8, flags.Length);
+        text.AppendLiteral(GetName(flags[0]));
         for (var i = 1; i < flags.Length; i++)
         {
-            text.Append(" | ");
-            text.Append(GetName(flags[i]));
+            text.AppendLiteral(" | ");
+            text.AppendLiteral(GetName(flags[i]));
         }
 
-        return text.ToStringAndDispose();
+        return text.ToStringAndClear();
     }
 }

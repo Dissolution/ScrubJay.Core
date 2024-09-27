@@ -1,20 +1,18 @@
 ﻿#pragma warning disable S4136, CA1002
 
 using System.Buffers;
-using ScrubJay.Collections;
 using ScrubJay.Comparison;
-using ScrubJay.Memory;
 
 namespace ScrubJay.Buffers;
 
 /// <summary>
-/// A SpanBuffer is<br/>
-/// - A stack-based collection (like <see cref="Span{T}"/>)<br/>
-/// - That can grow as required (like <see cref="IList{T}"/>)<br/>
-/// - That uses <see cref="ArrayPool{T}"/> to avoid excess allocation<br/>
-/// - And thus must be disposed
+/// A SpanBuffer is a stack-based <see cref="IList{T}"/>-like collection <i>(grows as required)</i>,
+/// that uses <see cref="ArrayPool{T}"/> to avoid allocation,
+/// and thus must be <see cref="Dispose">Disposed</see> after use
 /// </summary>
-/// <typeparam name="T">The <see cref="Type"/> of items stored in this <see cref="SpanBuffer{T}"/></typeparam>
+/// <typeparam name="T">
+/// The <see cref="Type"/> of items stored in this <see cref="SpanBuffer{T}"/>
+/// </typeparam>
 /// <remarks>
 /// Heavily inspired by <see cref="T:System.Collections.Generic.ValueListBuilder{T}"/><br/>
 /// <a href="https://github.com/dotnet/runtime/blob/release/8.0/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/ValueListBuilder.cs"/>
@@ -32,7 +30,31 @@ public ref struct SpanBuffer<T>
     /// <summary>
     /// Implicitly use the <see cref="Written"/> portion of a <see cref="SpanBuffer{T}"/> as a <see cref="Span{T}"/>
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Span<T>(SpanBuffer<T> spanBuffer) => spanBuffer.Written;
+
+    /// <summary>
+    /// Implicitly use the <see cref="Written"/> portion of a <see cref="SpanBuffer{T}"/> as a <see cref="ReadOnlySpan{T}"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator ReadOnlySpan<T>(SpanBuffer<T> spanBuffer) => spanBuffer.Written;
+    
+    /// <summary>
+    /// Implicitly convert a <see cref="Span{T}"/> into a <see cref="SpanBuffer{T}"/> that starts filling it<br/>
+    /// This is useful with <c>stackalloc</c>:<br/>
+    /// <c>using SpanBuffer&lt;byte&gt; buffer = stackalloc byte[8];</c>
+    /// </summary>
+    /// <param name="initialBuffer">
+    /// The initial <see cref="Span{T}"/> buffer the returned <see cref="SpanBuffer{T}"/> will start to fill<br/>
+    /// If items are added beyond this <see cref="Span{T}"/>'s <see cref="Span{T}.Length"/>,
+    /// a new <see cref="Array">T[]</see> will be rented and this <see cref="Span{T}"/> will no longer be used
+    /// </param>
+    /// <returns>
+    /// A <see cref="SpanBuffer{T}"/> filling the <paramref name="initialBuffer"/>
+    /// </returns>
+    [MustDisposeResource]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator SpanBuffer<T>(Span<T> initialBuffer) => new SpanBuffer<T>(initialBuffer, 0);
 
     // writeable span, likely points to _array
     internal Span<T> _span;
@@ -310,7 +332,7 @@ public ref struct SpanBuffer<T>
     /// Adds the given <paramref name="items"/> to this <see cref="SpanBuffer{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(params T[]? items) => AddMany(items.AsSpan());
+    public void AddMany(params T[]? items) => AddMany(new ReadOnlySpan<T>(items));
 
     /// <summary>
     /// Adds the given <paramref name="items"/> to this <see cref="SpanBuffer{T}"/>
@@ -324,34 +346,17 @@ public ref struct SpanBuffer<T>
         if (items is ICollection<T> collection)
         {
             itemCount = collection.Count;
+            if (itemCount == 0)
+                return;
 
             int pos = _position;
             int newPos = pos + itemCount;
-            if (newPos > Capacity)
+            if (newPos > Capacity || _array is null)
             {
                 GrowBy(itemCount);
             }
 
             collection.CopyTo(_array!, pos);
-            _position = newPos;
-        }
-        // ReSharper disable PossibleMultipleEnumeration
-        else if (items.TryGetNonEnumeratedCount(out itemCount))
-        {
-            int newPos = _position + itemCount;
-            if (newPos > Capacity)
-            {
-                GrowBy(itemCount);
-            }
-
-            var avail = Available;
-            int a = 0;
-            foreach (var item in items)
-            {
-                avail[a++] = item;
-            }
-
-            Debug.Assert(a == itemCount);
             _position = newPos;
         }
         else
@@ -362,109 +367,127 @@ public ref struct SpanBuffer<T>
                 Add(item);
             }
         }
-        // ReSharper restore PossibleMultipleEnumeration
     }
 
     /// <summary>
-    /// Inserts an <paramref name="item"/> into this <see cref="SpanBuffer{T}"/> at <paramref name="index"/>
+    /// Try to insert an <paramref name="item"/> into this <see cref="SpanBuffer{T}"/> at <paramref name="index"/>
     /// </summary>
     /// <param name="index">The <see cref="Index"/> to insert the <paramref name="item"/></param>
     /// <param name="item">The item to insert</param>
-    public void Insert(Index index, T item)
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the item was inserted at or an <see cref="Exception"/> that describes why insertion failed
+    /// </returns>
+    public Result<int, Exception> TryInsert(Index index, T item)
     {
         int pos = _position;
-        int offset = Validate.InsertIndex(index, pos).OkOrThrow();
+        var vr = Validate.InsertIndex(index, pos);
+        if (!vr.IsOk(out var offset))
+            return vr;
+        
         if (offset == pos)
         {
             Add(item);
+            return offset;
         }
-        else
-        {
-            int newPos = pos + 1;
-            if (newPos >= Capacity)
-            {
-                GrowBy(1);
-            }
 
-            Sequence.SelfCopy(_span, offset..pos, (offset + 1)..);
-            _span[offset] = item;
-            _position = newPos;
+        int newPos = pos + 1;
+        if (newPos >= Capacity)
+        {
+            GrowBy(1);
         }
+
+        Sequence.SelfCopy(_span, offset..pos, (offset + 1)..);
+        _span[offset] = item;
+        _position = newPos;
+        return offset;
     }
 
     /// <summary>
-    /// Inserts multiple <paramref name="items"/> into this <see cref="SpanBuffer{T}"/> at <paramref name="index"/>
+    /// Try to insert multiple <paramref name="items"/> into this <see cref="SpanBuffer{T}"/> at <paramref name="index"/>
     /// </summary>
     /// <param name="index">The <see cref="Index"/> to insert the <paramref name="items"/></param>
     /// <param name="items">The <see cref="ReadOnlySpan{T}"/> of items to insert</param>
-    public void InsertMany(Index index, scoped ReadOnlySpan<T> items)
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
+    /// </returns>
+    public Result<int, Exception> TryInsertMany(Index index, scoped ReadOnlySpan<T> items)
     {
         int itemCount = items.Length;
 
         if (itemCount == 0)
-            return;
+            return Validate.InsertIndex(index, _position);
 
         if (itemCount == 1)
-        {
-            Insert(index, items[0]);
-        }
-        else
-        {
-            int offset = Validate.InsertIndex(index, _position).OkOrThrow();
-            if (offset == _position)
-            {
-                AddMany(items);
-            }
-            else
-            {
-                int newPos = _position + itemCount;
-                if (newPos >= Capacity)
-                {
-                    GrowBy(itemCount);
-                }
+            return TryInsert(index, items[0]);
 
-                Sequence.SelfCopy(_span, offset.._position, (offset + itemCount)..);
-                Sequence.CopyTo(items, _span.Slice(offset, itemCount));
-                _position = newPos;
-            }
+        var vr = Validate.InsertIndex(index, _position);
+        if (!vr.IsOk(out var offset))
+            return vr;
+        
+        if (offset == _position)
+        {
+            AddMany(items);
+            return offset;
         }
+
+        int newPos = _position + itemCount;
+        if (newPos >= Capacity)
+        {
+            GrowBy(itemCount);
+        }
+
+        Sequence.SelfCopy(_span, offset.._position, (offset + itemCount)..);
+        Sequence.CopyTo(items, _span.Slice(offset, itemCount));
+        _position = newPos;
+        return offset;
     }
 
     /// <summary>
-    /// Inserts multiple <paramref name="items"/> into this <see cref="SpanBuffer{T}"/> at <paramref name="index"/>
+    /// Try to insert multiple <paramref name="items"/> into this <see cref="SpanBuffer{T}"/> at <paramref name="index"/>
     /// </summary>
     /// <param name="index">The <see cref="Index"/> to insert the <paramref name="items"/></param>
     /// <param name="items">The <see cref="Array">T[]</see> of items to insert</param>
-    public void InsertMany(Index index, params T[]? items) => InsertMany(index, items.AsSpan());
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
+    /// </returns>
+    public void TryInsertMany(Index index, params T[]? items) => TryInsertMany(index, new ReadOnlySpan<T>(items));
 
-    private void InsertManyEnumerable(Index index, IEnumerable<T> items)
+    
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void InsertManyEnumerable(int index, IEnumerable<T> items)
     {
+        // Slow path, fill another buffer and then insert known
         using var buffer = new SpanBuffer<T>();
         foreach (var item in items)
         {
             buffer.Add(item);
         }
-        InsertMany(index, buffer.AsSpan());
+        TryInsertMany(index, buffer);
     }
 
-    
     /// <summary>
-    /// Inserts multiple <paramref name="items"/> into this <see cref="SpanBuffer{T}"/> at <paramref name="index"/>
+    /// Try to insert multiple <paramref name="items"/> into this <see cref="SpanBuffer{T}"/> at <paramref name="index"/>
     /// </summary>
     /// <param name="index">The <see cref="Index"/> to insert the <paramref name="items"/></param>
     /// <param name="items">The <see cref="IEnumerable{T}"/> of items to insert</param>
-    public void InsertMany(Index index, IEnumerable<T>? items)
+    /// <returns>
+    /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
+    /// </returns>
+    public Result<int, Exception> TryInsertMany(Index index, IEnumerable<T>? items)
     {
         if (items is null)
-            return;
+            return Validate.InsertIndex(index, _position);
 
         int pos = _position;
 
-        int offset = Validate.InsertIndex(index, pos).OkOrThrow();
+        var vr = Validate.InsertIndex(index, pos);
+        if (!vr.IsOk(out var offset))
+            return vr;
+        
         if (offset == _position)
         {
             AddMany(items);
-            return;
+            return offset;
         }
         
         int itemCount;
@@ -472,23 +495,23 @@ public ref struct SpanBuffer<T>
         {
             itemCount = collection.Count;
             if (itemCount == 0)
-                return;
+                return offset;
             
             int newPos = pos + itemCount;
-            if (newPos > Capacity)
+            if (newPos > Capacity || _array is null)
             {
                 GrowBy(itemCount);
             }
-            
-            Sequence.SelfCopy(_array!, offset..pos, (offset + itemCount)..);
+
+            Sequence.SelfCopy(_span, offset.._position, (offset + itemCount)..);
+            collection.CopyTo(_array!, offset);
             _position = newPos;
+            return offset;
         }
-        else
-        {
-            // Enumerate to a temporary Buffer, then insert
-            InsertManyEnumerable(index, items);
-        }
-        // ReSharper restore PossibleMultipleEnumeration
+
+        // Enumerate to a temporary Buffer, then insert
+        InsertManyEnumerable(offset, items);
+        return offset;
     }
     
     /// <summary>
@@ -847,65 +870,6 @@ public ref struct SpanBuffer<T>
     }
 
     /// <summary>
-    /// Try to copy the items in this <see cref="SpanBuffer{T}"/> to a <see cref="Span{T}"/>
-    /// </summary>
-    public bool TryCopyTo(Span<T> span) => Written.TryCopyTo(span);
-    
-    /// <summary>
-    /// Get the <see cref="Span{T}"/> of written items in this <see cref="SpanBuffer{T}"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<T> AsSpan()
-    {
-        return _span.Slice(0, _position);
-    }
-
-    /// <summary>
-    /// Copy the items in this <see cref="SpanBuffer{T}"/> to a new <c>T[]</c>
-    /// </summary>
-    public T[] ToArray()
-    {
-        int pos = _position;
-        T[] array = new T[pos];
-        Sequence.CopyTo(_span.Slice(0, pos), array);
-        return array;
-    }
-
-#pragma warning disable MA0016
-    /// <summary>
-    /// Convert this <see cref="SpanBuffer{T}"/> to a <see cref="List{T}"/> containing the same items
-    /// </summary>
-    public List<T> ToList()
-    {
-        List<T> list = new List<T>(Capacity);
-        list.AddRange(Written);
-        return list;
-    }
-#pragma warning restore MA0016
-
-    /// <summary>
-    /// Clears this <see cref="SpanBuffer{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
-    /// </summary>
-    [HandlesResourceDisposal]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Dispose()
-    {
-        T[]? toReturn = _array;
-        // defensive clear
-        _position = 0;
-        _span = _array = null;
-        ArrayPool.Return(toReturn, true);
-    }
-
-    public override bool Equals(object? _) => false;
-
-    public override int GetHashCode() => Hasher.Combine<T>(Written);
-
-    public override string ToString() => Written.ToString();
-
-    public SpanReader<T> GetEnumerator() => new SpanReader<T>(Written);
- 
-    /// <summary>
     /// Performs a <see cref="RefItem{T}"/> operation on each item in this <see cref="SpanBuffer{T}"/>
     /// </summary>
     /// <param name="perItem">
@@ -922,4 +886,133 @@ public ref struct SpanBuffer<T>
             perItem(ref span[i]);
         }
     }
+    
+    
+    /// <summary>
+    /// Try to copy the items in this <see cref="SpanBuffer{T}"/> to a <see cref="Span{T}"/>
+    /// </summary>
+    public bool TryCopyTo(Span<T> span) => Written.TryCopyTo(span);
+    
+    /// <summary>
+    /// Get the <see cref="Span{T}"/> of written items in this <see cref="SpanBuffer{T}"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<T> AsSpan()
+    {
+        return _span.Slice(0, _position);
+    }
+
+    /// <summary>
+    /// Copy the items in this <see cref="SpanBuffer{T}"/> to a new <c>T[]</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T[] ToArray() => Written.ToArray();
+    
+    /// <summary>
+    /// Convert this <see cref="SpanBuffer{T}"/> to a <see cref="List{T}"/> containing the same items
+    /// </summary>
+    public List<T> ToList()
+    {
+        List<T> list = new List<T>(Capacity);
+        list.AddRange(Written);
+        return list;
+    }
+
+    /// <summary>
+    /// Clears this <see cref="SpanBuffer{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
+    /// </summary>
+    [HandlesResourceDisposal]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose()
+    {
+        T[]? toReturn = _array;
+        // defensive clear
+        _position = 0;
+        _span = _array = null;
+        ArrayPool.Return(toReturn, true);
+    }
+
+    /// <summary>
+    /// <see cref="SpanBuffer{T}"/> is a <c>ref struct</c> and should not be used for comparison
+    /// </summary>
+    public override bool Equals(object? _) => false;
+
+    /// <summary>
+    /// <see cref="SpanBuffer{T}"/> is a <c>ref struct</c> and should not be used for comparison
+    /// </summary>
+    public override int GetHashCode() => 0;
+
+    /// <summary>
+    /// Gets a <see cref="string"/> representation of the <see cref="Written"/> items
+    /// </summary>
+    public override string ToString()
+    {
+        var written = Written;
+        // Special handling for textual types
+        if (typeof(T) == typeof(char))
+        {
+            return written.ToString(); // will convert directly to a string
+        }
+
+        DefaultInterpolatedStringHandler text = new(Count * 2, Count);
+        text.AppendLiteral("[");
+        if (written.Length > 0)
+        {
+            text.AppendFormatted<T>(written[0]);
+            for (var i = 1; i < written.Length; i++)
+            {
+                text.AppendLiteral(", ");
+                text.AppendFormatted<T>(written[i]);
+            }
+        }
+        text.AppendLiteral("]");
+        return text.ToStringAndClear();
+    }
+
+    /// <summary>
+    /// Gets a <see cref="SpanBufferEnumerator"/> over the <see cref="Written"/> items
+    /// </summary>
+    public SpanBufferEnumerator GetEnumerator() => new(this);
+    
+    /// <summary>
+    /// Enumerates the elements of a <see cref="SpanBuffer{T}"/>
+    /// </summary>
+    public ref struct SpanBufferEnumerator
+    {
+        private readonly ReadOnlySpan<T> _span;
+        private int _index;
+        
+        /// <inheritdoc cref="IEnumerator{T}.Current"/>
+        public ref readonly T Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref _span[_index];
+        }
+
+        /// <summary>
+        /// Gets the current iteration index
+        /// </summary>
+        public int Index => _index;
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal SpanBufferEnumerator(SpanBuffer<T> spanBuffer)
+        {
+            _span = spanBuffer.Written;
+            _index = -1;
+        }
+        
+        /// <inheritdoc cref="IEnumerator{T}.MoveNext"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool MoveNext()
+        {
+            int newIndex = _index + 1;
+            if (newIndex < _span.Length)
+            {
+                _index = newIndex;
+                return true;
+            }
+            return false;
+        }
+    }
 }
+

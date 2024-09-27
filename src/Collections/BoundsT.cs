@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text;
-
-namespace ScrubJay.Collections;
+﻿namespace ScrubJay.Collections;
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
@@ -101,22 +99,22 @@ IEquatable<Bounds<T>>
 
     public override string ToString()
     {
-        var text = new TextSpanBuffer();
+        var text = new DefaultInterpolatedStringHandler(4, 2);
         
         if (Lower.IsSome(out var lower))
         {
             if (lower.IsInclusive)
             {
-                text.Append('[');
+                text.AppendLiteral("[");
             }
             else
             {
-                text.Append('(');
+                text.AppendLiteral("(");
             }
             text.AppendFormatted<T>(lower.Value);
         }
         
-        text.Append("..");
+        text.AppendLiteral("..");
         
         if (Upper.IsSome(out var upper))
         {
@@ -124,14 +122,14 @@ IEquatable<Bounds<T>>
             
             if (upper.IsInclusive)
             {
-                text.Append(']');
+                text.AppendLiteral("]");
             }
             else
             {
-                text.Append(')');
+                text.AppendLiteral(")");
             }
         }
 
-        return text.ToStringAndDispose();
+        return text.ToStringAndClear();
     }
 }

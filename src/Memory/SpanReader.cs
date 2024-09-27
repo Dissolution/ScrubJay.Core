@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text;
-
-namespace ScrubJay.Memory;
+﻿namespace ScrubJay.Memory;
 
 /// <summary>
 /// A <see cref="SpanReader{T}"/> wraps a <see cref="ReadOnlySpan{T}"/>
@@ -264,8 +262,7 @@ public ref struct SpanReader<T>
 
 #endregion
 
-#pragma warning disable MA0051
-    // ReSharper disable once CognitiveComplexity
+
     public override string ToString()
     {
         /* We want to show our position in the source span like this:
@@ -286,7 +283,7 @@ public ref struct SpanReader<T>
             captureCount = 5;
         }
 
-        var text = new TextSpanBuffer();
+        var text = new DefaultInterpolatedStringHandler(delimiter.Length * captureCount, captureCount);
 
         int index = _position;
         var span = _span;
@@ -296,8 +293,8 @@ public ref struct SpanReader<T>
         // If we have more before this, indicate with ellipsis
         if (prevIndex > 0)
         {
-            text.Append('…');
-            text.Append(delimiter);
+            text.AppendLiteral("…");
+            text.AppendFormatted(delimiter);
         }
         // Otherwise, cap at a min zero
         else
@@ -309,14 +306,14 @@ public ref struct SpanReader<T>
         {
             if (i > prevIndex)
             {
-                text.Append(delimiter);
+                text.AppendFormatted(delimiter);
             }
 
             text.AppendFormatted<T>(span[i]);
         }
 
         // position indicator
-        text.Append(" ^ ");
+        text.AppendFormatted(" ^ ");
 
         // items yet to be read
         int nextIndex = index + captureCount;
@@ -338,7 +335,7 @@ public ref struct SpanReader<T>
         {
             if (i > index)
             {
-                text.Append(delimiter);
+                text.AppendFormatted(delimiter);
             }
 
             text.AppendFormatted<T>(span[i]);
@@ -346,11 +343,10 @@ public ref struct SpanReader<T>
 
         if (postpendEllipsis)
         {
-            text.Append(delimiter);
-            text.Append('…');
+            text.AppendFormatted(delimiter);
+            text.AppendLiteral("…");
         }
 
-        return text.ToStringAndDispose();
+        return text.ToStringAndClear();
     }
-#pragma warning restore MA0051
 }

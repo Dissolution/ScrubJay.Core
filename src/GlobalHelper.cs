@@ -1,5 +1,4 @@
 ﻿global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
-global using TextSpanBuffer = ScrubJay.Buffers.SpanBuffer<char>;
 global using FormatWriter = ScrubJay.Memory.SpanWriter<char>;
 
 namespace ScrubJay;
