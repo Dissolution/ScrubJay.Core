@@ -44,15 +44,12 @@ public static class ArrayPool
     /// </param>
     public static T[] Rent<T>(int minLength)
     {
-        if (minLength < MinCapacity)
+        minLength = minLength switch
         {
-            minLength = MinCapacity;
-        }
-        else if (minLength > MaxCapacity)
-        {
-            minLength = MaxCapacity;
-        }
-
+            < MinCapacity => MinCapacity,
+            > MaxCapacity => MaxCapacity,
+            _ => minLength,
+        };
         return ArrayPool<T>.Shared.Rent(minLength);
     }
 

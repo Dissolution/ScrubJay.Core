@@ -33,39 +33,32 @@ public static class SpanExtensions
 #region Equal
 
 #if !NET6_0_OR_GREATER
-    public static bool SequenceEqual<T>(this Span<T> left, ReadOnlySpan<T> right, Constraints.Any<T> _ = default)
-        => SequenceEqual<T>((ReadOnlySpan<T>)left, right);
-    
-    public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, Constraints.Any<T> _ = default)
-    {
-        int firstLen = left.Length;
-        if (right.Length != firstLen) return false;
-        for (var i = 0; i < firstLen; i++)
-        {
-            if (!EqualityComparer<T>.Default.Equals(left[i], right[i])) return false;
-        }
-
-        return true;
-    }
-
-    public static bool SequenceEqual<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer)
+    public static bool SequenceEqual<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = null)
         => SequenceEqual<T>((ReadOnlySpan<T>)left, right, itemComparer);
     
-    public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer)
+    public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = null)
     {
-        int firstLen = left.Length;
-        if (right.Length != firstLen) return false;
-        itemComparer ??= EqualityComparer<T>.Default;
-        for (var i = 0; i < firstLen; i++)
+        // If the spans differ in length, they're not equal.
+        if (left.Length != right.Length)
         {
-            if (!itemComparer.Equals(left[i], right[i])) return false;
+            return false;
         }
 
+        // Use the comparer to compare each element.
+        itemComparer ??= EqualityComparer<T>.Default;
+        for (int i = 0; i < left.Length; i++)
+        {
+            if (!itemComparer.Equals(left[i], right[i]))
+            {
+                return false;
+            }
+        }
         return true;
     }
 #endif
 
-    public static bool SequenceEqual<T>(this Span<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null) => SequenceEqual<T>((ReadOnlySpan<T>)left, right, itemComparer);
+    public static bool SequenceEqual<T>(this Span<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null) 
+        => SequenceEqual<T>((ReadOnlySpan<T>)left, right, itemComparer);
     
     // ReSharper disable once CognitiveComplexity
     public static bool SequenceEqual<T>(this ReadOnlySpan<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null)

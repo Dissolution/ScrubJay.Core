@@ -118,6 +118,39 @@ public static partial class Validate
             return value;
         return new ArgumentNullException(valueName);
     }
+    
+    public static Result<T[], Exception> IsNotEmpty<T>(
+        [NotNullWhen(true)] T[]? array, 
+        [CallerArgumentExpression(nameof(array))] string? arrayName = null)
+    {
+        if (array is null)
+            return new ArgumentNullException(arrayName);
+        if (array.Length == 0)
+            return new ArgumentException("Array cannot be empty", arrayName);
+        return array;
+    }
+    
+    // todo: eventual support for Result<ReadOnlySpan<>,>
+    public static Result<Unit, Exception> IsNotEmpty<T>(
+        ReadOnlySpan<T> span,
+        [CallerArgumentExpression(nameof(span))] string? spanName = null)
+    {
+        if (span.Length == 0)
+            return new ArgumentException("Span cannot be empty", spanName);
+        return Unit.Default;
+    }
+    
+    // todo: eventual support for Result<ReadOnlySpan<>,>
+    public static Result<ICollection<T>, Exception> IsNotEmpty<T>(
+        ICollection<T>? collection,
+        [CallerArgumentExpression(nameof(collection))] string? collectionName = null)
+    {
+        if (collection is null)
+            return new ArgumentNullException(collectionName);
+        if (collection.Count == 0)
+            return new ArgumentException("Collection cannot be empty", collectionName);
+        return Ok(collection);
+    }
 
 
     public static Result<T, Exception> InBounds<T>(T value, Bounds<T> bounds, [CallerArgumentExpression(nameof(value))] string? valueName = null)

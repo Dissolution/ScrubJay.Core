@@ -584,7 +584,7 @@ public ref struct SpanBuffer<T>
     /// <c>false</c>: Search from high to low indices<br/>
     /// </param>
     /// <param name="offset">
-    /// The <see cref="Index"/> offset in this Buffer to start the search from
+    /// The <see cref="Index"/> offset in this <see cref="SpanBuffer{T}"/> to start the search from, defaults the start or end of this buffer depending on <paramref name="firstToLast"/>
     /// </param>
     /// <param name="itemComparer">
     /// An optional <see cref="IEqualityComparer{T}"/> to use for <paramref name="item"/> comparison instead of
@@ -593,15 +593,24 @@ public ref struct SpanBuffer<T>
     /// <returns>
     /// An <see cref="Option{T}"/> that might contain the index of the first matching instance
     /// </returns>
-    public Option<int> TryFindIndex(T item, bool firstToLast = true, Index offset = default, IEqualityComparer<T>? itemComparer = null)
+    public Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = default, IEqualityComparer<T>? itemComparer = null)
     {
         var pos = _position;
         var span = _span;
 
-        if (!Validate.Index(offset, pos).IsOk(out var index))
-            return None<int>();
-        
+        int index;
+        if (offset.TryGetValue(out Index offsetIndex))
+        {
+            if (!Validate.Index(offsetIndex, pos).IsOk(out index))
+                return None();
+        }
+        else
+        {
+            index = firstToLast ? 0 : pos - 1;
+        }
+     
         itemComparer ??= EqualityComparer<T>.Default;
+        
         if (firstToLast)
         {
             for (; index < pos; index++)
@@ -625,6 +634,79 @@ public ref struct SpanBuffer<T>
 
         return None<int>();
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool SequenceEqual(IEqualityComparer<T> itemComparer, ReadOnlySpan<T> left, ReadOnlySpan<T> right, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (!itemComparer.Equals(left[i], right[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /// <summary>
+    /// Try to find a sequence of <paramref name="items"/> in this <see cref="SpanBuffer{T}"/>
+    /// </summary>
+    /// <param name="items">The <see cref="ReadOnlySpan{T}"/> to search for</param>
+    /// <param name="firstToLast">
+    /// <c>true</c>: Search from low to high indices<br/>
+    /// <c>false</c>: Search from high to low indices<br/>
+    /// </param>
+    /// <param name="offset">
+    /// The <see cref="Index"/> offset in this <see cref="SpanBuffer{T}"/> to start the search from
+    /// </param>
+    /// <param name="itemComparer">
+    /// An optional <see cref="IEqualityComparer{T}"/> to use for item comparison instead of
+    /// <see cref="EqualityComparer{T}"/>.<see cref="EqualityComparer{T}.Default"/>
+    /// </param>
+    /// <returns>
+    /// An <see cref="Option{T}"/> that might contain the index of the first matching sequence
+    /// </returns>
+    public Option<int> TryFindIndex(ReadOnlySpan<T> items, bool firstToLast = true, Index offset = default, IEqualityComparer<T>? itemComparer = null)
+    {
+        int itemCount = items.Length;
+        var pos = _position;
+        var span = _span;
+
+        if (itemCount == 0 || itemCount > pos)
+            return None();
+        
+        if (!Validate.Index(offset, pos).IsOk(out var index))
+            return None();
+        
+        itemComparer ??= EqualityComparer<T>.Default;
+        
+        if (firstToLast)
+        {
+            int end = pos - itemCount;
+            
+            for (; index <= end; index++)
+            {
+                if (SequenceEqual(itemComparer, span.Slice(index, itemCount), items, itemCount))
+                    return Some(index);
+            }
+        }
+        else
+        {
+            int end = pos - itemCount;
+            if (index > end)
+                index = end;
+            
+            for (; index >= 0; index--)
+            {
+                if (SequenceEqual(itemComparer, span.Slice(index, itemCount), items, itemCount))
+                    return Some(index);
+            }
+        }
+
+        return None<int>();
+    }
+    
+    
     
     /// <summary>
     /// Try to find the Index and Item that match an <paramref name="itemPredicate"/>
