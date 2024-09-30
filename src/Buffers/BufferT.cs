@@ -552,39 +552,177 @@ public class Buffer<T> :
     /// <returns>
     /// An <see cref="Option{T}"/> that might contain the index of the first matching instance
     /// </returns>
-    public Option<int> TryFindIndex(T item, bool firstToLast = true, Index offset = default, IEqualityComparer<T>? itemComparer = null)
+    public Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = default, IEqualityComparer<T>? itemComparer = null)
     {
         var pos = _position;
-        var array = _array;
+        var span = new Span<T>(_array);
 
-        if (!Validate.Index(offset, pos).IsOk(out var index))
-            return None<int>();
-
+        // get a valid item comparer
         itemComparer ??= EqualityComparer<T>.Default;
+        
         if (firstToLast)
         {
+            int index;
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the first item
+                index = 0;
+            }
+
+            // we can scan until the last item
             for (; index < pos; index++)
             {
-                if (itemComparer.Equals(array[index], item))
+                if (itemComparer.Equals(span[index], item))
                 {
                     return Some(index);
                 }
             }
         }
-        else
+        else // lastToFirst
         {
+            int index;
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the last item
+                index = pos - 1;
+            }
+
+            // we can scan until the first item
             for (; index >= 0; index--)
             {
-                if (itemComparer.Equals(array[index], item))
+                if (itemComparer.Equals(span[index], item))
                 {
                     return Some(index);
                 }
             }
         }
 
-        return None<int>();
+        return None();
     }
 
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool SequenceEqual(IEqualityComparer<T> itemComparer, Span<T> left, ReadOnlySpan<T> right, int count)
+    {
+        Debug.Assert(left.Length >= count);
+        Debug.Assert(right.Length >= count);
+        for (int i = 0; i < count; i++)
+        {
+            if (!itemComparer.Equals(left[i], right[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /// <summary>
+    /// Try to find a sequence of <paramref name="items"/> in this <see cref="SpanBuffer{T}"/>
+    /// </summary>
+    /// <param name="items">The <see cref="ReadOnlySpan{T}"/> to search for</param>
+    /// <param name="firstToLast">
+    /// <c>true</c>: Search from low to high indices<br/>
+    /// <c>false</c>: Search from high to low indices<br/>
+    /// </param>
+    /// <param name="offset">
+    /// The <see cref="Index"/> offset in this <see cref="SpanBuffer{T}"/> to start the search from
+    /// </param>
+    /// <param name="itemComparer">
+    /// An optional <see cref="IEqualityComparer{T}"/> to use for item comparison instead of
+    /// <see cref="EqualityComparer{T}"/>.<see cref="EqualityComparer{T}.Default"/>
+    /// </param>
+    /// <returns>
+    /// An <see cref="Option{T}"/> that might contain the index of the first matching sequence
+    /// </returns>
+    public Option<int> TryFindIndex(
+        ReadOnlySpan<T> items, 
+        bool firstToLast = true, 
+        Index? offset = default, 
+        IEqualityComparer<T>? itemComparer = null)
+    {
+        int itemCount = items.Length;
+        var pos = _position;
+        var span = new Span<T>(_array);
+
+        if (itemCount == 0 || itemCount > pos)
+            return None();
+    
+        // we can only scan until an end item (past that there wouldn't be enough items to match)
+        int end = pos - itemCount;
+        
+        // get a valid item comparer
+        itemComparer ??= EqualityComparer<T>.Default;
+        
+        if (firstToLast)
+        {
+            int index;
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the first item
+                index = 0;
+            }
+            
+            for (; index <= end; index++)
+            {
+                if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
+                    return Some(index);
+            }
+        }
+        else // lastToFirst
+        {
+            int index;
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+                
+                // No point in scanning until the last valid index
+                if (index > end)
+                    index = end;
+            }
+            else
+            {
+                // No offset, we start at the last valid item
+                index = end;
+            }
+
+            // we can scan until the first item
+            for (; index >= 0; index--)
+            {
+                if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
+                    return Some(index);
+            }
+        }
+
+        return None();
+    }
+    
     /// <summary>
     /// Try to find the Index and Item that match an <paramref name="itemPredicate"/>
     /// </summary>
@@ -604,20 +742,34 @@ public class Buffer<T> :
     public Option<(int Index, T Item)> TryFindItemIndex(
         Func<T, bool>? itemPredicate,
         bool firstToLast = true,
-        Index offset = default)
+        Index? offset = default)
     {
         if (itemPredicate is null)
             return None();
-
+        
         var pos = _position;
-        Span<T> span = _array;
+        var span = new Span<T>(_array);
 
-        if (!Validate.Index(offset, pos).IsOk(out var index))
-            return None();
-
+        int index;
         T item;
+      
         if (firstToLast)
         {
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the first item
+                index = 0;
+            }
+
+            // we can scan until the last item
             for (; index < pos; index++)
             {
                 item = span[index];
@@ -627,12 +779,27 @@ public class Buffer<T> :
                 }
             }
         }
-        else
+        else // lastToFirst
         {
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the last item
+                index = pos - 1;
+            }
+
+            // we can scan until the first item
             for (; index >= 0; index--)
             {
                 item = span[index];
-                if (itemPredicate(item))
+                if (itemPredicate(span[index]))
                 {
                     return Some((index, item));
                 }

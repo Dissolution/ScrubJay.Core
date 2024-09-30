@@ -785,20 +785,34 @@ public ref struct SpanBuffer<T>
     public Option<(int Index, T Item)> TryFindItemIndex(
         Func<T, bool>? itemPredicate, 
         bool firstToLast = true,
-        Index offset = default)
+        Index? offset = default)
     {
         if (itemPredicate is null)
             return None();
         
         var pos = _position;
-        Span<T> span = _array;
+        var span = _span;
 
-        if (!Validate.Index(offset, pos).IsOk(out var index))
-            return None();
-
+        int index;
         T item;
+      
         if (firstToLast)
         {
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the first item
+                index = 0;
+            }
+
+            // we can scan until the last item
             for (; index < pos; index++)
             {
                 item = span[index];
@@ -808,12 +822,27 @@ public ref struct SpanBuffer<T>
                 }
             }
         }
-        else
+        else // lastToFirst
         {
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the last item
+                index = pos - 1;
+            }
+
+            // we can scan until the first item
             for (; index >= 0; index--)
             {
                 item = span[index];
-                if (itemPredicate(item))
+                if (itemPredicate(span[index]))
                 {
                     return Some((index, item));
                 }
@@ -822,7 +851,7 @@ public ref struct SpanBuffer<T>
 
         return None();
     }
-    
+
     /// <summary>
     /// Try to remove the item at the given <see cref="Index"/>
     /// </summary>
