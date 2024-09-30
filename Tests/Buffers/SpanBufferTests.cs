@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
+using ScrubJay.Comparison;
 
 namespace ScrubJay.Tests.Buffers;
 
@@ -314,7 +315,7 @@ public class SpanBufferTests
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
-    
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static IEnumerable<byte> EnumerateInsertBytes()
     {
@@ -323,7 +324,7 @@ public class SpanBufferTests
         yield return 147;
         yield return 255;
     }
-    
+
     [Fact]
     public void InsertManyEnumerableStartWorks()
     {
@@ -371,7 +372,7 @@ public class SpanBufferTests
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
-    
+
     [Fact]
     public void ContainsWorks()
     {
@@ -432,5 +433,113 @@ public class SpanBufferTests
 
         var midItems = buffer.ToArray().Skip(4).Take(4).ToList();
         Assert.Equal([4, 5, 6, 7], midItems);
+    }
+
+    [Fact]
+    public void TryFindIndexSingleWorks()
+    {
+        using SpanBuffer<int> buffer = new();
+        buffer.AddMany(
+            0, 1, 2, 3, 4, 5, 6, 7,
+            8, 9, 10, 11, 12, 13, 14, 15);
+
+        // basic search
+        for (var i = 0; i < 16; i++)
+        {
+            var found = buffer.TryFindIndex(i);
+            Assert.True(found.IsSome(out var index));
+            Assert.Equal(i, index);
+
+            found = buffer.TryFindIndex(i, firstToLast: false);
+            Assert.True(found.IsSome(out index));
+            Assert.Equal(i, index);
+        }
+
+        // with equality comparer
+        {
+            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
+            var found = buffer.TryFindIndex(3, itemComparer: oddnessEqualityComparer);
+            Assert.True(found.IsSome(out var index));
+            Assert.Equal(1, index); // first odd item is item #1
+
+            found = buffer.TryFindIndex(3, firstToLast: false, itemComparer: oddnessEqualityComparer);
+            Assert.True(found.IsSome(out index));
+            Assert.Equal(15, index); // last odd item is item #15
+        }
+
+        // with index
+        {
+            var found = buffer.TryFindIndex(4, offset: 3);
+            Assert.True(found.IsSome(out var index));
+            Assert.Equal(4, index);
+
+            found = buffer.TryFindIndex(2, offset: 3);
+            Assert.True(found.IsNone());
+
+            found = buffer.TryFindIndex(10, offset: ^8);
+            Assert.True(found.IsSome(out index));
+            Assert.Equal(10, index);
+
+            found = buffer.TryFindIndex(7, offset: ^4);
+            Assert.True(found.IsNone());
+
+
+            found = buffer.TryFindIndex(4, offset: 3, firstToLast: false);
+            Assert.True(found.IsNone());
+
+            found = buffer.TryFindIndex(2, offset: 3, firstToLast: false);
+            Assert.True(found.IsSome(out index));
+            Assert.Equal(2, index);
+
+            found = buffer.TryFindIndex(10, offset: ^8, firstToLast: false);
+            Assert.True(found.IsNone());
+
+            found = buffer.TryFindIndex(7, offset: ^4, firstToLast: false);
+            Assert.True(found.IsSome(out index));
+            Assert.Equal(7, index);
+        }
+    }
+    
+    [Fact]
+    public void TryFindIndexMultiWorks()
+    {
+        using SpanBuffer<int> buffer = new();
+        buffer.AddMany(
+            0, 1, 2, 3, 4, 5, 6, 7,
+            8, 9, 10, 11, 12, 13, 14, 15);
+    
+        // basic search
+        {
+            var found = buffer.TryFindIndex([1, 2, 3]);
+            Assert.True(found.IsSome(out var index));
+            Assert.Equal(1, index);
+    
+            found = buffer.TryFindIndex([8, 9, 10]);
+            Assert.True(found.IsSome(out index));
+            Assert.Equal(8, index);
+    
+            found = buffer.TryFindIndex([14, 15, 16]);
+            Assert.True(found.IsNone());
+    
+            found = buffer.TryFindIndex([3]);
+            Assert.True(found.IsSome(out index));
+            Assert.Equal(3, index);
+        }
+    
+        // with equality comparer
+        {
+            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
+            var found = buffer.TryFindIndex([33, 22, 33], itemComparer: oddnessEqualityComparer);
+            Assert.True(found.IsSome(out var index));
+            Assert.Equal(1, index); // first odd/even/odd is 1,2,3
+    
+            found = buffer.TryFindIndex([33, 22, 33], firstToLast: false, itemComparer: oddnessEqualityComparer);
+            Assert.True(found.IsSome(out index));
+            Assert.Equal(13, index); // last odd/even/odd is 13,14,15
+        }
+    
+        // with index
+        {
+        }
     }
 }

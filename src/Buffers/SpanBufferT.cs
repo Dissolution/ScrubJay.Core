@@ -598,21 +598,27 @@ public ref struct SpanBuffer<T>
         var pos = _position;
         var span = _span;
 
-        int index;
-        if (offset.TryGetValue(out Index offsetIndex))
-        {
-            if (!Validate.Index(offsetIndex, pos).IsOk(out index))
-                return None();
-        }
-        else
-        {
-            index = firstToLast ? 0 : pos - 1;
-        }
-     
+        // get a valid item comparer
         itemComparer ??= EqualityComparer<T>.Default;
         
         if (firstToLast)
         {
+            int index;
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the first item
+                index = 0;
+            }
+
+            // we can scan until the last item
             for (; index < pos; index++)
             {
                 if (itemComparer.Equals(span[index], item))
@@ -621,8 +627,24 @@ public ref struct SpanBuffer<T>
                 }
             }
         }
-        else
+        else // lastToFirst
         {
+            int index;
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the last item
+                index = pos - 1;
+            }
+
+            // we can scan until the first item
             for (; index >= 0; index--)
             {
                 if (itemComparer.Equals(span[index], item))
@@ -632,12 +654,14 @@ public ref struct SpanBuffer<T>
             }
         }
 
-        return None<int>();
+        return None();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool SequenceEqual(IEqualityComparer<T> itemComparer, ReadOnlySpan<T> left, ReadOnlySpan<T> right, int count)
+    private static bool SequenceEqual(IEqualityComparer<T> itemComparer, Span<T> left, ReadOnlySpan<T> right, int count)
     {
+        Debug.Assert(left.Length >= count);
+        Debug.Assert(right.Length >= count);
         for (int i = 0; i < count; i++)
         {
             if (!itemComparer.Equals(left[i], right[i]))
@@ -666,7 +690,11 @@ public ref struct SpanBuffer<T>
     /// <returns>
     /// An <see cref="Option{T}"/> that might contain the index of the first matching sequence
     /// </returns>
-    public Option<int> TryFindIndex(ReadOnlySpan<T> items, bool firstToLast = true, Index offset = default, IEqualityComparer<T>? itemComparer = null)
+    public Option<int> TryFindIndex(
+        ReadOnlySpan<T> items, 
+        bool firstToLast = true, 
+        Index? offset = default, 
+        IEqualityComparer<T>? itemComparer = null)
     {
         int itemCount = items.Length;
         var pos = _position;
@@ -674,36 +702,66 @@ public ref struct SpanBuffer<T>
 
         if (itemCount == 0 || itemCount > pos)
             return None();
+    
+        // we can only scan until an end item (past that there wouldn't be enough items to match)
+        int end = pos - itemCount;
         
-        if (!Validate.Index(offset, pos).IsOk(out var index))
-            return None();
-        
+        // get a valid item comparer
         itemComparer ??= EqualityComparer<T>.Default;
         
         if (firstToLast)
         {
-            int end = pos - itemCount;
+            int index;
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+            }
+            else
+            {
+                // No offset, we start at the first item
+                index = 0;
+            }
             
             for (; index <= end; index++)
             {
-                if (SequenceEqual(itemComparer, span.Slice(index, itemCount), items, itemCount))
+                if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
                     return Some(index);
             }
         }
-        else
+        else // lastToFirst
         {
-            int end = pos - itemCount;
-            if (index > end)
+            int index;
+            // Check for a starting offset
+            if (offset.TryGetValue(out Index offsetIndex))
+            {
+                // Validate that offset
+                var validIndex = Validate.Index(offsetIndex, pos);
+                if (!validIndex.IsOk(out index))
+                    return None();
+                
+                // No point in scanning until the last valid index
+                if (index > end)
+                    index = end;
+            }
+            else
+            {
+                // No offset, we start at the last valid item
                 index = end;
-            
+            }
+
+            // we can scan until the first item
             for (; index >= 0; index--)
             {
-                if (SequenceEqual(itemComparer, span.Slice(index, itemCount), items, itemCount))
+                if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
                     return Some(index);
             }
         }
 
-        return None<int>();
+        return None();
     }
     
     
