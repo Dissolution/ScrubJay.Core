@@ -1,8 +1,8 @@
-﻿// ReSharper disable InconsistentNaming
+﻿#pragma warning disable MA0077, MA0094, CA1034
+
+// ReSharper disable InconsistentNaming
 
 using ScrubJay.Comparison;
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-
 namespace ScrubJay;
 
 [StructLayout(LayoutKind.Auto)]

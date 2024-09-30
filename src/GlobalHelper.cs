@@ -22,17 +22,20 @@ public static class GlobalHelper
     /// </summary>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static None None() => default(None);
+    public static None None() => ScrubJay.None.Default;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Option<T> None<T>() => Option<T>.None();
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None<T>() => default(Option<T>);
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Unit Unit() => default(Unit);
+    public static Unit Unit() => ScrubJay.Unit.Default;
     
     /// <inheritdoc cref="Option{T}.Some"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Ok<Unit> Ok() => new Ok<Unit>(ScrubJay.Unit.Default);
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Ok<T> Ok<T>(T value) => new Ok<T>(value);

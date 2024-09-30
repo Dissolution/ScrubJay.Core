@@ -1,4 +1,6 @@
-﻿namespace ScrubJay;
+﻿#pragma warning disable CA1710, MA0048
+
+namespace ScrubJay;
 
 /// <summary>
 /// <c>Result&lt;TOk, TError&gt;</c> is the type used for returning and propagating errors<br/>

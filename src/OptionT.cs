@@ -1,4 +1,6 @@
-﻿// ReSharper disable InconsistentNaming
+﻿#pragma warning disable CA1710, MA0048
+
+// ReSharper disable InconsistentNaming
 
 namespace ScrubJay;
 
@@ -79,7 +81,7 @@ public readonly struct Option<T> :
     /// Gets the None option
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None() => default;
+    public static Option<T> None() => default(Option<T>);
     
     /// <summary>
     /// Creates a new <see cref="Option{T}"/>.Some containing <paramref name="value"/>

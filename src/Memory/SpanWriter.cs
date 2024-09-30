@@ -1,7 +1,5 @@
 ﻿namespace ScrubJay.Memory;
 
-public delegate bool SpanWriterTryWrite<T>(ref SpanWriter<T> writer);
-
 [StructLayout(LayoutKind.Auto)]
 public ref struct SpanWriter<T>
 {
@@ -41,16 +39,6 @@ public ref struct SpanWriter<T>
             throw new ArgumentOutOfRangeException(nameof(position), position, "Position must be inside of span");
         _span = span;
         _position = position;
-    }
-
-    public bool Chain(params SpanWriterTryWrite<T>[] writes)
-    {
-        for (int i = 0; i < writes.Length; i++)
-        {
-            if (!writes[i](ref this))
-                return false;
-        }
-        return true;
     }
 
     public void UseAvailable(UseAvailable<T> useAvailable)

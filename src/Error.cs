@@ -33,8 +33,8 @@ public readonly struct Error<TError> :
     }
 
 
-    public bool Equals(Error<TError> error) => EqualityComparer<TError>.Default.Equals(Value, error.Value);
-    public bool Equals(TError? errorValue) => EqualityComparer<TError>.Default.Equals(Value, errorValue!);
+    public bool Equals(Error<TError> other) => EqualityComparer<TError>.Default.Equals(Value, other.Value);
+    public bool Equals(TError? other) => EqualityComparer<TError>.Default.Equals(Value, other!);
 
     public override bool Equals(object? obj) => obj switch
     {

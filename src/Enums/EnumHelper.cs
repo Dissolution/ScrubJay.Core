@@ -1,4 +1,4 @@
-﻿#pragma warning disable S2743
+﻿#pragma warning disable S2743, CA1000
 // ReSharper disable StaticMemberInGenericType
 
 using System.Reflection;

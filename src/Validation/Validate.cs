@@ -7,7 +7,7 @@ namespace ScrubJay.Validation;
 /// <summary>
 /// Validation methods that return <see cref="Result{O,E}">Result</see>&lt;T, <see cref="Exception"/>&gt;
 /// </summary>
-public static partial class Validate
+public static class Validate
 {
 #region Index
 
@@ -130,7 +130,8 @@ public static partial class Validate
         return array;
     }
     
-    // todo: eventual support for Result<ReadOnlySpan<>,>
+    /* Someday, C# will have support for using certain ref struct types in generics */
+    
     public static Result<Unit, Exception> IsNotEmpty<T>(
         ReadOnlySpan<T> span,
         [CallerArgumentExpression(nameof(span))] string? spanName = null)
@@ -140,7 +141,6 @@ public static partial class Validate
         return Unit.Default;
     }
     
-    // todo: eventual support for Result<ReadOnlySpan<>,>
     public static Result<ICollection<T>, Exception> IsNotEmpty<T>(
         ICollection<T>? collection,
         [CallerArgumentExpression(nameof(collection))] string? collectionName = null)
@@ -226,4 +226,27 @@ public static partial class Validate
             },
         }.GetResult();
     }
+    
+    #region Throw
+    public static void ThrowIfNull<T>(
+        [NotNull] T? value, 
+        [CallerArgumentExpression(nameof(value))] string? valueName = null)
+        where T : class?
+    {
+        if (value is null)
+            throw new ArgumentNullException(valueName);
+    }
+    
+    
+#pragma warning disable CA1513
+    [StackTraceHidden]
+    public static void ThrowIfDisposed([DoesNotReturnIf(true)] bool condition, object instance)
+    {
+        if (condition)
+        {
+            throw new ObjectDisposedException(instance.GetType().FullName);
+        }
+    }
+#pragma warning restore CA1513
+    #endregion
 }

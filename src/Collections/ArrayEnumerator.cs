@@ -47,7 +47,7 @@ public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposabl
         _index = -1;
     }
 
-    /// <inheritdoc cref="IEnumerator{T}.MoveNext"/>
+    /// <inheritdoc cref="IEnumerator.MoveNext"/>
     public bool MoveNext()
     {
         int newIndex = _index + 1;
@@ -72,7 +72,7 @@ public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposabl
         return Some(_array![newIndex]);
     }
 
-    /// <inheritdoc cref="IEnumerator{T}.Reset"/>
+    /// <inheritdoc cref="IEnumerator.Reset"/>
     public void Reset()
     {
         _index = -1;

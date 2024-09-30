@@ -33,28 +33,26 @@
         <!-- Quiet Warnings -->
         <NoWarn>
             $(NoWarn);
-            CS0436;
-            MA0048;
-            CA1000;
-            CA1716;
-            CA2225;
-            S1939;
-            MA0077;
-            MA0094;
-            CA1710;
-            CA1051;
-            CA1034;
-            CA1725;
-            CA1062; <!-- Externallay visible methods should validate parameters to not be null -->
-            S927;   <!-- Rename parameter to match interface declaration -->
-            S1133;  <!-- Remove depreciated code [Obsolete] -->
-            S2930;  <!-- Dispose when no longer needed ~ does not respect any attributes and gives false positives -->
-            S3267;  <!-- Loops should be simplified with Where -->
-            MA0061; S1006;  <!-- Remove default parameters on overrides to match signature -->
-            CA2237; <!-- Add [Serializable] to types -->
-            S3963; CA1810;  <!-- Inline static fields -->
-            CA1305; <!-- Localization Related -->
-            CP0001;CP0002;
+            
+            CS1591; RCS1138;    <!-- Missing XML Comments -->
+            
+            CA1000;     <!-- Do not declare static members on generic types -->
+            CA1051;     <!-- Do not declare visible instance fields -->
+            CA1062;     <!-- External nullability -->
+            CA1305;     <!-- Localization -->
+            CA1716;     <!-- Identifiers should not match keywords -->
+            CA1725; S927;   <!-- Rename parameters to match interface/root -->
+            CA2225;     <!-- Operator overloads have named alternates -->
+            CA2237;     <!-- Add [Serializable] to X as this type implements ISerializable -->
+            
+            S1168;      <!-- Return an empty collection instead of 'null' -->
+            S1939;      <!-- implemented interface can be removed from inheritance list -->
+            S3963; CA1810;  <!-- Inialize static fields inline -->
+            S3267;      <!-- Loops should be simplified with 'Where' -->
+            
+            MA0016;         <!-- Prefer using collection abstractions instead of implementation -->
+            MA0051;         <!-- Method Complexity -->
+            MA0061; S1006;  <!-- Method overrides should not change default values -->
         </NoWarn>
 
         <!-- Generate XML documentation -->

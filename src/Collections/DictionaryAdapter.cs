@@ -1,4 +1,4 @@
-#pragma warning disable S2365
+#pragma warning disable S2365, CA1710
 
 namespace ScrubJay.Collections;
 
@@ -65,7 +65,9 @@ public sealed class DictionaryAdapter<TKey, TValue> :
     /// <inheritdoc cref="IDictionary{TKey,TValue}.Values"/>
     public IReadOnlyCollection<TValue> Values => _dictionary.Values.Cast<TValue>().ToList();
 
-    /// <inheritdoc cref="IDictionary{TKey,TValue}.Count"/>
+    /// <summary>
+    /// Gets the number of items in the <see cref="IDictionary"/>
+    /// </summary>
     public int Count => _dictionary.Count;
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>

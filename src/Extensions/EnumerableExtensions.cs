@@ -14,15 +14,7 @@ public static class EnumerableExtensions
     /// <typeparam name="TIn"></typeparam>
     /// <typeparam name="TOut"></typeparam>
     public delegate bool SelectWherePredicate<in TIn, TOut>(TIn input, out TOut output);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="source"></param>
-    /// <param name="selectWherePredicate"></param>
-    /// <typeparam name="TIn"></typeparam>
-    /// <typeparam name="TOut"></typeparam>
-    /// <returns></returns>
+    
     public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> source, SelectWherePredicate<TIn, TOut> selectWherePredicate)
     {
         foreach (TIn input in source)
@@ -33,15 +25,7 @@ public static class EnumerableExtensions
             }
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="enumerable"></param>
-    /// <param name="selectWhere"></param>
-    /// <typeparam name="TIn"></typeparam>
-    /// <typeparam name="TOut"></typeparam>
-    /// <returns></returns>
+    
     public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> enumerable, Func<TIn, Option<TOut>> selectWhere)
     {
         return enumerable.SelectMany(i => selectWhere(i));

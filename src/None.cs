@@ -11,28 +11,58 @@
 public readonly struct None :
 #if NET7_0_OR_GREATER
     IEqualityOperators<None, None, bool>,
-    IBitwiseOperators<None, None, bool>,
 #endif
     IEquatable<None>
 {
-    // None is false
-    
+    /// <summary>
+    /// <see cref="None"/> is <c>false</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(None _) => false;
+    /// <summary>
+    /// <see cref="None"/> is <c>false</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator true(None _) => false;
+    /// <summary>
+    /// <see cref="None"/> is <c>false</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator false(None _) => true;
 
-    public static bool operator &(None left, None right) => false;
-    public static bool operator |(None left, None right) => false;
-    public static bool operator ^(None left, None right) => false;
-
-    [Obsolete("Cannot apply operator '~' to operand of type 'None'", true)]
-    public static bool operator ~(None _) => throw new NotSupportedException();
-    
+    /// <summary>
+    /// All <see cref="None"/>s are the same
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator ==(None left, None right) => true;
+    /// <summary>
+    /// All <see cref="None"/>s are the same
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator !=(None left, None right) => false;
-        
+
+    /// <summary>
+    /// Gets the only value of <see cref="None"/>
+    /// </summary>
+    /// <remarks>
+    /// <c>None.Default == default(None)</c><br/>
+    /// <c>default(None)</c> is preferred
+    /// </remarks>
+    public static readonly None Default;
+    
+    /// <summary>
+    /// All <see cref="None"/>s are the same
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Equals(None _) => true;
 
+    /// <summary>
+    /// Checks for equality with an <see cref="object"/>:<br/>
+    /// <see cref="None"/>: All <see cref="None"/>s are the same<br/>
+    /// <see cref="bool"/>: <see cref="None"/> is <c>false</c><br/>
+    /// <c>default</c>: <c>false</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
         if (obj is None)
@@ -41,6 +71,10 @@ public readonly struct None :
             return !isSome;
         return false;
     }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override int GetHashCode() => 0;
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override string ToString() => nameof(None);
 }

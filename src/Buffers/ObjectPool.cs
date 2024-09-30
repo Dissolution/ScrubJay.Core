@@ -69,7 +69,9 @@ public static class ObjectPool
         Action<T>? clean = null,
         Action<T>? dispose = null, 
         // ReSharper disable once InvalidXmlDocComment
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
         Constraints.IsNew<T> _ = default)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
         where T : class, new()
     {
         return new ObjectPool<T>(static () => new(), clean, dispose);
@@ -94,7 +96,9 @@ public static class ObjectPool
         Func<T> factory,
         Action<T>? clean = null, 
         // ReSharper disable once InvalidXmlDocComment
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
         Constraints.IsDisposable<T> _ = default)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
         where T : class, IDisposable
     {
         return new ObjectPool<T>(factory, clean, static item => item.Dispose());
@@ -115,7 +119,9 @@ public static class ObjectPool
     public static ObjectPool<T> Create<T>(
         Action<T>? clean = null, 
         // ReSharper disable once InvalidXmlDocComment
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
         Constraints.IsDisposableNew<T> _ = default)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
         where T : class, IDisposable, new()
     {
         return new ObjectPool<T>(static () => new(), clean, static item => item.Dispose());

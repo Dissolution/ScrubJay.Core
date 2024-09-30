@@ -9,7 +9,7 @@ public static class Option
     {
         if (value is not null)
             return Option<T>.Some(value);
-        return default;
+        return Option<T>.None();
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -22,14 +22,14 @@ public static class Option
             return Option<T>.Some(nullable.GetValueOrDefault());
         }
 
-        return default;
+        return Option<T>.None();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static None None() => default(None);
+    public static None None() => ScrubJay.None.Default;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None<T>() => default;
+    public static Option<T> None<T>() => Option<T>.None();
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);

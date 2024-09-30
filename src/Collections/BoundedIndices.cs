@@ -4,8 +4,10 @@ namespace ScrubJay.Collections;
 
 public sealed class BoundedIndices : IEnumerator<int[]>
 {
-    public static BoundedIndices For(Array array)
+    public static BoundedIndices For(Array? array)
     {
+        Validate.ThrowIfNull(array);
+        
         var dimensions = array.Rank;
         int[] lowerBounds = new int[dimensions];
         int[] upperBounds = new int[dimensions];
@@ -40,6 +42,8 @@ public sealed class BoundedIndices : IEnumerator<int[]>
     /// </exception>
     public static BoundedIndices Range(int[] lowerBounds, int[] upperBounds)
     {
+        Validate.ThrowIfNull(lowerBounds);
+        Validate.ThrowIfNull(upperBounds);
         int dimensions = lowerBounds.Length;
         if (dimensions == 0)
             throw new ArgumentException("Lower Bounds must have at least one dimension", nameof(lowerBounds));
@@ -59,6 +63,7 @@ public sealed class BoundedIndices : IEnumerator<int[]>
 
     public static BoundedIndices Lengths(params int[] dimensionLengths)
     {
+        Validate.ThrowIfNull(dimensionLengths);
         int dimensions = dimensionLengths.Length;
         if (dimensions == 0)
             throw new ArgumentException("Lengths must include at least one dimension", nameof(dimensionLengths));

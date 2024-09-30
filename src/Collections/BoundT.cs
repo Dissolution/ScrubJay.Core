@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Collections;
+﻿#pragma warning disable MA0048
+
+namespace ScrubJay.Collections;
 
 
 [PublicAPI]

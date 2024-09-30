@@ -1,3 +1,6 @@
+// File name must match type name
+#pragma warning disable MA0048 
+
 // ReSharper disable InconsistentNaming
 namespace ScrubJay;
 
@@ -77,7 +80,7 @@ public delegate Span<TSOut> RSpanFuncWSpan<TSIn, in T1, in T2, in T3, in T4, TSO
 
 
 /// <summary>
-/// A delegate that acts upon upon an item reference
+/// A delegate that acts upon an item reference
 /// </summary>
 /// <typeparam name="T">
 /// The <see cref="Type"/> of <paramref name="item"/> being referenced

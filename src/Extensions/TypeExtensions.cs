@@ -63,10 +63,9 @@ public static class TypeExtensions
                 return true;
 
             // Check my base types
-            foreach (var baseType in type.GetBaseTypes())
+            if (type.GetBaseTypes().Any(baseType => baseType.HasGenericTypeDefinition(checkType)))
             {
-                if (baseType.HasGenericTypeDefinition(checkType))
-                    return true;
+                return true;
             }
 
             // Check my interfaces

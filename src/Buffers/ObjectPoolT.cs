@@ -1,4 +1,4 @@
-﻿#pragma warning disable S1066
+﻿#pragma warning disable S1066, MA0048
 
 using ScrubJay.Collections;
 
