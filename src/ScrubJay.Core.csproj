@@ -53,6 +53,8 @@
             MA0016;         <!-- Prefer using collection abstractions instead of implementation -->
             MA0051;         <!-- Method Complexity -->
             MA0061; S1006;  <!-- Method overrides should not change default values -->
+            
+            CA1063; S3881;  <!-- Dispose -->
         </NoWarn>
         
         <!-- Setup NuGet -->

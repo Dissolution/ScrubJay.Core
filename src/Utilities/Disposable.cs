@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Utilities;
+﻿#pragma warning disable CA1031, MA0048
+
+namespace ScrubJay.Utilities;
 
 public abstract class Disposable : IDisposable
 {
@@ -83,16 +85,18 @@ public abstract class Disposable : IDisposable
 
     private bool _disposed; // false
 
-    protected abstract void DisposeImpl();
+    protected abstract void OnDispose();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
         if (!_disposed)
         {
-            DisposeImpl();
+            OnDispose();
             _disposed = true;
         }
+
+        GC.SuppressFinalize(this);
     }
 }
 
@@ -106,7 +110,7 @@ internal sealed class ActionDisposable : Disposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected override void DisposeImpl() => _onDispose();
+    protected override void OnDispose() => _onDispose();
 }
 
 #if NETSTANDARD2_1 || NET6_0_OR_GREATER
