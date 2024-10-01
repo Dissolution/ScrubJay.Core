@@ -39,7 +39,7 @@ public class BufferTests
     public void BufferCanGrow()
     {
         using var buffer = new Buffer<int>(1);
-        Assert.Equal(0, buffer.Count);
+        Assert.Empty(buffer);
         Assert.Equal(ArrayPool.MinCapacity, buffer.Capacity);
 
         var numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
@@ -352,11 +352,11 @@ public class BufferTests
         {
             if (i is >= 0 and <= 7)
             {
-                Assert.True(intBuffer.Contains(i));
+                Assert.Contains(i, intBuffer);
             }
             else
             {
-                Assert.False(intBuffer.Contains(i));
+                Assert.DoesNotContain(i, intBuffer);
             }
         }
 
@@ -366,12 +366,12 @@ public class BufferTests
 
         for (var i = 0; i < 100; i++)
         {
-            Assert.False(guidBuffer.Contains(Guid.NewGuid()));
+            Assert.DoesNotContain(Guid.NewGuid(), guidBuffer);
         }
 
         foreach (var guid in guids)
         {
-            Assert.True(guidBuffer.Contains(guid));
+            Assert.Contains(guid, guidBuffer);
         }
 
 
@@ -386,8 +386,8 @@ public class BufferTests
 
         foreach (var record in records)
         {
-            Assert.True(recordBuffer.Contains(record));
-            Assert.False(recordBuffer.Contains(record with { IsAdmin = !record.IsAdmin }));
+            Assert.Contains(record, recordBuffer);
+            Assert.DoesNotContain(record with { IsAdmin = !record.IsAdmin }, recordBuffer);
         }
     }
 

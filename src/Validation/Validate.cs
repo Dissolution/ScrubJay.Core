@@ -240,11 +240,12 @@ public static class Validate
     
 #pragma warning disable CA1513
     [StackTraceHidden]
-    public static void ThrowIfDisposed([DoesNotReturnIf(true)] bool condition, object instance)
+    public static void ThrowIfDisposed<T>([DoesNotReturnIf(true)] bool condition, T? instance)
     {
         if (condition)
         {
-            throw new ObjectDisposedException(instance.GetType().FullName);
+            string? objectName = (instance?.GetType().FullName) ?? typeof(T).FullName;
+            throw new ObjectDisposedException(objectName);
         }
     }
 #pragma warning restore CA1513

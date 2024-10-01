@@ -48,13 +48,14 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>
 
         public bool MoveNext()
         {
-            return (_current = TryMoveNext());
+            _current = TryMoveNext();
+            return _current.IsSome();
         }
 
         public Option<T> TryMoveNext()
         {
             if (_enumerator is null)
-                return None<T>();
+                return None();
 
             bool moved;
             T current;
@@ -96,6 +97,7 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>
         {
             if (_enumerator is null)
                 return new ObjectDisposedException(nameof(UnbreakableEnumerator));
+            
             try
             {
                 _enumerator.Reset();
@@ -109,8 +111,7 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>
 
         public void Dispose()
         {
-            Result.TryDispose(_enumerator);
-            _enumerator = null;
+            Disposable.TryNullDisposeRef(ref _enumerator);
         }
     }
 }

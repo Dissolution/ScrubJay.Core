@@ -6,32 +6,6 @@ namespace ScrubJay;
 public static class Result
 {
     /// <summary>
-    /// Tries to dispose an <see cref="IDisposable"/> <paramref name="instance"/>
-    /// </summary>
-    /// <param name="instance">The <typeparamref name="T"/> instace to dispose</param>
-    /// <typeparam name="T">The <see cref="Type"/> of instance to dispose</typeparam>
-    /// <returns>
-    /// A <see cref="Result{Unit,Exception}">Result</see>&lt;<see cref="Unit"/>, <see cref="Exception"/>&gt; describing the disposal 
-    /// </returns>
-    [HandlesResourceDisposal]
-    public static Result<Unit, Exception> TryDispose<T>(T? instance)
-        where T : IDisposable
-    {
-        if (instance is null)
-            return new ArgumentNullException(nameof(instance));
-        
-        try
-        {
-            instance.Dispose();
-            return Unit.Default;
-        }
-        catch (Exception ex)
-        {
-            return ex;
-        }
-    }
-    
-    /// <summary>
     /// Try to invoke an <paramref name="action"/>
     /// </summary>
     /// <param name="action">The <see cref="Action"/> to invoke</param>

@@ -54,14 +54,10 @@
             MA0051;         <!-- Method Complexity -->
             MA0061; S1006;  <!-- Method overrides should not change default values -->
         </NoWarn>
-
-        <!-- Generate XML documentation -->
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         
         <!-- Setup NuGet -->
         <IsPackable>true</IsPackable>
         <EnablePackageValidation>false</EnablePackageValidation>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         
         <!-- NuGet Package Information -->
         <Title>ScrubJay Core Libraries</Title>
@@ -75,11 +71,23 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.2.1-alpha</PackageVersion>
+        <PackageVersion>0.3.0-alpha</PackageVersion>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <!-- Create NuGet Package -->
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <!-- Generate XML documentation -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+    
     <!-- NuGet -->
-    <ItemGroup>
+    <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
         <None Include="..\README.md" Pack="true" PackagePath="\"/>
         <None Include="..\LICENSE.txt" Pack="true" PackagePath="\"/>
         <None Include="..\jay.png" Pack="true" PackagePath="\"/>
@@ -87,14 +95,15 @@
 
     <!-- Global Usings -->
     <ItemGroup>
+        <Using Include="System.Collections"/>
         <Using Include="System.ComponentModel"/>
         <Using Include="System.Diagnostics"/>
         <Using Include="System.Diagnostics.CodeAnalysis"/>
         <Using Include="System.Numerics"/>
         <Using Include="System.Runtime.CompilerServices"/>
         <Using Include="System.Runtime.InteropServices"/>
-        <Using Include="System.Collections"/>
-
+        
+        <!-- import ourself -->
         <Using Include="ScrubJay.GlobalHelper" Static="true"/>
         <Using Include="ScrubJay.Buffers"/>
         <Using Include="ScrubJay.Extensions"/>
@@ -104,6 +113,7 @@
         <Using Include="JetBrains.Annotations"/>
     </ItemGroup>
 
+    <!-- Need System.Memory for older frameworks -->
     <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
         <PackageReference Include="System.Memory" Version="4.5.5">
             <PrivateAssets>all</PrivateAssets>
@@ -143,6 +153,7 @@
         </PackageReference>
     </ItemGroup>
     
+    <!-- Expose our internals to our tests and other trusted ScrubJay libraries -->
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
             <_Parameter1>ScrubJay.Core.Tests</_Parameter1>
