@@ -61,14 +61,17 @@ public ref struct Hasher
     /// The seed for this Hasher
     /// </summary>
     private static readonly uint _seed = CreateSeed();
+    
     /// <summary>
     /// The default hashcode for no value
     /// </summary>
-    private static readonly int _emptyHash = new Hasher().ToHashCode();
+    public static readonly int EmptyHash = new Hasher().ToHashCode();
+    
     /// <summary>
     /// The default hashcode for <c>null</c>
     /// </summary>
-    private static readonly int _nullHash = GetHashCode<object?>(null);
+    public static readonly int NullHash = GetHashCode<object?>(null);
+    
     
     private static uint CreateSeed()
     {
@@ -345,7 +348,7 @@ public ref struct Hasher
     {
         switch (span.Length)
         {
-            case 0: return _emptyHash;
+            case 0: return EmptyHash;
             case 1: return GetHashCode(span[0]);
             case 2: return Combine(span[0], span[1]);
             case 3: return Combine(span[0], span[1], span[2]);
@@ -378,10 +381,10 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T>(params T[]? array)
     {
-        if (array is null) return _nullHash;
+        if (array is null) return NullHash;
         switch (array.Length)
         {
-            case 0: return _emptyHash;
+            case 0: return EmptyHash;
             case 1: return GetHashCode(array[0]);
             case 2: return Combine(array[0], array[1]);
             case 3: return Combine(array[0], array[1], array[2]);
@@ -404,7 +407,7 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T>(T[]? array, IEqualityComparer<T>? comparer)
     {
-        if (array is null) return _nullHash;
+        if (array is null) return NullHash;
         var hasher = new Hasher();
         hasher.AddMany<T>(array, comparer);
         return hasher.ToHashCode();
@@ -415,7 +418,7 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T>(IEnumerable<T>? enumerable)
     {
-        if (enumerable is null) return _nullHash;
+        if (enumerable is null) return NullHash;
         var hasher = new Hasher();
         hasher.AddMany<T>(enumerable);
         return hasher.ToHashCode();
@@ -426,7 +429,7 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T>(IEnumerable<T>? enumerable, IEqualityComparer<T>? comparer)
     {
-        if (enumerable is null) return _nullHash;
+        if (enumerable is null) return NullHash;
         var hasher = new Hasher();
         hasher.AddMany<T>(enumerable, comparer);
         return hasher.ToHashCode();

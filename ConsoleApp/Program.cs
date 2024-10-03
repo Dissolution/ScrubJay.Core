@@ -2,11 +2,9 @@
 // ReSharper disable UnusedVariable
 
 using System.Diagnostics;
-using ScrubJay;
 
 
-Result<int, ICloneable> result;
+Option<int> opt = 147;
 
-ICloneable thing = default!;
-Console.WriteLine(thing);
+
 Debugger.Break();

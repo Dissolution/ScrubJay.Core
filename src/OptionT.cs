@@ -1,10 +1,6 @@
-﻿#pragma warning disable CA1710, MA0048
-
-// ReSharper disable InconsistentNaming
+﻿#pragma warning disable CA1710, MA0048, CS1574, CS0419
 
 namespace ScrubJay;
-
-// <a href="https://doc.rust-lang.org/std/option/index.html">Rust's Option</a>
 
 /// <summary>
 /// An Option represents an optional value, every Option is either:<br/>
@@ -14,6 +10,7 @@ namespace ScrubJay;
 /// <typeparam name="T">
 /// The <see cref="Type"/> of value associated with a <see cref="Some"/> Option
 /// </typeparam>
+///  <seealso href="https://doc.rust-lang.org/std/option/index.html"/>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public readonly struct Option<T> :
@@ -38,18 +35,40 @@ public readonly struct Option<T> :
     IEnumerable
 {
 #region Operators
-    // Treat Option like a boolean: some == true, none == false
-    // Allow us to cast from None or a T value directly to an Option
-    
+    /// <summary>
+    /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Option<T> option) => option._isSome;
+
+    /// <summary>
+    /// Implicitly convert a standalone <typeparamref name="T"/> <paramref name="value"/> to an
+    /// <see cref="Option{T}"/>.<see cref="Option{T}.Some"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Option<T>(T value) => Some(value);
+    
+    /// <summary>
+    /// Implicitly convert a standalone <see cref="ScrubJay.None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Option<T>(None _) => None();
 
+    /// <summary>
+    /// Implicitly convert a standalone <see cref="ScrubJay.Some{T}"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.Some"/>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Option<T>(Some<T> some) => Some(some.Value);
 
+    /// <summary>
+    /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator true(Option<T> option) => option._isSome;
+    /// <summary>
+    /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator false(Option<T> option) => !option._isSome;
 
     // We pass equality and comparison down to T values
@@ -78,16 +97,14 @@ public readonly struct Option<T> :
 #endregion
 
     /// <summary>
-    /// Gets the None option
+    /// Gets <see cref="Option{T}"/>.None, which represents the lack of a value
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> None() => default(Option<T>);
     
     /// <summary>
-    /// Creates a new <see cref="Option{T}"/>.Some containing <paramref name="value"/>
+    /// Get an <see cref="Option{T}"/>.Some containing a <paramref name="value"/>
     /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some(T value) => new(value);
 
@@ -98,6 +115,7 @@ public readonly struct Option<T> :
     // If this is Option.Some, the value
     private readonly T? _value;
 
+    // option can only be constructed with None(), Some(), or implicitly
     private Option(T value)
     {
         _isSome = true;
@@ -105,13 +123,26 @@ public readonly struct Option<T> :
     }
 
     /// <summary>
-    /// 
+    /// Does this <see cref="Option{T}"/> contain <see cref="Some"/> value?
     /// </summary>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some"/>
+    /// <returns>
+    /// <c>true</c> if this is Some, <c>false</c> if it is None
+    /// </returns>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSome() => _isSome;
 
+    /// <summary>
+    /// Does this <see cref="Option{T}"/> contain <see cref="Some"/> value?
+    /// </summary>
+    /// <param name="value">
+    /// If this is <see cref="Some"/>, this will be the contained value<br/>
+    /// if this is <see cref="None"/>, it will be <c>default(T)</c>
+    /// </param>
+    /// <returns>
+    /// <c>true</c> and fills <paramref name="value"/> if this is <see cref="Some"/><br/>
+    /// <c>false</c> if it is <see cref="None"/>
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSome([MaybeNullWhen(false)] out T value)
     {
@@ -130,7 +161,7 @@ public readonly struct Option<T> :
     /// </summary>
     /// <param name="predicate"></param>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSomeAnd(Func<T, bool> predicate) => _isSome && predicate(_value!);
 
@@ -139,7 +170,7 @@ public readonly struct Option<T> :
     /// 
     /// </summary>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_none"/>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_none"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsNone() => !_isSome;
 
@@ -149,13 +180,13 @@ public readonly struct Option<T> :
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap"/>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T SomeOrThrow(string? errorMessage = null)
     {
         if (_isSome)
             return _value!;
-        throw new InvalidOperationException(errorMessage ?? "This option is not some");
+        throw new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
     }
 
     /// <summary>
@@ -163,7 +194,7 @@ public readonly struct Option<T> :
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or"/>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T SomeOr(T value)
     {
@@ -177,7 +208,7 @@ public readonly struct Option<T> :
     /// 
     /// </summary>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_default"/>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_default"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T? SomeOrDefault()
     {
@@ -191,7 +222,7 @@ public readonly struct Option<T> :
     /// </summary>
     /// <param name="getValue"></param>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T SomeOrElse(Func<T> getValue)
     {
@@ -206,7 +237,7 @@ public readonly struct Option<T> :
     /// <param name="err"></param>
     /// <typeparam name="TError"></typeparam>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or"/>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or"/>
     public Result<T, TError> OkOr<TError>(TError err)
     {
         if (_isSome)
@@ -220,7 +251,7 @@ public readonly struct Option<T> :
     /// <param name="getErr"></param>
     /// <typeparam name="TError"></typeparam>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or_else"/>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or_else"/>
     public Result<T, TError> OkOrElse<TError>(Func<TError> getErr)
     {
         if (_isSome)
@@ -229,12 +260,18 @@ public readonly struct Option<T> :
     }
 
     /// <summary>
-    /// 
+    /// Returns <see cref="None"/> if this <see cref="Option{T}"/> is <see cref="None"/>,<br/>
+    /// otherwise calls <paramref name="predicate"/> with the wrapped value and returns:<br/>
+    /// <see cref="Some"/> if <paramref name="predicate"/> returns <c>true</c> (with the wrapped value),<br/>
+    /// and <see cref="None"/> if <paramref name="predicate"/> returns <c>false</c><br/>
+    /// This function works similar to <see cref="Enumerable.Where"/><br/>
+    /// You can imagine this <see cref="Option{T}"/> being an iterator over one or zero elements<br/>
+    /// <see cref="Where"/> lets you decide which elements to keep<br/>
     /// </summary>
     /// <param name="predicate"></param>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
-    public Option<T> Filter(Func<T, bool> predicate)
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
+    public Option<T> Where(Func<T, bool> predicate)
     {
         if (IsSome(out var value) && predicate(value))
             return this;
@@ -247,8 +284,8 @@ public readonly struct Option<T> :
     /// <param name="map"></param>
     /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map"/>
-    public Option<TNew> Map<TNew>(Func<T, TNew> map)
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map"/>
+    public Option<TNew> Select<TNew>(Func<T, TNew> map)
     {
         if (IsSome(out var value))
         {
@@ -265,8 +302,8 @@ public readonly struct Option<T> :
     /// <param name="defaultValue"></param>
     /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
-    public TNew MapOr<TNew>(Func<T, TNew> map, TNew defaultValue)
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
+    public TNew SelectOr<TNew>(Func<T, TNew> map, TNew defaultValue)
     {
         if (IsSome(out var value))
         {
@@ -274,6 +311,16 @@ public readonly struct Option<T> :
         }
 
         return defaultValue;
+    }
+    
+    public TNew? SelectOrDefault<TNew>(Func<T, TNew> map)
+    {
+        if (IsSome(out var value))
+        {
+            return map(value);
+        }
+
+        return default(TNew);
     }
 
     /// <summary>
@@ -283,8 +330,8 @@ public readonly struct Option<T> :
     /// <param name="getDefaultValue"></param>
     /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
-    public TNew MapOrElse<TNew>(Func<T, TNew> map, Func<TNew> getDefaultValue)
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
+    public TNew SelectOrElse<TNew>(Func<T, TNew> map, Func<TNew> getDefaultValue)
     {
         if (IsSome(out var value))
         {
@@ -427,29 +474,15 @@ public readonly struct Option<T> :
 
     public bool Equals(Option<T> other)
     {
+        // If I am Some
         if (_isSome)
         {
-            if (other._isSome)
-            {
-                return EqualityComparer<T>.Default.Equals(_value!, other._value!);
-            }
-            else // y is none
-            {
-                return false;
-            }
+            // Other has to be Some and our values have to be equal
+            return other._isSome && EqualityComparer<T>.Default.Equals(_value!, other._value!);
         }
-        else // x is none
-        {
-            if (other._isSome)
-            {
-                return false;
-            }
-            else
-            {
-                // None == None
-                return true;
-            }
-        }
+
+        // Both of us must be None
+        return !other._isSome;
     }
 
     public bool Equals(T? value)
@@ -466,6 +499,7 @@ public readonly struct Option<T> :
             Option<T> option => Equals(option),
             T value => Equals(value),
             None none => Equals(none),
+            bool isSome => _isSome == isSome,
             _ => false,
         };
     }
@@ -476,7 +510,7 @@ public readonly struct Option<T> :
     {
         if (_isSome)
             return Hasher.GetHashCode<T>(_value);
-        return 0;
+        return Hasher.EmptyHash;
     }
 
     public override string ToString()
@@ -487,18 +521,15 @@ public readonly struct Option<T> :
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
     public OptionEnumerator GetEnumerator() => new OptionEnumerator(this);
 
     [MustDisposeResource(false)]
     [StructLayout(LayoutKind.Auto)]
     public struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
     {
-        private bool _yielded;
+        private bool _canYield;
         private readonly T _value;
 
         object? IEnumerator.Current => _value;
@@ -509,20 +540,20 @@ public readonly struct Option<T> :
             if (option._isSome)
             {
                 _value = option._value!;
-                _yielded = false;
+                _canYield = true;
             }
             else
             {
                 _value = default!;
-                _yielded = true;
+                _canYield = false;
             }
         }
 
         public bool MoveNext()
         {
-            if (_yielded)
+            if (!_canYield)
                 return false;
-            _yielded = true;
+            _canYield = false;
             return true;
         }
 
