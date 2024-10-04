@@ -57,11 +57,11 @@ public readonly struct Some<T> :
         someValue = Value;
     }
 
-    public int CompareTo(Some<T> other) => Comparer<T>.Default.Compare(this.Value, other.Value);
-    public int CompareTo(T? other) => Comparer<T>.Default.Compare(this.Value, other);
+    public int CompareTo(Some<T> other) => Comparer<T>.Default.Compare(this.Value!, other.Value!);
+    public int CompareTo(T? other) => Comparer<T>.Default.Compare(this.Value!, other!);
 
-    public bool Equals(Some<T> some) => EqualityComparer<T>.Default.Equals(Value, some.Value);
-    public bool Equals(T? someValue) => EqualityComparer<T>.Default.Equals(Value, someValue!);
+    public bool Equals(Some<T> some) => EqualityComparer<T>.Default.Equals(Value!, some.Value!);
+    public bool Equals(T? someValue) => EqualityComparer<T>.Default.Equals(Value!, someValue!);
     public bool Equals(bool isSome) => isSome;
     public override bool Equals(object? obj) => obj switch
     {

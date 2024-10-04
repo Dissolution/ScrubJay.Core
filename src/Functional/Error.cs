@@ -54,12 +54,12 @@ public readonly struct Error<TError> :
         errorValue = Value;
     }
 
-    public int CompareTo(Error<TError> other) => Comparer<TError>.Default.Compare(this.Value, other.Value);
-    public int CompareTo(TError? other) => Comparer<TError>.Default.Compare(this.Value, other);
+    public int CompareTo(Error<TError> other) => Comparer<TError>.Default.Compare(this.Value!, other.Value!);
+    public int CompareTo(TError? other) => Comparer<TError>.Default.Compare(this.Value!, other!);
 
 
-    public bool Equals(Error<TError> other) => EqualityComparer<TError>.Default.Equals(Value, other.Value);
-    public bool Equals(TError? other) => EqualityComparer<TError>.Default.Equals(Value, other!);
+    public bool Equals(Error<TError> other) => EqualityComparer<TError>.Default.Equals(Value!, other.Value!);
+    public bool Equals(TError? other) => EqualityComparer<TError>.Default.Equals(Value!, other!);
     public bool Equals(bool isOkay) => !isOkay;
     public override bool Equals(object? obj) => obj switch
     {

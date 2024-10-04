@@ -49,18 +49,21 @@ public static class GlobalHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<T> Error<T>(T value) => new Error<T>(value);
     
-    /* Another way to solve the issue:
-     * Result<?, Exception> result;
-     * 
-     * You can just use the implicit conversion for inherited types:
-     * result = new InvalidOperationException();
-     *
-     * But if you want to use Error() (as you might be using to solve interface casting issues)
-     * result = Error(new InvalidOperationException);
-     * This will not work, as Error<InvalidOperationException> does not implicitly cast to Result<?, Exception>
-     *
-     * The below overload solves the problem by performing the casting itself
-     */
+    /// <summary>
+    /// Converts an <see cref="Exception"/> to an <see cref="Error{T}">Error&lt;Exception&gt;</see>
+    /// </summary>
+    /// <param name="exception"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// Another way to solve the issue:<br/>
+    /// <c>Result&lt;?, Exception&gt; result;</c><br/>
+    /// You can just use the implicit conversion for inherited types:<br/>
+    /// <c>result = new InvalidOperationException();</c><br/>
+    /// But if you want to use Error() (as you might be using to solve interface casting issues)<br/>
+    /// <c>result = Error(new InvalidOperationException);</c><br/>
+    /// This will not work, as Error&lt;InvalidOperationException&gt; does not implicitly cast to Result&lt;?, Exception&gt;<br/>
+    /// This overload solves the problem by performing the casting explicitly<br/>
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<Exception> Error(Exception exception)
         => new Error<Exception>(exception);
