@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CA1710, MA0048, CS1574, CS0419
 
-namespace ScrubJay;
+namespace ScrubJay.Functional;
 
 /// <summary>
 /// An Option represents an optional value, every Option is either:<br/>
@@ -14,7 +14,7 @@ namespace ScrubJay;
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public readonly struct Option<T> :
-/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */    
+/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */
 #if NET7_0_OR_GREATER
     IEqualityOperators<Option<T>, Option<T>, bool>,
     IEqualityOperators<Option<T>, None, bool>,
@@ -35,6 +35,7 @@ public readonly struct Option<T> :
     IEnumerable
 {
 #region Operators
+
     /// <summary>
     /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
     /// </summary>
@@ -42,37 +43,40 @@ public readonly struct Option<T> :
     public static implicit operator bool(Option<T> option) => option._isSome;
 
     /// <summary>
-    /// Implicitly convert a standalone <typeparamref name="T"/> <paramref name="value"/> to an
-    /// <see cref="Option{T}"/>.<see cref="Option{T}.Some"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Option<T>(T value) => Some(value);
-    
-    /// <summary>
-    /// Implicitly convert a standalone <see cref="ScrubJay.None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Option<T>(None _) => None();
-
-    /// <summary>
-    /// Implicitly convert a standalone <see cref="ScrubJay.Some{T}"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.Some"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Option<T>(Some<T> some) => Some(some.Value);
-
-    /// <summary>
     /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator true(Option<T> option) => option._isSome;
+
     /// <summary>
     /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator false(Option<T> option) => !option._isSome;
+    
+    
+    /// <summary>
+    /// Implicitly convert a standalone <typeparamref name="T"/> <paramref name="value"/> to an
+    /// <see cref="Option{T}"/>.<see cref="Option{T}.Some"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Option<T>(T value) => Some(value);
+
+    /// <summary>
+    /// Implicitly convert a standalone <see cref="Functional.None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Option<T>(None _) => None();
+
+    /// <summary>
+    /// Implicitly convert a standalone <see cref="Some{TSome}"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.Some"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Option<T>(Some<T> some) => Some(some.Value);
+
 
     // We pass equality and comparison down to T values
-    
+
     public static bool operator ==(Option<T> left, Option<T> right) => left.Equals(right);
     public static bool operator !=(Option<T> left, Option<T> right) => !left.Equals(right);
     public static bool operator >(Option<T> left, Option<T> right) => left.CompareTo(right) > 0;
@@ -101,17 +105,18 @@ public readonly struct Option<T> :
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> None() => default(Option<T>);
-    
+
     /// <summary>
     /// Get an <see cref="Option{T}"/>.Some containing a <paramref name="value"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some(T value) => new(value);
 
-    
+
     // Is this Option.Some?
     // if someone does default(Option), this will be false, so default(Option) == None
     private readonly bool _isSome;
+
     // If this is Option.Some, the value
     private readonly T? _value;
 
@@ -155,7 +160,7 @@ public readonly struct Option<T> :
         value = default;
         return false;
     }
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -213,7 +218,7 @@ public readonly struct Option<T> :
     public T? SomeOrDefault()
     {
         if (_isSome)
-                return _value!;
+            return _value!;
         return default(T);
     }
 
@@ -230,35 +235,7 @@ public readonly struct Option<T> :
             return _value!;
         return getValue();
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="err"></param>
-    /// <typeparam name="TError"></typeparam>
-    /// <returns></returns>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or"/>
-    public Result<T, TError> OkOr<TError>(TError err)
-    {
-        if (_isSome)
-            return Result<T, TError>.Ok(_value!);
-        return Result<T, TError>.Error(err);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="getErr"></param>
-    /// <typeparam name="TError"></typeparam>
-    /// <returns></returns>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.ok_or_else"/>
-    public Result<T, TError> OkOrElse<TError>(Func<TError> getErr)
-    {
-        if (_isSome)
-            return Result<T, TError>.Ok(_value!);
-        return Result<T, TError>.Error(getErr());
-    }
-
+    
     /// <summary>
     /// Returns <see cref="None"/> if this <see cref="Option{T}"/> is <see cref="None"/>,<br/>
     /// otherwise calls <paramref name="predicate"/> with the wrapped value and returns:<br/>
@@ -312,7 +289,7 @@ public readonly struct Option<T> :
 
         return defaultValue;
     }
-    
+
     public TNew? SelectOrDefault<TNew>(Func<T, TNew> map)
     {
         if (IsSome(out var value))
@@ -393,34 +370,35 @@ public readonly struct Option<T> :
         }
     }
 
-    public Result<T, Exception> AsResult()
+    public Result<T, Exception> AsResult(string? errorMessage = null)
     {
         if (_isSome)
             return _value!;
-        return new InvalidOperationException("None");
+        return new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
     }
 
 #region Compare
-
+    /* None always compares as less than any Some */
+    
     public int CompareTo(Option<T> other)
     {
-        // None compares as less than any Some
         if (_isSome)
         {
             if (other._isSome)
             {
+                // We both are Some, compare our values
                 return Comparer<T>.Default.Compare(_value!, other._value!);
             }
-            else // y is none
+            else // other is none
             {
-                return 1; // I am greater
+                return 1; // My Some is greater than their None
             }
         }
-        else // x is none
+        else // this is None
         {
             if (other._isSome)
             {
-                return -1; // I am lesser
+                return -1; // My None is lesser than their Some
             }
             else
             {
@@ -430,43 +408,30 @@ public readonly struct Option<T> :
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int CompareTo(T? other)
     {
         if (_isSome)
-        {
             return Comparer<T>.Default.Compare(_value!, other!);
-        }
-        else
-        {
-            // None compares as less than any Some
-            return -1;
-        }
+        
+        // My None is less than a Some value
+        return -1;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int CompareTo(None none)
     {
-        // None compares as less than any Some
-        if (_isSome)
-        {
-            return 1; // I am greater
-        }
-        else // x is none
-        {
-            // None == None
-            return 0;
-        }
+        // Some > None, None == None
+        return _isSome ? 1 : 0;
     }
 
-    public int CompareTo(object? obj)
+    public int CompareTo(object? obj) => obj switch
     {
-        return obj switch
-        {
-            Option<T> option => CompareTo(option),
-            T some => CompareTo(some),
-            None none => CompareTo(none),
-            _ => 1, // unknown values sort before
-        };
-    }
+        Option<T> option => CompareTo(option),
+        T some => CompareTo(some),
+        None none => CompareTo(none),
+        _ => 1, // Unknown | Null | None values sort before
+    };
 
 #endregion
 
@@ -515,7 +480,7 @@ public readonly struct Option<T> :
 
     public override string ToString()
     {
-        return Match(static value => $"Some({value})", static () => nameof(None));
+        return _isSome ? $"Some({_value})" : nameof(None);
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -523,8 +488,9 @@ public readonly struct Option<T> :
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
+    [MustDisposeResource(false)]
     public OptionEnumerator GetEnumerator() => new OptionEnumerator(this);
-
+    
     [MustDisposeResource(false)]
     [StructLayout(LayoutKind.Auto)]
     public struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable

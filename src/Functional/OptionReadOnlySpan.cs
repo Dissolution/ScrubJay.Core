@@ -3,7 +3,8 @@
 // ReSharper disable InconsistentNaming
 
 using ScrubJay.Comparison;
-namespace ScrubJay;
+
+namespace ScrubJay.Functional;
 
 [StructLayout(LayoutKind.Auto)]
 [PublicAPI]

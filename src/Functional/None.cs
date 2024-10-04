@@ -1,4 +1,4 @@
-﻿namespace ScrubJay;
+﻿namespace ScrubJay.Functional;
 
 /// <summary>
 /// None represents the lack of a value for an <see cref="Option{T}"/> and implicitly converts to <see cref="Option{T}"/>.<see cref="Option{T}.None"/> for any T

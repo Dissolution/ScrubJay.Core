@@ -3,6 +3,7 @@
 using System.Collections;
 using System.Reflection;
 using ScrubJay.Extensions;
+using ScrubJay.Functional;
 using TypeExtensions = ScrubJay.Extensions.TypeExtensions;
 
 namespace ScrubJay.Tests.ExtensionsTests;

@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Reflection;
+using ScrubJay.Functional;
 
 namespace ScrubJay.Tests.Buffers;
 

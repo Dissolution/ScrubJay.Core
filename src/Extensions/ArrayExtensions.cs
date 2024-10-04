@@ -25,8 +25,8 @@ public static class ArrayExtensions
     {
         return Validate
             .IsNotNull(array, arrayName)
-            .MapOk(arr => Validate.Index(index, arr.Length, indexName))
-            .MapOk(offset => array![offset]);
+            .OkSelect(arr => Validate.Index(index, arr.Length, indexName))
+            .OkSelect(offset => array![offset]);
     }
     
     public static Result<T, Exception> TrySet<T>(this T[]? array, 
@@ -39,8 +39,8 @@ public static class ArrayExtensions
     {
         return Validate
             .IsNotNull(array, arrayName)
-            .MapOk(arr => Validate.Index(index, arr.Length, indexName))
-            .MapOk(offset => array![offset] = item);
+            .OkSelect(arr => Validate.Index(index, arr.Length, indexName))
+            .OkSelect(offset => array![offset] = item);
     }
     
     /// <summary>

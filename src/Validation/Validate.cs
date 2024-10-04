@@ -1,6 +1,7 @@
 ﻿#pragma warning disable S907, S3236
 
 using ScrubJay.Collections;
+using Unit = ScrubJay.Functional.Unit;
 
 namespace ScrubJay.Validation;
 

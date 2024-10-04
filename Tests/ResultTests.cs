@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Reflection;
-using NIExResult = ScrubJay.Result<int?, System.Exception?>;
+using ScrubJay.Functional;
+using NIExResult = ScrubJay.Functional.Result<int?, System.Exception?>;
 
 // ReSharper disable VariableCanBeNotNullable
 

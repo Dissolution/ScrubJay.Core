@@ -2,6 +2,7 @@
 // ReSharper disable UnusedVariable
 
 using System.Diagnostics;
+using ScrubJay.Functional;
 
 
 Option<int> opt = 147;

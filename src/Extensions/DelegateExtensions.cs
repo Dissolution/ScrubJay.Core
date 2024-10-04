@@ -1,3 +1,5 @@
+using Unit = ScrubJay.Functional.Unit;
+
 #pragma warning disable S2436
 
 namespace ScrubJay.Extensions;

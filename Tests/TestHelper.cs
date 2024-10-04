@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ScrubJay.Functional;
 
 namespace ScrubJay.Tests;
 

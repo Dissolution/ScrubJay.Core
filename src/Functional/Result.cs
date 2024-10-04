@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CA1031
 
-namespace ScrubJay;
+namespace ScrubJay.Functional;
 
 [PublicAPI]
 public static class Result

@@ -1,4 +1,6 @@
-﻿#pragma warning disable CA1031
+﻿using Unit = ScrubJay.Functional.Unit;
+
+#pragma warning disable CA1031
 
 namespace ScrubJay.Collections;
 
