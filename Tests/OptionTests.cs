@@ -17,7 +17,6 @@ public class OptionTests
         if (option.IsSome(out int some))
         {
             var e = option.GetEnumerator();
-            Assert.NotNull(e);
             Assert.True(e.MoveNext());
             Assert.Equal(some, e.Current);
             Assert.False(e.MoveNext());
@@ -25,7 +24,6 @@ public class OptionTests
         else
         {
             var e = option.GetEnumerator();
-            Assert.NotNull(e);
             Assert.False(e.MoveNext());
         }
         

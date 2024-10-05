@@ -8,6 +8,10 @@ namespace ScrubJay.Validation;
 /// <summary>
 /// Validation methods that return <see cref="Result{O,E}">Result</see>&lt;T, <see cref="Exception"/>&gt;
 /// </summary>
+/// <remarks>
+/// Validation is only performed on the parameters that are assumed to be coming from a user,
+/// parameters such as Available assume that the coder is passing sane data
+/// </remarks>
 public static class Validate
 {
 #region Index
@@ -69,80 +73,107 @@ public static class Validate
 
 #endregion
 
-    public static Result<(int Offset, int Length), Exception> Range(
-        int offset,
+    /// <summary>
+    /// Validates that a Range specified with an <paramref name="index"/> and <paramref name="length"/> fits within an <paramref name="available"/> count
+    /// </summary>
+    /// <param name="index">Validated<br/>
+    /// The inclusive <c>int</c> starting index for the Range 
+    /// </param>
+    /// <param name="length">Validated<br/>
+    /// The total number of items covered by the Range
+    /// </param>
+    /// <param name="available"><b>NOT</b> Validated<br/>
+    /// The total number of items available
+    /// </param>
+    /// <param name="indexName">The name of the <paramref name="index"/> parameter, automatically captured</param>
+    /// <param name="lengthName">The name of the <paramref name="length"/> parameter, automatically captured</param>
+    /// <returns>
+    /// A <see cref="Result{TOk,TError}">Result&lt;(int Offset, int Length), Exception&gt;</see> that contains a valid start Offset and Length<br/>
+    /// or an <see cref="Exception"/> that describes the first validation failure
+    /// </returns>
+    public static Result<(int Offset, int Length), Exception> IndexLength(
+        int index,
         int length,
         int available,
-        [CallerArgumentExpression(nameof(offset))]
-        string? offsetName = null,
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null,
         [CallerArgumentExpression(nameof(length))]
-        string? lengthName = null,
-        [CallerArgumentExpression(nameof(available))]
-        string? availableName = null)
+        string? lengthName = null)
     {
-        return new Validations
-        {
-            IsGreaterOrEqualThan(available, 0, valueName: availableName),
-            InInclusiveLength(offset, available, valueName: offsetName),
-            IsGreaterOrEqualThan(length, 0, valueName: lengthName),
-            InInclusiveLength(offset + length, available, valueName: "Offset + Length"),
-        }.GetResult((offset, length));
+        if (index < 0 || index > available)
+            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0, {available}]");
+        if (length < 0 || index + length > available)
+            return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0, {available}]");
+        return (index, length);
     }
 
-    public static Result<(int Offset, int Length), Exception> Range(Index index, int length, int available, [CallerArgumentExpression(nameof(index))] string? indexName = null, [CallerArgumentExpression(nameof(length))] string? lengthName = null, [CallerArgumentExpression(nameof(available))] string? availableName = null)
+    /// <summary>
+    /// Validates that a Range specified with an <paramref name="index"/> and <paramref name="length"/> fits within an <paramref name="available"/> count
+    /// </summary>
+    /// <param name="index">Validated<br/>
+    /// The inclusive starting <see cref="System.Index"/> for the Range 
+    /// </param>
+    /// <param name="length">Validated<br/>
+    /// The total number of items covered by the Range
+    /// </param>
+    /// <param name="available"><b>NOT</b> Validated<br/>
+    /// The total number of items available
+    /// </param>
+    /// <param name="indexName">The name of the <paramref name="index"/> parameter, automatically captured</param>
+    /// <param name="lengthName">The name of the <paramref name="length"/> parameter, automatically captured</param>
+    /// <returns>
+    /// A <see cref="Result{TOk,TError}">Result&lt;(int Offset, int Length), Exception&gt;</see> that contains a valid start Offset and Length<br/>
+    /// or an <see cref="Exception"/> that describes the first validation failure
+    /// </returns>
+    public static Result<(int Offset, int Length), Exception> IndexLength(
+        Index index, 
+        int length, 
+        int available, 
+        [CallerArgumentExpression(nameof(index))] string? indexName = null, 
+        [CallerArgumentExpression(nameof(length))] string? lengthName = null)
     {
-        if (available < 0)
-            return new ArgumentOutOfRangeException(availableName, available, "Available must be zero or greater");
-        int offset = index.GetOffset(length);
-        if (offset < 0 || offset >= available)
-            return new ArgumentOutOfRangeException(indexName, index, $"Index must be in the range [0, {available})");
+        int offset = index.GetOffset(available);
+        if (offset < 0 || offset > available)
+            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0, {available}]");
         if (length < 0 || offset + length > available)
-            return new ArgumentOutOfRangeException(lengthName, length, $"Offset + Length must be in [0, {available}]");
+            return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0, {available}]");
         return (offset, length);
     }
 
-    public static Result<(int Offset, int Length), Exception> Range(Range range, int length, [CallerArgumentExpression(nameof(range))] string? rangeName = null, [CallerArgumentExpression(nameof(length))] string? lengthName = null)
+    /// <summary>
+    /// Validates that a specified <see cref="System.Range"/> fits within an <paramref name="available"/> count
+    /// </summary>
+    /// <param name="range">Validated<br/>
+    /// The <see cref="System.Range"/> to validate against an <paramref name="available"/> count
+    /// </param>
+    /// <param name="available"><b>NOT</b> Validated<br/>
+    /// The total number of items available
+    /// </param>
+    /// <param name="rangeName">The name of the <paramref name="range"/> parameter, automatically captured</param>
+    /// <returns>
+    /// A <see cref="Result{TOk,TError}">Result&lt;(int Offset, int Length), Exception&gt;</see> that contains a valid start Offset and Length<br/>
+    /// or an <see cref="Exception"/> that describes the first validation failure
+    /// </returns>
+    public static Result<(int Offset, int Length), Exception> Range(
+        Range range, 
+        int available, 
+        [CallerArgumentExpression(nameof(range))] string? rangeName = null)
     {
-        if (length < 0)
-            return new ArgumentOutOfRangeException(lengthName, length, "Length must be zero or greater");
-        var (offset, count) = range.GetOffsetAndLength(length);
-        if (offset >= 0 && offset < length)
-            return (offset, count);
-        return new ArgumentOutOfRangeException(rangeName, range, $"Range must be in [0, {length})");
+        int start = range.Start.GetOffset(available);
+        if (start < 0 || start > available)
+            return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0, {available}]");
+        
+        int end = range.End.GetOffset(available);
+        if (end < start || end > available)
+            return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0, {available}]");
+
+        return (start, end - start);
     }
 
-    public static Result<(int Offset, int Length), Exception> Range<T>(Range range, ReadOnlySpan<T> span, [CallerArgumentExpression(nameof(range))] string? rangeName = null, [CallerArgumentExpression(nameof(span))] string? spanName = null)
-    {
-        int spanLen = span.Length;
-        var (offset, count) = range.GetOffsetAndLength(spanLen);
-        if (offset >= 0 && offset < spanLen)
-            return (offset, count);
-        return new ArgumentOutOfRangeException(rangeName, range, $"Range must be in [0, {spanLen})");
-    }
-
-    public static Result<(int Offset, int Length), Exception> Range<T>(Range range, T[]? array, [CallerArgumentExpression(nameof(range))] string? rangeName = null, [CallerArgumentExpression(nameof(array))] string? arrayName = null)
-    {
-        if (array is null)
-            return new ArgumentNullException(arrayName);
-        int arrayLen = array.Length;
-        var (offset, count) = range.GetOffsetAndLength(arrayLen);
-        if (offset >= 0 && offset < arrayLen)
-            return (offset, count);
-        return new ArgumentOutOfRangeException(rangeName, range, $"Range must be in [0, {arrayLen})");
-    }
-
-    public static Result<(int Offset, int Length), Exception> Range<T>(Range range, ICollection<T>? collection, [CallerArgumentExpression(nameof(range))] string? rangeName = null, [CallerArgumentExpression(nameof(collection))] string? collectionName = null)
-    {
-        if (collection is null)
-            return new ArgumentNullException(collectionName);
-        int collectionCount = collection.Count;
-        var (offset, count) = range.GetOffsetAndLength(collectionCount);
-        if (offset >= 0 && offset < collectionCount)
-            return (offset, count);
-        return new ArgumentOutOfRangeException(rangeName, range, $"Range must be in [0, {collectionCount})");
-    }
-
-
+    
+    
+    
+    
     public static Result<T, Exception> IsNotNull<T>([NotNullWhen(true)] T? value, [CallerArgumentExpression(nameof(value))] string? valueName = null)
         where T : notnull
     {
@@ -201,6 +232,13 @@ public static class Validate
             return value;
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {bounds}");
     }
+    
+    public static Result<T, Exception> InBounds<T>(T value, 
+        Bound<T> lowerBound, 
+        Bound<T> upperBound,
+        [CallerArgumentExpression(nameof(value))] string? valueName = null)
+        => InBounds<T>(value, Bounds.Create(lowerBound, upperBound), valueName);    
+    
 
     public static Result<T, Exception> InInclusiveLength<T>(
         T value,
@@ -248,9 +286,6 @@ public static class Validate
             return value;
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be >= {minInclusive}");
     }
-
-
-    public static Result<Unit, Exception> Args(Validations validations) => validations.GetResult();
 
 
     public static Result<Unit, Exception> CopyTo<T>(int count, T[]? array, int arrayIndex = 0, [CallerArgumentExpression(nameof(count))] string? countName = null, [CallerArgumentExpression(nameof(array))] string? arrayName = null, [CallerArgumentExpression(nameof(arrayIndex))] string? arrayIndexName = null)

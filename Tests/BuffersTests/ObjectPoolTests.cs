@@ -5,7 +5,7 @@ using ScrubJay.Extensions;
 
 // ReSharper disable AccessToDisposedClosure
 
-namespace ScrubJay.Tests.Buffers;
+namespace ScrubJay.Tests.BuffersTests;
 
 public class ObjectPoolTests
 {

@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
 
-namespace ScrubJay.Tests.Buffers;
+namespace ScrubJay.Tests.BuffersTests;
 
 public class BufferTests
 {

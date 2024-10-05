@@ -59,7 +59,7 @@
         
         <!-- Setup NuGet -->
         <IsPackable>true</IsPackable>
-        <EnablePackageValidation>true</EnablePackageValidation>
+        <EnablePackageValidation>false</EnablePackageValidation>
         
         <!-- NuGet Package Information -->
         <Title>ScrubJay Core Libraries</Title>

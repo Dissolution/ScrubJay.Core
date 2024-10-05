@@ -1,9 +1,9 @@
 ﻿using ScrubJay.Enums;
-using static ScrubJay.Tests.Enums.EnumTestData;
+using static ScrubJay.Tests.EnumsTests.EnumTestData;
 
 // ReSharper disable InvokeAsExtensionMethod
 
-namespace ScrubJay.Tests.Enums;
+namespace ScrubJay.Tests.EnumsTests;
 
 public class EnumExtensionsTests
 {

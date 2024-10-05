@@ -40,7 +40,7 @@ public sealed class MiscTheoryData : IReadOnlyCollection<object?[]>
 
         var lengths = new int[columns];
         lengths.AsSpan().Fill(rows.Count);
-        BoundedIndices boundedIndices = BoundedIndices.Lengths(lengths);
+        BoundedArrayIndices boundedIndices = BoundedArrayIndices.Lengths(lengths);
 
         var data = new MiscTheoryData();
 

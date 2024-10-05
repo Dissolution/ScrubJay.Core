@@ -14,6 +14,9 @@ public readonly struct Bound<T> :
     public static bool operator ==(Bound<T> left, Bound<T> right) => left.Equals(right);
     public static bool operator !=(Bound<T> left, Bound<T> right) => !left.Equals(right);
 
+    public static Bound<T> Inclusive(T value) => new Bound<T>(value, true);
+    public static Bound<T> Exclusive(T value) => new Bound<T>(value, false);
+    
     public readonly T Value;
     public readonly bool IsInclusive;
     

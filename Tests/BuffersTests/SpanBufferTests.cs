@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
 using ScrubJay.Comparison;
 
-namespace ScrubJay.Tests.Buffers;
+namespace ScrubJay.Tests.BuffersTests;
 
 public class SpanBufferTests
 {

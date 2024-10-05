@@ -2,7 +2,7 @@
 using System.Reflection;
 using ScrubJay.Functional;
 
-namespace ScrubJay.Tests.Buffers;
+namespace ScrubJay.Tests.BuffersTests;
 
 public class ArrayPoolTests
 {

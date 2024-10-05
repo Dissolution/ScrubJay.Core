@@ -10,7 +10,7 @@ public abstract class ListSlice
 
     public static ListSlice<T> Of<T>(IList<T> list, Index index, int length)
     {
-        (int offset, int len) = Validate.Range(index, length, list.Count).OkOrThrow();
+        (int offset, int len) = Validate.IndexLength(index, length, list.Count).OkOrThrow();
         return new ListSlice<T>(list, offset, len);
     }
 }

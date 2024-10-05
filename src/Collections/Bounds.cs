@@ -4,7 +4,7 @@
 public static class Bounds
 {
     public static Bounds<T> Any<T>() => new Bounds<T>(Option.None(), Option.None());
-    public static Bounds<T> None<T>() => new Bounds<T>(Some(Bound.Exclusive(default(T)!)), Some(Bound.Exclusive(default(T)!)));
+    public static Bounds<T> None<T>() => new Bounds<T>(Some(Bound<T>.Exclusive(default(T)!)), Some(Bound<T>.Exclusive(default(T)!)));
     public static Bounds<T> StartAt<T>(T minimum, bool inclusive = true) => new Bounds<T>(Some(new Bound<T>(minimum, inclusive)), Option.None());
     public static Bounds<T> EndAt<T>(T maximum, bool inclusive = false) => new Bounds<T>(Option.None(), Some(new Bound<T>(maximum, inclusive)));
     public static Bounds<T> Create<T>(Bound<T> minimum, Bound<T> maximum) => new(Some(minimum), Some(maximum));
@@ -13,10 +13,10 @@ public static class Bounds
     {
         if (range.Start.IsFromEnd || range.End.IsFromEnd)
             return Option.None();
-        return Some(Create(Bound.Inclusive(range.Start.Value), Bound.Exclusive(range.End.Value)));
+        return Some(Create(Bound<int>.Inclusive(range.Start.Value), Bound<int>.Exclusive(range.End.Value)));
     }
     
-    public static Bounds<int> ForLength(int length) => Create<int>(Bound.Inclusive(0), Bound.Exclusive(length));
+    public static Bounds<int> ForLength(int length) => Create<int>(Bound<int>.Inclusive(0), Bound<int>.Exclusive(length));
 
     public static Bounds<int> For<T>(ReadOnlySpan<T> span) => ForLength(span.Length);
     

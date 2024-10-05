@@ -2,12 +2,13 @@
 
 namespace ScrubJay.Collections;
 
-public sealed class BoundedIndices : IEnumerator<int[]>
+[MustDisposeResource(false)]
+public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisposable
 {
-    public static BoundedIndices For(Array? array)
+    public static BoundedArrayIndices For(Array? array)
     {
         Validate.ThrowIfNull(array);
-        
+
         var dimensions = array.Rank;
         int[] lowerBounds = new int[dimensions];
         int[] upperBounds = new int[dimensions];
@@ -22,11 +23,12 @@ public sealed class BoundedIndices : IEnumerator<int[]>
                 throw new ArgumentException($"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}", nameof(array));
             upperBounds[d] = upper;
         }
+
         return new(lowerBounds, upperBounds);
     }
 
     /// <summary>
-    /// Create <see cref="BoundedIndices"/> that iterate over all valid indices in a range of bounds
+    /// Create <see cref="BoundedArrayIndices"/> that iterate over all valid indices in a range of bounds
     /// </summary>
     /// <param name="lowerBounds">
     /// The lower inclusive bounds of each Dimension
@@ -35,12 +37,12 @@ public sealed class BoundedIndices : IEnumerator<int[]>
     /// The upper <b>inclusive</b> bounds of each Dimension
     /// </param>
     /// <returns>
-    /// <see cref="BoundedIndices"/> that iterate over all valid indices in the bounds
+    /// <see cref="BoundedArrayIndices"/> that iterate over all valid indices in the bounds
     /// </returns>
     /// <exception cref="ArgumentException">
     /// Thrown if <paramref name="lowerBounds"/> or <paramref name="upperBounds"/> is invalid
     /// </exception>
-    public static BoundedIndices Range(int[] lowerBounds, int[] upperBounds)
+    public static BoundedArrayIndices Range(int[] lowerBounds, int[] upperBounds)
     {
         Validate.ThrowIfNull(lowerBounds);
         Validate.ThrowIfNull(upperBounds);
@@ -58,10 +60,11 @@ public sealed class BoundedIndices : IEnumerator<int[]>
             if (upper < lower)
                 throw new ArgumentException($"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}", nameof(upperBounds));
         }
+
         return new(lowerBounds, upperBounds);
     }
 
-    public static BoundedIndices Lengths(params int[] dimensionLengths)
+    public static BoundedArrayIndices Lengths(params int[] dimensionLengths)
     {
         Validate.ThrowIfNull(dimensionLengths);
         int dimensions = dimensionLengths.Length;
@@ -78,10 +81,11 @@ public sealed class BoundedIndices : IEnumerator<int[]>
                 throw new ArgumentException($"Dimension {d} has an unsupported length zero or less", nameof(dimensionLengths));
             upperBounds[d] = length - 1;
         }
+
         return new(lowerBounds, upperBounds);
     }
 
-    
+
     private readonly int[] _lowerBounds;
     private readonly int[] _upperBounds;
 
@@ -99,7 +103,7 @@ public sealed class BoundedIndices : IEnumerator<int[]>
         get => _indices.Length;
     }
 
-    private BoundedIndices(int[] lowerBounds, int[] upperBounds)
+    private BoundedArrayIndices(int[] lowerBounds, int[] upperBounds)
     {
         _lowerBounds = lowerBounds;
         _upperBounds = upperBounds;
@@ -107,7 +111,10 @@ public sealed class BoundedIndices : IEnumerator<int[]>
         Reset();
     }
 
-    public void Dispose() { /* Do nothing */ }
+    public void Dispose()
+    {
+        /* Do nothing */
+    }
 
     /// <summary>
     /// Try to increment <see cref="_indices"/> by rolling forward exactly one item
@@ -133,10 +140,10 @@ public sealed class BoundedIndices : IEnumerator<int[]>
         Span<int> indices = _indices;
         Span<int> lowerBounds = _lowerBounds;
         Span<int> upperBounds = _upperBounds;
-        
+
         // Always start with the rightmost index
         int endDimension = Dimensions - 1;
-        
+
         for (int d = endDimension; d >= 0; d--)
         {
             int index = indices[d];
@@ -147,13 +154,14 @@ public sealed class BoundedIndices : IEnumerator<int[]>
                 // if we're not the rightmost index, reset the index to the right to its lower
                 if (d < endDimension)
                 {
-                    indices[d+1] = lowerBounds[d+1];
+                    indices[d + 1] = lowerBounds[d + 1];
                 }
+
                 return true;
             }
             // Try to increment the next dimension
         }
-        
+
         // Could not increment anywhere
         return false;
     }

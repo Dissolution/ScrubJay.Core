@@ -151,8 +151,6 @@ public sealed class ObjectPool<T> : IDisposable
                 $"Pool Capacity must be between {ObjectPool.MinCapacity} and {ObjectPool.MaxCapacity}");
         }
 
-        Validate.InBounds(totalCapacity, Bounds.Create(Bound.Inclusive(ObjectPool.MinCapacity), Bound.Inclusive(ObjectPool.MaxCapacity))).OkOrThrow();
-
         _instanceFactory = factory ?? throw new ArgumentNullException(nameof(factory));
         _cleanInstance = clean;
         _disposeInstance = dispose;

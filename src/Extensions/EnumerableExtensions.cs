@@ -109,7 +109,7 @@ public static class EnumerableExtensions
     /// </summary>
     /// <param name="enumerable">
     /// The <see cref="IEnumerable{T}"/> to get the minimum value of<br/>
-    /// If <c>null</c>, <see cref="None"/> will be returned
+    /// If <c>null</c>, <see cref="Option{T}.None"/> will be returned
     /// </param>
     /// <param name="itemComparer">
     /// The optional <see cref="IComparer{T}"/> to use for item comparison
