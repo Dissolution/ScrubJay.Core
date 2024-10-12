@@ -1,6 +1,7 @@
 ﻿#pragma warning disable S4136, CA1002
 
 using System.Buffers;
+using ScrubJay.Collections;
 using ScrubJay.Comparison;
 
 namespace ScrubJay.Buffers;

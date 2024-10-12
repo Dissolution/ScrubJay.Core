@@ -1,5 +1,4 @@
-﻿using ScrubJay.Comparison;
-using ScrubJay.Utilities;
+﻿using ScrubJay.Collections;
 using ScrubJay.Validation;
 
 namespace ScrubJay.Tests.ValidationTests;
@@ -69,7 +68,7 @@ public class ValidateTests
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
 #if NET48_OR_GREATER
-            Assert.True(Equate.Sequence(slice, thisSlice));
+            Assert.True(Sequence.Equal(slice, thisSlice));
 #else
             Assert.Equal<int>(slice, thisSlice);
 #endif
@@ -107,7 +106,7 @@ public class ValidateTests
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
 #if NET48_OR_GREATER
-            Assert.True(Equate.Sequence(slice, thisSlice));
+            Assert.True(Sequence.Equal(slice, thisSlice));
 #else
             Assert.Equal<int>(slice, thisSlice);
 #endif
@@ -143,7 +142,7 @@ public class ValidateTests
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
 #if NET48_OR_GREATER
-            Assert.True(Equate.Sequence(slice, thisSlice));
+            Assert.True(Sequence.Equal(slice, thisSlice));
 #else
             Assert.Equal<int>(slice, thisSlice);
 #endif

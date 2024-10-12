@@ -172,14 +172,15 @@ public static class Validate
 
     
     
-    
-    
-    public static Result<T, Exception> IsNotNull<T>([NotNullWhen(true)] T? value, [CallerArgumentExpression(nameof(value))] string? valueName = null)
+    public static Result<T, Exception> IsNotNull<T>(
+        [NotNullWhen(true)] T? value, 
+        string? message = null,
+        [CallerArgumentExpression(nameof(value))] string? valueName = null)
         where T : notnull
     {
         if (value is not null)
             return value;
-        return new ArgumentNullException(valueName);
+        return new ArgumentNullException(valueName, message);
     }
 
     public static Result<T[], Exception> IsNotEmpty<T>(

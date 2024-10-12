@@ -2,7 +2,7 @@
 
 // ReSharper disable InconsistentNaming
 
-using ScrubJay.Comparison;
+using ScrubJay.Collections;
 
 namespace ScrubJay.Functional;
 
@@ -318,7 +318,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         {
             if (other._isSome)
             {
-                return Compare.Sequence(_value, other._value);
+                return Sequence.Compare(_value, other._value);
             }
             else // y is none
             {
@@ -343,7 +343,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     {
         if (_isSome)
         {
-            return Compare.Sequence(_value, other);
+            return Sequence.Compare(_value, other);
         }
         else
         {
@@ -386,7 +386,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         {
             if (other._isSome)
             {
-                return Equate.Sequence(_value, other._value);
+                return Sequence.Equal(_value, other._value);
             }
             else // y is none
             {
@@ -408,7 +408,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
 
     public bool Equals(ReadOnlySpan<T> value)
     {
-        return _isSome && Equate.Sequence(_value, value);
+        return _isSome && Sequence.Equal(_value, value);
     }
 
     public bool Equals(None none) => !_isSome;

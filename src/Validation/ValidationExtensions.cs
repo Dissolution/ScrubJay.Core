@@ -5,7 +5,7 @@
 /// </summary>
 public static class ValidationExtensions
 {
-     /// <summary>
+    /// <summary>
     /// Returns <paramref name="value"/> or throws an <see cref="ArgumentNullException"/> if it is <c>null</c>
     /// </summary>
     /// <typeparam name="T">
@@ -14,8 +14,11 @@ public static class ValidationExtensions
     /// <param name="value">
     /// The value to check for <c>null</c>
     /// </param>
+    /// <param name="message">
+    /// The optional message used for a thrown <see cref="ArgumentNullException"/>
+    /// </param>
     /// <param name="valueName">
-    /// The name of the <paramref name="value"/> argument, passed to <see cref="ArgumentNullException"/>
+    /// The automatically captured name of the <paramref name="value"/> argument, used for a thrown <see cref="ArgumentNullException"/>
     /// </param>
     /// <returns>
     /// A non-<c>null</c> <typeparamref name="T"/> <paramref name="value"/>
@@ -24,12 +27,16 @@ public static class ValidationExtensions
     /// Thrown if <paramref name="value"/> is <c>null</c>
     /// </exception>
     [return: NotNull]
-    public static T ThrowIfNull<T>([AllowNull, NotNull] this T value, [CallerArgumentExpression(nameof(value))] string? valueName = null)
+    public static T ThrowIfNull<T>(
+        [AllowNull, NotNull] this T value,
+        string? message = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
         where T : class?
     {
         if (value is not null)
             return value;
-        throw new ArgumentNullException(valueName);
+        throw new ArgumentNullException(valueName, message);
     }
 
     /// <summary>
@@ -39,7 +46,7 @@ public static class ValidationExtensions
     /// The <see cref="object"/> to convert to a <typeparamref name="TOut"/> value
     /// </param>
     /// <param name="objName">
-    /// The captured name for the <paramref name="obj"/> parameter, used with an <see cref="ArgumentException"/>
+    /// The automatically captured name of the <paramref name="value"/> argument, used for a thrown <see cref="ArgumentNullException"/>
     /// </param>
     /// <typeparam name="TOut">
     /// The <see cref="Type"/> of value to cast <paramref name="obj"/> <c>as</c>
@@ -51,7 +58,8 @@ public static class ValidationExtensions
     /// Thrown is <paramref name="obj"/> is not a valid <typeparamref name="TOut"/> value
     /// </exception>
     [return: NotNull]
-    public static TOut ThrowIfNot<TOut>([NotNull] this object? obj, [CallerArgumentExpression(nameof(obj))] string? objName = null)
+    public static TOut ThrowIfNot<TOut>([NotNull] this object? obj, 
+        [CallerArgumentExpression(nameof(obj))] string? objName = null)
     {
         return obj switch
         {

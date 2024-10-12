@@ -20,7 +20,6 @@
         <Using Include="ScrubJay.Collections"/>
         <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.Enums"/>
-        <Using Include="ScrubJay.Expressions"/>
         <Using Include="ScrubJay.Memory"/>
         <Using Include="ScrubJay.Utilities"/>
         <Using Include="ScrubJay.Validation"/>
