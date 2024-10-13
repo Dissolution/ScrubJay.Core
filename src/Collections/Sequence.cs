@@ -547,16 +547,16 @@ public static class Sequence
             }
 
             // Right is just ICollection
-            using var rightCollectionEnumerator = rightCollection.GetEnumerator();
+            using var rightEnumerator = rightCollection.GetEnumerator();
             for (int i = 0; i < leftCount; i++)
             {
 #if DEBUG
                 bool moved = rightCollectionEnumerator.MoveNext();
                 Debug.Assert(moved);
 #else
-                e.MoveNext();
+                rightEnumerator.MoveNext();
 #endif
-                c = itemComparer.Compare(left[i], rightCollectionEnumerator.Current);
+                c = itemComparer.Compare(left[i], rightEnumerator.Current);
                 if (c != 0)
                     return c;
             }
@@ -565,21 +565,21 @@ public static class Sequence
         }
         else
         {
-            using var e = right.GetEnumerator();
+            using var rightEnumerator = right.GetEnumerator();
             for (int i = 0; i < leftCount; i++)
             {
-                if (!e.MoveNext())
+                if (!rightEnumerator.MoveNext())
                 {
                     // right is shorter
                     return 1;
                 }
 
-                c = itemComparer.Compare(left[i], e.Current);
+                c = itemComparer.Compare(left[i], rightEnumerator.Current);
                 if (c != 0)
                     return c;
             }
 
-            if (e.MoveNext())
+            if (rightEnumerator.MoveNext())
             {
                 // right is longer
                 return -1;
@@ -1117,7 +1117,7 @@ public static class Sequence
                 var moved = rightEnumerator.MoveNext();
                 Debug.Assert(moved);
 #else
-                e.MoveNext();
+                rightEnumerator.MoveNext();
 #endif
 
                 if (!itemComparer.Equals(left[i], rightEnumerator.Current))
@@ -1190,7 +1190,7 @@ public static class Sequence
                 var moved = leftEnumerator.MoveNext();
                 Debug.Assert(moved);
 #else
-                e.MoveNext();
+                leftEnumerator.MoveNext();
 #endif
 
                 if (!itemComparer.Equals(leftEnumerator.Current, right[i]))

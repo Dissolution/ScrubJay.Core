@@ -46,7 +46,7 @@ public static class ValidationExtensions
     /// The <see cref="object"/> to convert to a <typeparamref name="TOut"/> value
     /// </param>
     /// <param name="objName">
-    /// The automatically captured name of the <paramref name="value"/> argument, used for a thrown <see cref="ArgumentNullException"/>
+    /// The automatically captured name of the <paramref name="obj"/> argument, used for a thrown <see cref="ArgumentNullException"/>
     /// </param>
     /// <typeparam name="TOut">
     /// The <see cref="Type"/> of value to cast <paramref name="obj"/> <c>as</c>
