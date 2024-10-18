@@ -1,9 +1,15 @@
 ﻿namespace ScrubJay.Fluent;
 
+/// <summary>
+/// A base class implementation of the Builder Pattern
+/// </summary>
+/// <typeparam name="B"></typeparam>
 [PublicAPI]
 public abstract class FluentBuilder<B>
-    where B : FluentBuilder<B>
+    where B : FluentBuilder<B>, new()
 {
+    public static B New => new B();
+    
     protected B _builder;
     
     protected FluentBuilder()
@@ -16,10 +22,6 @@ public abstract class FluentBuilder<B>
         build.Invoke(_builder);
         return _builder;
     }
-
-    public sealed override bool Equals(object? obj) => base.Equals(obj);
-
-    public sealed override int GetHashCode() => base.GetHashCode();
 
     public override string ToString()
     {

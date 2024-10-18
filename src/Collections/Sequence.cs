@@ -551,7 +551,7 @@ public static class Sequence
             for (int i = 0; i < leftCount; i++)
             {
 #if DEBUG
-                bool moved = rightCollectionEnumerator.MoveNext();
+                bool moved = rightEnumerator.MoveNext();
                 Debug.Assert(moved);
 #else
                 rightEnumerator.MoveNext();
