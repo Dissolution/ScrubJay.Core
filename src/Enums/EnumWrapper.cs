@@ -52,7 +52,7 @@ public readonly struct EnumWrapper<TEnum> :
     public static bool TryParse([NotNullWhen(true)] string? str, IFormatProvider? _, out EnumWrapper<TEnum> result)
     {
         var parseResult = EnumHelper.TryParse<TEnum>(str);
-        if (!parseResult.IsOk(out var @enum))
+        if (!parseResult.HasOk(out var @enum))
         {
             result = default;
             return false;

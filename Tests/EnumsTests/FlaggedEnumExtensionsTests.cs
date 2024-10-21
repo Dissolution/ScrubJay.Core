@@ -203,6 +203,34 @@ public class FlaggedEnumExtensionsTests
     
     [Theory]
     [MemberData(nameof(EnumTestData), 1)]
+    public void HasMultipleFlagsWorks<TEnum>(TEnum e)
+        where TEnum : struct, Enum
+    {
+        var flags = Enum
+            .GetValues(typeof(TEnum))
+            .ThrowIfNot<TEnum[]>()
+            .Where(flag =>
+            {
+                var value = FlagsEnumExtensions.ToUInt64(flag);
+                return (value & (value - 1)) == 0 && value != 0;
+            })
+            .Where(flag => e.HasFlag(flag))
+            .ToArray();
+
+        var hasMultipleFlags = FlagsEnumExtensions.HasMultipleFlags(e);
+
+        if (flags.Length > 1)
+        {
+            Assert.True(hasMultipleFlags);
+        }
+        else
+        {
+            Assert.False(hasMultipleFlags);
+        }
+    }
+    
+    [Theory]
+    [MemberData(nameof(EnumTestData), 1)]
     public void GetFlagsWorks<TEnum>(TEnum e)
         where TEnum : struct, Enum
     {

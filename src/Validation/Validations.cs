@@ -54,7 +54,7 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
         if (_hasException)
             return;
 
-        if (result.IsError(out var exception))
+        if (result.HasError(out var exception))
         {
             _hasException = Some(exception);
         }
@@ -65,7 +65,7 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
         if (_hasException)
             return;
 
-        if (result.IsError(out var exception))
+        if (result.HasError(out var exception))
         {
             _hasException = Some(exception);
         }
@@ -76,7 +76,7 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
         if (_hasException || getResult is null)
             return;
         
-        if (getResult().IsError(out var exception))
+        if (getResult().HasError(out var exception))
         {
             _hasException = Some(exception);
         }
@@ -87,7 +87,7 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
         if (_hasException || getResult is null)
             return;
         
-        if (getResult().IsError(out var exception))
+        if (getResult().HasError(out var exception))
         {
             _hasException = Some(exception);
         }
@@ -95,14 +95,14 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
 
     public Result<Unit, Exception> GetResult()
     {
-        if (_hasException.IsSome(out var ex))
+        if (_hasException.HasSome(out var ex))
             return ex;
         return Ok();
     }
 
     public Result<TOk, Exception> GetResult<TOk>(TOk okValue)
     {
-        if (_hasException.IsSome(out var ex))
+        if (_hasException.HasSome(out var ex))
             return ex;
         return okValue;
     }

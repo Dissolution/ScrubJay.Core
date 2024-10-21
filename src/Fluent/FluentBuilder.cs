@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Fluent;
+﻿#pragma warning disable CA1715
+
+namespace ScrubJay.Fluent;
 
 /// <summary>
 /// A base class implementation of the Builder Pattern
@@ -10,7 +12,7 @@ public abstract class FluentBuilder<B>
 {
     public static B New => new B();
     
-    protected B _builder;
+    protected internal B _builder;
     
     protected FluentBuilder()
     {

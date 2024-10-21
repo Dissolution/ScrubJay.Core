@@ -3,65 +3,68 @@
 namespace ScrubJay.Buffers;
 
 /// <summary>
-/// <see cref="ArrayPool{T}"/> manager
+/// A wrapper around <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
 /// </summary>
 [PublicAPI]
 public static class ArrayPool
 {
     /// <summary>
-    /// The minimum capacity of an array returned from <see cref="Rent{T}()"/>
+    /// The minimum capacity for any array returned from <see cref="Rent{T}()"/>
     /// </summary>
     public const int MinCapacity = 16; // tested
 
     /// <summary>
-    /// The maximum capacity of an array returned from <see cref="Rent{T}()"/>
+    /// The maximum capacity for any array returned from <see cref="Rent{T}()"/>
     /// </summary>
     public const int MaxCapacity = 0X7FFFFFC7; // == Array.MaxLength
     
+    
     /// <summary>
-    /// Rents a <c>T[]</c> with at least a <see cref="Array.Length"/> of <see cref="MinCapacity"/>
+    /// Rents a <see cref="Array">T[]</see> with a <see cref="Array.Length"/> of at least <see cref="MinCapacity"/>
     /// from <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
-    /// that should be <see cref="Return{T}">Returned</see>
     /// </summary>
     /// <typeparam name="T">
-    /// The <see cref="Type"/> of items in the <see cref="Array"/>
+    /// The <see cref="Type"/> of items in the <see cref="Array">T[]</see>
     /// </typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Rent<T>()
     {
         return ArrayPool<T>.Shared.Rent(MinCapacity);
     }
 
     /// <summary>
-    /// Rents a <c>T[]</c> with at least a <see cref="Array.Length"/> of <paramref name="minLength"/>
+    /// Rents a <see cref="Array">T[]</see> with a <see cref="Array.Length"/> of at least <paramref name="minCapacity"/>
     /// from <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
-    /// that should be <see cref="Return{T}">Returned</see>
     /// </summary>
     /// <typeparam name="T">
-    /// The <see cref="Type"/> of items in the <see cref="Array"/>
+    /// The <see cref="Type"/> of items in the <see cref="Array">T[]</see>
     /// </typeparam>
-    /// <param name="minLength">
-    /// The minimum <see cref="Array.Length"/> the returned array can have
+    /// <param name="minCapacity">
+    /// The minimum <see cref="Array.Length"/> for the returned <see cref="Array">T[]</see>
     /// </param>
-    public static T[] Rent<T>(int minLength)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T[] Rent<T>(int minCapacity)
     {
-        minLength = minLength switch
-        {
-            < MinCapacity => MinCapacity,
-            > MaxCapacity => MaxCapacity,
-            _ => minLength,
-        };
-        return ArrayPool<T>.Shared.Rent(minLength);
+        if (minCapacity < MinCapacity)
+            return ArrayPool<T>.Shared.Rent(MinCapacity);
+        if (minCapacity > MaxCapacity)
+            return ArrayPool<T>.Shared.Rent(MaxCapacity);
+        return ArrayPool<T>.Shared.Rent(minCapacity);
     }
 
     /// <summary>
-    /// Returns a <see cref="Rent{T}()">Rented</see> <c>T[]</c> back to <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
+    /// Returns a <see cref="Rent{T}()">Rented</see> <see cref="Array">T[]</see> back to <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
     /// </summary>
     /// <param name="array">
-    /// The <c>T[]</c> to return, may be <c>null</c>
+    /// The <see cref="Array">T[]</see> to return, may be <c>null</c>
     /// </param>
     /// <param name="clearArray">
-    /// Set to <c>true</c> to have the array cleared before being returned to <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
+    /// Set to <c>true</c> to have the array <see cref="Array.Clear(Array,int,int)">Cleared</see> before being returned to <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
     /// </param>
+    /// <remarks>
+    /// <c>null</c> and empty arrays will simply be discarded
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Return<T>(T[]? array, bool clearArray = false)
     {
         if (array is not null && array.Length > 0)

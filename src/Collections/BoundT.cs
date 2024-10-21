@@ -2,6 +2,15 @@
 
 namespace ScrubJay.Collections;
 
+[PublicAPI]
+public static class Bound
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Bound<T> Inclusive<T>(T value) => new Bound<T>(value, true);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Bound<T> Exclusive<T>(T value) => new Bound<T>(value, false);
+}
+
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]

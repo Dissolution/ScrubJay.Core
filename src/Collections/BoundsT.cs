@@ -24,7 +24,7 @@ IEquatable<Bounds<T>>
 
     public bool Contains(T? value)
     {
-        if (Lower.IsSome(out Bound<T> lowerBounds))
+        if (Lower.HasSome(out Bound<T> lowerBounds))
         {
             (T lower, bool lowerInc) = lowerBounds;
             if (lowerInc)
@@ -39,7 +39,7 @@ IEquatable<Bounds<T>>
             }
         }
 
-        if (Upper.IsSome(out Bound<T> upperBounds))
+        if (Upper.HasSome(out Bound<T> upperBounds))
         {
             (T upper, bool upperInc) = upperBounds;
             if (upperInc)
@@ -60,7 +60,7 @@ IEquatable<Bounds<T>>
     [return: NotNullIfNotNull(nameof(value))]
     public T? Clamped(T? value)
     {
-        if (Lower.IsSome(out Bound<T> lowerBounds))
+        if (Lower.HasSome(out Bound<T> lowerBounds))
         {
             (T lower, bool lowerInc) = lowerBounds;
             if (lowerInc)
@@ -75,7 +75,7 @@ IEquatable<Bounds<T>>
             }
         }
 
-        if (Upper.IsSome(out Bound<T> upperBounds))
+        if (Upper.HasSome(out Bound<T> upperBounds))
         {
             (T upper, bool upperInc) = upperBounds;
             if (upperInc)
@@ -103,7 +103,7 @@ IEquatable<Bounds<T>>
     {
         var text = new DefaultInterpolatedStringHandler(4, 2);
         
-        if (Lower.IsSome(out var lower))
+        if (Lower.HasSome(out var lower))
         {
             if (lower.IsInclusive)
             {
@@ -118,7 +118,7 @@ IEquatable<Bounds<T>>
         
         text.AppendLiteral("..");
         
-        if (Upper.IsSome(out var upper))
+        if (Upper.HasSome(out var upper))
         {
             text.AppendFormatted<T>(upper.Value);
             

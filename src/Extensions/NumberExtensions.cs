@@ -18,4 +18,10 @@ public static class NumberExtensions
             return inclusiveMax;
         return number;
     }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsEven(this int number) => number % 2 == 0;
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsOdd(this int number) => number % 2 != 0;
 }

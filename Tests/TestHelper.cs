@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ScrubJay.Extensions;
 using ScrubJay.Functional;
 
 namespace ScrubJay.Tests;
@@ -72,6 +73,8 @@ public static class TestHelper
 
     public static IReadOnlyCollection<Type> AllKnownTypes { get; }
 
+    public static IReadOnlyCollection<TestClassRecord?> TestClassRecords { get; }
+    
     static TestHelper()
     {
         AllKnownTypes = AppDomain
@@ -80,6 +83,14 @@ public static class TestHelper
             // Assemblies can be tricky to access
             .SelectMany(assembly => Result.TryFunc(assembly, static a => a.GetTypes()).OkOr([]))
             .ToHashSet();
+
+        var rand = new Random();
+
+        TestClassRecords = Enumerable
+            .Range(0, 20)
+            .Select(i => new TestClassRecord(rand.Next(), $"{i}", i.IsEven()))
+            .Append(null)
+            .ToList();
     }
     
 

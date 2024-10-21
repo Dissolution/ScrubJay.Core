@@ -155,8 +155,11 @@ public readonly struct Result<TOk, TError> :
     /// Returns <c>true</c> if this Result is Ok<br/>
     /// </summary>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_ok"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsOk() => _isOk;
+    public bool IsOk
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _isOk;
+    }
 
     /// <summary>
     /// Returns <c>true</c> and <paramref name="ok"/> if this Result is Ok
@@ -166,7 +169,7 @@ public readonly struct Result<TOk, TError> :
     /// </param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsOk([MaybeNullWhen(false)] out TOk ok)
+    public bool HasOk([MaybeNullWhen(false)] out TOk ok)
     {
         if (_isOk)
         {
@@ -247,8 +250,8 @@ public readonly struct Result<TOk, TError> :
         return getOk();
     }
 
-
-    public bool IsSuccess([MaybeNullWhen(false)] out TOk ok, [MaybeNullWhen(true)] out TError error)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasOkOrError([MaybeNullWhen(false)] out TOk ok, [MaybeNullWhen(true)] out TError error)
     {
         if (_isOk)
         {
@@ -331,11 +334,14 @@ public readonly struct Result<TOk, TError> :
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_err"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsError() => !_isOk;
+    public bool IsError
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => !_isOk;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsError([MaybeNullWhen(false)] out TError error)
+    public bool HasError([MaybeNullWhen(false)] out TError error)
     {
         if (!_isOk)
         {
@@ -394,7 +400,8 @@ public readonly struct Result<TOk, TError> :
         return getError();
     }
 
-    public bool IsFailure([MaybeNullWhen(false)] out TError error, [MaybeNullWhen(true)] out TOk ok)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasErrorOrOk([MaybeNullWhen(false)] out TError error, [MaybeNullWhen(true)] out TOk ok)
     {
         if (!_isOk)
         {
@@ -598,24 +605,38 @@ public readonly struct Result<TOk, TError> :
 
 #endregion
 
-    public override int GetHashCode()
+#region LINQ + IEnumerable
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Result<TNewOk, TError> Select<TNewOk>(Func<TOk, TNewOk> selector)
     {
         if (_isOk)
-        {
-            return Hasher.GetHashCode<TOk>(_ok);
-        }
-
-        return Hasher.GetHashCode<TError>(_error);
+            return Result<TNewOk, TError>.Ok(selector(_ok!));
+        return Result<TNewOk, TError>.Error(_error!);
     }
 
-    public override string ToString()
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Result<TNewOk, TError> SelectMany<TNewOk>(
+        Func<TOk, Result<TNewOk, TError>> newSelector)
     {
         if (_isOk)
         {
-            return $"Ok({_ok})";
+            return newSelector(_ok!);
+        }
+        return Result<TNewOk, TError>.Error(_error!);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Result<TNewOk, TError> SelectMany<TKey, TNewOk>(
+        Func<TOk, Result<TKey, TError>> keySelector,
+        Func<TOk, TKey, TNewOk> newSelector)
+    {
+        if (_isOk && keySelector(_ok!).HasOk(out var key))
+        {
+            return Result<TNewOk, TError>.Ok(newSelector(_ok!, key));
         }
 
-        return $"Error({_error})";
+        return Result<TNewOk, TError>.Error(_error!);
     }
 
 
@@ -625,7 +646,6 @@ public readonly struct Result<TOk, TError> :
 
     [MustDisposeResource(false)]
     public ResultEnumerator GetEnumerator() => new ResultEnumerator(this);
-
 
     [MustDisposeResource(false)]
     [StructLayout(LayoutKind.Auto)]
@@ -665,5 +685,21 @@ public readonly struct Result<TOk, TError> :
         {
             // Do nothing
         }
+    }
+
+#endregion
+
+    public override int GetHashCode()
+    {
+        if (_isOk)
+            return Hasher.GetHashCode<TOk>(_ok);
+        return Hasher.GetHashCode<TError>(_error);
+    }
+
+    public override string ToString()
+    {
+        if (_isOk)
+            return $"Ok({_ok})";
+        return $"Error({_error})";
     }
 }

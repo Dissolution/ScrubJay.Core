@@ -1,4 +1,6 @@
-﻿using ScrubJay.Collections;
+﻿#if NET48_OR_GREATER
+using ScrubJay.Collections;
+#endif
 using ScrubJay.Validation;
 
 namespace ScrubJay.Tests.ValidationTests;
@@ -63,7 +65,7 @@ public class ValidateTests
             tryEx = ex;
         }
 
-        if (validationResult.IsOk(out var offsetLength))
+        if (validationResult.HasOk(out var offsetLength))
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
@@ -101,7 +103,7 @@ public class ValidateTests
             tryEx = ex;
         }
 
-        if (validationResult.IsOk(out var offsetLength))
+        if (validationResult.HasOk(out var offsetLength))
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
@@ -137,7 +139,7 @@ public class ValidateTests
             tryEx = ex;
         }
 
-        if (validationResult.IsOk(out var offsetLength))
+        if (validationResult.HasOk(out var offsetLength))
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);

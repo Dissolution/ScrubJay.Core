@@ -77,7 +77,7 @@ public static class SpanReaderExtensions
         where T : unmanaged
     {
         int size = Unsafe.SizeOf<T>();
-        if (spanReader.TryPeek(size).IsSome(out var bytes))
+        if (spanReader.TryPeek(size).HasSome(out var bytes))
         {
             T value;
 #if NET8_0_OR_GREATER
@@ -95,7 +95,7 @@ public static class SpanReaderExtensions
         where T : unmanaged
     {
         int size = Unsafe.SizeOf<T>();
-        if (spanReader.TryTake(size).IsSome(out var bytes))
+        if (spanReader.TryTake(size).HasSome(out var bytes))
         {
             T value;
 #if NET8_0_OR_GREATER

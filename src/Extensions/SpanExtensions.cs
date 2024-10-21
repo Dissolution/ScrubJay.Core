@@ -50,7 +50,7 @@ public static class SpanExtensions
 
     public static bool TryGet<T>(this Span<T> span, Range range, out Span<T> slice)
     {
-        if (!Validate.Range(range, span.Length).IsOk(out var offsetLength))
+        if (!Validate.Range(range, span.Length).HasOk(out var offsetLength))
         {
             slice = default;
             return false;
@@ -62,7 +62,7 @@ public static class SpanExtensions
 
     public static bool TryGet<T>(this ReadOnlySpan<T> span, Range range, out ReadOnlySpan<T> slice)
     {
-        if (!Validate.Range(range, span.Length).IsOk(out var offsetLength))
+        if (!Validate.Range(range, span.Length).HasOk(out var offsetLength))
         {
             slice = default;
             return false;

@@ -38,11 +38,11 @@ public class RangeExtensionsTests
     //     catch (Exception)
     //     {
     //         // If we could not slice it, it was an invalid range
-    //         Assert.True(length.IsNone());
+    //         Assert.True(length.IsNone);
     //         return;
     //     }
     //
-    //     if (!length.IsSome(out var len))
+    //     if (!length.HasSome(out var len))
     //     {
     //         // If we didn't find a length, it had to be incalculable
     //         Assert.Equal(numbers.Length, slice.Length);

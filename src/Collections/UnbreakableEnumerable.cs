@@ -51,7 +51,7 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>
         public bool MoveNext()
         {
             _current = TryMoveNext();
-            return _current.IsSome();
+            return _current.IsSome;
         }
 
         public Option<T> TryMoveNext()

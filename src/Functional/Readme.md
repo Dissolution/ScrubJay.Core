@@ -1,4 +1,9 @@
-﻿### `Result`
+﻿# `Result`
+### Links
+- [Andrew Lock - Working with the Result Pattern](https://andrewlock.net/series/working-with-the-result-pattern/)
+- [Milan Jovanović - Functional Error Handling with the Result Pattern](https://www.milanjovanovic.tech/blog/functional-error-handling-in-dotnet-with-the-result-pattern)
+- [Ben Witt - Result Pattern](https://medium.com/@wgyxxbf/result-pattern-a01729f42f8c)
+
 In Rust, it is possible to return from a match statement, so they can more easily consume a `Result`
 e.g.:
 ```rust

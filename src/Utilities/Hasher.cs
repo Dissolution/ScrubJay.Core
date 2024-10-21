@@ -158,6 +158,13 @@ public ref struct Hasher
         return (int)hash;
     }
 
+    public static int GetHashCode<T>(T? value, IEqualityComparer<T>? comparer)
+    {
+        var hasher = new Hasher();
+        hasher.Add(value, comparer);
+        return hasher.ToHashCode();
+    }
+
     /// <summary>
     /// Gets a combined hashcode for the given values
     /// </summary>

@@ -130,6 +130,29 @@ public static class FlagsEnumExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasOneFlag<TEnum>(this TEnum @enum)
+        where TEnum : struct, Enum
+    {
+        // is power of 2
+        // return (x & (x - 1)) == 0
+        
+        Emit.Ldarg(nameof(@enum));
+        Emit.Ldarg(nameof(@enum));
+        Emit.Ldc_I4_1();
+        Emit.Sub();
+        Emit.And();
+        Emit.Ldc_I4_0();
+        Emit.Ceq();
+        return Return<bool>();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasMultipleFlags<TEnum>(this TEnum @enum)
+        where TEnum : struct, Enum
+        => !HasOneFlag(@enum) && !EnumExtensions.IsDefault(@enum);
+    
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int FlagCount<TEnum>(this TEnum @enum)
         where TEnum : struct, Enum
     {

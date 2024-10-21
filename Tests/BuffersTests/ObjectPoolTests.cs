@@ -12,9 +12,7 @@ public class ObjectPoolTests
     [Fact]
     public void InstanceIsTheSame()
     {
-        var pool = new ObjectPool<StrongBox<Guid>>(
-            totalCapacity: 10,
-            factory: () => new StrongBox<Guid>(Guid.NewGuid()));
+        var pool = ObjectPool.New<StrongBox<Guid>>(b => b.Create(() => new StrongBox<Guid>(Guid.NewGuid())));
 
         var firstInstance = pool.Rent();
         var firstGuid = firstInstance.Value;
@@ -29,9 +27,10 @@ public class ObjectPoolTests
     [Fact]
     public void TotalCapacityWorks()
     {
-        var pool = new ObjectPool<StrongBox<Guid>>(
-            totalCapacity: 2,
-            factory: () => new StrongBox<Guid>(Guid.NewGuid()));
+        var pool = ObjectPool.New<StrongBox<Guid>>(
+            b => b
+                .Create(() => new StrongBox<Guid>(Guid.NewGuid()))
+                .MaxCapacity(2));
 
         var first = pool.Rent();
         var second = pool.Rent();
@@ -54,7 +53,7 @@ public class ObjectPoolTests
         [Fact]
     public void CanCreateStringBuilder()
     {
-        using var pool = ObjectPool.Create<StringBuilder>(factory: () => new StringBuilder());
+        using var pool = ObjectPool.New<StringBuilder>(b => b.Create(() => new StringBuilder()));
         var builder = pool.Rent();
         Assert.NotNull(builder);
         Assert.Equal(0, builder.Length);
@@ -64,7 +63,7 @@ public class ObjectPoolTests
     [Fact]
     public void CanReuseStringBuilder()
     {
-        using var pool = ObjectPool.Create<StringBuilder>(factory: () => new StringBuilder());
+        using var pool = ObjectPool.New<StringBuilder>(b => b.Create(() => new StringBuilder()));
 
         var builder = pool.Rent();
         Assert.NotNull(builder);
@@ -92,10 +91,10 @@ public class ObjectPoolTests
     [Fact]
     public void CanCleanStringBuilder()
     {
-        using var pool = ObjectPool.Create<StringBuilder>(
-            factory: () => new StringBuilder(),
-            clean: sb => sb.Clear(),
-            dispose: null);
+        using var pool = ObjectPool.New<StringBuilder>(
+            b => b
+                .Create(() => new StringBuilder())
+                .Clean(sb => sb.Clear()));
 
         var builder = pool.Rent();
         Assert.Equal(0, builder.Length);
@@ -122,10 +121,10 @@ public class ObjectPoolTests
     [Fact]
     public void CanCleanArray()
     {
-        using var pool = ObjectPool.Create<int[]>(
-            factory: () => new int[8],
-            clean: arr => arr.AsSpan().ForEach((ref int i) => i = 0),
-            dispose: null);
+        using var pool = ObjectPool.New<int[]>(
+            b => b
+                .Create(() => new int[8])
+                .Clean((arr => arr.AsSpan().ForEach((ref int i) => i = 0))));
 
         var array = pool.Rent();
         Assert.Equal(8, array.Length);
@@ -140,7 +139,7 @@ public class ObjectPoolTests
     public async Task IsAsyncSafe()
     {
         var rand = new Random();
-        using var pool = ObjectPool.Create<StringBuilder>(() => new StringBuilder(), sb => sb.Clear());
+        using var pool = ObjectPool.New<StringBuilder>(b => b.Create(() => new StringBuilder()).Clean(sb => sb.Clear()));
         const int COUNT = 100;
         var tasks = new Task<string>[COUNT];
         for (var i = 0; i < COUNT; i++)

@@ -1,8 +1,6 @@
-﻿#pragma warning disable S1066, MA0048
+﻿using System.Collections.Concurrent;
 
-
-
-// ReSharper disable MethodOverloadWithOptionalParameter
+#pragma warning disable S1066, MA0048
 
 namespace ScrubJay.Buffers;
 
@@ -25,189 +23,62 @@ namespace ScrubJay.Buffers;
 /// - When this pool is Disposed, all instances will also be disposed.<br/>
 ///   - Any further returned instances will be cleaned, disposed, and discarded.<br/>
 /// </remarks>
+/// <seealso href="https://github.dev/dotnet/aspnetcore/blob/main/src/ObjectPool/src/DefaultObjectPool.cs"/>
 [PublicAPI]
 public sealed class ObjectPool<T> : IDisposable
     where T : class
 {
     /// <summary>
-    /// Instance creation function<br/>
     /// Whenever an instance is requested but unavailable, this function will create a new instance
     /// </summary>
-    private readonly Func<T> _instanceFactory;
+    private readonly Func<T> _createInstance;
 
     /// <summary>
-    /// Optional instance cleaning action<br/>
-    /// Performed on each instance returned to the pool to get them ready to be re-used
+    /// Whenever an instance is returned to the pool, this action will ready that instance for re-use
     /// </summary>
-    private readonly Action<T>? _cleanInstance;
+    private readonly Func<T, bool> _tryCleanInstance;
 
     /// <summary>
-    /// Optional instance disposal action<br/>
-    /// Performed on any instance dropped by this pool
+    /// Whenever an instance returned to the pool would be discarded, this action will dispose that instance
     /// </summary>
-    private readonly Action<T>? _disposeInstance;
+    private readonly Action<T> _disposeInstance;
 
 
     /// <summary>
-    /// The first instance is stored in a dedicated field
-    /// as we expect to be able to satisfy most requests from it
+    /// The first instance is stored in a dedicated field as we expect to be able to satisfy most requests from it
     /// </summary>
     private T? _firstInstance;
 
     /// <summary>
     /// Storage for the extra pool instances
     /// </summary>
-    private RefInstance[]? _instances;
-    
-    private record struct RefInstance
-    {
-        public T? Instance;
-    }
+    private ConcurrentQueue<T>? _instances;
 
+    private readonly int _maxCapacity;
+    private int _itemCount;
+    
     /// <summary>
     /// Gets the maximum number of instances this <see cref="ObjectPool{T}"/> can store
     /// </summary>
-    public int MaxCapacity
-    {
-        get
-        {
-            if (_instances is null)
-                return 0; // We've been disposed
-
-            return _instances.Length + 1;
-        }
-    }
+    public int MaxCapacity => _maxCapacity;
 
     /// <summary>
     /// Gets the current number of instances stored in this <see cref="ObjectPool{T}"/>
     /// </summary>
-    /// <remarks>
-    /// During active <see cref="Rent"/> and <see cref="Return"/> operations, this number may not be accurate
-    /// </remarks>
-    public int Count
+    public int Count => _itemCount;
+    
+    internal ObjectPool(ObjectPoolPolicy<T> poolPolicy)
     {
-        get
-        {
-            var count = 0;
-            if (_firstInstance is not null)
-                count++;
-            if (_instances is null) 
-                return count;
-
-            for (var i = 0; i < _instances.Length; i++)
-            {
-                if (_instances[i].Instance is not null)
-                    count++;
-            }
-            return count;
-        }
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="ObjectPool{T}"/>
-    /// </summary>
-    /// <param name="factory">
-    /// A <see cref="Func{T}"/> to create new <typeparamref name="T"/> instances
-    /// </param>
-    /// <param name="clean">
-    /// An optional <see cref="Action{T}"/> to perform on <typeparamref name="T"/> instances when they are returned
-    /// </param>
-    /// <param name="dispose">
-    /// An optional <see cref="Action{T}"/> to perform on <typeparamref name="T"/> instances when they are discarded
-    /// </param>
-    public ObjectPool(
-        Func<T> factory,
-        Action<T>? clean = null,
-        Action<T>? dispose = null)
-        : this(ObjectPool.DefaultCapacity, factory, clean, dispose) { }
-
-
-    /// <summary>
-    /// Creates a new <see cref="ObjectPool{T}"/>
-    /// </summary>
-    /// <param name="totalCapacity">
-    /// The total number of <typeparamref name="T"/> instances that can ever be stored
-    /// </param>
-    /// <param name="factory">
-    /// A <see cref="Func{T}"/> to create new <typeparamref name="T"/> instances
-    /// </param>
-    /// <param name="clean">
-    /// An optional <see cref="Action{T}"/> to perform on <typeparamref name="T"/> instances when they are returned
-    /// </param>
-    /// <param name="dispose">
-    /// An optional <see cref="Action{T}"/> to perform on <typeparamref name="T"/> instances when they are discarded
-    /// </param>
-    public ObjectPool(
-        int totalCapacity,
-        Func<T> factory,
-        Action<T>? clean = null,
-        Action<T>? dispose = null)
-    {
-        if (totalCapacity is < ObjectPool.MinCapacity or > ObjectPool.MaxCapacity)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(totalCapacity),
-                totalCapacity,
-                $"Pool Capacity must be between {ObjectPool.MinCapacity} and {ObjectPool.MaxCapacity}");
-        }
-
-        _instanceFactory = factory ?? throw new ArgumentNullException(nameof(factory));
-        _cleanInstance = clean;
-        _disposeInstance = dispose;
+        _createInstance = poolPolicy.CreateInstance;
+        _tryCleanInstance = poolPolicy.TryCleanInstance;
+        _disposeInstance = poolPolicy.DisposeInstance;
 
         _firstInstance = null;
-        _instances = new RefInstance[totalCapacity - 1];
+        _instances = new ConcurrentQueue<T>();
+        _maxCapacity = poolPolicy.MaxCapacity;
+        _itemCount = 0;
     }
-
-    /// <summary>
-    /// Rent an instance by looking through the instance pool
-    /// </summary>
-    private T RentSlow()
-    {
-        Debug.Assert(_instances is not null);
-        RefInstance[] instances = _instances!;
-        T? instance;
-        for (var i = 0; i < instances.Length; i++)
-        {
-            instance = instances[i].Instance;
-            if (instance != null)
-            {
-                if (instance == Interlocked.CompareExchange(ref instances[i].Instance, null, instance))
-                {
-                    // found one
-                    return instance;
-                }
-            }
-        }
-
-        // we have to create a new instance
-        return _instanceFactory();
-    }
-
-    /// <summary>
-    /// Return an instance into the instance pool
-    /// </summary>
-    /// <param name="instance">The instance to return to the pool</param>
-    private void ReturnSlow(T instance)
-    {
-        Debug.Assert(_instances is not null);
-        RefInstance[] instances = _instances!;
-        for (var i = 0; i < instances.Length; i++)
-        {
-            if (instances[i].Instance is null)
-            {
-                if (Interlocked.CompareExchange(ref instances[i].Instance, instance, null) is null)
-                {
-                    // We stored it
-                    break;
-                }
-            }
-        }
-
-        // we could not store this instance, dispose it
-        _disposeInstance?.Invoke(instance);
-    }
-
+    
     /// <summary>
     /// Rent a <typeparamref name="T"/> instance from this <see cref="ObjectPool{T}"/>
     /// </summary>
@@ -216,59 +87,59 @@ public sealed class ObjectPool<T> : IDisposable
     /// </remarks>
     public T Rent()
     {
-        // Always check if we've been disposed
-        Validate.ThrowIfDisposed(_instances is null, this);
-
-        // Check if we can satisfy with the first instance
-        T? instance = _firstInstance;
-        // If we could, Interlocked check to be sure that we are the only thread that can take it
-        if (instance is null || instance != Interlocked.CompareExchange(ref _firstInstance, null, instance))
+        Validate.ThrowIfDisposed(_instances is null, _instances);
+        
+        var instance = _firstInstance;
+        if (instance == null || Interlocked.CompareExchange<T?>(ref _firstInstance, null, instance) != instance)
         {
-            // There was no first item OR we could not get the first item, check the array
-            instance = RentSlow();
+            if (_instances.TryDequeue(out instance))
+            {
+                Interlocked.Decrement(ref _itemCount);
+                return instance;
+            }
+
+            // no object available, so go get a brand new one
+            return _createInstance();
         }
+
         return instance;
     }
 
     /// <summary>
     /// Returns a <typeparamref name="T"/> instance to this <see cref="ObjectPool{T}"/>
     /// </summary>
-    public void Return(T? instance)
+    public bool Return(T? instance)
     {
         // skip null instances
-        if (instance is null) return;
+        if (instance is null)
+            return false;
 
-        // Always clean the instance
-        _cleanInstance?.Invoke(instance);
-
-        // If we're disposed, dispose the instance and exit
-        if (_instances is null)
+        // Try to clean the instance
+        if (_instances is null || !_tryCleanInstance(instance))
         {
-            _disposeInstance?.Invoke(instance);
-            return;
+            // could not clean, discard
+            _disposeInstance.Invoke(instance);
+            return false;
         }
 
-        // Check if we can store in first instance
-        if (_firstInstance == null)
+        // Try to store in the first slot
+        if (_firstInstance != null || Interlocked.CompareExchange<T?>(ref _firstInstance, instance, null) != null)
         {
-            // If we could, Interlocked check to be sure that we are the only thread that can store it
-            if (Interlocked.CompareExchange(ref _firstInstance, instance, null) == null)
+            // We are still storing items
+            if (Interlocked.Increment(ref _itemCount) < _maxCapacity)
             {
-                // We stored it
-                return;
+                _instances.Enqueue(instance);
+                return true;
             }
+
+            // No room to store, discard
+            Interlocked.Decrement(ref _itemCount);
+            _disposeInstance.Invoke(instance);
+            return false;
         }
 
-        // Try to return to the array
-        ReturnSlow(instance);
-    }
-
-    /// <summary>
-    /// Gets a <see cref="PoolInstance{T}"/> that will return its <see cref="PoolInstance{T}.Instance">Instance</see> when it is <see cref="PoolInstance{T}.Dispose">Disposed</see>
-    /// </summary>
-    public PoolInstance<T> GetInstance()
-    {
-        return new PoolInstance<T>(this, Rent());
+        // stored
+        return true;
     }
 
     /// <summary>
@@ -281,7 +152,6 @@ public sealed class ObjectPool<T> : IDisposable
     /// </param>
     public void Borrow(Action<T> instanceAction)
     {
-        Validate.IsNotNull(instanceAction).OkOrThrow();
         T instance = Rent();
         instanceAction.Invoke(instance);
         Return(instance);
@@ -298,7 +168,6 @@ public sealed class ObjectPool<T> : IDisposable
     /// </param>
     public TResult Borrow<TResult>(Func<T, TResult> instanceFunc)
     {
-        Validate.IsNotNull(instanceFunc).OkOrThrow();
         T instance = Rent();
         TResult result = instanceFunc.Invoke(instance);
         Return(instance);
@@ -312,16 +181,12 @@ public sealed class ObjectPool<T> : IDisposable
     {
         T? instance;
         // we use _instances == null to determine disposal in Return()
-        var instances = Interlocked.Exchange<RefInstance[]?>(ref _instances, null);
+        var instances = Interlocked.Exchange<ConcurrentQueue<T>?>(ref _instances, null);
         if (instances is not null)
         {
-            for (var i = 0; i < instances.Length; i++)
+            while (instances.TryDequeue(out instance))
             {
-                instance = Interlocked.Exchange<T?>(ref instances[i].Instance, null);
-                if (instance != null)
-                {
-                    _disposeInstance?.Invoke(instance);
-                }
+                _disposeInstance?.Invoke(instance);
             }
 
             // continue to dispose the first instance

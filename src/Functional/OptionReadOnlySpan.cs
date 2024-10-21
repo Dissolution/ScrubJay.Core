@@ -49,8 +49,8 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     public static bool operator <(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.CompareTo(right) < 0;
     public static bool operator <=(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.CompareTo(right) <= 0;
 
-    public static bool operator ==(OptionReadOnlySpan<T> option, None none) => option.IsNone();
-    public static bool operator !=(OptionReadOnlySpan<T> option, None none) => option.IsSome();
+    public static bool operator ==(OptionReadOnlySpan<T> option, None none) => option.IsNone;
+    public static bool operator !=(OptionReadOnlySpan<T> option, None none) => option.IsSome;
     public static bool operator >(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) > 0;
     public static bool operator >=(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) >= 0;
     public static bool operator <(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) < 0;
@@ -97,11 +97,14 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSome() => _isSome;
+    public bool IsSome
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _isSome;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSome(out ReadOnlySpan<T> value)
+    public bool HasSome(out ReadOnlySpan<T> value)
     {
         if (_isSome)
         {
@@ -127,8 +130,11 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_none"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsNone() => !_isSome;
+    public bool IsNone
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => !_isSome;
+    }
 
 
     /// <summary>
@@ -195,14 +201,14 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
     public OptionReadOnlySpan<T> Filter(RSpanFunc<T, bool> predicate)
     {
-        if (IsSome(out var value) && predicate(value))
+        if (HasSome(out var value) && predicate(value))
             return this;
         return default;
     }
     
     public Option<TNew> Map<TNew>(RSpanFunc<T, TNew> map)
     {
-        if (IsSome(out var value))
+        if (HasSome(out var value))
         {
             return Some<TNew>(map(value));
         }
@@ -212,7 +218,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     
     public OptionReadOnlySpan<TNew> Map<TNew>(RSpanFuncRSpan<T, TNew> map)
     {
-        if (IsSome(out var value))
+        if (HasSome(out var value))
         {
             return OptionReadOnlySpan<TNew>.Some(map(value));
         }
@@ -230,7 +236,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
     public TNew MapOr<TNew>(RSpanFunc<T, TNew> map, TNew defaultValue)
     {
-        if (IsSome(out var value))
+        if (HasSome(out var value))
         {
             return map(value);
         }
@@ -248,7 +254,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
     public TNew MapOrElse<TNew>(RSpanFunc<T, TNew> map, Func<TNew> getDefaultValue)
     {
-        if (IsSome(out var value))
+        if (HasSome(out var value))
         {
             return map(value);
         }

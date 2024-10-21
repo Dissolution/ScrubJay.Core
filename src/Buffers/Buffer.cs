@@ -351,7 +351,7 @@ public class Buffer<T> :
     {
         int pos = _position;
         var vr = Validate.InsertIndex(index, pos);
-        if (!vr.IsOk(out var offset))
+        if (!vr.HasOk(out var offset))
             return vr;
         
         if (offset == pos)
@@ -391,7 +391,7 @@ public class Buffer<T> :
             return TryInsert(index, items[0]);
 
         var vr = Validate.InsertIndex(index, _position);
-        if (!vr.IsOk(out var offset))
+        if (!vr.HasOk(out var offset))
             return vr;
         
         if (offset == _position)
@@ -451,7 +451,7 @@ public class Buffer<T> :
         int pos = _position;
 
         var vr = Validate.InsertIndex(index, pos);
-        if (!vr.IsOk(out var offset))
+        if (!vr.HasOk(out var offset))
             return vr;
         
         if (offset == _position)
@@ -564,7 +564,7 @@ public class Buffer<T> :
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.IsOk(out index))
+                if (!validIndex.HasOk(out index))
                     return None();
             }
             else
@@ -590,7 +590,7 @@ public class Buffer<T> :
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.IsOk(out index))
+                if (!validIndex.HasOk(out index))
                     return None();
             }
             else
@@ -672,7 +672,7 @@ public class Buffer<T> :
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.IsOk(out index))
+                if (!validIndex.HasOk(out index))
                     return None();
             }
             else
@@ -695,7 +695,7 @@ public class Buffer<T> :
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.IsOk(out index))
+                if (!validIndex.HasOk(out index))
                     return None();
                 
                 // No point in scanning until the last valid index
@@ -756,7 +756,7 @@ public class Buffer<T> :
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.IsOk(out index))
+                if (!validIndex.HasOk(out index))
                     return None();
             }
             else
@@ -782,7 +782,7 @@ public class Buffer<T> :
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.IsOk(out index))
+                if (!validIndex.HasOk(out index))
                     return None();
             }
             else
@@ -819,7 +819,7 @@ public class Buffer<T> :
     /// </returns>
     public bool TryRemoveAt(Index index)
     {
-        if (!Validate.Index(index, _position).IsOk(out var offset))
+        if (!Validate.Index(index, _position).HasOk(out var offset))
             return None<T>();
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
         return true;
@@ -837,7 +837,7 @@ public class Buffer<T> :
     /// </returns>
     public Option<T> TryRemoveAndGetAt(Index index)
     {
-        if (!Validate.Index(index, _position).IsOk(out var offset))
+        if (!Validate.Index(index, _position).HasOk(out var offset))
             return None<T>();
         T item = Written[offset];
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
@@ -856,7 +856,7 @@ public class Buffer<T> :
     /// </returns>
     public bool TryRemoveMany(Range range)
     {
-        if (!Validate.Range(range, _position).IsOk(out var ol))
+        if (!Validate.Range(range, _position).HasOk(out var ol))
             return false;
         (int offset, int length) = ol;
         Sequence.SelfCopy(Written, (offset + length).., offset..);
@@ -874,7 +874,7 @@ public class Buffer<T> :
     /// </returns>
     public Option<T[]> TryRemoveAndGetMany(Range range)
     {
-        if (!Validate.Range(range, _position).IsOk(out var ol))
+        if (!Validate.Range(range, _position).HasOk(out var ol))
             return None<T[]>();
         (int offset, int length) = ol;
         T[] items = _array.AsSpan(offset, length).ToArray();
@@ -884,7 +884,7 @@ public class Buffer<T> :
 
     bool ICollection<T>.Remove(T item)
     {
-        return TryFindIndex(item).IsSome(out int index) && TryRemoveAt(index);
+        return TryFindIndex(item).HasSome(out int index) && TryRemoveAt(index);
     }
 
     /// <summary>
