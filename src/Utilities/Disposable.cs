@@ -6,14 +6,14 @@ public abstract class Disposable : IDisposable
 {
     public static IDisposable Action(Action onDispose)
     {
-        Validate.ThrowIfNull(onDispose);
+        Throw.IfNull(onDispose);
         return new ActionDisposable(onDispose);
     }
 
 #if NETSTANDARD2_1 || NET6_0_OR_GREATER
     public static IAsyncDisposable AsyncAction(Func<ValueTask> onDispose)
     {
-        Validate.ThrowIfNull(onDispose);
+        Throw.IfNull(onDispose);
         return new ActionAsyncDisposable(onDispose);
     }
 #endif

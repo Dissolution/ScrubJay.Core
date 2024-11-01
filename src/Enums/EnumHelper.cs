@@ -64,7 +64,7 @@ public static class EnumHelper
 public static class EnumHelper<TEnum>
     where TEnum : struct, Enum
 {
-    private static readonly Dictionary<TEnum, string> _names = [];
+    private static readonly Scratch.UberDict<TEnum, string> _names = [];
 
     public static readonly bool IsFlags;
 

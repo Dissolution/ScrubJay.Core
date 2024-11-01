@@ -30,7 +30,7 @@ public static class Validate
     /// A <see cref="Result{TOk,TError}">Result&lt;int, Exception&gt;</see> that contains a valid <c>int</c> offset
     /// or an <see cref="Exception"/> describing why the index was invalid
     /// </returns>
-    public static Result<int, Exception> Index(int index, int length, 
+    public static Result<int, Exception> Index(int index, int length,
         [CallerArgumentExpression(nameof(index))] string? indexName = null)
     {
         if (index < 0 || index >= length)
@@ -52,7 +52,7 @@ public static class Validate
     /// A <see cref="Result{TOk,TError}">Result&lt;int, Exception&gt;</see> that contains a valid <c>int</c> offset
     /// or an <see cref="Exception"/> describing why the index was invalid
     /// </returns>
-    public static Result<int, Exception> Index(Index index, int length, 
+    public static Result<int, Exception> Index(Index index, int length,
         [CallerArgumentExpression(nameof(index))] string? indexName = null)
     {
         int offset = index.GetOffset(length);
@@ -77,7 +77,7 @@ public static class Validate
     /// Validates that a Range specified with an <paramref name="index"/> and <paramref name="length"/> fits within an <paramref name="available"/> count
     /// </summary>
     /// <param name="index">Validated<br/>
-    /// The inclusive <c>int</c> starting index for the Range 
+    /// The inclusive <c>int</c> starting index for the Range
     /// </param>
     /// <param name="length">Validated<br/>
     /// The total number of items covered by the Range
@@ -111,7 +111,7 @@ public static class Validate
     /// Validates that a Range specified with an <paramref name="index"/> and <paramref name="length"/> fits within an <paramref name="available"/> count
     /// </summary>
     /// <param name="index">Validated<br/>
-    /// The inclusive starting <see cref="System.Index"/> for the Range 
+    /// The inclusive starting <see cref="System.Index"/> for the Range
     /// </param>
     /// <param name="length">Validated<br/>
     /// The total number of items covered by the Range
@@ -126,10 +126,10 @@ public static class Validate
     /// or an <see cref="Exception"/> that describes the first validation failure
     /// </returns>
     public static Result<(int Offset, int Length), Exception> IndexLength(
-        Index index, 
-        int length, 
-        int available, 
-        [CallerArgumentExpression(nameof(index))] string? indexName = null, 
+        Index index,
+        int length,
+        int available,
+        [CallerArgumentExpression(nameof(index))] string? indexName = null,
         [CallerArgumentExpression(nameof(length))] string? lengthName = null)
     {
         int offset = index.GetOffset(available);
@@ -155,14 +155,14 @@ public static class Validate
     /// or an <see cref="Exception"/> that describes the first validation failure
     /// </returns>
     public static Result<(int Offset, int Length), Exception> Range(
-        Range range, 
-        int available, 
+        Range range,
+        int available,
         [CallerArgumentExpression(nameof(range))] string? rangeName = null)
     {
         int start = range.Start.GetOffset(available);
         if (start < 0 || start > available)
             return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0, {available}]");
-        
+
         int end = range.End.GetOffset(available);
         if (end < start || end > available)
             return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0, {available}]");
@@ -170,16 +170,28 @@ public static class Validate
         return (start, end - start);
     }
 
-    
-    
+
+
     public static Result<T, Exception> IsNotNull<T>(
-        [NotNullWhen(true)] T? value, 
+        [NotNullWhen(true)] T? value,
         string? message = null,
         [CallerArgumentExpression(nameof(value))] string? valueName = null)
         where T : notnull
     {
         if (value is not null)
             return value;
+        return new ArgumentNullException(valueName, message);
+    }
+
+    public static Result<T, Exception> IsNotNull<T>(
+        [NotNullWhen(true)] Nullable<T> value,
+        string? message = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+        where T : struct
+    {
+        if (value.HasValue)
+            return Ok(value.GetValueOrDefault());
         return new ArgumentNullException(valueName, message);
     }
 
@@ -219,27 +231,27 @@ public static class Validate
         return Ok(collection);
     }
 
-    public static Result<int, Exception> InLength(int value, int exclusiveLength, 
+    public static Result<int, Exception> InLength(int value, int exclusiveLength,
         [CallerArgumentExpression(nameof(value))] string? valueName = null)
     {
         if (value < 0 || value >= exclusiveLength)
             return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveLength})");
         return value;
     }
-    
+
     public static Result<T, Exception> InBounds<T>(T value, Bounds<T> bounds, [CallerArgumentExpression(nameof(value))] string? valueName = null)
     {
         if (bounds.Contains(value))
             return value;
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {bounds}");
     }
-    
-    public static Result<T, Exception> InBounds<T>(T value, 
-        Bound<T> lowerBound, 
+
+    public static Result<T, Exception> InBounds<T>(T value,
+        Bound<T> lowerBound,
         Bound<T> upperBound,
         [CallerArgumentExpression(nameof(value))] string? valueName = null)
-        => InBounds<T>(value, Bounds.Create(lowerBound, upperBound), valueName);    
-    
+        => InBounds<T>(value, Bounds.Create(lowerBound, upperBound), valueName);
+
 
     public static Result<T, Exception> InInclusiveLength<T>(
         T value,
@@ -304,99 +316,4 @@ public static class Validate
             },
         }.GetResult();
     }
-
-#region ThrowIf
-
-    /// <summary>
-    /// Throw an <see cref="ArgumentNullException"/> if <paramref name="value"/> is <c>null</c>
-    /// </summary>
-    [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowIfNull<T>(
-        [NotNull, NoEnumeration] T? value,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-        where T : class?
-    {
-        if (value is null)
-            throw new ArgumentNullException(valueName);
-    }
-    
-    /// <summary>
-    /// Throw a <see cref="ObjectDisposedException"/> if a <paramref name="condition"/> indicates disposal of an <paramref name="instance"/>
-    /// </summary>
-    [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowIfDisposed<T>([DoesNotReturnIf(true)] bool condition, T? instance)
-    {
-        if (condition)
-        {
-            string? objectName = (instance?.GetType().FullName) ?? typeof(T).FullName;
-            throw new ObjectDisposedException(objectName);
-        }
-    }
-
-    /// <summary>
-    /// Throw an <see cref="ArgumentException"/> if a <see cref="string"/> is empty
-    /// </summary>
-    [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowIfEmpty(
-        [NotNull] string? str,
-        [CallerArgumentExpression(nameof(str))]
-        string? stringName = null)
-    {
-        if (str is null)
-            throw new ArgumentNullException(stringName);
-        if (str.Length == 0)
-            throw new ArgumentException("String cannot be empty", stringName);
-    }
-    
-    /// <summary>
-    /// Throw an <see cref="ArgumentException"/> if an <see cref="Array"/> is empty
-    /// </summary>
-    [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowIfEmpty<T>(
-        [NotNull] T[]? array,
-        [CallerArgumentExpression(nameof(array))]
-        string? arrayName = null)
-    {
-        if (array is null)
-            throw new ArgumentNullException(arrayName);
-        if (array.Length == 0)
-            throw new ArgumentException("Array cannot be empty", arrayName);
-    }
-
-    /// <summary>
-    /// Throw an <see cref="ArgumentException"/> if a <see cref="ReadOnlySpan{T}"/> is empty
-    /// </summary>
-    [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowIfEmpty<T>(
-        ReadOnlySpan<T> span,
-        [CallerArgumentExpression(nameof(span))]
-        string? spanName = null)
-    {
-        if (span.Length == 0)
-            throw new ArgumentException("Span cannot be empty", spanName);
-    }
-
-    /// <summary>
-    /// Throw an <see cref="ArgumentException"/> if an <see cref="ICollection{T}"/> is empty
-    /// </summary>
-    [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowIfEmpty<T>(
-        [NotNull] ICollection<T>? collection,
-        [CallerArgumentExpression(nameof(collection))]
-        string? collectionName = null)
-    {
-        if (collection is null)
-            throw new ArgumentNullException(collectionName);
-        if (collection.Count == 0)
-            throw new ArgumentException("Collection cannot be empty", collectionName);
-    }
-
-#endregion
 }

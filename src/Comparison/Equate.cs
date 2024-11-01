@@ -36,21 +36,22 @@ public static class Equate
     {
         return _equalityComparers.GetOrAdd<T>(static _ => EqualityComparer<T>.Default).ThrowIfNot<IEqualityComparer<T>>();
     }
-    
-    
+
+
     public static IEqualityComparer GetEqualityComparerFor(object? obj) => GetEqualityComparer(obj?.GetType());
-    
+
     public static IEqualityComparer<T> GetEqualityComparerFor<T>(T? _) => GetEqualityComparer<T>();
 
     public static IEqualityComparer<T> CreateEqualityComparer<T>(Func<T?, T?, bool> equals, Func<T?, int> getHashCode)
         => new FuncEqualityComparer<T>(equals, getHashCode);
 
-    
-    
-    public static bool Values<T>(T? left, T? right) => GetEqualityComparer<T>().Equals(left!, right!);
+    public static IEqualityComparer<T> With<T>(IEqualityComparer<T>? equalityComparer) => equalityComparer ?? EqualityComparer<T>.Default;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Values<T>(T? left, T? right) => EqualityComparer<T>.Default.Equals(left!, right!);
 
     public static bool Objects(object? left, object? right) => ObjectComparer.Equals(left, right);
-    
+
 #region Text
     public static bool Text(string? left, string? right)
     {
@@ -147,7 +148,7 @@ public static class Equate
 
 #region Type
     /// <summary>
-    /// Are the <paramref name="left"/> and <paramref name="right"/> <see cref="System.Type"/>s exactly the same? 
+    /// Are the <paramref name="left"/> and <paramref name="right"/> <see cref="System.Type"/>s exactly the same?
     /// </summary>
     public static bool Type(Type? left, Type? right) => left == right;
 

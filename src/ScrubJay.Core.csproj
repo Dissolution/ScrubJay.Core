@@ -3,19 +3,14 @@
     <PropertyGroup>
         <RootNamespace>ScrubJay</RootNamespace>
         <AssemblyName>ScrubJay.Core</AssemblyName>
-        
+
+        <!-- All currently supported frameworks + .net Standard 2.0 so this library can be used by Source Generators -->
+        <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
+        <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core -->
         <TargetFrameworks>
-            <!-- Only supported version of .Net Framework -->
-            <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
-            net481;
-            <!-- Support for both .Net Standard versions -->
-            <!-- .Net Standard 2.0 so we can be consumed by Source Generators, which are currently limited to that version -->
-            netstandard2.0;netstandard2.1;
-            <!-- All supported .Net Core versions -->
-            <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core -->
-            net6.0;net7.0;net8.0;            
+            net481;netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;
         </TargetFrameworks>
-        
+
         <!-- Always use the latest features -->
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -33,9 +28,9 @@
         <!-- Quiet Warnings -->
         <NoWarn>
             $(NoWarn);
-            
+
             CS1591; RCS1138;    <!-- Missing XML Comments -->
-            
+
             CA1000;     <!-- Do not declare static members on generic types -->
             CA1051;     <!-- Do not declare visible instance fields -->
             CA1062;     <!-- External nullability -->
@@ -44,23 +39,23 @@
             CA1725; S927;   <!-- Rename parameters to match interface/root -->
             CA2225;     <!-- Operator overloads have named alternates -->
             CA2237;     <!-- Add [Serializable] to X as this type implements ISerializable -->
-            
+
             S1168;      <!-- Return an empty collection instead of 'null' -->
             S1939;      <!-- implemented interface can be removed from inheritance list -->
             S3963; CA1810;  <!-- Inialize static fields inline -->
             S3267;      <!-- Loops should be simplified with 'Where' -->
-            
+
             MA0016;         <!-- Prefer using collection abstractions instead of implementation -->
             MA0051;         <!-- Method Complexity -->
             MA0061; S1006;  <!-- Method overrides should not change default values -->
-            
+
             CA1063; S3881;  <!-- Dispose -->
         </NoWarn>
-        
+
         <!-- Setup NuGet -->
         <IsPackable>true</IsPackable>
         <EnablePackageValidation>false</EnablePackageValidation>
-        
+
         <!-- NuGet Package Information -->
         <Title>ScrubJay Core Libraries</Title>
         <Authors>Timothy Jay</Authors>
@@ -73,21 +68,21 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.6.0-alpha</PackageVersion>
+        <PackageVersion>0.6.1-alpha</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <!-- Create NuGet Package -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <!-- Generate XML documentation -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
-    
+
     <!-- NuGet -->
     <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
         <None Include="..\README.md" Pack="true" PackagePath="\"/>
@@ -104,7 +99,7 @@
         <Using Include="System.Numerics"/>
         <Using Include="System.Runtime.CompilerServices"/>
         <Using Include="System.Runtime.InteropServices"/>
-        
+
         <!-- import ourself -->
         <Using Include="ScrubJay.GlobalHelper" Static="true"/>
         <Using Include="ScrubJay.Buffers"/>
@@ -141,21 +136,21 @@
     </ItemGroup>
 
     <!-- Static Code Analyzers -->
-    <ItemGroup>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.172">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Roslynator.Analyzers" Version="4.12.8">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
-    
+<!--    <ItemGroup>-->
+<!--        <PackageReference Include="Meziantou.Analyzer" Version="2.0.172">-->
+<!--            <PrivateAssets>all</PrivateAssets>-->
+<!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
+<!--        </PackageReference>-->
+<!--        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">-->
+<!--            <PrivateAssets>all</PrivateAssets>-->
+<!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
+<!--        </PackageReference>-->
+<!--        <PackageReference Include="Roslynator.Analyzers" Version="4.12.8">-->
+<!--            <PrivateAssets>all</PrivateAssets>-->
+<!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
+<!--        </PackageReference>-->
+<!--    </ItemGroup>-->
+
     <!-- Expose our internals to our tests and other trusted ScrubJay libraries -->
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

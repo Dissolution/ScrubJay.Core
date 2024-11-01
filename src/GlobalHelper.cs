@@ -32,23 +32,23 @@ public static class GlobalHelper
     /// <inheritdoc cref="Option{T}.None"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> None<T>() => Option<T>.None();
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Unit Unit() => Functional.Unit.Default;
-    
+
     /// <inheritdoc cref="Option{T}.Some"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Ok<Unit> Ok() => new Ok<Unit>(Functional.Unit.Default);
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Ok<T> Ok<T>(T value) => new Ok<T>(value);
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<T> Error<T>(T value) => new Error<T>(value);
-    
+
     /// <summary>
     /// Converts an <see cref="Exception"/> to an <see cref="Error{T}">Error&lt;Exception&gt;</see>
     /// </summary>
@@ -67,4 +67,6 @@ public static class GlobalHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<Exception> Error(Exception exception)
         => new Error<Exception>(exception);
+
+    public static Pair<TKey, TValue> Pair<TKey, TValue>(TKey key, TValue value) => new(key, value);
 }

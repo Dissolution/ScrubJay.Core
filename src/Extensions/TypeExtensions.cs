@@ -39,7 +39,7 @@ public static class TypeExtensions
             return false;
         return type.GetGenericTypeDefinition() == genericTypeDefinition;
     }
-    
+
     /// <summary>
     /// Does <c>this</c> <paramref name="type"/> implement the <paramref name="checkType"/>?
     /// </summary>
@@ -50,22 +50,52 @@ public static class TypeExtensions
     /// </returns>
     public static bool Implements(this Type? type, Type? checkType)
     {
-        if (checkType is null) return type.CanContainNull();
+        if (checkType is null) return false;
         if (type is null) return false;
 
-        // Shortcut a bunch of checks
-        if (checkType.IsAssignableFrom(type)) return true;
-        
-        if (checkType.IsGenericTypeDefinition)
+        if (type == checkType) return true;
+        // Everything implements object
+        if (checkType == typeof(object) && !type.IsPointer)
+            return true;
+
+        if (!checkType.IsGenericTypeDefinition)
+        {
+            if (checkType.IsInterface)
+            {
+                // Check my interfaces
+                foreach (var interfaceType in type.GetInterfaces())
+                {
+                    if (interfaceType == checkType)
+                        return true;
+                }
+
+                return false;
+            }
+
+            // Check my base types
+            for (Type? baseType = type.BaseType; baseType is not null /*&& baseType != typeof(object)*/; baseType = baseType.BaseType)
+            {
+                if (baseType == checkType)
+                    return true;
+            }
+
+            return false;
+        }
+        else
         {
             // Check direct (List<T> : List<>)
             if (type.HasGenericTypeDefinition(checkType))
                 return true;
 
+            if (checkType.IsInterface)
+                Debugger.Break();
+
             // Check my base types
-            if (type.GetBaseTypes().Any(baseType => baseType.HasGenericTypeDefinition(checkType)))
+            // Check my base types
+            for (Type? baseType = type.BaseType; baseType is not null/* && baseType != typeof(object)*/; baseType = baseType.BaseType)
             {
-                return true;
+                if (baseType.HasGenericTypeDefinition(checkType))
+                    return true;
             }
 
             // Check my interfaces
@@ -88,7 +118,7 @@ public static class TypeExtensions
     /// <c>true</c> if <paramref name="type"/> implements <typeparamref name="T"/>; otherwise, <c>false</c>
     /// </returns>
     public static bool Implements<T>(this Type? type) => Implements(type, typeof(T));
-    
+
     /// <summary>
     /// Is this <paramref name="type"/> a <c>static</c> <see cref="Type"/>?
     /// </summary>
@@ -97,7 +127,7 @@ public static class TypeExtensions
     {
         return type is { IsAbstract: true, IsSealed: true };
     }
-    
+
     /// <summary>
     /// Can instances of this <see cref="Type"/> be <c>null</c>?
     /// </summary>

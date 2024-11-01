@@ -61,18 +61,18 @@ public ref struct Hasher
     /// The seed for this Hasher
     /// </summary>
     private static readonly uint _seed = CreateSeed();
-    
+
     /// <summary>
     /// The default hashcode for no value
     /// </summary>
     public static readonly int EmptyHash = new Hasher().ToHashCode();
-    
+
     /// <summary>
     /// The default hashcode for <c>null</c>
     /// </summary>
     public static readonly int NullHash = GetHashCode<object?>(null);
-    
-    
+
+
     private static uint CreateSeed()
     {
 #if NET48_OR_GREATER || NETSTANDARD2_0
@@ -102,7 +102,7 @@ public ref struct Hasher
     {
         return _seed + PRIME5;
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void StartingStates(out uint state1, out uint state2, out uint state3, out uint state4)
     {
@@ -129,7 +129,7 @@ public ref struct Hasher
     {
         return RotateLeft(value1, 1) + RotateLeft(value2, 7) + RotateLeft(value3, 12) + RotateLeft(value4, 18);
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashFinalize(uint hash)
     {
@@ -139,6 +139,120 @@ public ref struct Hasher
         hash *= PRIME3;
         hash ^= hash >> 16;
         return hash;
+    }
+
+    private static readonly int[] _primes =
+    [
+
+        3,
+        7,
+        11,
+        17,
+        23,
+        29,
+        37,
+        47,
+        59,
+        71,
+        89,
+        107,
+        131,
+        163,
+        197,
+        239,
+        293,
+        353,
+        431,
+        521,
+        631,
+        761,
+        919,
+        1103,
+        1327,
+        1597,
+        1931,
+        2333,
+        2801,
+        3371,
+        4049,
+        4861,
+        5839,
+        7013,
+        8419,
+        10103,
+        12143,
+        14591,
+        17519,
+        21023,
+        25229,
+        30293,
+        36353,
+        43627,
+        52361,
+        62851,
+        75431,
+        90523,
+        108631,
+        130363,
+        156437,
+        187751,
+        225307,
+        270371,
+        324449,
+        389357,
+        467237,
+        560689,
+        672827,
+        807403,
+        968897,
+        1162687,
+        1395263,
+        1674319,
+        2009191,
+        2411033,
+        2893249,
+        3471899,
+        4166287,
+        4999559,
+        5999471,
+        7199369,
+    ];
+
+    internal const int HashCollisionThreshold = 100;
+
+    internal static int GetPrime(int min)
+    {
+        for (int index = 0; index < _primes.Length; ++index)
+        {
+            int prime = _primes[index];
+            if (prime >= min)
+                return prime;
+        }
+        for (int candidate = min | 1; candidate < int.MaxValue; candidate += 2)
+        {
+            if (IsPrime(candidate) && (candidate - 1) % 101 != 0)
+                return candidate;
+        }
+        return min;
+    }
+
+    internal static bool IsPrime(int candidate)
+    {
+        if ((candidate & 1) == 0)
+            return candidate == 2;
+        int num = (int) Math.Sqrt((double) candidate);
+        for (int index = 3; index <= num; index += 2)
+        {
+            if (candidate % index == 0)
+                return false;
+        }
+        return true;
+    }
+
+    internal static int ExpandPrime(int oldSize)
+    {
+        int min = 2 * oldSize;
+        return (uint) min > 2146435069U && 2146435069 > oldSize ? 2146435069 : GetPrime(min);
     }
 
 
@@ -153,7 +267,7 @@ public ref struct Hasher
         hash += 4;
 
         hash = HashAdd(hash, hc1);
-        
+
         hash = HashFinalize(hash);
         return (int)hash;
     }
@@ -178,7 +292,7 @@ public ref struct Hasher
 
         hash = HashAdd(hash, hc1);
         hash = HashAdd(hash, hc2);
-        
+
         hash = HashFinalize(hash);
         return (int)hash;
     }
@@ -448,11 +562,11 @@ public ref struct Hasher
     private uint _state2;
     private uint _state3;
     private uint _state4;
-    
+
     private uint _queue1;
     private uint _queue2;
     private uint _queue3;
-    
+
     private uint _length;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -619,10 +733,10 @@ public ref struct Hasher
         hash = HashFinalize(hash);
         return (int)hash;
     }
-    
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode() => ToHashCode();
-    
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? _) => false;
 

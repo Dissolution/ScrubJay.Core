@@ -87,7 +87,7 @@ public sealed class ObjectPool<T> : IDisposable
     /// </remarks>
     public T Rent()
     {
-        Validate.ThrowIfDisposed(_instances is null, _instances);
+        Throw.IfDisposed(_instances is null, _instances);
         
         var instance = _firstInstance;
         if (instance == null || Interlocked.CompareExchange<T?>(ref _firstInstance, null, instance) != instance)

@@ -290,7 +290,7 @@ public static class Sequence
         }
         else
         {
-            Validate.ThrowIfNull(destination);
+            Throw.IfNull(destination);
             int destinationLength = destination.Length;
             int i = 0;
             foreach (var item in source)
@@ -334,7 +334,7 @@ public static class Sequence
         }
         else
         {
-            Validate.ThrowIfNull(destination);
+            Throw.IfNull(destination);
             int destinationLength = destination.Count;
             int i = 0;
             foreach (var item in source)

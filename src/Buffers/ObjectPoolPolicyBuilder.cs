@@ -8,21 +8,21 @@ public sealed class ObjectPoolPolicyBuilder<T> : FluentRecordBuilder<ObjectPoolP
 {
     public ObjectPoolPolicyBuilder<T> Create(Func<T> createInstance)
     {
-        Validate.ThrowIfNull(createInstance);
+        Throw.IfNull(createInstance);
         _record.CreateInstance = createInstance;
         return _builder;
     }
 
     public ObjectPoolPolicyBuilder<T> Clean(Func<T, bool> tryCleanInstance)
     {
-        Validate.ThrowIfNull(tryCleanInstance);
+        Throw.IfNull(tryCleanInstance);
         _record.TryCleanInstance = tryCleanInstance;
         return _builder;
     }
 
     public ObjectPoolPolicyBuilder<T> Clean(Action<T> cleanInstance)
     {
-        Validate.ThrowIfNull(cleanInstance);
+        Throw.IfNull(cleanInstance);
         _record.TryCleanInstance = inst =>
         {
             cleanInstance(inst);
@@ -34,7 +34,7 @@ public sealed class ObjectPoolPolicyBuilder<T> : FluentRecordBuilder<ObjectPoolP
 #pragma warning disable S2953
     public ObjectPoolPolicyBuilder<T> Dispose(Action<T> disposeInstance)
     {
-        Validate.ThrowIfNull(disposeInstance);
+        Throw.IfNull(disposeInstance);
         _record.DisposeInstance = disposeInstance;
         return _builder;
     }

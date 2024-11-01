@@ -22,7 +22,7 @@ public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposabl
     {
         get
         {
-            Validate.ThrowIfDisposed(_array is null, this);
+            Throw.IfDisposed(_array is null, this);
             if (_index < 0)
                 throw new InvalidOperationException("Enumeration has not yet started");
             if (_index >= _count)

@@ -2,6 +2,7 @@
 
 using System.Collections;
 using System.Reflection;
+using Polyfills;
 using ScrubJay.Extensions;
 using ScrubJay.Functional;
 using TypeExtensions = ScrubJay.Extensions.TypeExtensions;
@@ -13,20 +14,19 @@ public class TypeExtensionsTests
     private class TestList<T> : List<T>, IList<T>;
 
     private class NestedTestList<T> : TestList<T>, IList<T>;
-    
-    public static TheoryData<Type?> TestTypes { get; } = new()
-    {
+
+    public static IEnumerable<Type?> TestTypes { get; } =
+    [
         null,
         typeof(void),
         typeof(byte),
         typeof(void*),
-        typeof(byte*),
         typeof(object),
         typeof(None),
         typeof(ValueType),
         typeof(TypeExtensions),
         typeof(IEnumerable),
-        typeof(ICollection<>),
+        typeof(IList<>),
         typeof(IDictionary<,>),
         typeof(List<char>),
         typeof(List<>),
@@ -34,22 +34,28 @@ public class TypeExtensionsTests
         typeof(NestedTestList<DateTime>),
         typeof(AttributeTargets),
         typeof((int Id, string Name)),
-        (new { Id = 3, Name = "TJ"}).GetType(),
-    };
+        (new
+        {
+            Id = 3,
+            Name = "TJ"
+        }).GetType(),
+    ];
+
+    public static TheoryData<Type?> MemberDataTypes => new(TestTypes);
 
     // support for testing
     private static T? GetDefault<T>() => default(T);
 
 
     [Theory]
-    [MemberData(nameof(TestTypes))]
+    [MemberData(nameof(MemberDataTypes))]
     public void GetBaseTypes_Works(Type? type)
     {
         var baseTypesList = TypeExtensions.GetBaseTypes(type).ToList();
         Assert.NotNull(baseTypesList);
     }
-    
-    
+
+
     // [Theory]
     // [MemberData(nameof(TheoryTypes))]
     // public void Implements_Null_OnlyNullShould(Type? type)
@@ -67,30 +73,32 @@ public class TypeExtensionsTests
     // }
 
     [Theory]
-    [MemberData(nameof(TestTypes))]
+    [MemberData(nameof(MemberDataTypes))]
     public void Implements_Self_AllShould(Type? type)
     {
-        Assert.True(TypeExtensions.Implements(type, type));
+        var impl = TypeExtensions.Implements(type, type);
+        if (type is null)
+            Assert.False(impl);
+        else
+            Assert.True(impl);
     }
 
     [Theory]
-    [MemberData(nameof(TestTypes))]
+    [MemberData(nameof(MemberDataTypes))]
     public void Implements_Object_MostShould(Type? type)
     {
-
         if (type is null)
         {
             Assert.False(type.Implements<object>());
         }
         else if (type.IsPointer)
         {
-#if NET481
+#if NET48_OR_GREATER
             Assert.True(typeof(object).IsAssignableFrom(typeof(void*)));
-            Assert.True(type.Implements<object>());
 #else
             Assert.False(typeof(object).IsAssignableFrom(typeof(void*)));
-            Assert.False(type.Implements<object>());
 #endif
+            Assert.False(type.Implements<object>());
         }
         else
         {
@@ -99,7 +107,7 @@ public class TypeExtensionsTests
     }
 
     [Theory]
-    [MemberData(nameof(TestTypes))]
+    [MemberData(nameof(MemberDataTypes))]
     public void Implements_BaseClasses_AllShould(Type? type)
     {
         foreach (Type baseType in type.GetBaseTypes())
@@ -114,10 +122,11 @@ public class TypeExtensionsTests
     }
 
     [Theory]
-    [MemberData(nameof(TestTypes))]
+    [MemberData(nameof(MemberDataTypes))]
     public void Implements_Interfaces_AllShould(Type? type)
     {
-        if (type is null) return;
+        if (type is null)
+            return;
         foreach (Type interfaceType in type.GetInterfaces())
         {
             Assert.True(TypeExtensions.Implements(type, interfaceType));
@@ -130,11 +139,11 @@ public class TypeExtensionsTests
     }
 
     [Theory]
-    [MemberData(nameof(TestTypes))]
+    [MemberData(nameof(MemberDataTypes))]
     public void Type_CanContainNull_Works(Type? type)
     {
         bool canBeNull = TypeExtensions.CanContainNull(type);
-        
+
         if (type is null || type.IsPointer)
         {
             Assert.True(canBeNull);
@@ -162,5 +171,41 @@ public class TypeExtensionsTests
                 Assert.NotNull(def);
             }
         }
+    }
+
+    [Theory, CombinatorialData]
+    public void ImplementsAgreesWithTypeIsAssignableTo(
+        [CombinatorialMemberData(nameof(TestTypes))] Type? left,
+        [CombinatorialMemberData(nameof(TestTypes))] Type? right)
+    {
+        bool impl = left.Implements(right);
+
+        bool assignable;
+        if (left is null || right is null)
+        {
+            assignable = false;
+        }
+        else
+        {
+            if (right.IsGenericTypeDefinition)
+            {
+                assignable = left.HasGenericTypeDefinition(right) ||
+                    left.GetBaseTypes().Any(t => t.HasGenericTypeDefinition(right)) |
+                    left.GetInterfaces().Any(i => i.HasGenericTypeDefinition(right));
+            }
+#if NET48_OR_GREATER
+            else if (left.IsPointer)
+            {
+                assignable = false;
+            }
+#endif
+            else
+            {
+                assignable = left.IsAssignableTo(right);
+            }
+        }
+
+
+        Assert.Equal(assignable, impl);
     }
 }

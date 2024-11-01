@@ -310,34 +310,7 @@ public class Buffer<T> :
         }
     }
 
-    void IList<T>.Insert(int index, T item) => Insert(index, item);
-
-    /// <summary>
-    /// Inserts an <paramref name="item"/> into this <see cref="Buffer{T}"/> at <paramref name="index"/>
-    /// </summary>
-    /// <param name="index">The <see cref="Index"/> to insert the <paramref name="item"/></param>
-    /// <param name="item">The item to insert</param>
-    public void Insert(Index index, T item)
-    {
-        int pos = _position;
-        int offset = Validate.InsertIndex(index, pos).OkOrThrow();
-        if (offset == pos)
-        {
-            Add(item);
-        }
-        else
-        {
-            int newPos = pos + 1;
-            if (newPos >= Capacity)
-            {
-                GrowBy(1);
-            }
-
-            Sequence.SelfCopy(_array, offset..pos, (offset + 1)..);
-            _array[offset] = item;
-            _position = newPos;
-        }
-    }
+    void IList<T>.Insert(int index, T item) => TryInsert(index, item).OkOrThrow();
 
     /// <summary>
     /// Try to insert an <paramref name="item"/> into this <see cref="SpanBuffer{T}"/> at <paramref name="index"/>
@@ -353,7 +326,7 @@ public class Buffer<T> :
         var vr = Validate.InsertIndex(index, pos);
         if (!vr.HasOk(out var offset))
             return vr;
-        
+
         if (offset == pos)
         {
             Add(item);
@@ -393,7 +366,7 @@ public class Buffer<T> :
         var vr = Validate.InsertIndex(index, _position);
         if (!vr.HasOk(out var offset))
             return vr;
-        
+
         if (offset == _position)
         {
             AddMany(items);
@@ -422,7 +395,7 @@ public class Buffer<T> :
     /// </returns>
     public void TryInsertMany(Index index, params T[]? items) => TryInsertMany(index, new ReadOnlySpan<T>(items));
 
-    
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void InsertManyEnumerable(int index, IEnumerable<T> items)
     {
@@ -432,6 +405,7 @@ public class Buffer<T> :
         {
             buffer.Add(item);
         }
+
         TryInsertMany(index, buffer);
     }
 
@@ -453,20 +427,20 @@ public class Buffer<T> :
         var vr = Validate.InsertIndex(index, pos);
         if (!vr.HasOk(out var offset))
             return vr;
-        
+
         if (offset == _position)
         {
             AddMany(items);
             return offset;
         }
-        
+
         int itemCount;
         if (items is ICollection<T> collection)
         {
             itemCount = collection.Count;
             if (itemCount == 0)
                 return offset;
-            
+
             int newPos = pos + itemCount;
             if (newPos > Capacity)
             {
@@ -555,7 +529,7 @@ public class Buffer<T> :
 
         // get a valid item comparer
         itemComparer ??= EqualityComparer<T>.Default;
-        
+
         if (firstToLast)
         {
             int index;
@@ -612,8 +586,8 @@ public class Buffer<T> :
         return None();
     }
 
-      [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool SequenceEqual(IEqualityComparer<T> itemComparer, Span<T> left, ReadOnlySpan<T> right, int count)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool SliceEqual(Span<T> left, ReadOnlySpan<T> right, int count, IEqualityComparer<T> itemComparer)
     {
         Debug.Assert(left.Length >= count);
         Debug.Assert(right.Length >= count);
@@ -624,9 +598,10 @@ public class Buffer<T> :
                 return false;
             }
         }
+
         return true;
     }
-    
+
     /// <summary>
     /// Try to find a sequence of <paramref name="items"/> in this <see cref="SpanBuffer{T}"/>
     /// </summary>
@@ -646,9 +621,9 @@ public class Buffer<T> :
     /// An <see cref="Option{T}"/> that might contain the index of the first matching sequence
     /// </returns>
     public Option<int> TryFindIndex(
-        ReadOnlySpan<T> items, 
-        bool firstToLast = true, 
-        Index? offset = default, 
+        ReadOnlySpan<T> items,
+        bool firstToLast = true,
+        Index? offset = default,
         IEqualityComparer<T>? itemComparer = null)
     {
         int itemCount = items.Length;
@@ -657,13 +632,13 @@ public class Buffer<T> :
 
         if (itemCount == 0 || itemCount > pos)
             return None();
-    
+
         // we can only scan until an end item (past that there wouldn't be enough items to match)
         int end = pos - itemCount;
-        
+
         // get a valid item comparer
         itemComparer ??= EqualityComparer<T>.Default;
-        
+
         if (firstToLast)
         {
             int index;
@@ -680,10 +655,10 @@ public class Buffer<T> :
                 // No offset, we start at the first item
                 index = 0;
             }
-            
+
             for (; index <= end; index++)
             {
-                if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
+                if (SliceEqual(span.Slice(index), items, itemCount, itemComparer))
                     return Some(index);
             }
         }
@@ -697,7 +672,7 @@ public class Buffer<T> :
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.HasOk(out index))
                     return None();
-                
+
                 // No point in scanning until the last valid index
                 if (index > end)
                     index = end;
@@ -711,14 +686,14 @@ public class Buffer<T> :
             // we can scan until the first item
             for (; index >= 0; index--)
             {
-                if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
+                if (SliceEqual(span.Slice(index), items, itemCount, itemComparer))
                     return Some(index);
             }
         }
 
         return None();
     }
-    
+
     /// <summary>
     /// Try to find the Index and Item that match an <paramref name="itemPredicate"/>
     /// </summary>
@@ -742,13 +717,13 @@ public class Buffer<T> :
     {
         if (itemPredicate is null)
             return None();
-        
+
         var pos = _position;
         var span = new Span<T>(_array);
 
         int index;
         T item;
-      
+
         if (firstToLast)
         {
             // Check for a starting offset
@@ -817,12 +792,13 @@ public class Buffer<T> :
     /// <c>true</c> if the item was removed<br/>
     /// <c>false</c> if it was not
     /// </returns>
-    public bool TryRemoveAt(Index index)
+    public Result<int, Exception> TryRemoveAt(Index index)
     {
-        if (!Validate.Index(index, _position).HasOk(out var offset))
-            return None<T>();
+        var valid = Validate.Index(index, _position);
+        if (!valid.HasOk(out int offset))
+            return valid;
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
-        return true;
+        return offset;
     }
 
 
@@ -835,13 +811,14 @@ public class Buffer<T> :
     /// <returns>
     /// An <see cref="Option{T}"/> that contains the removed value
     /// </returns>
-    public Option<T> TryRemoveAndGetAt(Index index)
+    public Result<T, Exception> TryRemoveAndGetAt(Index index)
     {
-        if (!Validate.Index(index, _position).HasOk(out var offset))
-            return None<T>();
+        var valid = Validate.Index(index, _position);
+        if (!valid.HasOkOrError(out int offset, out var ex))
+            return ex;
         T item = Written[offset];
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
-        return Some(item);
+        return Ok(item);
     }
 
     /// <summary>
@@ -854,13 +831,14 @@ public class Buffer<T> :
     /// <c>true</c> if the range of items was removed<br/>
     /// <c>false</c> if they were not
     /// </returns>
-    public bool TryRemoveMany(Range range)
+    public Result<int, Exception> TryRemoveMany(Range range)
     {
-        if (!Validate.Range(range, _position).HasOk(out var ol))
-            return false;
+        var valid = Validate.Range(range, _position);
+        if (!valid.HasOkOrError(out var ol, out var ex))
+            return ex;
         (int offset, int length) = ol;
         Sequence.SelfCopy(Written, (offset + length).., offset..);
-        return true;
+        return length;
     }
 
     /// <summary>
@@ -872,14 +850,15 @@ public class Buffer<T> :
     /// <returns>
     /// An <see cref="Option{T}"/> containing an <see cref="Array">T[]</see> of removed items
     /// </returns>
-    public Option<T[]> TryRemoveAndGetMany(Range range)
+    public Result<T[], Exception> TryRemoveAndGetMany(Range range)
     {
-        if (!Validate.Range(range, _position).HasOk(out var ol))
-            return None<T[]>();
+        var valid = Validate.Range(range, _position);
+        if (!valid.HasOkOrError(out var ol, out var ex))
+            return ex;
         (int offset, int length) = ol;
         T[] items = _array.AsSpan(offset, length).ToArray();
         Sequence.SelfCopy(_array, (offset + length).., offset..);
-        return Some(items);
+        return Ok(items);
     }
 
     bool ICollection<T>.Remove(T item)
@@ -1049,7 +1028,9 @@ public class Buffer<T> :
         return list;
     }
 
-    protected virtual void AlsoDispose() { }
+    protected virtual void AlsoDispose()
+    {
+    }
 
     /// <summary>
     /// Clears this <see cref="Buffer{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>

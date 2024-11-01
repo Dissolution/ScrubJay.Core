@@ -10,15 +10,27 @@ namespace ScrubJay.Fluent;
 public abstract class FluentBuilder<B>
     where B : FluentBuilder<B>, new()
 {
+    /// <summary>
+    /// Get a new <see cref="FluentBuilder{B}"/> instance
+    /// </summary>
     public static B New => new B();
-    
+
     protected internal B _builder;
-    
+
     protected FluentBuilder()
     {
         _builder = (B)this;
     }
 
+    /// <summary>
+    /// Executes a <see cref="Action{T}"/> upon this <see cref="FluentBuilder{B}"/>
+    /// </summary>
+    /// <param name="build">
+    /// An <see cref="Action{T}"/> to invoke
+    /// </param>
+    /// <returns>
+    /// A reference to this <see cref="FluentBuilder{B}"/> instance after execution
+    /// </returns>
     public virtual B Execute(Action<B> build)
     {
         build.Invoke(_builder);

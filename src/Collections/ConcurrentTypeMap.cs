@@ -26,11 +26,14 @@ public class ConcurrentTypeMap<TValue> : ConcurrentDictionary<Type, TValue>
     public bool TryGetValue<TKey>([MaybeNullWhen(false)] out TValue value)
         => base.TryGetValue(typeof(TKey), out value);
 
-    public TValue GetOrAdd<TKey>(TValue addValue)
-        => base.GetOrAdd(typeof(TKey), addValue);
+    public TValue GetOrAdd<TKey>(TValue value)
+        => base.GetOrAdd(typeof(TKey), value);
 
-    public TValue GetOrAdd<TKey>(Func<Type, TValue> addValue)
-        => base.GetOrAdd(typeof(TKey), addValue);
+    public TValue GetOrAdd<TKey>(Func<Type, TValue> getValue)
+        => base.GetOrAdd(typeof(TKey), getValue);
+
+    public bool TryAdd<TKey>(TValue addValue)
+        => base.TryAdd(typeof(TKey), addValue);
 
     public TValue AddOrUpdate(Type type, TValue value)
         => base.AddOrUpdate(type, value, (_, _) => value);
@@ -55,4 +58,14 @@ public class ConcurrentTypeMap<TValue> : ConcurrentDictionary<Type, TValue>
 
     public TValue AddOrUpdate<TKey>(Func<Type, TValue> createValue, Func<Type, TValue, TValue> updateValue)
         => base.AddOrUpdate(typeof(TKey), createValue, updateValue);
+
+    public bool TryRemove(Type keyType)
+        => base.TryRemove(keyType, out _);
+
+
+    public bool TryRemove<TKey>()
+        => base.TryRemove(typeof(TKey), out _);
+
+    public bool TryRemove<TKey>([MaybeNullWhen(false)] out TValue value)
+        => base.TryRemove(typeof(TKey), out value);
 }
