@@ -1,6 +1,7 @@
 ﻿#pragma warning disable S907, S3236
 
 using ScrubJay.Collections;
+using ScrubJay.Constraints;
 using Unit = ScrubJay.Functional.Unit;
 
 namespace ScrubJay.Validation;
@@ -262,7 +263,7 @@ public static class Validate
     {
         valueComparer ??= Comparer<T>.Default;
 
-        int c = valueComparer.Compare(value, default(T)!);
+        int c = valueComparer.Compare(value, default!);
         if (c < 0)
             goto FAIL;
         c = valueComparer.Compare(value, inclusiveMaximum);
@@ -282,7 +283,7 @@ public static class Validate
     {
         valueComparer ??= Comparer<T>.Default;
 
-        int c = valueComparer.Compare(value, default(T)!);
+        int c = valueComparer.Compare(value, default!);
         if (c < 0)
             return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveMaximum})");
         c = valueComparer.Compare(value, exclusiveMaximum);
@@ -301,13 +302,17 @@ public static class Validate
     }
 
 
-    public static Result<Unit, Exception> CopyTo<T>(int count, T[]? array, int arrayIndex = 0, [CallerArgumentExpression(nameof(count))] string? countName = null, [CallerArgumentExpression(nameof(array))] string? arrayName = null, [CallerArgumentExpression(nameof(arrayIndex))] string? arrayIndexName = null)
+    public static Result<Unit, Exception> CopyTo<T>(int count, T[]? array,
+        int arrayIndex = 0,
+        [CallerArgumentExpression(nameof(count))] string? countName = null,
+        [CallerArgumentExpression(nameof(array))] string? arrayName = null,
+        [CallerArgumentExpression(nameof(arrayIndex))] string? arrayIndexName = null)
     {
         return new Validations
         {
             IsGreaterOrEqualThan(count, 0, null, countName),
             IsNotNull(array, arrayName),
-            InBounds(arrayIndex, Bounds.ForLength(array!.Length)),
+            InBounds(arrayIndex, Bounds.ForLength(array!.Length), arrayIndexName),
             () =>
             {
                 if (count + arrayIndex <= array!.Length)

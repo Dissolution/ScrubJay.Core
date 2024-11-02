@@ -17,8 +17,8 @@ public static class ArrayPool
     /// The maximum capacity for any array returned from <see cref="Rent{T}()"/>
     /// </summary>
     public const int MaxCapacity = 0X7FFFFFC7; // == Array.MaxLength
-    
-    
+
+
     /// <summary>
     /// Rents a <see cref="Array">T[]</see> with a <see cref="Array.Length"/> of at least <see cref="MinCapacity"/>
     /// from <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
@@ -27,10 +27,7 @@ public static class ArrayPool
     /// The <see cref="Type"/> of items in the <see cref="Array">T[]</see>
     /// </typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Rent<T>()
-    {
-        return ArrayPool<T>.Shared.Rent(MinCapacity);
-    }
+    public static T[] Rent<T>() => ArrayPool<T>.Shared.Rent(MinCapacity);
 
     /// <summary>
     /// Rents a <see cref="Array">T[]</see> with a <see cref="Array.Length"/> of at least <paramref name="minCapacity"/>
@@ -45,11 +42,13 @@ public static class ArrayPool
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Rent<T>(int minCapacity)
     {
-        if (minCapacity < MinCapacity)
-            return ArrayPool<T>.Shared.Rent(MinCapacity);
-        if (minCapacity > MaxCapacity)
-            return ArrayPool<T>.Shared.Rent(MaxCapacity);
-        return ArrayPool<T>.Shared.Rent(minCapacity);
+        int capacity = minCapacity switch
+        {
+            < MinCapacity => MinCapacity,
+            > MaxCapacity => MaxCapacity,
+            _ => minCapacity,
+        };
+        return ArrayPool<T>.Shared.Rent(capacity);
     }
 
     /// <summary>

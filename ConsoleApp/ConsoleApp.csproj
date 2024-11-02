@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        
+
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <Using Include="ScrubJay.GlobalHelper" Static="true"/>
-        
+
         <Using Include="ScrubJay"/>
         <Using Include="ScrubJay.Buffers"/>
         <Using Include="ScrubJay.Collections"/>
@@ -23,8 +23,10 @@
         <Using Include="ScrubJay.Memory"/>
         <Using Include="ScrubJay.Utilities"/>
         <Using Include="ScrubJay.Validation"/>
+
+        <Using Include="Polyfills"/>
     </ItemGroup>
-    
+
     <ItemGroup>
       <ProjectReference Include="..\src\ScrubJay.Core.csproj" />
     </ItemGroup>

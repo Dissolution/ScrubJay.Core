@@ -1,4 +1,6 @@
-﻿// ReSharper disable EntityNameCapturedOnly.Global
+﻿#pragma warning disable IDE0060
+
+// ReSharper disable EntityNameCapturedOnly.Global
 
 using static InlineIL.IL;
 
@@ -13,7 +15,7 @@ public static class EnumExtensions
     public static Type UnderlyingType<TEnum>()
         where TEnum : struct, Enum
         => typeof(TEnum).GetEnumUnderlyingType();
-    
+
     /// <summary>
     /// Is <c>this</c> <paramref name="enum"/> the <c>default</c> value for its <see cref="Type"/>?
     /// </summary>
@@ -62,7 +64,7 @@ public static class EnumExtensions
         Emit.Ceq();
         return Return<bool>();
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool NotEqual<TEnum>(this TEnum @enum, TEnum other)
         where TEnum : struct, Enum => !IsEqual<TEnum>(@enum, other);

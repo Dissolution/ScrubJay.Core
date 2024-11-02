@@ -22,18 +22,18 @@ public readonly struct Unit :
 {
     // ValueTuple would be written as '()' (if the C# compiler allowed it), and is virtually the same as Unit already
     // so we support implicit conversions between them
-    
+
     public static implicit operator Unit(ValueTuple _) => default;
     public static implicit operator ValueTuple(Unit _) => default;
-    
+
     // All units are exactly the same
-    
-    public static bool operator ==(Unit left, Unit right) => true;
-    public static bool operator !=(Unit left, Unit right) => false;
-    public static bool operator >(Unit left, Unit right) => false;
-    public static bool operator >=(Unit left, Unit right) => true;
-    public static bool operator <(Unit left, Unit right) => false;
-    public static bool operator <=(Unit left, Unit right) => true;
+
+    public static bool operator ==(Unit _, Unit __) => true;
+    public static bool operator !=(Unit _, Unit __) => false;
+    public static bool operator >(Unit _, Unit __) => false;
+    public static bool operator >=(Unit _, Unit __) => true;
+    public static bool operator <(Unit _, Unit __) => false;
+    public static bool operator <=(Unit _, Unit __) => true;
 
     /// <summary>
     /// The <see cref="Unit"/> value

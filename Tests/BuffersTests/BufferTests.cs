@@ -1,27 +1,58 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
+using ScrubJay.Comparison;
 
 namespace ScrubJay.Tests.BuffersTests;
 
 public class BufferTests
 {
     [Fact]
+    public void EmptyBufferDoesNotAllocate()
+    {
+        using Buffer<int> defaultBuffer = default;
+        Assert.Null(defaultBuffer._array);
+        Assert.Equal(0, defaultBuffer._span.Length);
+
+        using Buffer<char> newBuffer = new Buffer<char>();
+        Assert.Null(newBuffer._array);
+        Assert.Equal(0, newBuffer._span.Length);
+
+        using Buffer<DateTime> emptyBuffer = new(0);
+        Assert.Null(emptyBuffer._array);
+        Assert.Equal(0, emptyBuffer._span.Length);
+    }
+
+    [Fact]
     public void BufferCanBeDisposed()
     {
+        Buffer<int> defaultBuffer = default;
+        defaultBuffer.Dispose();
+
         Buffer<char> newBuffer = new Buffer<char>();
         newBuffer.Dispose();
 
         Buffer<DateTime> emptyBuffer = new(0);
         emptyBuffer.Dispose();
-        
+
+        Buffer<byte> ungrownEmptyStackBuffer = stackalloc byte[32];
+        ungrownEmptyStackBuffer.Dispose();
+
+        Buffer<byte> ungrownStackBuffer = stackalloc byte[32];
+        ungrownStackBuffer.AddMany(1, 4, 7);
+        ungrownStackBuffer.Dispose();
+
         Buffer<object> ungrownEmptyBuffer = new(32);
         ungrownEmptyBuffer.Dispose();
 
         Buffer<object> ungrownBuffer = new(32);
         ungrownBuffer.AddMany("Eat", BindingFlags.Static, DateTime.Now);
         ungrownBuffer.Dispose();
-        
+
+        Buffer<byte> grownStackBuffer = stackalloc byte[32];
+        grownStackBuffer.AddMany(Enumerable.Range(0, 147).Select(static i => (byte)i));
+        grownStackBuffer.Dispose();
+
         Buffer<object> grownBuffer = new(32);
         for (var i = 0; i < 10; i++)
         {
@@ -39,7 +70,7 @@ public class BufferTests
     public void BufferCanGrow()
     {
         using var buffer = new Buffer<int>(1);
-        Assert.Empty(buffer);
+        Assert.Equal(0, buffer.Count);
         Assert.Equal(ArrayPool.MinCapacity, buffer.Capacity);
 
         var numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
@@ -284,7 +315,7 @@ public class BufferTests
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
-    
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static IEnumerable<byte> EnumerateInsertBytes()
     {
@@ -293,7 +324,7 @@ public class BufferTests
         yield return 147;
         yield return 255;
     }
-    
+
     [Fact]
     public void InsertManyEnumerableStartWorks()
     {
@@ -341,7 +372,7 @@ public class BufferTests
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
-    
+
     [Fact]
     public void ContainsWorks()
     {
@@ -352,11 +383,11 @@ public class BufferTests
         {
             if (i is >= 0 and <= 7)
             {
-                Assert.Contains(i, intBuffer);
+                Assert.True(intBuffer.Contains(i));
             }
             else
             {
-                Assert.DoesNotContain(i, intBuffer);
+                Assert.False(intBuffer.Contains(i));
             }
         }
 
@@ -366,12 +397,12 @@ public class BufferTests
 
         for (var i = 0; i < 100; i++)
         {
-            Assert.DoesNotContain(Guid.NewGuid(), guidBuffer);
+            Assert.False(guidBuffer.Contains(Guid.NewGuid()));
         }
 
         foreach (var guid in guids)
         {
-            Assert.Contains(guid, guidBuffer);
+            Assert.True(guidBuffer.Contains(guid));
         }
 
 
@@ -386,8 +417,8 @@ public class BufferTests
 
         foreach (var record in records)
         {
-            Assert.Contains(record, recordBuffer);
-            Assert.DoesNotContain(record with { IsAdmin = !record.IsAdmin }, recordBuffer);
+            Assert.True(recordBuffer.Contains(record));
+            Assert.False(recordBuffer.Contains(record with { IsAdmin = !record.IsAdmin }));
         }
     }
 
@@ -402,5 +433,113 @@ public class BufferTests
 
         var midItems = buffer.ToArray().Skip(4).Take(4).ToList();
         Assert.Equal([4, 5, 6, 7], midItems);
+    }
+
+    [Fact]
+    public void TryFindIndexSingleWorks()
+    {
+        using Buffer<int> buffer = new();
+        buffer.AddMany(
+            0, 1, 2, 3, 4, 5, 6, 7,
+            8, 9, 10, 11, 12, 13, 14, 15);
+
+        // basic search
+        for (var i = 0; i < 16; i++)
+        {
+            var found = buffer.TryFindIndex(i);
+            Assert.True(found.HasSome(out var index));
+            Assert.Equal(i, index);
+
+            found = buffer.TryFindIndex(i, firstToLast: false);
+            Assert.True(found.HasSome(out index));
+            Assert.Equal(i, index);
+        }
+
+        // with equality comparer
+        {
+            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
+            var found = buffer.TryFindIndex(3, itemComparer: oddnessEqualityComparer);
+            Assert.True(found.HasSome(out var index));
+            Assert.Equal(1, index); // first odd item is item #1
+
+            found = buffer.TryFindIndex(3, firstToLast: false, itemComparer: oddnessEqualityComparer);
+            Assert.True(found.HasSome(out index));
+            Assert.Equal(15, index); // last odd item is item #15
+        }
+
+        // with index
+        {
+            var found = buffer.TryFindIndex(4, offset: 3);
+            Assert.True(found.HasSome(out var index));
+            Assert.Equal(4, index);
+
+            found = buffer.TryFindIndex(2, offset: 3);
+            Assert.True(found.IsNone);
+
+            found = buffer.TryFindIndex(10, offset: ^8);
+            Assert.True(found.HasSome(out index));
+            Assert.Equal(10, index);
+
+            found = buffer.TryFindIndex(7, offset: ^4);
+            Assert.True(found.IsNone);
+
+
+            found = buffer.TryFindIndex(4, offset: 3, firstToLast: false);
+            Assert.True(found.IsNone);
+
+            found = buffer.TryFindIndex(2, offset: 3, firstToLast: false);
+            Assert.True(found.HasSome(out index));
+            Assert.Equal(2, index);
+
+            found = buffer.TryFindIndex(10, offset: ^8, firstToLast: false);
+            Assert.True(found.IsNone);
+
+            found = buffer.TryFindIndex(7, offset: ^4, firstToLast: false);
+            Assert.True(found.HasSome(out index));
+            Assert.Equal(7, index);
+        }
+    }
+
+    [Fact]
+    public void TryFindIndexMultiWorks()
+    {
+        using Buffer<int> buffer = new();
+        buffer.AddMany(
+            0, 1, 2, 3, 4, 5, 6, 7,
+            8, 9, 10, 11, 12, 13, 14, 15);
+
+        // basic search
+        {
+            var found = buffer.TryFindIndex([1, 2, 3]);
+            Assert.True(found.HasSome(out var index));
+            Assert.Equal(1, index);
+
+            found = buffer.TryFindIndex([8, 9, 10]);
+            Assert.True(found.HasSome(out index));
+            Assert.Equal(8, index);
+
+            found = buffer.TryFindIndex([14, 15, 16]);
+            Assert.True(found.IsNone);
+
+            found = buffer.TryFindIndex([3]);
+            Assert.True(found.HasSome(out index));
+            Assert.Equal(3, index);
+        }
+
+        // with equality comparer
+        {
+            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
+            var found = buffer.TryFindIndex([33, 22, 33], itemComparer: oddnessEqualityComparer);
+            Assert.True(found.HasSome(out var index));
+            Assert.Equal(1, index); // first odd/even/odd is 1,2,3
+
+            found = buffer.TryFindIndex([33, 22, 33], firstToLast: false, itemComparer: oddnessEqualityComparer);
+            Assert.True(found.HasSome(out index));
+            Assert.Equal(13, index); // last odd/even/odd is 13,14,15
+        }
+
+        // with index
+        {
+        }
     }
 }

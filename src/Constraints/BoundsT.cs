@@ -1,6 +1,6 @@
 ﻿#pragma warning disable MA0048
 
-namespace ScrubJay.Collections;
+namespace ScrubJay.Constraints;
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
@@ -11,7 +11,7 @@ public readonly struct Bounds<T> :
 IEquatable<Bounds<T>>
 {
     public static bool operator ==(Bounds<T> left, Bounds<T> right) => left.Equals(right);
-    public static bool operator !=(Bounds<T> left, Bounds<T> right) => !left.Equals(right);   
+    public static bool operator !=(Bounds<T> left, Bounds<T> right) => !left.Equals(right);
 
     public readonly Option<Bound<T>> Lower;
     public readonly Option<Bound<T>> Upper;
@@ -102,7 +102,7 @@ IEquatable<Bounds<T>>
     public override string ToString()
     {
         var text = new DefaultInterpolatedStringHandler(4, 2);
-        
+
         if (Lower.HasSome(out var lower))
         {
             if (lower.IsInclusive)
@@ -115,13 +115,13 @@ IEquatable<Bounds<T>>
             }
             text.AppendFormatted<T>(lower.Value);
         }
-        
+
         text.AppendLiteral("..");
-        
+
         if (Upper.HasSome(out var upper))
         {
             text.AppendFormatted<T>(upper.Value);
-            
+
             if (upper.IsInclusive)
             {
                 text.AppendLiteral("]");

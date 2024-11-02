@@ -1,6 +1,6 @@
 ﻿#pragma warning disable MA0048
 
-namespace ScrubJay.Collections;
+namespace ScrubJay.Constraints;
 
 [PublicAPI]
 public static class Bound
@@ -25,10 +25,10 @@ public readonly struct Bound<T> :
 
     public static Bound<T> Inclusive(T value) => new Bound<T>(value, true);
     public static Bound<T> Exclusive(T value) => new Bound<T>(value, false);
-    
+
     public readonly T Value;
     public readonly bool IsInclusive;
-    
+
     public Bound(T value, bool isInclusive)
     {
         this.Value = value;

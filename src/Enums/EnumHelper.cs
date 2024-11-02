@@ -1,6 +1,7 @@
 ﻿#pragma warning disable S2743, CA1000
 // ReSharper disable StaticMemberInGenericType
 
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace ScrubJay.Enums;
@@ -43,7 +44,7 @@ public static class EnumHelper
         foreach (var segment in segments)
         {
             var trimmed = segment.Trim();
-            
+
             if (Enum.TryParse<TEnum>(trimmed, true, out var flag))
             {
                 @enum.AddFlag(flag);
@@ -64,7 +65,7 @@ public static class EnumHelper
 public static class EnumHelper<TEnum>
     where TEnum : struct, Enum
 {
-    private static readonly Scratch.UberDict<TEnum, string> _names = [];
+    private static readonly ConcurrentDictionary<TEnum, string> _names = [];
 
     public static readonly bool IsFlags;
 
@@ -105,7 +106,7 @@ public static class EnumHelper<TEnum>
             return name;
 
         var flags = @enum.GetFlags();
-        if (flags.Length == 0 || flags.Length == 1)
+        if (flags.Length is 0 or 1)
             return @enum.ToString();
 
         var text = new DefaultInterpolatedStringHandler(8, flags.Length);

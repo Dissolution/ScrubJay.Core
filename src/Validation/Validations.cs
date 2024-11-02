@@ -16,14 +16,14 @@ namespace ScrubJay.Validation;
 public sealed class Validations : IEnumerable<Unit>, IEnumerable
 {
     public static Validations New => new();
-    
+
     private Option<Exception> _hasException;
 
     public void Add(Action? action)
     {
         if (_hasException || action is null)
             return;
-        
+
         try
         {
             action();
@@ -38,7 +38,7 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
     {
         if (_hasException || func is null)
             return;
-        
+
         try
         {
             _ = func();
@@ -59,7 +59,7 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
             _hasException = Some(exception);
         }
     }
-    
+
     public void Add<T>(Result<T, Exception> result)
     {
         if (_hasException)
@@ -75,7 +75,7 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
     {
         if (_hasException || getResult is null)
             return;
-        
+
         if (getResult().HasError(out var exception))
         {
             _hasException = Some(exception);
@@ -86,7 +86,7 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
     {
         if (_hasException || getResult is null)
             return;
-        
+
         if (getResult().HasError(out var exception))
         {
             _hasException = Some(exception);
@@ -106,7 +106,7 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
             return ex;
         return okValue;
     }
-    
+
     IEnumerator IEnumerable.GetEnumerator() => EmptyEnumerator<Unit>.Instance;
     IEnumerator<Unit> IEnumerable<Unit>.GetEnumerator() => EmptyEnumerator<Unit>.Instance;
 }

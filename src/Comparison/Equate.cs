@@ -148,18 +148,18 @@ public static class Equate
 
 #region Type
     /// <summary>
-    /// Are the <paramref name="left"/> and <paramref name="right"/> <see cref="System.Type"/>s exactly the same?
+    /// Are the <see cref="System.Type"/> parameters <paramref name="left"/> and <paramref name="right"/> equal?
     /// </summary>
     public static bool Type(Type? left, Type? right) => left == right;
 
     /// <summary>
-    /// Are the <see cref="System.Type"/>s of <paramref name="left"/> and <paramref name="right"/> exactly the same?
+    /// Are the generic <see cref="System.Type">Types</see> <typeparamref name="TL"/> and <typeparamref name="TR"/> equal?
     /// </summary>
-    public static bool Type<TL, TR>(TL? left, TR? right) => typeof(TL) == typeof(TR);
+    public static bool Type<TL, TR>(TL? _ = default!, TR? __ = default!) => typeof(TL) == typeof(TR);
 
     /// <summary>
-    /// Are the <see cref="System.Type"/>s of <paramref name="left"/> and <paramref name="right"/> exactly the same?
+    /// Are the <see cref="System.Type"/>s of <paramref name="left"/> and <paramref name="right"/> equal?
     /// </summary>
-    public static bool Type(object? left, object? right) => left?.GetType() == right?.GetType();
+    public static bool Types(object? left, object? right) => left?.GetType() == right?.GetType();
 #endregion
 }

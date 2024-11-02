@@ -1,7 +1,5 @@
 ﻿namespace ScrubJay.Buffers;
 
-
-
 /// <summary>
 /// Static methods for creating <see cref="ObjectPool{T}"/> instances
 /// </summary>
@@ -28,13 +26,11 @@ public static class ObjectPool
 
     public static ObjectPool<T> New<T>()
         where T : class
-        => New<T>(ObjectPoolPolicy<T>.Default);
+        => New<T>(ObjectPoolPolicy.Default<T>());
 
     public static ObjectPool<T> New<T>(ObjectPoolPolicy<T> poolPolicy)
         where T : class
-    {
-        return new ObjectPool<T>(poolPolicy);
-    }
+        => new ObjectPool<T>(poolPolicy);
 
     public static ObjectPool<T> New<T>(Action<ObjectPoolPolicyBuilder<T>> buildPolicy)
         where T : class

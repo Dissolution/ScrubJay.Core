@@ -56,7 +56,7 @@ public sealed class ObjectPool<T> : IDisposable
 
     private readonly int _maxCapacity;
     private int _itemCount;
-    
+
     /// <summary>
     /// Gets the maximum number of instances this <see cref="ObjectPool{T}"/> can store
     /// </summary>
@@ -66,7 +66,7 @@ public sealed class ObjectPool<T> : IDisposable
     /// Gets the current number of instances stored in this <see cref="ObjectPool{T}"/>
     /// </summary>
     public int Count => _itemCount;
-    
+
     internal ObjectPool(ObjectPoolPolicy<T> poolPolicy)
     {
         _createInstance = poolPolicy.CreateInstance;
@@ -78,7 +78,7 @@ public sealed class ObjectPool<T> : IDisposable
         _maxCapacity = poolPolicy.MaxCapacity;
         _itemCount = 0;
     }
-    
+
     /// <summary>
     /// Rent a <typeparamref name="T"/> instance from this <see cref="ObjectPool{T}"/>
     /// </summary>
@@ -88,13 +88,13 @@ public sealed class ObjectPool<T> : IDisposable
     public T Rent()
     {
         Throw.IfDisposed(_instances is null, _instances);
-        
+
         var instance = _firstInstance;
         if (instance == null || Interlocked.CompareExchange<T?>(ref _firstInstance, null, instance) != instance)
         {
             if (_instances.TryDequeue(out instance))
             {
-                Interlocked.Decrement(ref _itemCount);
+                _ = Interlocked.Decrement(ref _itemCount);
                 return instance;
             }
 
@@ -133,7 +133,7 @@ public sealed class ObjectPool<T> : IDisposable
             }
 
             // No room to store, discard
-            Interlocked.Decrement(ref _itemCount);
+            _ = Interlocked.Decrement(ref _itemCount);
             _disposeInstance.Invoke(instance);
             return false;
         }
@@ -154,7 +154,7 @@ public sealed class ObjectPool<T> : IDisposable
     {
         T instance = Rent();
         instanceAction.Invoke(instance);
-        Return(instance);
+        _ = Return(instance);
     }
 
     /// <summary>
@@ -170,7 +170,7 @@ public sealed class ObjectPool<T> : IDisposable
     {
         T instance = Rent();
         TResult result = instanceFunc.Invoke(instance);
-        Return(instance);
+        _ = Return(instance);
         return result;
     }
 

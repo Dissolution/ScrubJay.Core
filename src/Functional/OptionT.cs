@@ -53,8 +53,8 @@ public readonly struct Option<T> :
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator false(Option<T> option) => !option._isSome;
-    
-    
+
+
     /// <summary>
     /// Implicitly convert a standalone <typeparamref name="T"/> <paramref name="value"/> to an
     /// <see cref="Option{T}"/>.<see cref="Option{T}.Some"/>
@@ -84,8 +84,8 @@ public readonly struct Option<T> :
     public static bool operator <(Option<T> left, Option<T> right) => left.CompareTo(right) < 0;
     public static bool operator <=(Option<T> left, Option<T> right) => left.CompareTo(right) <= 0;
 
-    public static bool operator ==(Option<T> option, None none) => option.IsNone;
-    public static bool operator !=(Option<T> option, None none) => option.IsSome;
+    public static bool operator ==(Option<T> option, None _) => option.IsNone;
+    public static bool operator !=(Option<T> option, None _) => option.IsSome;
     public static bool operator >(Option<T> option, None none) => option.CompareTo(none) > 0;
     public static bool operator >=(Option<T> option, None none) => option.CompareTo(none) >= 0;
     public static bool operator <(Option<T> option, None none) => option.CompareTo(none) < 0;
@@ -165,7 +165,7 @@ public readonly struct Option<T> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="predicate"></param>
     /// <returns></returns>
@@ -175,7 +175,7 @@ public readonly struct Option<T> :
 
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_none"/>
@@ -187,7 +187,7 @@ public readonly struct Option<T> :
 
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
@@ -201,7 +201,7 @@ public readonly struct Option<T> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
@@ -216,7 +216,7 @@ public readonly struct Option<T> :
 
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_default"/>
@@ -229,7 +229,7 @@ public readonly struct Option<T> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="getValue"></param>
     /// <returns></returns>
@@ -241,9 +241,9 @@ public readonly struct Option<T> :
             return _value!;
         return getValue();
     }
-    
+
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="map"></param>
     /// <param name="defaultValue"></param>
@@ -271,7 +271,7 @@ public readonly struct Option<T> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="map"></param>
     /// <param name="getDefaultValue"></param>
@@ -349,7 +349,7 @@ public readonly struct Option<T> :
 
 #region Compare
     /* None always compares as less than any Some */
-    
+
     public int CompareTo(Option<T> other)
     {
         if (_isSome)
@@ -383,7 +383,7 @@ public readonly struct Option<T> :
     {
         if (_isSome)
             return Comparer<T>.Default.Compare(_value!, other!);
-        
+
         // My None is less than a Some value
         return -1;
     }
@@ -459,7 +459,7 @@ public readonly struct Option<T> :
         }
         return None<TNew>();
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Option<TNew> SelectMany<TKey, TNew>(
         Func<T, Option<TKey>> keySelector,
@@ -471,7 +471,7 @@ public readonly struct Option<T> :
         }
         return None<TNew>();
     }
-    
+
     /// <summary>
     /// Returns <see cref="None"/> if this <see cref="Option{T}"/> is <see cref="None"/>,<br/>
     /// otherwise calls <paramref name="predicate"/> with the wrapped value and returns:<br/>
@@ -490,7 +490,7 @@ public readonly struct Option<T> :
             return Some<T>(_value!);
         return None();
     }
-    
+
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
@@ -498,7 +498,7 @@ public readonly struct Option<T> :
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
     [MustDisposeResource(false)]
     public OptionEnumerator GetEnumerator() => new OptionEnumerator(this);
-    
+
     [MustDisposeResource(false)]
     [StructLayout(LayoutKind.Auto)]
     public struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
@@ -539,7 +539,7 @@ public readonly struct Option<T> :
         }
     }
     #endregion
-    
+
     public override int GetHashCode()
     {
         if (_isSome)

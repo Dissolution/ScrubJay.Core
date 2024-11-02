@@ -1,4 +1,6 @@
-﻿using static InlineIL.IL;
+﻿#pragma warning disable IDE0060
+
+using static InlineIL.IL;
 
 namespace ScrubJay.Utilities;
 

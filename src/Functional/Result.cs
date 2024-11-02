@@ -16,7 +16,7 @@ public static class Result
     {
         if (action is null)
             return new ArgumentNullException(nameof(action));
-        
+
         try
         {
             action.Invoke();
@@ -27,7 +27,7 @@ public static class Result
             return ex;
         }
     }
-    
+
     /// <summary>
     /// Try to invoke an <paramref name="instance"/> <paramref name="action"/>
     /// </summary>
@@ -37,14 +37,14 @@ public static class Result
     /// A <see cref="Result{Unit,Exception}">Result</see>&lt;<see cref="Unit"/>, <see cref="Exception"/>&gt; describing the invocation
     /// </returns>
     public static Result<Unit, Exception> TryAction<TInstance>(
-        [NotNullWhen(true)] TInstance? instance, 
+        [NotNullWhen(true)] TInstance? instance,
         [NotNullWhen(true)] Action<TInstance>? action)
     {
         if (instance is null)
             return new ArgumentNullException(nameof(instance));
         if (action is null)
             return new ArgumentNullException(nameof(action));
-        
+
         try
         {
             action.Invoke(instance);
@@ -55,7 +55,7 @@ public static class Result
             return ex;
         }
     }
-    
+
     /// <summary>
     /// Try to invoke an <paramref name="func"/>
     /// </summary>
@@ -67,7 +67,7 @@ public static class Result
     {
         if (func is null)
             return new ArgumentNullException(nameof(func));
-        
+
         try
         {
             return func.Invoke();
@@ -77,7 +77,7 @@ public static class Result
             return ex;
         }
     }
-    
+
     /// <summary>
     /// Try to invoke an <paramref name="func"/>
     /// </summary>
@@ -87,14 +87,14 @@ public static class Result
     /// A <see cref="Result{TResult,Exception}">Result</see>&lt;<typeparamref name="TResult"/>, <see cref="Exception"/>&gt; describing the invocation
     /// </returns>
     public static Result<TResult, Exception> TryFunc<TInstance, TResult>(
-        [NotNullWhen(true)] TInstance? instance, 
+        [NotNullWhen(true)] TInstance? instance,
         [NotNullWhen(true)] Func<TInstance, TResult>? func)
     {
         if (instance is null)
             return new ArgumentNullException(nameof(instance));
         if (func is null)
             return new ArgumentNullException(nameof(func));
-        
+
         try
         {
             return func.Invoke(instance);
@@ -102,6 +102,16 @@ public static class Result
         catch (Exception ex)
         {
             return ex;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ThrowIfError<TOk, TException>(this Result<TOk, TException> result)
+        where TException : Exception
+    {
+        if (result.HasError(out var ex))
+        {
+            throw ex;
         }
     }
 }

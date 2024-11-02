@@ -1,76 +1,46 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
-using ScrubJay.Comparison;
+using ScrubJay.Collections;
 
 namespace ScrubJay.Tests.BuffersTests;
 
-public class SpanBufferTests
+public class PooledListTests
 {
     [Fact]
-    public void EmptyBufferDoesNotAllocate()
+    public void PooledListCanBeDisposed()
     {
-        using SpanBuffer<int> defaultBuffer = default;
-        Assert.Null(defaultBuffer._array);
-        Assert.Equal(0, defaultBuffer._span.Length);
+        PooledList<char> newPooledList = new PooledList<char>();
+        newPooledList.Dispose();
 
-        using SpanBuffer<char> newBuffer = new SpanBuffer<char>();
-        Assert.Null(newBuffer._array);
-        Assert.Equal(0, newBuffer._span.Length);
+        PooledList<DateTime> emptyPooledList = new(0);
+        emptyPooledList.Dispose();
 
-        using SpanBuffer<DateTime> emptyBuffer = new(0);
-        Assert.Null(emptyBuffer._array);
-        Assert.Equal(0, emptyBuffer._span.Length);
-    }
+        PooledList<object> ungrownEmptyPooledList = new(32);
+        ungrownEmptyPooledList.Dispose();
 
-    [Fact]
-    public void SpanBufferCanBeDisposed()
-    {
-        SpanBuffer<int> defaultBuffer = default;
-        defaultBuffer.Dispose();
+        PooledList<object> ungrownPooledList = new(32);
+        ungrownPooledList.AddMany("Eat", BindingFlags.Static, DateTime.Now);
+        ungrownPooledList.Dispose();
 
-        SpanBuffer<char> newBuffer = new SpanBuffer<char>();
-        newBuffer.Dispose();
-
-        SpanBuffer<DateTime> emptyBuffer = new(0);
-        emptyBuffer.Dispose();
-
-        SpanBuffer<byte> ungrownEmptyStackBuffer = stackalloc byte[32];
-        ungrownEmptyStackBuffer.Dispose();
-
-        SpanBuffer<byte> ungrownStackBuffer = stackalloc byte[32];
-        ungrownStackBuffer.AddMany(1, 4, 7);
-        ungrownStackBuffer.Dispose();
-
-        SpanBuffer<object> ungrownEmptyBuffer = new(32);
-        ungrownEmptyBuffer.Dispose();
-
-        SpanBuffer<object> ungrownBuffer = new(32);
-        ungrownBuffer.AddMany("Eat", BindingFlags.Static, DateTime.Now);
-        ungrownBuffer.Dispose();
-
-        SpanBuffer<byte> grownStackBuffer = stackalloc byte[32];
-        grownStackBuffer.AddMany(Enumerable.Range(0, 147).Select(static i => (byte)i));
-        grownStackBuffer.Dispose();
-
-        SpanBuffer<object> grownBuffer = new(32);
+        PooledList<object> grownPooledList = new(32);
         for (var i = 0; i < 10; i++)
         {
-            grownBuffer.AddMany(
+            grownPooledList.AddMany(
                 "Eat", BindingFlags.Static, DateTime.Now, Guid.NewGuid(), typeof(void), 1, 2, 3,
                 4, 5, 6);
         }
 
-        grownBuffer.Dispose();
+        grownPooledList.Dispose();
 
         Assert.True(true);
     }
 
     [Fact]
-    public void SpanBufferCanGrow()
+    public void PooledListCanGrow()
     {
-        using var buffer = new SpanBuffer<int>(1);
-        Assert.Equal(0, buffer.Count);
+        using var buffer = new PooledList<int>(1);
+        Assert.Empty(buffer);
         Assert.Equal(ArrayPool.MinCapacity, buffer.Capacity);
 
         var numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
@@ -89,7 +59,7 @@ public class SpanBufferTests
     [Fact]
     public void IntIndexerWorks()
     {
-        using SpanBuffer<int> buffer = new();
+        using PooledList<int> buffer = new();
         buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
         for (var i = 0; i < buffer.Count; i++)
@@ -107,7 +77,7 @@ public class SpanBufferTests
     [Fact]
     public void IndexIndexerWorks()
     {
-        using SpanBuffer<int> buffer = new();
+        using PooledList<int> buffer = new();
         buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
         int bufferCount = buffer.Count;
 
@@ -127,7 +97,7 @@ public class SpanBufferTests
     [Fact]
     public void RangeIndexerWorks()
     {
-        using SpanBuffer<int> buffer = new();
+        using PooledList<int> buffer = new();
         buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
 #if !NET48_OR_GREATER
@@ -144,7 +114,7 @@ public class SpanBufferTests
     [Fact]
     public void AddWorks()
     {
-        using var buffer = new SpanBuffer<object?>();
+        using var buffer = new PooledList<object?>();
         List<object?> list = new();
 
         var objects = TestHelper.TestObjects;
@@ -166,7 +136,7 @@ public class SpanBufferTests
     [Fact]
     public void AddManySpanWorks()
     {
-        using var buffer = new SpanBuffer<object?>();
+        using var buffer = new PooledList<object?>();
         List<object?> list = new();
 
         Span<object?> objects = TestHelper.TestObjects.ToArray();
@@ -185,7 +155,7 @@ public class SpanBufferTests
     [Fact]
     public void AddManyCountableWorks()
     {
-        using var buffer = new SpanBuffer<object?>();
+        using var buffer = new PooledList<object?>();
         List<object?> list = new();
 
         var objects = TestHelper.TestObjects;
@@ -204,7 +174,7 @@ public class SpanBufferTests
     [Fact]
     public void AddManyUncountableWorks()
     {
-        using var buffer = new SpanBuffer<object?>();
+        using var buffer = new PooledList<object?>();
         List<object?> list = new();
 
         var objects = TestHelper.TestObjects;
@@ -226,7 +196,7 @@ public class SpanBufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [147, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new SpanBuffer<byte>();
+        using var buffer = new PooledList<byte>();
         buffer.AddMany(startArray);
 
         Index index = 0;
@@ -242,7 +212,7 @@ public class SpanBufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 147, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new SpanBuffer<byte>();
+        using var buffer = new PooledList<byte>();
         buffer.AddMany(startArray);
 
         Index index = 8;
@@ -258,7 +228,7 @@ public class SpanBufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 147];
 
-        using var buffer = new SpanBuffer<byte>();
+        using var buffer = new PooledList<byte>();
         buffer.AddMany(startArray);
 
         Index index = ^0;
@@ -274,7 +244,7 @@ public class SpanBufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [255, 250, 245, 240, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new SpanBuffer<byte>();
+        using var buffer = new PooledList<byte>();
         buffer.AddMany(startArray);
 
         Index index = 0;
@@ -290,7 +260,7 @@ public class SpanBufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 255, 250, 245, 240, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new SpanBuffer<byte>();
+        using var buffer = new PooledList<byte>();
         buffer.AddMany(startArray);
 
         Index index = 8;
@@ -306,7 +276,7 @@ public class SpanBufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 255, 250, 245, 240];
 
-        using SpanBuffer<byte> buffer = new();
+        using PooledList<byte> buffer = new();
         buffer.AddMany(startArray);
 
         Index index = ^0;
@@ -331,7 +301,7 @@ public class SpanBufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 111, 147, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new SpanBuffer<byte>();
+        using var buffer = new PooledList<byte>();
         buffer.AddMany(startArray);
 
         Index index = 0;
@@ -347,7 +317,7 @@ public class SpanBufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 0, 111, 147, 255, 8, 9, 10, 11, 12, 13, 14, 15];
 
-        using var buffer = new SpanBuffer<byte>();
+        using var buffer = new PooledList<byte>();
         buffer.AddMany(startArray);
 
         Index index = 8;
@@ -363,7 +333,7 @@ public class SpanBufferTests
         byte[] startArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         byte[] endArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 111, 147, 255];
 
-        using SpanBuffer<byte> buffer = new();
+        using PooledList<byte> buffer = new();
         buffer.AddMany(startArray);
 
         Index index = ^0;
@@ -376,49 +346,49 @@ public class SpanBufferTests
     [Fact]
     public void ContainsWorks()
     {
-        using SpanBuffer<int> intBuffer = new();
-        intBuffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
+        using PooledList<int> intPooledList = new();
+        intPooledList.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
         for (var i = -10; i <= 20; i++)
         {
             if (i is >= 0 and <= 7)
             {
-                Assert.True(intBuffer.Contains(i));
+                Assert.Contains(i, intPooledList);
             }
             else
             {
-                Assert.False(intBuffer.Contains(i));
+                Assert.DoesNotContain(i, intPooledList);
             }
         }
 
         Span<Guid> guids = [Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()];
-        using var guidBuffer = new SpanBuffer<Guid>();
-        guidBuffer.AddMany(guids);
+        using var guidPooledList = new PooledList<Guid>();
+        guidPooledList.AddMany(guids);
 
         for (var i = 0; i < 100; i++)
         {
-            Assert.False(guidBuffer.Contains(Guid.NewGuid()));
+            Assert.DoesNotContain(Guid.NewGuid(), guidPooledList);
         }
 
         foreach (var guid in guids)
         {
-            Assert.True(guidBuffer.Contains(guid));
+            Assert.Contains(guid, guidPooledList);
         }
 
 
-        using var recordBuffer = new SpanBuffer<TestClassRecord>();
+        using var recordPooledList = new PooledList<TestClassRecord>();
         List<TestClassRecord> records = new List<TestClassRecord>();
         for (var i = 0; i < 10; i++)
         {
             var obj = new TestClassRecord(i, "Record #{i}", i % 2 == 0);
-            recordBuffer.Add(obj);
+            recordPooledList.Add(obj);
             records.Add(obj);
         }
 
         foreach (var record in records)
         {
-            Assert.True(recordBuffer.Contains(record));
-            Assert.False(recordBuffer.Contains(record with { IsAdmin = !record.IsAdmin }));
+            Assert.Contains(record, recordPooledList);
+            Assert.DoesNotContain(record with { IsAdmin = !record.IsAdmin }, recordPooledList);
         }
     }
 
@@ -426,120 +396,12 @@ public class SpanBufferTests
     [Fact]
     public void ToEnumerableWorks()
     {
-        using SpanBuffer<int> buffer = new();
+        using PooledList<int> buffer = new();
         buffer.AddMany(
             0, 1, 2, 3, 4, 5, 6, 7,
             8, 9, 10, 11, 12, 13, 14, 15);
 
         var midItems = buffer.ToArray().Skip(4).Take(4).ToList();
         Assert.Equal([4, 5, 6, 7], midItems);
-    }
-
-    [Fact]
-    public void TryFindIndexSingleWorks()
-    {
-        using SpanBuffer<int> buffer = new();
-        buffer.AddMany(
-            0, 1, 2, 3, 4, 5, 6, 7,
-            8, 9, 10, 11, 12, 13, 14, 15);
-
-        // basic search
-        for (var i = 0; i < 16; i++)
-        {
-            var found = buffer.TryFindIndex(i);
-            Assert.True(found.HasSome(out var index));
-            Assert.Equal(i, index);
-
-            found = buffer.TryFindIndex(i, firstToLast: false);
-            Assert.True(found.HasSome(out index));
-            Assert.Equal(i, index);
-        }
-
-        // with equality comparer
-        {
-            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
-            var found = buffer.TryFindIndex(3, itemComparer: oddnessEqualityComparer);
-            Assert.True(found.HasSome(out var index));
-            Assert.Equal(1, index); // first odd item is item #1
-
-            found = buffer.TryFindIndex(3, firstToLast: false, itemComparer: oddnessEqualityComparer);
-            Assert.True(found.HasSome(out index));
-            Assert.Equal(15, index); // last odd item is item #15
-        }
-
-        // with index
-        {
-            var found = buffer.TryFindIndex(4, offset: 3);
-            Assert.True(found.HasSome(out var index));
-            Assert.Equal(4, index);
-
-            found = buffer.TryFindIndex(2, offset: 3);
-            Assert.True(found.IsNone);
-
-            found = buffer.TryFindIndex(10, offset: ^8);
-            Assert.True(found.HasSome(out index));
-            Assert.Equal(10, index);
-
-            found = buffer.TryFindIndex(7, offset: ^4);
-            Assert.True(found.IsNone);
-
-
-            found = buffer.TryFindIndex(4, offset: 3, firstToLast: false);
-            Assert.True(found.IsNone);
-
-            found = buffer.TryFindIndex(2, offset: 3, firstToLast: false);
-            Assert.True(found.HasSome(out index));
-            Assert.Equal(2, index);
-
-            found = buffer.TryFindIndex(10, offset: ^8, firstToLast: false);
-            Assert.True(found.IsNone);
-
-            found = buffer.TryFindIndex(7, offset: ^4, firstToLast: false);
-            Assert.True(found.HasSome(out index));
-            Assert.Equal(7, index);
-        }
-    }
-    
-    [Fact]
-    public void TryFindIndexMultiWorks()
-    {
-        using SpanBuffer<int> buffer = new();
-        buffer.AddMany(
-            0, 1, 2, 3, 4, 5, 6, 7,
-            8, 9, 10, 11, 12, 13, 14, 15);
-    
-        // basic search
-        {
-            var found = buffer.TryFindIndex([1, 2, 3]);
-            Assert.True(found.HasSome(out var index));
-            Assert.Equal(1, index);
-    
-            found = buffer.TryFindIndex([8, 9, 10]);
-            Assert.True(found.HasSome(out index));
-            Assert.Equal(8, index);
-    
-            found = buffer.TryFindIndex([14, 15, 16]);
-            Assert.True(found.IsNone);
-    
-            found = buffer.TryFindIndex([3]);
-            Assert.True(found.HasSome(out index));
-            Assert.Equal(3, index);
-        }
-    
-        // with equality comparer
-        {
-            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
-            var found = buffer.TryFindIndex([33, 22, 33], itemComparer: oddnessEqualityComparer);
-            Assert.True(found.HasSome(out var index));
-            Assert.Equal(1, index); // first odd/even/odd is 1,2,3
-    
-            found = buffer.TryFindIndex([33, 22, 33], firstToLast: false, itemComparer: oddnessEqualityComparer);
-            Assert.True(found.HasSome(out index));
-            Assert.Equal(13, index); // last odd/even/odd is 13,14,15
-        }
-    
-        // with index
-        {
-        }
     }
 }

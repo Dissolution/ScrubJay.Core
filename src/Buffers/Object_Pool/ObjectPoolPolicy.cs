@@ -1,8 +1,18 @@
-﻿namespace ScrubJay.Buffers;
+﻿// ReSharper disable MethodOverloadWithOptionalParameter
+
+using ScrubJay.Constraints;
+
+namespace ScrubJay.Buffers;
 
 public record class ObjectPoolPolicy
 {
-    public static ObjectPoolPolicy<T> Default<T>(Constraints.IsNew<T> _ = default)
+    public static ObjectPoolPolicy<T> Default<T>(T? _ = default)
+        where T : class
+    {
+        return new();
+    }
+
+    public static ObjectPoolPolicy<T> Default<T>(GenericTypeConstraint.IsNew<T> _ = default)
         where T : class, new()
     {
         return new()
@@ -10,8 +20,8 @@ public record class ObjectPoolPolicy
             CreateInstance = static () => new(),
         };
     }
-    
-    public static ObjectPoolPolicy<T> Default<T>(Constraints.IsDisposable<T> _ = default)
+
+    public static ObjectPoolPolicy<T> Default<T>(GenericTypeConstraint.IsDisposable<T> _ = default)
         where T : class, IDisposable
     {
         return new()
@@ -19,8 +29,8 @@ public record class ObjectPoolPolicy
             DisposeInstance = static value => value.Dispose(),
         };
     }
-    
-    public static ObjectPoolPolicy<T> Default<T>(Constraints.IsDisposableNew<T> _ = default)
+
+    public static ObjectPoolPolicy<T> Default<T>(GenericTypeConstraint.IsDisposableNew<T> _ = default)
         where T : class, IDisposable, new()
     {
         return new()
@@ -34,8 +44,6 @@ public record class ObjectPoolPolicy
 public sealed record class ObjectPoolPolicy<T> : ObjectPoolPolicy
     where T : class
 {
-    public static ObjectPoolPolicy<T> Default => new();
-    
     public Func<T> CreateInstance { get; set; }
     public Func<T, bool> TryCleanInstance { get; set; }
     public Action<T> DisposeInstance { get; set; }

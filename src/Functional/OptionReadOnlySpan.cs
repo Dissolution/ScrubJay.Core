@@ -9,7 +9,7 @@ namespace ScrubJay.Functional;
 [StructLayout(LayoutKind.Auto)]
 [PublicAPI]
 public readonly ref struct OptionReadOnlySpan<T> //:
-/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */    
+/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */
 #if NET7_0_OR_GREATER
     //IEqualityOperators<OptionReadOnlySpan<T>, OptionReadOnlySpan<T>, bool>,
     //IEqualityOperators<OptionReadOnlySpan<T>, None, bool>,
@@ -32,7 +32,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
 #region Operators
     // Treat Option like a boolean: some == true, none == false
     // Allow us to cast from None or a T value directly to an Option
-    
+
     public static implicit operator bool(OptionReadOnlySpan<T> option) => option._isSome;
     public static implicit operator OptionReadOnlySpan<T>(None _) => None();
     public static implicit operator OptionReadOnlySpan<T>(ReadOnlySpan<T> some) => Some(some);
@@ -41,7 +41,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     public static bool operator false(OptionReadOnlySpan<T> option) => !option._isSome;
 
     // We pass equality and comparison down to T values
-    
+
     public static bool operator ==(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.Equals(right);
     public static bool operator !=(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => !left.Equals(right);
     public static bool operator >(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.CompareTo(right) > 0;
@@ -49,8 +49,8 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     public static bool operator <(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.CompareTo(right) < 0;
     public static bool operator <=(OptionReadOnlySpan<T> left, OptionReadOnlySpan<T> right) => left.CompareTo(right) <= 0;
 
-    public static bool operator ==(OptionReadOnlySpan<T> option, None none) => option.IsNone;
-    public static bool operator !=(OptionReadOnlySpan<T> option, None none) => option.IsSome;
+    public static bool operator ==(OptionReadOnlySpan<T> option, None _) => option.IsNone;
+    public static bool operator !=(OptionReadOnlySpan<T> option, None _) => option.IsSome;
     public static bool operator >(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) > 0;
     public static bool operator >=(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) >= 0;
     public static bool operator <(OptionReadOnlySpan<T> option, None none) => option.CompareTo(none) < 0;
@@ -70,7 +70,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static OptionReadOnlySpan<T> None() => default;
-    
+
     /// <summary>
     /// Creates a new <see cref="Option{T}"/>.Some containing <paramref name="value"/>
     /// </summary>
@@ -79,7 +79,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static OptionReadOnlySpan<T> Some(ReadOnlySpan<T> value) => new(value);
 
-    
+
     // Is this Option.Some?
     // if someone does default(Option), this will be false, so default(Option) == None
     private readonly bool _isSome;
@@ -93,7 +93,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some"/>
@@ -115,9 +115,9 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         value = default;
         return false;
     }
-    
+
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="predicate"></param>
     /// <returns></returns>
@@ -126,7 +126,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     public bool IsSomeAnd(RSpanFunc<T, bool> predicate) => _isSome && predicate(_value);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_none"/>
@@ -138,7 +138,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
 
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
@@ -152,7 +152,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
@@ -167,7 +167,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
 
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_default"/>
@@ -176,11 +176,11 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     {
         if (_isSome)
                 return _value;
-        return ReadOnlySpan<T>.Empty;
+        return [];
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="getValue"></param>
     /// <returns></returns>
@@ -194,7 +194,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="predicate"></param>
     /// <returns></returns>
@@ -205,7 +205,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
             return this;
         return default;
     }
-    
+
     public Option<TNew> Map<TNew>(RSpanFunc<T, TNew> map)
     {
         if (HasSome(out var value))
@@ -215,7 +215,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
 
         return default;
     }
-    
+
     public OptionReadOnlySpan<TNew> Map<TNew>(RSpanFuncRSpan<T, TNew> map)
     {
         if (HasSome(out var value))
@@ -227,7 +227,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="map"></param>
     /// <param name="defaultValue"></param>
@@ -245,7 +245,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="map"></param>
     /// <param name="getDefaultValue"></param>
@@ -358,7 +358,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         }
     }
 
-    public int CompareTo(None none)
+    public int CompareTo(None _)
     {
         // None compares as less than any Some
         if (_isSome)
@@ -417,7 +417,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         return _isSome && Sequence.Equal(_value, value);
     }
 
-    public bool Equals(None none) => !_isSome;
+    public bool Equals(None _) => !_isSome;
 
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
@@ -446,7 +446,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
@@ -458,7 +458,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     {
         private bool _yielded;
         private readonly ReadOnlySpan<T> _value;
-        
+
         public ReadOnlySpan<T> Current => _value;
 
         public OptionReadOnlySpanEnumerator(OptionReadOnlySpan<T> option)

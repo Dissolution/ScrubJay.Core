@@ -6,7 +6,7 @@ public sealed class EmptyEnumerable<T> : IEnumerable<T>
 
     IEnumerator IEnumerable.GetEnumerator() => EmptyEnumerator<T>.Instance;
 
-    IEnumerator<T> IEnumerable<T>.GetEnumerator()=> EmptyEnumerator<T>.Instance;
-    
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => EmptyEnumerator<T>.Instance;
+
     public EmptyEnumerator<T> GetEnumerator() => EmptyEnumerator<T>.Instance;
 }

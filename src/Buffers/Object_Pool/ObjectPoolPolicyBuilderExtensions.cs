@@ -20,4 +20,5 @@ public static class ObjectPoolPolicyBuilderExtensions
     {
         return builder.Dispose(static value => value.Dispose());
     }
+#pragma warning restore S2953
 }

@@ -1,4 +1,4 @@
-﻿using ScrubJay.Collections;
+﻿using ScrubJay.Constraints;
 using ScrubJay.Fluent;
 
 namespace ScrubJay.Buffers;
@@ -38,10 +38,11 @@ public sealed class ObjectPoolPolicyBuilder<T> : FluentRecordBuilder<ObjectPoolP
         _record.DisposeInstance = disposeInstance;
         return _builder;
     }
+#pragma warning restore S2953
 
     public ObjectPoolPolicyBuilder<T> MaxCapacity(int maxCapacity)
     {
-        Validate.InBounds(maxCapacity, Bound.Inclusive(ObjectPool.MinCapacity), Bound.Inclusive(ObjectPool.MaxCapacity)).OkOrThrow();
+        Validate.InBounds(maxCapacity, Bound.Inclusive(ObjectPool.MinCapacity), Bound.Inclusive(ObjectPool.MaxCapacity)).ThrowIfError();
         _record.MaxCapacity = maxCapacity;
         return _builder;
     }

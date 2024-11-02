@@ -99,7 +99,7 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>
         {
             if (_enumerator is null)
                 return new ObjectDisposedException(nameof(UnbreakableEnumerator));
-            
+
             try
             {
                 _enumerator.Reset();
@@ -113,7 +113,7 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>
 
         public void Dispose()
         {
-            Disposable.TryNullDisposeRef(ref _enumerator);
+            _ = Disposable.TryNullDisposeRef(ref _enumerator);
         }
     }
 }

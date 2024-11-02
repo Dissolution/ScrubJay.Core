@@ -34,12 +34,12 @@ public readonly struct None :
     /// All <see cref="None"/>s are the same
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(None left, None right) => true;
+    public static bool operator ==(None _, None __) => true;
     /// <summary>
     /// All <see cref="None"/>s are the same
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(None left, None right) => false;
+    public static bool operator !=(None _, None __) => false;
 
     /// <summary>
     /// Gets the only value of <see cref="None"/>
@@ -49,7 +49,7 @@ public readonly struct None :
     /// <c>default(None)</c> is preferred
     /// </remarks>
     public static readonly None Default;
-    
+
     /// <summary>
     /// All <see cref="None"/>s are the same
     /// </summary>
@@ -71,10 +71,10 @@ public readonly struct None :
             return !isSome;
         return false;
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override int GetHashCode() => 0;
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override string ToString() => nameof(None);
 }

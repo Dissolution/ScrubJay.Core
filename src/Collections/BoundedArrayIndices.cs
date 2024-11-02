@@ -2,6 +2,7 @@
 
 namespace ScrubJay.Collections;
 
+[PublicAPI]
 [MustDisposeResource(false)]
 public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisposable
 {
@@ -9,10 +10,10 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
     {
         Throw.IfNull(array);
 
-        var dimensions = array.Rank;
+        int dimensions = array.Rank;
         int[] lowerBounds = new int[dimensions];
         int[] upperBounds = new int[dimensions];
-        for (var d = 0; d < dimensions; d++)
+        for (int d = 0; d < dimensions; d++)
         {
             int lower = array.GetLowerBound(d);
             if (lower == int.MinValue)
@@ -51,7 +52,7 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
             throw new ArgumentException("Lower Bounds must have at least one dimension", nameof(lowerBounds));
         if (upperBounds.Length != dimensions)
             throw new ArgumentException("Upper Bounds must have the same dimensions as lower bounds", nameof(upperBounds));
-        for (var d = 0; d < dimensions; d++)
+        for (int d = 0; d < dimensions; d++)
         {
             int lower = lowerBounds[d];
             if (lower == int.MinValue)
@@ -73,10 +74,10 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
 
         int[] lowerBounds = new int[dimensions];
         int[] upperBounds = new int[dimensions];
-        for (var d = 0; d < dimensions; d++)
+        for (int d = 0; d < dimensions; d++)
         {
             lowerBounds[d] = 0;
-            var length = dimensionLengths[0];
+            int length = dimensionLengths[0];
             if (length <= 0)
                 throw new ArgumentException($"Dimension {d} has an unsupported length zero or less", nameof(dimensionLengths));
             upperBounds[d] = length - 1;
@@ -89,9 +90,11 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
     private readonly int[] _lowerBounds;
     private readonly int[] _upperBounds;
 
-    // ReSharper disable once FieldCanBeMadeReadOnly.Local
     // Only used in Span<int>, but needs to be writable
+    // ReSharper disable once FieldCanBeMadeReadOnly.Local
+#pragma warning disable IDE0044
     private int[] _indices;
+#pragma warning restore IDE0044
 
 
     object IEnumerator.Current => _indices;

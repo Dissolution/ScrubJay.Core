@@ -1,4 +1,6 @@
-﻿// ReSharper disable EntityNameCapturedOnly.Global
+﻿#pragma warning disable IDE0060
+
+// ReSharper disable EntityNameCapturedOnly.Global
 
 #if NET6_0_OR_GREATER
 using InlineIL;
@@ -33,7 +35,7 @@ public static class FlagsEnumExtensions
         Emit.Conv_U8();
         return Return<ulong>();
     }
-    
+
     /// <summary>
     /// Returns a <see cref="long"/> representation of this <see cref="Enum"/>
     /// </summary>
@@ -135,7 +137,7 @@ public static class FlagsEnumExtensions
     {
         // is power of 2
         // return (x & (x - 1)) == 0
-        
+
         Emit.Ldarg(nameof(@enum));
         Emit.Ldarg(nameof(@enum));
         Emit.Ldc_I4_1();
@@ -150,8 +152,8 @@ public static class FlagsEnumExtensions
     public static bool HasMultipleFlags<TEnum>(this TEnum @enum)
         where TEnum : struct, Enum
         => !HasOneFlag(@enum) && !EnumExtensions.IsDefault(@enum);
-    
-    
+
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int FlagCount<TEnum>(this TEnum @enum)
         where TEnum : struct, Enum
@@ -166,7 +168,7 @@ public static class FlagsEnumExtensions
         const ulong MASK_2 = 0b0110011001100110011001100110011_00110011001100110011001100110011UL;
         const ulong MASK_3 = 0b0001111000011110000111100001111_00001111000011110000111100001111UL;
         const ulong MASK_4 = 0b0000001000000010000000100000001_00000001000000010000000100000001UL;
-        
+
         ulong value = ToUInt64<TEnum>(@enum);
         value -= (value >> 1) & MASK_1;
         value = (value & MASK_2) + ((value >> 2) & MASK_2);

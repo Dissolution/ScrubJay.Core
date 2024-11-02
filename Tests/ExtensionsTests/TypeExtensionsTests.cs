@@ -2,7 +2,6 @@
 
 using System.Collections;
 using System.Reflection;
-using Polyfills;
 using ScrubJay.Extensions;
 using ScrubJay.Functional;
 using TypeExtensions = ScrubJay.Extensions.TypeExtensions;
@@ -196,7 +195,7 @@ public class TypeExtensionsTests
 #if NET48_OR_GREATER
             else if (left.IsPointer)
             {
-                assignable = false;
+                assignable = left == right;
             }
 #endif
             else

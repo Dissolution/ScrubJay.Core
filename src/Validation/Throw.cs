@@ -1,4 +1,5 @@
 ﻿using ScrubJay.Collections;
+using ScrubJay.Constraints;
 
 namespace ScrubJay.Validation;
 
