@@ -20,6 +20,7 @@ namespace ScrubJay;
 /// &lt;/ItemGroup&gt;
 /// </code>
 /// </remarks>
+[PublicAPI]
 public static class GlobalHelper
 {
     /// <summary>
@@ -46,8 +47,14 @@ public static class GlobalHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Ok<T> Ok<T>(T value) => new Ok<T>(value);
 
+    public static Result<TOk, Exception> OkEx<TOk>(TOk ok)
+        => Result<TOk, Exception>.Ok(ok);
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<T> Error<T>(T value) => new Error<T>(value);
+
+    public static Result<TOk, Exception> ErrorEx<TOk>(Exception error)
+        => Result<TOk, Exception>.Error(error);
 
     /// <summary>
     /// Converts an <see cref="Exception"/> to an <see cref="Error{T}">Error&lt;Exception&gt;</see>

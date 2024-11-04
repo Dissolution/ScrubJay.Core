@@ -9,6 +9,7 @@ namespace ScrubJay.Collections;
 /// <typeparam name="TValue">
 /// The <see cref="Type"/> of values associated with the <see cref="Type"/> keys
 /// </typeparam>
+[PublicAPI]
 public class ConcurrentTypeMap<TValue> : ConcurrentDictionary<Type, TValue>
 {
     public ConcurrentTypeMap()
@@ -61,7 +62,6 @@ public class ConcurrentTypeMap<TValue> : ConcurrentDictionary<Type, TValue>
 
     public bool TryRemove(Type keyType)
         => base.TryRemove(keyType, out _);
-
 
     public bool TryRemove<TKey>()
         => base.TryRemove(typeof(TKey), out _);

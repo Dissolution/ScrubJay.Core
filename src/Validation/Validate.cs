@@ -1,5 +1,6 @@
 ﻿#pragma warning disable S907, S3236
 
+using System.Reflection;
 using ScrubJay.Collections;
 using ScrubJay.Constraints;
 using Unit = ScrubJay.Functional.Unit;
@@ -31,8 +32,11 @@ public static class Validate
     /// A <see cref="Result{TOk,TError}">Result&lt;int, Exception&gt;</see> that contains a valid <c>int</c> offset
     /// or an <see cref="Exception"/> describing why the index was invalid
     /// </returns>
-    public static Result<int, Exception> Index(int index, int length,
-        [CallerArgumentExpression(nameof(index))] string? indexName = null)
+    public static Result<int, Exception> Index(
+        int index,
+        int length,
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null)
     {
         if (index < 0 || index >= length)
             return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0, {length})");
@@ -53,8 +57,11 @@ public static class Validate
     /// A <see cref="Result{TOk,TError}">Result&lt;int, Exception&gt;</see> that contains a valid <c>int</c> offset
     /// or an <see cref="Exception"/> describing why the index was invalid
     /// </returns>
-    public static Result<int, Exception> Index(Index index, int length,
-        [CallerArgumentExpression(nameof(index))] string? indexName = null)
+    public static Result<int, Exception> Index(
+        Index index,
+        int length,
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null)
     {
         int offset = index.GetOffset(length);
         if (offset < 0 || offset >= length)
@@ -130,8 +137,10 @@ public static class Validate
         Index index,
         int length,
         int available,
-        [CallerArgumentExpression(nameof(index))] string? indexName = null,
-        [CallerArgumentExpression(nameof(length))] string? lengthName = null)
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null,
+        [CallerArgumentExpression(nameof(length))]
+        string? lengthName = null)
     {
         int offset = index.GetOffset(available);
         if (offset < 0 || offset > available)
@@ -158,7 +167,8 @@ public static class Validate
     public static Result<(int Offset, int Length), Exception> Range(
         Range range,
         int available,
-        [CallerArgumentExpression(nameof(range))] string? rangeName = null)
+        [CallerArgumentExpression(nameof(range))]
+        string? rangeName = null)
     {
         int start = range.Start.GetOffset(available);
         if (start < 0 || start > available)
@@ -172,11 +182,11 @@ public static class Validate
     }
 
 
-
     public static Result<T, Exception> IsNotNull<T>(
         [NotNullWhen(true)] T? value,
         string? message = null,
-        [CallerArgumentExpression(nameof(value))] string? valueName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
         where T : notnull
     {
         if (value is not null)
@@ -232,8 +242,46 @@ public static class Validate
         return Ok(collection);
     }
 
-    public static Result<int, Exception> InLength(int value, int exclusiveLength,
-        [CallerArgumentExpression(nameof(value))] string? valueName = null)
+
+    public static Result<T, Exception> Is<T>(
+        [NotNullWhen(true)] object? obj,
+        [CallerArgumentExpression(nameof(obj))]
+        string? objectName = null)
+    {
+        if (obj is null)
+            return new ArgumentNullException(objectName);
+        if (obj is T)
+            return OkEx((T)obj);
+        return new ArgumentException($"{objectName} '{obj}' is not a {typeof(T)}", objectName);
+    }
+
+    public static Result<T, Exception> CanBe<T>(
+        object? obj,
+        [CallerArgumentExpression(nameof(obj))]
+        string? objectName = null)
+    {
+        if (obj is T)
+        {
+            return OkEx((T)obj);
+        }
+
+        if (obj is null)
+        {
+            // the only value that can be null is Nullable<>
+            // but any non-valuetypes (class, interface) can be null
+            if (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) is not null)
+                return OkEx(default(T)!);
+        }
+
+        return new ArgumentException($"{objectName} '{obj}' does not contain a {typeof(T)}", objectName);
+    }
+
+
+    public static Result<int, Exception> InLength(
+        int value,
+        int exclusiveLength,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
     {
         if (value < 0 || value >= exclusiveLength)
             return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveLength})");
@@ -247,10 +295,12 @@ public static class Validate
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {bounds}");
     }
 
-    public static Result<T, Exception> InBounds<T>(T value,
+    public static Result<T, Exception> InBounds<T>(
+        T value,
         Bound<T> lowerBound,
         Bound<T> upperBound,
-        [CallerArgumentExpression(nameof(value))] string? valueName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
         => InBounds<T>(value, Bounds.Create(lowerBound, upperBound), valueName);
 
 
@@ -302,11 +352,16 @@ public static class Validate
     }
 
 
-    public static Result<Unit, Exception> CopyTo<T>(int count, T[]? array,
+    public static Result<Unit, Exception> CopyTo<T>(
+        int count,
+        T[]? array,
         int arrayIndex = 0,
-        [CallerArgumentExpression(nameof(count))] string? countName = null,
-        [CallerArgumentExpression(nameof(array))] string? arrayName = null,
-        [CallerArgumentExpression(nameof(arrayIndex))] string? arrayIndexName = null)
+        [CallerArgumentExpression(nameof(count))]
+        string? countName = null,
+        [CallerArgumentExpression(nameof(array))]
+        string? arrayName = null,
+        [CallerArgumentExpression(nameof(arrayIndex))]
+        string? arrayIndexName = null)
     {
         return new Validations
         {

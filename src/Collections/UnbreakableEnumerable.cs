@@ -11,7 +11,7 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>
 
     public UnbreakableEnumerable(IEnumerable<T>? enumerable)
     {
-        _enumerable = enumerable ?? EmptyEnumerable<T>.Instance;
+        _enumerable = enumerable ?? [];
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -26,7 +26,7 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>
         }
         catch (Exception)
         {
-            enumerator = EmptyEnumerator<T>.Instance;
+            enumerator = Enumerator.Empty<T>();
         }
 
         return new UnbreakableEnumerator(enumerator);

@@ -107,6 +107,6 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
         return okValue;
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => EmptyEnumerator<Unit>.Instance;
-    IEnumerator<Unit> IEnumerable<Unit>.GetEnumerator() => EmptyEnumerator<Unit>.Instance;
+    IEnumerator IEnumerable.GetEnumerator() => Enumerator.Empty<Unit>();
+    IEnumerator<Unit> IEnumerable<Unit>.GetEnumerator() => Enumerator.Empty<Unit>();
 }

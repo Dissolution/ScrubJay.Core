@@ -4,7 +4,7 @@
 
 #pragma warning disable CA1710
 
-namespace ScrubJay.Collections;
+namespace ScrubJay.Collections.NonGeneric;
 
 /// <summary>
 /// An adapter to consume an <see cref="IDictionary"/> with generically-typed Keys and Values
@@ -21,30 +21,20 @@ public sealed class DictionaryAdapter<TKey, TValue> :
     IEnumerable
     where TKey : notnull
 {
-    [return: NotNullIfNotNull(nameof(objKey))]
+
+    [return: NotNull]
     private static TKey ObjectToKey(
-        [NotNull] object? objKey,
+        object? objKey,
         [CallerArgumentExpression(nameof(objKey))]
         string? keyName = null)
-    {
-        return objKey switch
-        {
-            null => throw new ArgumentNullException(keyName, "Key cannot be null"),
-            TKey key => key,
-            _ => throw new ArgumentException($"Key '{objKey}' is not a '{typeof(TKey).Name}'", keyName),
-        };
-    }
+        => Validate.Is<TKey>(objKey, keyName).OkOrThrow()!;
 
-    [return: NotNullIfNotNull(nameof(objValue))]
-    private static TValue? ObjectToValue(
+    [return: MaybeNull, NotNullIfNotNull(nameof(objValue))]
+    private static TValue ObjectToValue(
         object? objValue,
         [CallerArgumentExpression(nameof(objValue))]
         string? valueName = null)
-    {
-        if (objValue.CanBe<TValue>(out var value))
-            return value;
-        throw new ArgumentException($"Value '{objValue}' is not a '{typeof(TValue).Name}'", valueName);
-    }
+        => Validate.CanBe<TValue>(objValue, valueName).OkOrThrow();
 
 
     private readonly IDictionary _dictionary;
