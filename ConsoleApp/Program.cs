@@ -2,10 +2,11 @@
 // ReSharper disable UnusedVariable
 
 using System.Diagnostics;
+using ScrubJay.Constraints;
 using ScrubJay.Functional;
 
 
-Option<int> opt = 147;
 
+var parsed = Bounds.Parse<int>($"{4}..{3}");
 
 Debugger.Break();

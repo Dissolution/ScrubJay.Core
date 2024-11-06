@@ -32,15 +32,12 @@ public static class Equate
         return _equalityComparers.GetOrAdd(type, static t => FindEqualityComparer(t));
     }
 
-    public static IEqualityComparer<T> GetEqualityComparer<T>()
-    {
-        return _equalityComparers.GetOrAdd<T>(static _ => EqualityComparer<T>.Default).ThrowIfNot<IEqualityComparer<T>>();
-    }
+    public static IEqualityComparer<T> GetEqualityComparer<T>() => EqualityComparer<T>.Default;
 
 
     public static IEqualityComparer GetEqualityComparerFor(object? obj) => GetEqualityComparer(obj?.GetType());
 
-    public static IEqualityComparer<T> GetEqualityComparerFor<T>(T? _) => GetEqualityComparer<T>();
+    public static IEqualityComparer<T> GetEqualityComparerFor<T>(T? _) => EqualityComparer<T>.Default;
 
     public static IEqualityComparer<T> CreateEqualityComparer<T>(Func<T?, T?, bool> equals, Func<T?, int> getHashCode)
         => new FuncEqualityComparer<T>(equals, getHashCode);
@@ -150,16 +147,16 @@ public static class Equate
     /// <summary>
     /// Are the <see cref="System.Type"/> parameters <paramref name="left"/> and <paramref name="right"/> equal?
     /// </summary>
-    public static bool Type(Type? left, Type? right) => left == right;
+    public static bool Types(Type? left, Type? right) => left == right;
 
     /// <summary>
     /// Are the generic <see cref="System.Type">Types</see> <typeparamref name="TL"/> and <typeparamref name="TR"/> equal?
     /// </summary>
-    public static bool Type<TL, TR>(TL? _ = default!, TR? __ = default!) => typeof(TL) == typeof(TR);
+    public static bool TypesOf<TL, TR>(TL? _ = default, TR? __ = default) => typeof(TL) == typeof(TR);
 
     /// <summary>
     /// Are the <see cref="System.Type"/>s of <paramref name="left"/> and <paramref name="right"/> equal?
     /// </summary>
-    public static bool Types(object? left, object? right) => left?.GetType() == right?.GetType();
+    public static bool TypesOf(object? left, object? right) => left?.GetType() == right?.GetType();
 #endregion
 }

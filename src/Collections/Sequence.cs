@@ -1,5 +1,8 @@
 ﻿namespace ScrubJay.Collections;
 
+/// <summary>
+/// Methods for working with sequences
+/// </summary>
 [PublicAPI]
 public static class Sequence
 {

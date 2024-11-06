@@ -35,4 +35,9 @@ public static class Bounds
             return Some(ForLength(count));
         return Option.None();
     }
+
+    public static Bounds<T> Parse<T>(ref BoundBuilder<T> text)
+    {
+        return text.Bounds;
+    }
 }

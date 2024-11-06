@@ -54,6 +54,18 @@ public static class Throw
 
 
     [StackTraceHidden]
+    public static void IfBadEnumerationState(
+        [DoesNotReturnIf(true)] bool notYetStarted,
+        [DoesNotReturnIf(true)] bool hasFinished)
+    {
+        if (notYetStarted)
+            throw new InvalidOperationException("Enumeration has not yet started");
+        if (hasFinished)
+            throw new InvalidOperationException("Enumeration has already finished");
+    }
+
+
+    [StackTraceHidden]
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void KeyNotFound<TKey>(TKey key)

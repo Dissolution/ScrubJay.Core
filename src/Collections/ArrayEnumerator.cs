@@ -8,84 +8,69 @@
 [MustDisposeResource(false)]
 public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposable
 {
-    // the array being enumerated
-    private T[]? _array;
-    // the number of items to enumerate over
-    private int _count;
-    // the current enumeration index
+    private readonly T[] _array;
+
+    private readonly int _startIndex;
+    private readonly int _endIndex;
+
     private int _index;
 
     object? IEnumerator.Current => Current;
 
-    /// <inheritdoc cref="IEnumerator{T}.Current"/>
     public T Current
     {
         get
         {
-            Throw.IfDisposed(_array is null, this);
-            if (_index < 0)
-                throw new InvalidOperationException("Enumeration has not yet started");
-            if (_index >= _count)
-                throw new InvalidOperationException("Enumeration has finished");
+            Throw.IfBadEnumerationState(_index < _startIndex, _index > _endIndex);
             return _array[_index];
         }
     }
 
-    /// <summary>
-    /// Gets the current position of the enumerator
-    /// </summary>
-    public int Index
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _index;
-    }
 
-    internal ArrayEnumerator(T[] array, int count)
+    public ArrayEnumerator(T[] array)
     {
+        Throw.IfNull(array);
         _array = array;
-        _count = count;
+        _startIndex = 0;
+        _endIndex = _array.Length - 1;
         _index = -1;
     }
 
-    /// <inheritdoc cref="IEnumerator.MoveNext"/>
+    public ArrayEnumerator(T[] array, Range range)
+    {
+        Throw.IfNull(array);
+        (int offset, int length) = Validate.Range(range, array.Length).OkOrThrow();
+        _array = array;
+        _startIndex = offset;
+        _endIndex = length + offset;
+        _index = offset - 1;
+    }
+
     public bool MoveNext()
     {
         int newIndex = _index + 1;
-        if (newIndex >= _count)
+        if (newIndex < _startIndex || newIndex > _endIndex)
             return false;
         _index = newIndex;
         return true;
     }
 
-    /// <summary>
-    /// Tries to advance the enumerator to the next item in the array
-    /// </summary>
-    /// <returns>
-    /// An <see cref="Option{T}"/> containing the next item
-    /// </returns>
     public Option<T> TryMoveNext()
     {
         int newIndex = _index + 1;
-        if (newIndex >= _count)
+        if (newIndex < _startIndex || newIndex > _endIndex)
             return None<T>();
         _index = newIndex;
-        return Some(_array![newIndex]);
+        return Some(_array[newIndex]);
     }
 
-    /// <inheritdoc cref="IEnumerator.Reset"/>
     public void Reset()
     {
-        _index = -1;
+        _index = _startIndex - 1;
     }
 
-    /// <summary>
-    /// Removes all references to the underlying array and stops all further enumeration
-    /// </summary>
-    public void Dispose()
+    void IDisposable.Dispose()
     {
-        // Clear my references
-        _count = 0; // stops enumeration
-        _index = -1;
-        _array = null;
+        // do nothing
     }
 }

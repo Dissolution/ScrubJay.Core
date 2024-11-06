@@ -31,10 +31,7 @@ public static class Compare
         return _comparers.GetOrAdd(type, static t => FindComparer(t));
     }
 
-    public static IComparer<T> GetComparer<T>()
-    {
-        return _comparers.GetOrAdd<T>(static _ => Comparer<T>.Default).ThrowIfNot<IComparer<T>>();
-    }
+    public static IComparer<T> GetComparer<T>() => Comparer<T>.Default;
 
     public static IComparer GetComparerFor(object? obj)
     {
@@ -42,16 +39,17 @@ public static class Compare
             return ObjectComparer.Default;
         return GetComparer(obj.GetType());
     }
-    
-    public static IComparer<T> GetComparerFor<T>(T? _) => GetComparer<T>();
+
+    public static IComparer<T> GetComparerFor<T>(T? _) => Comparer<T>.Default;
 
     public static IComparer<T> CreateComparer<T>(Func<T?, T?, int> compare)
         => Comparer<T>.Create((x, y) => compare(x, y));
+
     public static IComparer<T> CreateComparer<T>(Comparison<T> comparison)
         => Comparer<T>.Create((x, y) => comparison(x, y));
 
 
-    public static int Values<T>(T? left, T? right) => GetComparer<T>().Compare(left!, right!);
+    public static int Values<T>(T? left, T? right) => Comparer<T>.Default.Compare(left!, right!);
 
     public static int Objects(object? left, object? right) => ObjectComparer.Compare(left, right);
 

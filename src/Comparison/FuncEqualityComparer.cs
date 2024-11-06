@@ -3,6 +3,7 @@
 /// <summary>
 /// An <see cref="IEqualityComparer"/> that works via passed in functions
 /// </summary>
+[PublicAPI]
 public sealed class FuncEqualityComparer : IEqualityComparer
 {
     private readonly Func<object?, object?, bool> _equals;

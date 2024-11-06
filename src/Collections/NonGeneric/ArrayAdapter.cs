@@ -2,9 +2,14 @@
 
 namespace ScrubJay.Collections.NonGeneric;
 
+/// <summary>
+/// A wrapper around an <see cref="Array"/> that exposes it as a <c>T[]</c>
+/// </summary>
+/// <typeparam name="T"></typeparam>
 [PublicAPI]
 public sealed class ArrayAdapter<T> :
-    /* Does not implement IList<T>, IList, ICollection<T>, nor ICollection
+    /* Does not implement
+     * IList<T>, IList, ICollection<T>, nor ICollection
      * as those types imply some ability to Add and Remove from a collection
      * that does not exist for an Array
      */

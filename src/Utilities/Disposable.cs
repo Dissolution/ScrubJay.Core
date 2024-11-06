@@ -1,4 +1,6 @@
-﻿#pragma warning disable CA1031, MA0048
+﻿using ScrubJay.Debugging;
+
+#pragma warning disable CA1031, MA0048
 
 namespace ScrubJay.Utilities;
 
@@ -17,7 +19,7 @@ public abstract class Disposable : IDisposable
         return new ActionAsyncDisposable(onDispose);
     }
 #endif
-    
+
     public static bool TryDispose([HandlesResourceDisposal] IDisposable? disposable)
     {
         if (disposable is not null)
@@ -27,16 +29,17 @@ public abstract class Disposable : IDisposable
                 disposable.Dispose();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                UnhandledEventWatcher.Unbroken($"{nameof(Disposable)}.{nameof(TryDispose)}", ex);
                 // Suppress any errors
             }
         }
 
         return false;
     }
-    
-    public static bool TryDispose<TDisposable>([HandlesResourceDisposal] ref TDisposable disposable)
+
+    public static bool TryDisposeRef<TDisposable>([HandlesResourceDisposal] ref TDisposable disposable)
         where TDisposable : IDisposable
     {
         try
@@ -44,15 +47,16 @@ public abstract class Disposable : IDisposable
             disposable.Dispose();
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            UnhandledEventWatcher.Unbroken($"{nameof(Disposable)}.{nameof(TryDisposeRef)}", ex);
             // Suppress any errors
             return false;
         }
     }
-    
-    
-    
+
+
+
     public static bool TryNullDisposeRef<TDisposable>(
         [HandlesResourceDisposal]
         ref TDisposable? disposable)
@@ -67,8 +71,9 @@ public abstract class Disposable : IDisposable
                 localDisposable.Dispose();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                UnhandledEventWatcher.Unbroken($"{nameof(Disposable)}.{nameof(TryNullDisposeRef)}", ex);
                 // Suppress any errors
                 return false;
             }
