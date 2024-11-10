@@ -58,7 +58,7 @@ public sealed class ArrayAdapter<T> :
 
     public void CopyTo(T[] array, int arrayIndex = 0)
     {
-        Validate.CopyTo(Count, array, arrayIndex).ThrowIfError();
+        Validate.CopyTo(array, arrayIndex, Count).ThrowIfError();
         Array.Copy(_array, 0, array, arrayIndex, _array.Length);
     }
 

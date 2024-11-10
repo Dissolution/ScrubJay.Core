@@ -6,7 +6,7 @@ public sealed class UnhandledEventWatcher : IDisposable
 {
     // There may only be a single instance of this class at one time
     private static readonly Mutex _mutex = new Mutex(initiallyOwned: false);
-    private static UnhandledEventWatcher? _instance = null;
+    private static UnhandledEventWatcher? _instance;
 
     internal static void Unbroken(object sender, Exception exception)
     {
@@ -65,7 +65,7 @@ public sealed class UnhandledEventWatcher : IDisposable
     {
         AppDomain.CurrentDomain.UnhandledException -= CurrentDomainOnUnhandledException;
         TaskScheduler.UnobservedTaskException -= TaskSchedulerOnUnobservedTaskException;
-        Interlocked.Exchange(ref UnhandledException, null);
+        _ = Interlocked.Exchange(ref UnhandledException, null);
         _mutex.ReleaseMutex();
     }
 }

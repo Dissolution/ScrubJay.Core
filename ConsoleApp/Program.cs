@@ -3,10 +3,15 @@
 
 using System.Diagnostics;
 using ScrubJay.Constraints;
-using ScrubJay.Functional;
+
+var pair = Pair.Parse<int, string>($"({147},{"Joe"}");
 
 
+/*
+Validate.InRange(4, 1..4);
 
 var parsed = Bounds.Parse<int>($"{4}..{3}");
+*/
+
 
 Debugger.Break();

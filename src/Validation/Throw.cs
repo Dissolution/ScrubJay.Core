@@ -1,11 +1,15 @@
-﻿using ScrubJay.Collections;
-using ScrubJay.Constraints;
+﻿using ScrubJay.Constraints;
 
 namespace ScrubJay.Validation;
 
+/// <summary>
+/// Methods that throw an <seealso cref="Exception"/> if certain conditions are met
+/// </summary>
+[PublicAPI]
+[StackTraceHidden]
 public static class Throw
 {
-      /// <summary>
+    /// <summary>
     /// Throw a <see cref="ObjectDisposedException"/> if a <paramref name="condition"/> indicates disposal of an <paramref name="instance"/>
     /// </summary>
     [StackTraceHidden]
@@ -76,7 +80,8 @@ public static class Throw
     [StackTraceHidden]
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void DuplicateKeyException<TKey>(TKey key,
+    public static void DuplicateKeyException<TKey>(
+        TKey key,
         [CallerMemberName] string? keyName = null)
     {
         throw new ArgumentException($"Duplicate key '{key}' was found", keyName);

@@ -109,7 +109,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
     void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
-        Validate.CopyTo(_dictionary.Count, array, arrayIndex).ThrowIfError();
+        Validate.CopyTo(array, arrayIndex, _dictionary.Count).ThrowIfError();
 
         foreach (DictionaryEntry entry in _dictionary)
         {

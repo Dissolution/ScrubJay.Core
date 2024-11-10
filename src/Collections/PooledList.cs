@@ -9,37 +9,6 @@ using ScrubJay.Comparison;
 
 namespace ScrubJay.Collections;
 
-public partial class PooledList<T>
-{
-    /*
-     * CA1819 - Properties should not return arrays
-     * CA1034 - "Do not net types
-     */
-#pragma warning disable CA1819, CA1034
-    public class UnsafeAccess
-    {
-        private readonly PooledList<T> _pooledList;
-
-        internal UnsafeAccess(PooledList<T> pooledList)
-        {
-            _pooledList = pooledList;
-        }
-
-        public T[] Array
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _pooledList._array;
-        }
-
-        public Span<T> Available
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _pooledList.Available;
-        }
-    }
-#pragma warning restore CA1819
-}
-
 /// <summary>
 /// A PooledList is an <see cref="IList{T}"/> implementation that operates on
 /// <see cref="Array">T[]</see> instance and <see cref="ArrayPool"/> to minimize allocations<br/>
@@ -50,7 +19,7 @@ public partial class PooledList<T>
 /// </typeparam>
 [PublicAPI]
 [MustDisposeResource]
-public sealed partial class PooledList<T> :
+public sealed class PooledList<T> :
     IList<T>,
     IReadOnlyList<T>,
     ICollection<T>,
@@ -79,7 +48,7 @@ public sealed partial class PooledList<T> :
     /// <summary>
     /// Gets a <see cref="Span{T}"/> over the unwritten, available portion of this <see cref="PooledList{T}"/>
     /// </summary>
-    private Span<T> Available
+    internal Span<T> Available
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _array.AsSpan(_position);
@@ -1028,7 +997,7 @@ public sealed partial class PooledList<T> :
 
     void ICollection<T>.CopyTo(T[] array, int arrayIndex)
     {
-        Validate.CopyTo(_position, array, arrayIndex).ThrowIfError();
+        Validate.CopyTo(array, arrayIndex, _position).ThrowIfError();
         Written.CopyTo(array.AsSpan(arrayIndex));
     }
 

@@ -1,5 +1,5 @@
 ﻿// I do not want to rename UnbreakableEnumerator
-#pragma warning disable CA1710
+#pragma warning disable CA1710, CA1031
 
 
 namespace ScrubJay.Debugging;

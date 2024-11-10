@@ -26,7 +26,7 @@ public interface IShallowCloneable<out TSelf> : ICloneable
     /// <inheritdoc />
     object ICloneable.Clone()
     {
-        return (object)Clone();
+        return (object)ShallowClone();
     }
 #endif
 }

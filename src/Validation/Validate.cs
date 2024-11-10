@@ -1,19 +1,25 @@
 ﻿#pragma warning disable S907, S3236
 
-using System.Reflection;
-using ScrubJay.Collections;
 using ScrubJay.Constraints;
 using Unit = ScrubJay.Functional.Unit;
 
 namespace ScrubJay.Validation;
 
 /// <summary>
-/// Validation methods that return <see cref="Result{O,E}">Result</see>&lt;T, <see cref="Exception"/>&gt;
+/// Methods that validate arguments to return a <see cref="Result{TOk,TError}"/>
 /// </summary>
 /// <remarks>
-/// Validation is only performed on the parameters that are assumed to be coming from a user,
-/// parameters such as Available assume that the coder is passing sane data
+/// Validation methods all have a similar shape:<br/>
+/// <code>
+/// Result&lt;T, Exception&gt; METHOD(T+ values, T+ limits, string+ valueNames)
+/// </code>
+/// Where there are one or more input <i>values</i> being validated,<br/>
+/// one or more <i>limits</i> to compare those <i>values</i> against,<br/>
+/// and then a series of automatically captured <i>value names</i> used for any thrown <see cref="Exception">Exceptions</see>.<br/>
+/// Validation is only performed on <i>values</i>, not on <i>limits</i>.<br/>
 /// </remarks>
+[PublicAPI]
+[StackTraceHidden]
 public static class Validate
 {
 #region Index
@@ -38,9 +44,9 @@ public static class Validate
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
     {
-        if (index < 0 || index >= length)
-            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0, {length})");
-        return index;
+        if (index >= 0 && index < length)
+            return index;
+        return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length})");
     }
 
     /// <summary>
@@ -64,19 +70,32 @@ public static class Validate
         string? indexName = null)
     {
         int offset = index.GetOffset(length);
-        if (offset < 0 || offset >= length)
-            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0, {length})");
-        return offset;
+        if (offset >= 0 && offset < length)
+            return offset;
+        return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length})");
     }
 
-    public static Result<int, Exception> InsertIndex(Index index, int length, [CallerArgumentExpression(nameof(index))] string? indexName = null, [CallerArgumentExpression(nameof(length))] string? lengthName = null)
+    public static Result<int, Exception> InsertIndex(
+        int index,
+        int length,
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null)
     {
-        if (length < 0)
-            return new ArgumentOutOfRangeException(lengthName, length, "Length must be zero or greater");
+        if (index >= 0 && index <= length)
+            return index;
+        return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length}]");
+    }
+
+    public static Result<int, Exception> InsertIndex(
+        Index index,
+        int length,
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null)
+    {
         int offset = index.GetOffset(length);
-        if (offset < 0 || offset > length)
-            return new ArgumentOutOfRangeException(indexName, index, $"Insert Index must be in the range [0, {length}]");
-        return offset;
+        if (offset >= 0 && offset <= length)
+            return offset;
+        return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length}]");
     }
 
 #endregion
@@ -109,9 +128,9 @@ public static class Validate
         string? lengthName = null)
     {
         if (index < 0 || index > available)
-            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0, {available}]");
+            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{available})");
         if (length < 0 || index + length > available)
-            return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0, {available}]");
+            return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0..{available}]");
         return (index, length);
     }
 
@@ -144,9 +163,9 @@ public static class Validate
     {
         int offset = index.GetOffset(available);
         if (offset < 0 || offset > available)
-            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0, {available}]");
+            return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{available}]");
         if (length < 0 || offset + length > available)
-            return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0, {available}]");
+            return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0..{available}]");
         return (offset, length);
     }
 
@@ -172,11 +191,11 @@ public static class Validate
     {
         int start = range.Start.GetOffset(available);
         if (start < 0 || start > available)
-            return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0, {available}]");
+            return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0..{available}]");
 
         int end = range.End.GetOffset(available);
         if (end < start || end > available)
-            return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0, {available}]");
+            return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0..{available}]");
 
         return (start, end - start);
     }
@@ -190,11 +209,12 @@ public static class Validate
         where T : notnull
     {
         if (value is not null)
-            return value;
+            return OkEx(value); // do not implicitly cast in case value is Exception
         return new ArgumentNullException(valueName, message);
     }
 
     public static Result<T, Exception> IsNotNull<T>(
+        // ReSharper disable once ConvertNullableToShortForm
         [NotNullWhen(true)] Nullable<T> value,
         string? message = null,
         [CallerArgumentExpression(nameof(value))]
@@ -202,7 +222,7 @@ public static class Validate
         where T : struct
     {
         if (value.HasValue)
-            return Ok(value.GetValueOrDefault());
+            return value.GetValueOrDefault();
         return new ArgumentNullException(valueName, message);
     }
 
@@ -218,7 +238,15 @@ public static class Validate
         return array;
     }
 
-    /* Someday, C# will have support for using certain ref struct types in generics */
+    public static Result<Unit, Exception> IsNotEmpty<T>(
+        Span<T> span,
+        [CallerArgumentExpression(nameof(span))]
+        string? spanName = null)
+    {
+        if (span.Length == 0)
+            return new ArgumentException("Span cannot be empty", spanName);
+        return Unit.Default;
+    }
 
     public static Result<Unit, Exception> IsNotEmpty<T>(
         ReadOnlySpan<T> span,
@@ -226,7 +254,7 @@ public static class Validate
         string? spanName = null)
     {
         if (span.Length == 0)
-            return new ArgumentException("Span cannot be empty", spanName);
+            return new ArgumentException("ReadOnlySpan cannot be empty", spanName);
         return Unit.Default;
     }
 
@@ -239,7 +267,7 @@ public static class Validate
             return new ArgumentNullException(collectionName);
         if (collection.Count == 0)
             return new ArgumentException("Collection cannot be empty", collectionName);
-        return Ok(collection);
+        return OkEx(collection);
     }
 
 
@@ -268,7 +296,7 @@ public static class Validate
         if (obj is null)
         {
             // the only value that can be null is Nullable<>
-            // but any non-valuetypes (class, interface) can be null
+            // but any non valueTypes (class, interface) can be null
             if (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) is not null)
                 return OkEx(default(T)!);
         }
@@ -283,10 +311,47 @@ public static class Validate
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
     {
-        if (value < 0 || value >= exclusiveLength)
-            return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveLength})");
-        return value;
+        if (value >= 0 && value < exclusiveLength)
+            return value;
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveLength})");
     }
+
+    public static Result<int, Exception> InRange(
+        int value,
+        Range range,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        if (!range.Start.IsFromEnd)
+        {
+            int lower = range.Start.Value;
+            if (value < lower)
+                goto FAIL;
+        }
+        else
+        {
+            Debugger.Break();
+            throw new NotImplementedException();
+        }
+
+        if (!range.End.IsFromEnd)
+        {
+            int upper = range.End.Value;
+            if (value >= upper)
+                goto FAIL;
+        }
+        else
+        {
+            Debugger.Break();
+            throw new NotImplementedException();
+        }
+
+        return value;
+
+        FAIL:
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {range}");
+    }
+
 
     public static Result<T, Exception> InBounds<T>(T value, Bounds<T> bounds, [CallerArgumentExpression(nameof(value))] string? valueName = null)
     {
@@ -303,11 +368,27 @@ public static class Validate
         string? valueName = null)
         => InBounds<T>(value, Bounds.Create(lowerBound, upperBound), valueName);
 
+    public static Result<T, Exception> InInclusiveLength<T>(
+        T value,
+        T inclusiveMaximum,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        int c = Comparer<T>.Default.Compare(value, default!);
+        if (c < 0)
+            goto FAIL;
+        c = Comparer<T>.Default.Compare(value, inclusiveMaximum);
+        if (c > 0)
+            goto FAIL;
+        return value;
+    FAIL:
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{inclusiveMaximum}]");
+    }
 
     public static Result<T, Exception> InInclusiveLength<T>(
         T value,
         T inclusiveMaximum,
-        IComparer<T>? valueComparer = null,
+        IComparer<T>? valueComparer,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
     {
@@ -321,13 +402,30 @@ public static class Validate
             goto FAIL;
         return value;
     FAIL:
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {inclusiveMaximum}]");
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{inclusiveMaximum}]");
     }
 
     public static Result<T, Exception> InExclusiveLength<T>(
         T value,
         T exclusiveMaximum,
-        IComparer<T>? valueComparer = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        int c = Comparer<T>.Default.Compare(value, default!);
+        if (c < 0)
+            goto FAIL;
+        c = Comparer<T>.Default.Compare(value, exclusiveMaximum);
+        if (c >= 0)
+            goto FAIL;
+        return value;
+    FAIL:
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{exclusiveMaximum})");
+    }
+
+    public static Result<T, Exception> InExclusiveLength<T>(
+        T value,
+        T exclusiveMaximum,
+        IComparer<T>? valueComparer,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
     {
@@ -335,11 +433,13 @@ public static class Validate
 
         int c = valueComparer.Compare(value, default!);
         if (c < 0)
-            return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveMaximum})");
+            goto FAIL;
         c = valueComparer.Compare(value, exclusiveMaximum);
         if (c >= 0)
-            return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveMaximum})");
+            goto FAIL;
         return value;
+    FAIL:
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{exclusiveMaximum})");
     }
 
 
@@ -352,6 +452,7 @@ public static class Validate
     }
 
 
+    [Obsolete("Old Validate Pattern", true)]
     public static Result<Unit, Exception> CopyTo<T>(
         int count,
         T[]? array,
@@ -375,5 +476,44 @@ public static class Validate
                 return new ArgumentOutOfRangeException(arrayName, array, $"Cannot fit {count} items into [{array.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}");
             },
         }.GetResult();
+    }
+
+    public static Result<Unit, Exception> CopyTo<T>(
+        T[]? array,
+        int arrayIndex,
+        int count,
+        [CallerArgumentExpression(nameof(array))]
+        string? arrayName = null,
+        [CallerArgumentExpression(nameof(arrayIndex))]
+        string? arrayIndexName = null)
+    {
+        return
+            from arr in IsNotNull(array, arrayName)
+            from arrIndex in InRange(arrayIndex, ..arr.Length, arrayIndexName)
+            from _ in ErrorIf(
+                count + arrIndex > arr.Length,
+                () => new ArgumentOutOfRangeException(
+                    arrayName, arr,
+                    $"Cannot fit {count} items into [{arr.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}"))
+            select Unit.Default;
+    }
+
+    public static Result<Unit, Exception> ErrorIf(
+        bool predicate,
+        Func<Exception> exception)
+    {
+        if (predicate)
+            return exception();
+        return Unit();
+    }
+
+    public static Result<T, Exception> ErrorIf<T>(
+        T value,
+        Func<T, bool> predicate,
+        Func<Exception> exception)
+    {
+        if (predicate(value))
+            return exception();
+        return OkEx(value);
     }
 }

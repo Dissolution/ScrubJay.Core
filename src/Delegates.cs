@@ -1,8 +1,9 @@
 // File name must match type name
-#pragma warning disable MA0048 
+#pragma warning disable MA0048
 
 // ReSharper disable InconsistentNaming
 namespace ScrubJay;
+
 
 /// <summary>
 /// <see cref="Action{T}">Action</see>&lt;<see cref="ReadOnlySpan{T}"/>&gt;
@@ -88,6 +89,7 @@ public delegate Span<TSOut> RSpanFuncWSpan<TSIn, in T1, in T2, in T3, in T4, TSO
 /// <param name="item">
 /// The item being used by <c>ref</c>
 /// </param>
+[PublicAPI]
 public delegate void RefItem<T>(ref T item);
 
 /// <summary>
@@ -99,5 +101,5 @@ public delegate void RefItem<T>(ref T item);
 /// <returns>
 /// The number of items added to <paramref name="emptyBuffer"/>
 /// </returns>
+[PublicAPI]
 public delegate int UseAvailable<T>(Span<T> emptyBuffer);
-

@@ -194,7 +194,7 @@ public readonly struct Result<TOk, TError> :
     /// Returns the contained Ok value
     /// </summary>
     /// <returns>
-    /// 
+    ///
     /// </returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown if the value is an Error
@@ -209,7 +209,7 @@ public readonly struct Result<TOk, TError> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="fallbackOk"></param>
     /// <returns></returns>
@@ -224,7 +224,7 @@ public readonly struct Result<TOk, TError> :
 
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap_or_default"/>
@@ -237,7 +237,7 @@ public readonly struct Result<TOk, TError> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="getOk"></param>
     /// <returns></returns>
@@ -266,7 +266,7 @@ public readonly struct Result<TOk, TError> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="map"></param>
     /// <typeparam name="TNewOk"></typeparam>
@@ -290,7 +290,7 @@ public readonly struct Result<TOk, TError> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="mapOk"></param>
     /// <param name="defaultOk"></param>
@@ -308,7 +308,7 @@ public readonly struct Result<TOk, TError> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="mapOk"></param>
     /// <param name="getOk"></param>
@@ -363,7 +363,7 @@ public readonly struct Result<TOk, TError> :
     public bool IsErrorAnd(Func<TError, bool> errorPredicate) => !_isOk && errorPredicate(_error!);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
@@ -416,7 +416,7 @@ public readonly struct Result<TOk, TError> :
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="mapError"></param>
     /// <typeparam name="TNewError"></typeparam>
@@ -625,7 +625,7 @@ public readonly struct Result<TOk, TError> :
         }
         return Result<TNewOk, TError>.Error(_error!);
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Result<TNewOk, TError> SelectMany<TKey, TNewOk>(
         Func<TOk, Result<TKey, TError>> keySelector,
@@ -638,7 +638,6 @@ public readonly struct Result<TOk, TError> :
 
         return Result<TNewOk, TError>.Error(_error!);
     }
-
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

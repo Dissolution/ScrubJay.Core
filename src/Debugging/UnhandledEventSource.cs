@@ -2,7 +2,7 @@ namespace ScrubJay.Debugging;
 
 public enum UnhandledEventSource
 {
-    //Unknown = 0,
+    Unknown = 0,
 
     /// <summary>
     /// <see cref="E:AppDomain.CurrentDomain.UnhandledException"/>

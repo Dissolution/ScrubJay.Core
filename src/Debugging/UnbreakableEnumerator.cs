@@ -1,3 +1,5 @@
+#pragma warning disable CA1031
+
 namespace ScrubJay.Debugging;
 
 [PublicAPI]

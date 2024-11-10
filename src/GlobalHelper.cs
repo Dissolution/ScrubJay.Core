@@ -1,4 +1,6 @@
-﻿global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+﻿#pragma warning disable CA1711
+
+global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 global using FormatWriter = ScrubJay.Memory.SpanWriter<char>;
 
 namespace ScrubJay;
@@ -74,6 +76,4 @@ public static class GlobalHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<Exception> Error(Exception exception)
         => new Error<Exception>(exception);
-
-    public static Pair<TKey, TValue> Pair<TKey, TValue>(TKey key, TValue value) => new(key, value);
 }
