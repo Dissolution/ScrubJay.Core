@@ -33,7 +33,7 @@ public class ValidateTests
             Ranges.Add(Range.EndAt(new Index(index, false)));
             Ranges.Add(Range.EndAt(new Index(index, true)));
         }
-        
+
         for (int start = 0; start <= 5; start++)
         for (int end = 0; end <= 5; end++)
         {
@@ -69,8 +69,8 @@ public class ValidateTests
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
-#if NET48_OR_GREATER
-            Assert.True(Sequence.Equal(slice, thisSlice));
+#if NET481_OR_GREATER
+            Assert.True(Sequence.Equal<int>(slice, thisSlice));
 #else
             Assert.Equal<int>(slice, thisSlice);
 #endif
@@ -107,8 +107,8 @@ public class ValidateTests
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
-#if NET48_OR_GREATER
-            Assert.True(Sequence.Equal(slice, thisSlice));
+#if NET481_OR_GREATER
+            Assert.True(Sequence.Equal<int>(slice, thisSlice));
 #else
             Assert.Equal<int>(slice, thisSlice);
 #endif
@@ -118,7 +118,7 @@ public class ValidateTests
             Assert.NotNull(tryEx);
         }
     }
-    
+
     [Theory]
     [MemberData(nameof(Ranges))]
     public void ValidateRangeWorks(Range range)
@@ -143,8 +143,8 @@ public class ValidateTests
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
-#if NET48_OR_GREATER
-            Assert.True(Sequence.Equal(slice, thisSlice));
+#if NET481_OR_GREATER
+            Assert.True(Sequence.Equal<int>(slice, thisSlice));
 #else
             Assert.Equal<int>(slice, thisSlice);
 #endif

@@ -43,7 +43,7 @@ public sealed class ObjectPoolPolicyBuilder<T> : FluentRecordBuilder<ObjectPoolP
     public ObjectPoolPolicyBuilder<T> MaxCapacity(int maxCapacity)
     {
         Validate.InBounds(maxCapacity, Bound.Inclusive(ObjectPool.MinCapacity), Bound.Inclusive(ObjectPool.MaxCapacity)).ThrowIfError();
-        _record.MaxCapacity = maxCapacity;
+        _record.Capacity = maxCapacity;
         return _builder;
     }
 }

@@ -30,6 +30,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     //IEnumerable
 {
 #region Operators
+
     // Treat Option like a boolean: some == true, none == false
     // Allow us to cast from None or a T value directly to an Option
 
@@ -83,6 +84,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     // Is this Option.Some?
     // if someone does default(Option), this will be false, so default(Option) == None
     private readonly bool _isSome;
+
     // If this is Option.Some, the value
     private readonly ReadOnlySpan<T> _value;
 
@@ -116,6 +118,11 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         return false;
     }
 
+#if NET9_0_OR_GREATER
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsSomeAnd(Fun<ReadOnlySpan<T>, bool> predicate) => _isSome && predicate(_value);
+#else
     /// <summary>
     ///
     /// </summary>
@@ -123,7 +130,8 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSomeAnd(RSpanFunc<T, bool> predicate) => _isSome && predicate(_value);
+    public bool IsSomeAnd(RSFun<T, bool> predicate) => _isSome && predicate(_value);
+#endif
 
     /// <summary>
     ///
@@ -175,18 +183,19 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     public ReadOnlySpan<T> SomeOrDefault()
     {
         if (_isSome)
-                return _value;
+            return _value;
         return [];
     }
 
-    /// <summary>
+    #if NET9_0_OR_GREATER
+        /// <summary>
     ///
     /// </summary>
     /// <param name="getValue"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<T> SomeOrElse(FuncRSpan<T> getValue)
+    public ReadOnlySpan<T> SomeOrElse(Fun<ReadOnlySpan<T>> getValue)
     {
         if (_isSome)
             return _value!;
@@ -199,14 +208,14 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// <param name="predicate"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
-    public OptionReadOnlySpan<T> Filter(RSpanFunc<T, bool> predicate)
+    public OptionReadOnlySpan<T> Filter(Fun<ReadOnlySpan<T>, bool> predicate)
     {
         if (HasSome(out var value) && predicate(value))
             return this;
         return default;
     }
 
-    public Option<TNew> Map<TNew>(RSpanFunc<T, TNew> map)
+    public Option<TNew> Map<TNew>(Fun<ReadOnlySpan<T>, TNew> map)
     {
         if (HasSome(out var value))
         {
@@ -216,7 +225,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         return default;
     }
 
-    public OptionReadOnlySpan<TNew> Map<TNew>(RSpanFuncRSpan<T, TNew> map)
+    public OptionReadOnlySpan<TNew> Map<TNew>(Fun<ReadOnlySpan<T>, ReadOnlySpan<TNew>> map)
     {
         if (HasSome(out var value))
         {
@@ -234,7 +243,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
-    public TNew MapOr<TNew>(RSpanFunc<T, TNew> map, TNew defaultValue)
+    public TNew MapOr<TNew>(Fun<ReadOnlySpan<T>, TNew> map, TNew defaultValue)
     {
         if (HasSome(out var value))
         {
@@ -252,7 +261,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
-    public TNew MapOrElse<TNew>(RSpanFunc<T, TNew> map, Func<TNew> getDefaultValue)
+    public TNew MapOrElse<TNew>(Fun<ReadOnlySpan<T>, TNew> map, Func<TNew> getDefaultValue)
     {
         if (HasSome(out var value))
         {
@@ -263,7 +272,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(RSpanAction<T> onSome, Action onNone)
+    public void Match(Act<ReadOnlySpan<T>> onSome, Action onNone)
     {
         if (_isSome)
         {
@@ -276,7 +285,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(RSpanAction<T> onSome, Action<None> onNone)
+    public void Match(Act<ReadOnlySpan<T>> onSome, Action<None> onNone)
     {
         if (_isSome)
         {
@@ -289,7 +298,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(RSpanFunc<T, TResult> some, Func<TResult> none)
+    public TResult Match<TResult>(Fun<ReadOnlySpan<T>, TResult> some, Func<TResult> none)
     {
         if (_isSome)
         {
@@ -302,7 +311,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(RSpanFunc<T, TResult> some, Func<None, TResult> none)
+    public TResult Match<TResult>(Fun<ReadOnlySpan<T>, TResult> some, Func<None, TResult> none)
     {
         if (_isSome)
         {
@@ -314,6 +323,142 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         }
     }
 
+    #else
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="getValue"></param>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlySpan<T> SomeOrElse(FunRS<T> getValue)
+    {
+        if (_isSome)
+            return _value!;
+        return getValue();
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
+    public OptionReadOnlySpan<T> Filter(RSFun<T, bool> predicate)
+    {
+        if (HasSome(out var value) && predicate(value))
+            return this;
+        return default;
+    }
+
+    public Option<TNew> Map<TNew>(RSFun<T, TNew> map)
+    {
+        if (HasSome(out var value))
+        {
+            return Some<TNew>(map(value));
+        }
+
+        return default;
+    }
+
+    public OptionReadOnlySpan<TNew> Map<TNew>(RSFunRS<T, TNew> map)
+    {
+        if (HasSome(out var value))
+        {
+            return OptionReadOnlySpan<TNew>.Some(map(value));
+        }
+
+        return default;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="map"></param>
+    /// <param name="defaultValue"></param>
+    /// <typeparam name="TNew"></typeparam>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
+    public TNew MapOr<TNew>(RSFun<T, TNew> map, TNew defaultValue)
+    {
+        if (HasSome(out var value))
+        {
+            return map(value);
+        }
+
+        return defaultValue;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="map"></param>
+    /// <param name="getDefaultValue"></param>
+    /// <typeparam name="TNew"></typeparam>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
+    public TNew MapOrElse<TNew>(RSFun<T, TNew> map, Func<TNew> getDefaultValue)
+    {
+        if (HasSome(out var value))
+        {
+            return map(value);
+        }
+
+        return getDefaultValue();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Match(RSAct<T> onSome, Action onNone)
+    {
+        if (_isSome)
+        {
+            onSome(_value!);
+        }
+        else
+        {
+            onNone();
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Match(RSAct<T> onSome, Action<None> onNone)
+    {
+        if (_isSome)
+        {
+            onSome(_value!);
+        }
+        else
+        {
+            onNone(default);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TResult Match<TResult>(RSFun<T, TResult> some, Func<TResult> none)
+    {
+        if (_isSome)
+        {
+            return some(_value!);
+        }
+        else
+        {
+            return none();
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TResult Match<TResult>(RSFun<T, TResult> some, Func<None, TResult> none)
+    {
+        if (_isSome)
+        {
+            return some(_value!);
+        }
+        else
+        {
+            return none(default);
+        }
+    }
+#endif
 
 #region Compare
 

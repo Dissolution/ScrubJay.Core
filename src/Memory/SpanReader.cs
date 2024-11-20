@@ -21,8 +21,8 @@ public ref struct SpanReader<T>
     {
         return new SpanReader<T>(span, -1);
     }
-    
-    
+
+
     private readonly ReadOnlySpan<T> _span;
     private int _position;
 
@@ -261,7 +261,6 @@ public ref struct SpanReader<T>
     public void SkipAll() => SkipWhile(static _ => true);
 
 #endregion
-
 
     public override string ToString()
     {

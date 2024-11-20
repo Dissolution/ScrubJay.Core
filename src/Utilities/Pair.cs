@@ -1,5 +1,4 @@
-﻿using ScrubJay.Comparison;
-using ScrubJay.Memory;
+﻿using ScrubJay.Memory;
 
 namespace ScrubJay.Utilities;
 

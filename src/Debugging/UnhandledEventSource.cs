@@ -1,3 +1,5 @@
+#pragma warning disable CA1200
+
 namespace ScrubJay.Debugging;
 
 public enum UnhandledEventSource

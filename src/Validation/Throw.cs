@@ -178,4 +178,26 @@ public static class Throw
         if (collection.Count == 0)
             throw new ArgumentException("Collection cannot be empty", collectionName);
     }
+
+    [DoesNotReturn]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void IsReadOnly<T>(
+        T? instance,
+        [CallerArgumentExpression(nameof(instance))]
+        string? instanceName = null)
+    {
+        throw new NotSupportedException($"{typeof(T).Name} '{instance}' is read-only");
+    }
+
+    [DoesNotReturn]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TReturn IsReadOnly<T, TReturn>(
+        T? instance,
+        [CallerArgumentExpression(nameof(instance))]
+        string? instanceName = null)
+    {
+        throw new NotSupportedException($"{typeof(T).Name} '{instance}' is read-only");
+    }
 }

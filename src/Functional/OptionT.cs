@@ -32,7 +32,8 @@ public readonly struct Option<T> :
     IComparable<None>,
     //IComparable<T>,
     IEnumerable<T>,
-    IEnumerable
+    IEnumerable,
+    IFormattable
 {
 #region Operators
 
@@ -171,7 +172,7 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSomeAnd(Func<T, bool> predicate) => _isSome && predicate(_value!);
+    public bool IsSomeAnd(Fun<T, bool> predicate) => _isSome && predicate(_value!);
 
 
     /// <summary>
@@ -235,7 +236,7 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T SomeOrElse(Func<T> getValue)
+    public T SomeOrElse(Fun<T> getValue)
     {
         if (_isSome)
             return _value!;
@@ -250,7 +251,7 @@ public readonly struct Option<T> :
     /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
-    public TNew SelectOr<TNew>(Func<T, TNew> map, TNew defaultValue)
+    public TNew SelectOr<TNew>(Fun<T, TNew> map, TNew defaultValue)
     {
         if (HasSome(out var value))
         {
@@ -260,7 +261,7 @@ public readonly struct Option<T> :
         return defaultValue;
     }
 
-    public TNew? SelectOrDefault<TNew>(Func<T, TNew> map)
+    public TNew? SelectOrDefault<TNew>(Fun<T, TNew> map)
     {
         if (HasSome(out var value))
         {
@@ -278,7 +279,7 @@ public readonly struct Option<T> :
     /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
-    public TNew SelectOrElse<TNew>(Func<T, TNew> map, Func<TNew> getDefaultValue)
+    public TNew SelectOrElse<TNew>(Fun<T, TNew> map, Fun<TNew> getDefaultValue)
     {
         if (HasSome(out var value))
         {
@@ -289,7 +290,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(Action<T> onSome, Action onNone)
+    public void Match(Act<T> onSome, Act onNone)
     {
         if (_isSome)
         {
@@ -302,7 +303,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(Action<T> onSome, Action<None> onNone)
+    public void Match(Act<T> onSome, Act<None> onNone)
     {
         if (_isSome)
         {
@@ -315,7 +316,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
+    public TResult Match<TResult>(Fun<T, TResult> some, Fun<TResult> none)
     {
         if (_isSome)
         {
@@ -328,7 +329,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(Func<T, TResult> some, Func<None, TResult> none)
+    public TResult Match<TResult>(Fun<T, TResult> some, Fun<None, TResult> none)
     {
         if (_isSome)
         {
@@ -348,6 +349,7 @@ public readonly struct Option<T> :
     }
 
 #region Compare
+
     /* None always compares as less than any Some */
 
     public int CompareTo(Option<T> other)
@@ -395,13 +397,14 @@ public readonly struct Option<T> :
         return _isSome ? 1 : 0;
     }
 
-    public int CompareTo(object? obj) => obj switch
-    {
-        Option<T> option => CompareTo(option),
-        T some => CompareTo(some),
-        None none => CompareTo(none),
-        _ => 1, // Unknown | Null | None values sort before
-    };
+    public int CompareTo(object? obj)
+        => obj switch
+        {
+            Option<T> option => CompareTo(option),
+            T some => CompareTo(some),
+            None none => CompareTo(none),
+            _ => 1, // Unknown | Null | None values sort before
+        };
 
 #endregion
 
@@ -441,9 +444,10 @@ public readonly struct Option<T> :
 
 #endregion
 
-    #region LINQ + IEnumerable
+#region LINQ + IEnumerable
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Option<TNew> Select<TNew>(Func<T, TNew> selector)
+    public Option<TNew> Select<TNew>(Fun<T, TNew> selector)
     {
         if (_isSome)
             return Some<TNew>(selector(_value!));
@@ -451,24 +455,26 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Option<TNew> SelectMany<TNew>(Func<T, Option<TNew>> newSelector)
+    public Option<TNew> SelectMany<TNew>(Fun<T, Option<TNew>> newSelector)
     {
         if (_isSome)
         {
             return newSelector(_value!);
         }
+
         return None<TNew>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Option<TNew> SelectMany<TKey, TNew>(
-        Func<T, Option<TKey>> keySelector,
-        Func<T, TKey, TNew> newSelector)
+        Fun<T, Option<TKey>> keySelector,
+        Fun<T, TKey, TNew> newSelector)
     {
         if (_isSome && keySelector(_value!).HasSome(out var key))
         {
             return Some<TNew>(newSelector(_value!, key));
         }
+
         return None<TNew>();
     }
 
@@ -484,7 +490,7 @@ public readonly struct Option<T> :
     /// <param name="predicate"></param>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
-    public Option<T> Where(Func<T, bool> predicate)
+    public Option<T> Where(Fun<T, bool> predicate)
     {
         if (HasSome(out var value) && predicate(value))
             return Some<T>(_value!);
@@ -538,13 +544,28 @@ public readonly struct Option<T> :
             // Do nothing
         }
     }
-    #endregion
+
+#endregion
 
     public override int GetHashCode()
     {
         if (_isSome)
             return Hasher.GetHashCode<T>(_value);
         return Hasher.EmptyHash;
+    }
+
+    public string ToString(string? format, IFormatProvider? provider = null)
+    {
+        if (_isSome)
+        {
+            DefaultInterpolatedStringHandler text = new(6, 1, provider);
+            text.AppendLiteral("Some(");
+            text.AppendFormatted<T>(_value!, format);
+            text.AppendLiteral(")");
+            return text.ToStringAndClear();
+        }
+
+        return nameof(None);
     }
 
     public override string ToString()

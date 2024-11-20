@@ -130,7 +130,7 @@ public class BufferTests
         using Buffer<int> buffer = new();
         buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
-#if !NET48_OR_GREATER
+#if !NET481_OR_GREATER
         Assert.Equal<int>(buffer[0..2], [0, 1]);
         Assert.Equal<int>(buffer[3..5], [3, 4]);
         Assert.Equal<int>(buffer[..^4], [0, 1, 2, 3]);

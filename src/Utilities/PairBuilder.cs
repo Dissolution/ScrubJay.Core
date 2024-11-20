@@ -60,7 +60,7 @@ public ref struct PairBuilder<TKey, TValue>
     {
         if (argumentCount != 2 || formattedLength < 3)
         {
-            _error = new InvalidOperationException($"A {typeof(Pair<TKey, TValue>)} must be specified as `(Key,Value)` (with optional whitespace)");
+            AddError(new InvalidOperationException($"A {typeof(Pair<TKey, TValue>)} must be specified as `(Key,Value)` (with optional whitespace)"));
         }
     }
 

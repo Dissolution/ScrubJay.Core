@@ -47,13 +47,13 @@ public sealed record class ObjectPoolPolicy<T> : ObjectPoolPolicy
     public Func<T> CreateInstance { get; set; }
     public Func<T, bool> TryCleanInstance { get; set; }
     public Action<T> DisposeInstance { get; set; }
-    public int MaxCapacity { get; set; }
+    public int Capacity { get; set; }
 
     public ObjectPoolPolicy()
     {
         CreateInstance = Activator.CreateInstance<T>;
         TryCleanInstance = static _ => true;
         DisposeInstance = static _ => { };
-        MaxCapacity = ObjectPool.DefaultMaxCapacity;
+        Capacity = ObjectPool.DefaultCapacity;
     }
 }

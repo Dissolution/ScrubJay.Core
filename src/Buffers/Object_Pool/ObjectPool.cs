@@ -12,7 +12,7 @@ public static class ObjectPool
     /// <remarks>
     /// This defaults to twice the number of processors
     /// </remarks>
-    public static readonly int DefaultMaxCapacity = 2 * Environment.ProcessorCount;
+    public static readonly int DefaultCapacity = 2 * Environment.ProcessorCount;
 
     /// <summary>
     /// The minimum capacity for any <see cref="ObjectPool{T}"/>

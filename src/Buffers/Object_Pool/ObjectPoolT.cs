@@ -75,7 +75,7 @@ public sealed class ObjectPool<T> : IDisposable
 
         _firstInstance = null;
         _instances = new ConcurrentQueue<T>();
-        _maxCapacity = poolPolicy.MaxCapacity;
+        _maxCapacity = poolPolicy.Capacity;
         _itemCount = 0;
     }
 
