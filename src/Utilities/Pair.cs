@@ -1,4 +1,6 @@
-﻿using ScrubJay.Memory;
+﻿#pragma warning disable S907
+
+using ScrubJay.Memory;
 
 namespace ScrubJay.Utilities;
 
@@ -49,6 +51,7 @@ public static class Pair
 /// <typeparam name="TKey">The <see cref="Type"/> of the <see cref="Key"/></typeparam>
 /// <typeparam name="TValue">The <see cref="Type"/> of the <see cref="Value"/></typeparam>
 [PublicAPI]
+[StructLayout(LayoutKind.Auto)]
 public readonly struct Pair<TKey, TValue> :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Pair<TKey, TValue>, Pair<TKey, TValue>, bool>,
@@ -82,9 +85,9 @@ public readonly struct Pair<TKey, TValue> :
 
     public static Pair<TKey, TValue> Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
 
-    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, out Pair<TKey, TValue> result) => throw new NotImplementedException();
-
     public static Pair<TKey, TValue> Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
+
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, out Pair<TKey, TValue> result) => throw new NotImplementedException();
 
     public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Pair<TKey, TValue> result) => throw new NotImplementedException();
 

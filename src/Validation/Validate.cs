@@ -1,4 +1,4 @@
-﻿#pragma warning disable S907, S3236
+﻿#pragma warning disable S907, S3236, S3247
 
 using ScrubJay.Constraints;
 using Unit = ScrubJay.Functional.Unit;
@@ -293,13 +293,10 @@ public static class Validate
             return OkEx((T)obj);
         }
 
-        if (obj is null)
-        {
-            // the only value that can be null is Nullable<>
-            // but any non valueTypes (class, interface) can be null
-            if (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) is not null)
-                return OkEx(default(T)!);
-        }
+        // the only value that can be null is Nullable<>
+        // but any non valueTypes (class, interface) can be null
+        if (obj is null && (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) is not null))
+            return OkEx(default(T)!);
 
         return new ArgumentException($"{objectName} '{obj}' does not contain a {typeof(T)}", objectName);
     }

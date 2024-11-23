@@ -1,8 +1,7 @@
-/* CA1710 - Identifiers should have correct suffix
- *   I do not want to change the name of this class
- */
-
+// Identifiers should have correct suffix
 #pragma warning disable CA1710
+// Properties should not copy collections
+#pragma warning disable S2365
 
 namespace ScrubJay.Collections.NonGeneric;
 

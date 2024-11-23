@@ -1,5 +1,4 @@
 using System.Reflection;
-using ScrubJay.Tests.Helpers;
 using ScrubJay.Utilities;
 
 namespace ScrubJay.Tests.UtilitiesTests;
@@ -57,8 +56,6 @@ public class NotsafeTests
             ReadOnlySpan<string> span = Notsafe.AsReadOnlySpan<string>(obj);
             Assert.Equal(1, span.Length);
             Assert.Equal(str, span[0]);
-
-            ReadOnlySpan<string> k2 = new ReadOnlySpan<string>([str]);
         }
         // Stopwatch
         {

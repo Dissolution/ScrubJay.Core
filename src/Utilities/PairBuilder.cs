@@ -1,3 +1,5 @@
+#pragma warning disable MA0025
+
 namespace ScrubJay.Utilities;
 
 [InterpolatedStringHandler]
