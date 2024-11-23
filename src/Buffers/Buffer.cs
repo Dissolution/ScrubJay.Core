@@ -207,6 +207,7 @@ public ref struct Buffer<T>
         _position = 0;
     }
 
+#region nonpublic methods
 
     /// <summary>
     /// Increases the size of the rented array by at least <paramref name="adding"/> items
@@ -226,6 +227,38 @@ public ref struct Buffer<T>
         _span = _array = newArray;
         ArrayPool.Return(toReturn);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool SequenceEqual(IEqualityComparer<T> itemComparer, Span<T> left, ReadOnlySpan<T> right, int count)
+    {
+        Debug.Assert(left.Length >= count);
+        Debug.Assert(right.Length >= count);
+        for (int i = 0; i < count; i++)
+        {
+            if (!itemComparer.Equals(left[i], right[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void InsertManyEnumerable(int index, IEnumerable<T> items)
+    {
+        // Slow path, fill another buffer and then insert known
+        using var buffer = new Buffer<T>();
+        foreach (var item in items)
+        {
+            buffer.Add(item);
+        }
+
+        _ = TryInsertMany(index, buffer).OkOrThrow();
+    }
+
+#endregion nonpublic methods
+
 
     /// <summary>
     /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least twice its current value
@@ -450,20 +483,6 @@ public ref struct Buffer<T>
     /// </returns>
     public void TryInsertMany(Index index, params T[]? items) => TryInsertMany(index, new ReadOnlySpan<T>(items));
 
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void InsertManyEnumerable(int index, IEnumerable<T> items)
-    {
-        // Slow path, fill another buffer and then insert known
-        using var buffer = new Buffer<T>();
-        foreach (var item in items)
-        {
-            buffer.Add(item);
-        }
-
-        _ = TryInsertMany(index, buffer).OkOrThrow();
-    }
-
     /// <summary>
     /// Try to insert multiple <paramref name="items"/> into this <see cref="Buffer{T}"/> at <paramref name="index"/>
     /// </summary>
@@ -654,22 +673,6 @@ public ref struct Buffer<T>
         }
 
         return None();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool SequenceEqual(IEqualityComparer<T> itemComparer, Span<T> left, ReadOnlySpan<T> right, int count)
-    {
-        Debug.Assert(left.Length >= count);
-        Debug.Assert(right.Length >= count);
-        for (int i = 0; i < count; i++)
-        {
-            if (!itemComparer.Equals(left[i], right[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /// <summary>

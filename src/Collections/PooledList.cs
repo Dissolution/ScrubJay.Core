@@ -170,6 +170,36 @@ public sealed class PooledList<T> :
         ArrayPool.Return(toReturn);
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void InsertManyEnumerable(int index, IEnumerable<T> items)
+    {
+        // Slow path, fill another buffer and then insert known
+        using var buffer = new Buffer<T>();
+        foreach (var item in items)
+        {
+            buffer.Add(item);
+        }
+
+        TryInsertMany(index, buffer).ThrowIfError();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool SliceEqual(Span<T> left, ReadOnlySpan<T> right, int count, IEqualityComparer<T> itemComparer)
+    {
+        Debug.Assert(left.Length >= count);
+        Debug.Assert(right.Length >= count);
+        for (int i = 0; i < count; i++)
+        {
+            if (!itemComparer.Equals(left[i], right[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
     /// <summary>
     /// Grows the <see cref="Capacity"/> of this <see cref="PooledList{T}"/> to at least twice its current value
     /// </summary>
@@ -396,19 +426,6 @@ public sealed class PooledList<T> :
     public void TryInsertMany(Index index, params T[]? items) => TryInsertMany(index, new ReadOnlySpan<T>(items));
 
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void InsertManyEnumerable(int index, IEnumerable<T> items)
-    {
-        // Slow path, fill another buffer and then insert known
-        using var buffer = new Buffer<T>();
-        foreach (var item in items)
-        {
-            buffer.Add(item);
-        }
-
-        TryInsertMany(index, buffer).ThrowIfError();
-    }
-
     /// <summary>
     /// Try to insert multiple <paramref name="items"/> into this <see cref="Buffer{T}"/> at <paramref name="index"/>
     /// </summary>
@@ -584,22 +601,6 @@ public sealed class PooledList<T> :
         }
 
         return None();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool SliceEqual(Span<T> left, ReadOnlySpan<T> right, int count, IEqualityComparer<T> itemComparer)
-    {
-        Debug.Assert(left.Length >= count);
-        Debug.Assert(right.Length >= count);
-        for (int i = 0; i < count; i++)
-        {
-            if (!itemComparer.Equals(left[i], right[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /// <summary>

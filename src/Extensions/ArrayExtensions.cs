@@ -1,3 +1,6 @@
+// extract assignment from expression
+#pragma warning disable S1121
+
 namespace ScrubJay.Extensions;
 
 [PublicAPI]

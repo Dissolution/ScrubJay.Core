@@ -31,7 +31,7 @@ public abstract class Disposable : IDisposable
             }
             catch (Exception ex)
             {
-                UnhandledEventWatcher.Unbroken($"{nameof(Disposable)}.{nameof(TryDispose)}", ex);
+                UnhandledEventWatcher.OnUnbreakableException($"{nameof(Disposable)}.{nameof(TryDispose)}", ex);
                 // Suppress any errors
             }
         }
@@ -49,7 +49,7 @@ public abstract class Disposable : IDisposable
         }
         catch (Exception ex)
         {
-            UnhandledEventWatcher.Unbroken($"{nameof(Disposable)}.{nameof(TryDisposeRef)}", ex);
+            UnhandledEventWatcher.OnUnbreakableException($"{nameof(Disposable)}.{nameof(TryDisposeRef)}", ex);
             // Suppress any errors
             return false;
         }
@@ -73,7 +73,7 @@ public abstract class Disposable : IDisposable
             }
             catch (Exception ex)
             {
-                UnhandledEventWatcher.Unbroken($"{nameof(Disposable)}.{nameof(TryNullDisposeRef)}", ex);
+                UnhandledEventWatcher.OnUnbreakableException($"{nameof(Disposable)}.{nameof(TryNullDisposeRef)}", ex);
                 // Suppress any errors
                 return false;
             }

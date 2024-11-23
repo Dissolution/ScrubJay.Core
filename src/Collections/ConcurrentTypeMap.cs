@@ -30,8 +30,11 @@ public class ConcurrentTypeMap<TValue> : ConcurrentDictionary<Type, TValue>
     public TValue GetOrAdd<TKey>(TValue value)
         => base.GetOrAdd(typeof(TKey), value);
 
-    public TValue GetOrAdd<TKey>(Func<Type, TValue> getValue)
-        => base.GetOrAdd(typeof(TKey), getValue);
+    public TValue GetOrAdd<TKey>(Func<TValue> addValue)
+        => base.GetOrAdd(typeof(TKey), _ => addValue());
+
+    public TValue GetOrAdd<TKey>(Func<Type, TValue> addValue)
+        => base.GetOrAdd(typeof(TKey), addValue);
 
     public bool TryAdd<TKey>(TValue addValue)
         => base.TryAdd(typeof(TKey), addValue);

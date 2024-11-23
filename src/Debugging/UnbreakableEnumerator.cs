@@ -29,7 +29,7 @@ public sealed class UnbreakableEnumerator<T> : IEnumerator<T>, IEnumerator, IDis
     {
         if (_enumerator is null)
         {
-            UnhandledEventWatcher.Unbroken(this, new ObjectDisposedException(nameof(UnbreakableEnumerator<T>)));
+            UnhandledEventWatcher.OnUnbreakableException(this, new ObjectDisposedException(nameof(UnbreakableEnumerator<T>)));
             return None<T>();
         }
 
@@ -44,7 +44,7 @@ public sealed class UnbreakableEnumerator<T> : IEnumerator<T>, IEnumerator, IDis
             }
             catch (Exception ex)
             {
-                UnhandledEventWatcher.Unbroken(this, ex);
+                UnhandledEventWatcher.OnUnbreakableException(this, ex);
                 // We could not move; we are finished enumerating
                 return None<T>();
             }
@@ -60,7 +60,7 @@ public sealed class UnbreakableEnumerator<T> : IEnumerator<T>, IEnumerator, IDis
             }
             catch (Exception ex)
             {
-                UnhandledEventWatcher.Unbroken(this, ex);
+                UnhandledEventWatcher.OnUnbreakableException(this, ex);
                 // We need to try the next item
                 continue;
             }
@@ -74,7 +74,7 @@ public sealed class UnbreakableEnumerator<T> : IEnumerator<T>, IEnumerator, IDis
     {
         if (_enumerator is null)
         {
-            UnhandledEventWatcher.Unbroken(this, new ObjectDisposedException(nameof(UnbreakableEnumerator<T>)));
+            UnhandledEventWatcher.OnUnbreakableException(this, new ObjectDisposedException(nameof(UnbreakableEnumerator<T>)));
             return;
         }
 
@@ -84,7 +84,7 @@ public sealed class UnbreakableEnumerator<T> : IEnumerator<T>, IEnumerator, IDis
         }
         catch (Exception ex)
         {
-            UnhandledEventWatcher.Unbroken(this, ex);
+            UnhandledEventWatcher.OnUnbreakableException(this, ex);
         }
     }
 
