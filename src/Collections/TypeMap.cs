@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-namespace ScrubJay.Collections;
+﻿namespace ScrubJay.Collections;
 
 /// <summary>
 /// A <see cref="Dictionary{TKey,TValue}"/> where <c>TKey</c> is <see cref="Type"/> that supports using a generic type
