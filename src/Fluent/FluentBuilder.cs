@@ -8,13 +8,8 @@ namespace ScrubJay.Fluent;
 /// <typeparam name="B"></typeparam>
 [PublicAPI]
 public abstract class FluentBuilder<B>
-    where B : FluentBuilder<B>, new()
+    where B : FluentBuilder<B>
 {
-    /// <summary>
-    /// Get a new <see cref="FluentBuilder{B}"/> instance
-    /// </summary>
-    public static B New => new B();
-
     protected internal B _builder;
 
     protected FluentBuilder()

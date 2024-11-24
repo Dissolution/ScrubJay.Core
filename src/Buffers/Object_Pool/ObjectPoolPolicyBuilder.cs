@@ -6,6 +6,14 @@ namespace ScrubJay.Buffers;
 public sealed class ObjectPoolPolicyBuilder<T> : FluentRecordBuilder<ObjectPoolPolicyBuilder<T>, ObjectPoolPolicy<T>>
     where T : class
 {
+    public ObjectPoolPolicyBuilder() : base(new())
+    {
+    }
+
+    public ObjectPoolPolicyBuilder(ObjectPoolPolicy<T> record) : base(record)
+    {
+    }
+
     public ObjectPoolPolicyBuilder<T> Create(Func<T> createInstance)
     {
         Throw.IfNull(createInstance);

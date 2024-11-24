@@ -35,7 +35,7 @@ public static class ObjectPool
     public static ObjectPool<T> New<T>(Action<ObjectPoolPolicyBuilder<T>> buildPolicy)
         where T : class
     {
-        var policy = ObjectPoolPolicyBuilder<T>.New.Execute(buildPolicy).Record;
+        var policy = new ObjectPoolPolicyBuilder<T>().Execute(buildPolicy).Record;
         return New<T>(policy);
     }
 }

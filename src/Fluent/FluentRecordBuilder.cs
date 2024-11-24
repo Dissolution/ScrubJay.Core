@@ -3,9 +3,10 @@
 namespace ScrubJay.Fluent;
 
 [PublicAPI]
-public abstract class FluentRecordBuilder<B, R> : FluentBuilder<B>
-    where B : FluentRecordBuilder<B, R>, new()
-    where R : class, new()
+public abstract class FluentRecordBuilder<B, R> : FluentBuilder<B>,
+    IEquatable<R>
+    where B : FluentRecordBuilder<B, R>
+    where R : class
 {
     public static implicit operator R(FluentRecordBuilder<B, R> builder) => builder._record;
 
@@ -15,11 +16,6 @@ public abstract class FluentRecordBuilder<B, R> : FluentBuilder<B>
     /// Gets the <typeparamref name="R"/> being built
     /// </summary>
     public R Record => _record;
-
-    protected FluentRecordBuilder() : base()
-    {
-        _record = new();
-    }
 
     protected FluentRecordBuilder(R record) : base()
     {
@@ -31,4 +27,19 @@ public abstract class FluentRecordBuilder<B, R> : FluentBuilder<B>
         buildWithRecord.Invoke(_builder, _record);
         return _builder;
     }
+
+    public bool Equals(R? record) => EqualityComparer<R>.Default.Equals(_record!, record!);
+
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        if (obj is B)
+            return ReferenceEquals(this, obj);
+        if (obj is R record)
+            return Equals(record);
+        return false;
+    }
+
+    public override int GetHashCode() => Hasher.GetHashCode<R>(_record);
+
+    public override string ToString() => $"{typeof(B).Name}<{typeof(R).Name}>";
 }
