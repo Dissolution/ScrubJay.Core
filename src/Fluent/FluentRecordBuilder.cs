@@ -1,11 +1,13 @@
-﻿#pragma warning disable CA1715
+﻿using ScrubJay.Comparison;
+
+#pragma warning disable CA1715
 
 namespace ScrubJay.Fluent;
 
 [PublicAPI]
 public abstract class FluentRecordBuilder<B, R> : FluentBuilder<B>
-    where B : FluentRecordBuilder<B, R>, new()
-    where R : class, new()
+    where B : FluentRecordBuilder<B, R>
+    where R : class
 {
     public static implicit operator R(FluentRecordBuilder<B, R> builder) => builder._record;
 
@@ -16,19 +18,27 @@ public abstract class FluentRecordBuilder<B, R> : FluentBuilder<B>
     /// </summary>
     public R Record => _record;
 
-    protected FluentRecordBuilder() : base()
-    {
-        _record = new();
-    }
-
     protected FluentRecordBuilder(R record) : base()
     {
         _record = record;
     }
 
-    public virtual B Execute(Action<B, R> buildWithRecord)
+    public virtual B Execute(Action<B, R>? buildWithRecord)
     {
-        buildWithRecord.Invoke(_builder, _record);
+        buildWithRecord?.Invoke(_builder, _record);
         return _builder;
     }
+
+    public override bool Equals([NotNullWhen(true)] object? obj) => obj switch
+    {
+        B builder => ReferenceEquals(_builder, builder),
+        R record => Equate.Values(_record, record),
+        _ => false,
+    };
+
+    public override string ToString() => $""
+
+
+
+    public override int GetHashCode() => base.GetHashCode();
 }

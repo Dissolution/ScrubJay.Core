@@ -49,6 +49,14 @@ public static class Equate
 
     public static bool Objects(object? left, object? right) => ObjectComparer.Equals(left, right);
 
+    public static bool Values<TLeft, TRight>(TLeft? left, TRight? right)
+        where TLeft : IEquatable<TRight>
+    {
+        if (left is null)
+            return right is null;
+        return left.Equals(right!);
+    }
+
 #region Text
     public static bool Text(string? left, string? right)
     {
