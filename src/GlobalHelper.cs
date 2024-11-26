@@ -55,9 +55,6 @@ public static class GlobalHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<T> Error<T>(T value) => new Error<T>(value);
 
-    public static Result<TOk, Exception> ErrorEx<TOk>(Exception error)
-        => Result<TOk, Exception>.Error(error);
-
     /// <summary>
     /// Converts an <see cref="Exception"/> to an <see cref="Error{T}">Error&lt;Exception&gt;</see>
     /// </summary>
@@ -76,4 +73,9 @@ public static class GlobalHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<Exception> Error(Exception exception)
         => new Error<Exception>(exception);
+
+    public static Result<TOk, Exception> ErrorEx<TOk>(Exception error)
+        => Result<TOk, Exception>.Error(error);
+
+
 }

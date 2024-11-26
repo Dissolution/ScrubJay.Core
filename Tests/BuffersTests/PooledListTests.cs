@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
 using ScrubJay.Collections;
+// ReSharper disable CollectionNeverUpdated.Local
 
 namespace ScrubJay.Tests.BuffersTests;
 

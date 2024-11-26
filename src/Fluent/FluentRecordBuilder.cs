@@ -18,6 +18,11 @@ public abstract class FluentRecordBuilder<B, R> : FluentBuilder<B>
     /// </summary>
     public R Record => _record;
 
+    protected FluentRecordBuilder() : base()
+    {
+        _record = new();
+    }
+
     protected FluentRecordBuilder(R record) : base()
     {
         _record = record;

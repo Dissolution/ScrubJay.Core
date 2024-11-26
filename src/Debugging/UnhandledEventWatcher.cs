@@ -1,31 +1,32 @@
+// Sender parameter should be 'this' for instance events
+
+#pragma warning disable MA0091
+// Sender parameter should be 'null' for static events
+#pragma warning disable S4220, MA0092
+
 namespace ScrubJay.Debugging;
 
 [PublicAPI]
-[MustDisposeResource]
-public sealed class UnhandledEventWatcher : IDisposable
+public static class UnhandledEventWatcher
 {
-    // There may only be a single instance of this class at one time
-    private static readonly Mutex _mutex = new Mutex(initiallyOwned: false);
-    private static UnhandledEventWatcher? _instance;
-
-    internal static void Unbroken(object sender, Exception exception)
+    public static IDisposable Start()
     {
-        _instance?.OnException(sender, exception);
-    }
-
-    public event EventHandler<UnhandledEventArgs>? UnhandledException;
-
-    public UnhandledEventWatcher()
-    {
-        if (!_mutex.WaitOne(0))
-            throw new InvalidOperationException($"There may only be a single instance of {nameof(UnhandledEventWatcher)}");
-
-        _instance = this;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
+        return Disposable.Action(Stop);
     }
 
-    private void CurrentDomainOnUnhandledException(object? sender, UnhandledExceptionEventArgs args)
+    private static void Stop()
+    {
+        AppDomain.CurrentDomain.UnhandledException -= CurrentDomainOnUnhandledException;
+        TaskScheduler.UnobservedTaskException -= TaskSchedulerOnUnobservedTaskException;
+        _ = Interlocked.Exchange(ref UnhandledException, null);
+    }
+
+
+    public static event EventHandler<UnhandledEventArgs>? UnhandledException;
+
+    private static void CurrentDomainOnUnhandledException(object? sender, UnhandledExceptionEventArgs args)
     {
         var unhandledEventArgs = new UnhandledEventArgs
         {
@@ -37,7 +38,7 @@ public sealed class UnhandledEventWatcher : IDisposable
         UnhandledException?.Invoke(sender, unhandledEventArgs);
     }
 
-    private void TaskSchedulerOnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs args)
+    private static void TaskSchedulerOnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs args)
     {
         var unhandledEventArgs = new UnhandledEventArgs
         {
@@ -50,7 +51,7 @@ public sealed class UnhandledEventWatcher : IDisposable
         args.SetObserved();
     }
 
-    private void OnException(object? sender, Exception? exception)
+    internal static void OnUnbreakableException(object? sender, Exception? exception)
     {
         var unhandledEventArgs = new UnhandledEventArgs
         {
@@ -59,13 +60,5 @@ public sealed class UnhandledEventWatcher : IDisposable
             Data = sender,
         };
         UnhandledException?.Invoke(sender, unhandledEventArgs);
-    }
-
-    public void Dispose()
-    {
-        AppDomain.CurrentDomain.UnhandledException -= CurrentDomainOnUnhandledException;
-        TaskScheduler.UnobservedTaskException -= TaskSchedulerOnUnobservedTaskException;
-        _ = Interlocked.Exchange(ref UnhandledException, null);
-        _mutex.ReleaseMutex();
     }
 }

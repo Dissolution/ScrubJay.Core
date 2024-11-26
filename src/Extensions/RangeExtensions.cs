@@ -22,7 +22,7 @@ public static class RangeExtensions
                 return Some(length);
             }
         }
-        else 
+        else
         {
             if (!range.End.IsFromEnd)
             {
@@ -33,5 +33,16 @@ public static class RangeExtensions
         }
 
         return None();
+    }
+
+    public static IEnumerator<int> GetEnumerator(this Range range)
+    {
+        int start = range.Start.GetOffset(0);
+        int end = range.End.GetOffset(0);
+        int step = end.CompareTo(start);
+        for (int current = start; current != end; current += step)
+        {
+            yield return current;
+        }
     }
 }

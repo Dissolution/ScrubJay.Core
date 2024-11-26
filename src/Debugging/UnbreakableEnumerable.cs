@@ -13,7 +13,7 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>, IEnumerable
     {
         if (enumerable is null)
         {
-            UnhandledEventWatcher.Unbroken(this, new ArgumentNullException(nameof(enumerable)));
+            UnhandledEventWatcher.OnUnbreakableException(this, new ArgumentNullException(nameof(enumerable)));
             _enumerable = [];
         }
         else
@@ -35,7 +35,7 @@ public sealed class UnbreakableEnumerable<T> : IEnumerable<T>, IEnumerable
         }
         catch (Exception ex)
         {
-            UnhandledEventWatcher.Unbroken(this, ex);
+            UnhandledEventWatcher.OnUnbreakableException(this, ex);
         }
 
         return new UnbreakableEnumerator<T>(enumerator);

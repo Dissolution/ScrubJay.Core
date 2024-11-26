@@ -45,6 +45,7 @@
             S3963; CA1810;  <!-- Inialize static fields inline -->
             S3267;      <!-- Loops should be simplified with 'Where' -->
 
+            MA0006;         <!-- Use string.Equals instead of == operator -->
             MA0016;         <!-- Prefer using collection abstractions instead of implementation -->
             MA0051;         <!-- Method Complexity -->
             MA0061; S1006;  <!-- Method overrides should not change default values -->
@@ -72,7 +73,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.8.0-alpha</PackageVersion>
+        <PackageVersion>0.9.2-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
@@ -135,20 +136,20 @@
     </ItemGroup>
 
     <!-- Static Code Analyzers -->
-    <!--    <ItemGroup>-->
-    <!--        <PackageReference Include="Meziantou.Analyzer" Version="2.0.172">-->
-    <!--            <PrivateAssets>all</PrivateAssets>-->
-    <!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
-    <!--        </PackageReference>-->
-    <!--        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">-->
-    <!--            <PrivateAssets>all</PrivateAssets>-->
-    <!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
-    <!--        </PackageReference>-->
-    <!--        <PackageReference Include="Roslynator.Analyzers" Version="4.12.8">-->
-    <!--            <PrivateAssets>all</PrivateAssets>-->
-    <!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
-    <!--        </PackageReference>-->
-    <!--    </ItemGroup>-->
+    <ItemGroup>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.180">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.12.9">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
     <!-- Expose our internals to our tests and other trusted ScrubJay libraries -->
     <ItemGroup>
