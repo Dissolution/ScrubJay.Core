@@ -270,6 +270,17 @@ public static class Validate
         return OkEx(collection);
     }
 
+    public static Result<string, Exception> IsNotEmpty(
+        [NotNullWhen(true)] string? str,
+        [CallerArgumentExpression(nameof(str))]
+        string? strName = null)
+    {
+        if (str is null)
+            return new ArgumentNullException(strName);
+        if (str.Length == 0)
+            return new ArgumentException("String cannot be empty", strName);
+        return str;
+    }
 
     public static Result<T, Exception> Is<T>(
         [NotNullWhen(true)] object? obj,

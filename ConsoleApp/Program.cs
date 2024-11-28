@@ -17,16 +17,3 @@ Console.ReadKey();
 
 Debugger.Break();
 return;
-
-
-
-
-
-class StructWrapper<T>
-    where T : struct;
-
-
-static class Test
-{
-
-}

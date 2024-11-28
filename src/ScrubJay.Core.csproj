@@ -73,7 +73,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.10.0-alpha</PackageVersion>
+        <PackageVersion>0.10.1-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
@@ -130,9 +130,7 @@
     </ItemGroup>
     <!-- Need System.Memory for older frameworks -->
     <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Memory" Version="4.6.0">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
+        <PackageReference Include="System.Memory" Version="4.6.0"/>
     </ItemGroup>
 
     <!-- Static Code Analyzers -->
