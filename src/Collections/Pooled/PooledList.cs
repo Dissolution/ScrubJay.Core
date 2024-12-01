@@ -1,13 +1,10 @@
-﻿/*
- * CA1710: Identifiers should have correct suffix
- */
+﻿// Identifiers should have correct suffix
 
 #pragma warning disable CA1710
 
 using System.Buffers;
-using ScrubJay.Comparison;
 
-namespace ScrubJay.Collections;
+namespace ScrubJay.Collections.Pooled;
 
 /// <summary>
 /// A PooledList is an <see cref="IList{T}"/> implementation that operates on
@@ -54,8 +51,10 @@ public sealed class PooledList<T> :
         get => _array.AsSpan(_position);
     }
 
+    /// <inheritdoc cref="IReadOnlyList{T}.this"/>
     T IReadOnlyList<T>.this[int index] => this[index];
 
+    /// <inheritdoc cref="IList{T}.this"/>
     T IList<T>.this[int index]
     {
         get => this[index];
@@ -124,11 +123,11 @@ public sealed class PooledList<T> :
 
 
     /// <summary>
-    /// Create a new, empty <see cref="PooledList{T}"/> that has not allocated
+    /// Create an unallocated, empty <see cref="PooledList{T}"/>
     /// </summary>
     public PooledList()
     {
-        _array = ArrayPool.Rent<T>();
+        _array = [];
         _position = 0;
     }
 
@@ -175,11 +174,7 @@ public sealed class PooledList<T> :
     {
         // Slow path, fill another buffer and then insert known
         using var buffer = new Buffer<T>();
-        foreach (var item in items)
-        {
-            buffer.Add(item);
-        }
-
+        buffer.AddMany(items);
         TryInsertMany(index, buffer).ThrowIfError();
     }
 
@@ -272,7 +267,7 @@ public sealed class PooledList<T> :
     /// Adds the given <paramref name="items"/> to this <see cref="PooledList{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(scoped ReadOnlySpan<T> items)
+    public void AddMany(params ReadOnlySpan<T> items)
     {
         int count = items.Length;
 
@@ -303,7 +298,7 @@ public sealed class PooledList<T> :
     /// Adds the given <paramref name="items"/> to this <see cref="PooledList{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(params T[]? items) => AddMany(items.AsSpan());
+    public void AddMany(T[]? items) => AddMany(items.AsSpan());
 
     /// <summary>
     /// Adds the given <paramref name="items"/> to this <see cref="PooledList{T}"/>
@@ -340,6 +335,7 @@ public sealed class PooledList<T> :
         }
     }
 
+    /// <inheritdoc cref="IList{T}.Insert"/>
     void IList<T>.Insert(int index, T item) => TryInsert(index, item).OkOrThrow();
 
     /// <summary>
@@ -519,6 +515,7 @@ public sealed class PooledList<T> :
         return false;
     }
 
+    /// <inheritdoc cref="IList{T}.IndexOf"/>
     int IList<T>.IndexOf(T item) => TryFindIndex(item).SomeOr(-1);
 
     /// <summary>
@@ -781,6 +778,7 @@ public sealed class PooledList<T> :
         return None();
     }
 
+    /// <inheritdoc cref="IList{T}.RemoveAt"/>
     void IList<T>.RemoveAt(int index) => TryRemoveAt(index);
 
     /// <summary>
@@ -862,6 +860,7 @@ public sealed class PooledList<T> :
         return Ok(items);
     }
 
+    /// <inheritdoc cref="ICollection{T}.Remove"/>
     bool ICollection<T>.Remove(T item)
     {
         return TryFindIndex(item).HasSome(out int index) && TryRemoveAt(index);
@@ -940,7 +939,6 @@ public sealed class PooledList<T> :
     /// <returns>
     /// A <see cref="Span{T}"/> over the allocated items
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> Allocate(int length)
     {
         if (length <= 0)
@@ -996,10 +994,11 @@ public sealed class PooledList<T> :
         }
     }
 
+    /// <inheritdoc cref="ICollection{T}.CopyTo"/>
     void ICollection<T>.CopyTo(T[] array, int arrayIndex)
     {
         Validate.CopyTo(array, arrayIndex, _position).ThrowIfError();
-        Written.CopyTo(array.AsSpan(arrayIndex));
+        Sequence.CopyTo(Written, array.AsSpan(arrayIndex));
     }
 
     /// <summary>
@@ -1012,6 +1011,51 @@ public sealed class PooledList<T> :
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan() => _array.AsSpan(0, _position);
+
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items starting at the given <paramref name="index"/>
+    /// </summary>
+    public Span<T> Slice(int index)
+    {
+        Validate.Index(index, _position).ThrowIfError();
+        return _array.AsSpan(index, _position);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items starting at the given <see cref="Index"/>
+    /// </summary>
+    public Span<T> Slice(Index index)
+    {
+        int offset = Validate.Index(index, _position).OkOrThrow();
+        return _array.AsSpan(offset, _position);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items from <paramref name="index"/> for <paramref name="count"/>
+    /// </summary>
+    public Span<T> Slice(int index, int count)
+    {
+        Validate.IndexLength(index, count, _position).ThrowIfError();
+        return _array.AsSpan(index, count);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items from <paramref name="index"/> for <paramref name="count"/>
+    /// </summary>
+    public Span<T> Slice(Index index, int count)
+    {
+        (int offset, int len) = Validate.IndexLength(index, count, _position).OkOrThrow();
+        return _array.AsSpan(offset, len);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items for a <see cref="Range"/>
+    /// </summary>
+    public Span<T> Slice(Range range)
+    {
+        (int offset, int len) = Validate.Range(range, _position).OkOrThrow();
+        return _array.AsSpan(offset, len);
+    }
 
 #pragma warning disable CA1002
     /// <summary>
@@ -1026,7 +1070,13 @@ public sealed class PooledList<T> :
     public List<T> ToList()
     {
         List<T> list = new List<T>(Capacity);
+#if NET8_0_OR_GREATER
+        var listSpan = CollectionsMarshal.AsSpan<T>(list);
+        Sequence.CopyTo(Written, listSpan);
+        CollectionsMarshal.SetCount<T>(list, _position);
+#else
         list.AddRange(Written);
+#endif
         return list;
     }
 #pragma warning restore CA1002
@@ -1044,10 +1094,23 @@ public sealed class PooledList<T> :
         ArrayPool.Return(toReturn, true);
     }
 
-    /// <inheritdoc/>
-    public override bool Equals(object? obj) => ReferenceEquals(this, obj);
+    public bool SequenceEqual(params ReadOnlySpan<T> items) => Sequence.Equal(Written, items);
 
-    /// <inheritdoc/>
+    public bool SequenceEqual(T[]? items) => Sequence.Equal(Written, items);
+
+    public bool SequenceEqual(IEnumerable<T>? items) => Sequence.Equal(Written, items);
+
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        if (obj is null)
+            return false;
+        if (obj is T[] array)
+            return SequenceEqual(array);
+        if (obj is IEnumerable<T> enumerable)
+            return SequenceEqual(enumerable);
+        return false;
+    }
+
     public override int GetHashCode() => Hasher.Combine<T>(Written);
 
     /// <summary>

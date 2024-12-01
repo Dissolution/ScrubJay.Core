@@ -51,6 +51,17 @@ public static class Compare
 
     public static int Values<T>(T? left, T? right) => Comparer<T>.Default.Compare(left!, right!);
 
+    public static int Values<TLeft, TRight>(TLeft? left, TRight? right)
+        where TLeft : IComparable<TRight>
+    {
+        if (left is null)
+        {
+            // null sorts first
+            return right is null ? 0 : -1;
+        }
+        return left.CompareTo(right!);
+    }
+
     public static int Objects(object? left, object? right) => ObjectComparer.Compare(left, right);
 
 #region Text

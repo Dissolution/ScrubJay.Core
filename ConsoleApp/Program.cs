@@ -2,15 +2,15 @@
 // ReSharper disable UnusedVariable
 
 using System.Diagnostics;
+using System.Linq.Expressions;
 using ScrubJay.Extensions;
 
+Expression expr = () => int.Parse("123");
+var type = expr.GetType();
+var name = type.NameOf();
 
-// var str = string.Join(", ", Test.GetEnumerator(..4));
+Console.WriteLine(name);
 
-foreach (var i in 2..)
-{
-    Console.WriteLine(i);
-}
 
 Console.WriteLine("Press any key to exit...");
 Console.ReadKey();

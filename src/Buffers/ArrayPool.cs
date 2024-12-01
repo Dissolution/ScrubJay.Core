@@ -2,6 +2,8 @@
 
 namespace ScrubJay.Buffers;
 
+
+
 /// <summary>
 /// A wrapper around <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
 /// </summary>
@@ -42,13 +44,13 @@ public static class ArrayPool
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Rent<T>(int minCapacity)
     {
-        int capacity = minCapacity switch
+        return minCapacity switch
         {
-            < MinCapacity => MinCapacity,
-            > MaxCapacity => MaxCapacity,
-            _ => minCapacity,
+            <= 0 => [],
+            < MinCapacity => ArrayPool<T>.Shared.Rent(MinCapacity),
+            > MaxCapacity => ArrayPool<T>.Shared.Rent(MaxCapacity),
+            _ => ArrayPool<T>.Shared.Rent(minCapacity),
         };
-        return ArrayPool<T>.Shared.Rent(capacity);
     }
 
     /// <summary>

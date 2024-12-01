@@ -73,7 +73,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.10.1-alpha</PackageVersion>
+        <PackageVersion>0.10.5-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
@@ -101,6 +101,7 @@
         <Using Include="System.Runtime.InteropServices"/>
 
         <!-- import ourself -->
+        <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.GlobalHelper" Static="true"/>
         <Using Include="ScrubJay.Buffers"/>
         <Using Include="ScrubJay.Extensions"/>

@@ -50,6 +50,12 @@ public static class TypeNames
             return;
         }
 
+        if (_typeNameCache.TryGetValue(type, out var n))
+        {
+            name.AppendLiteral(n);
+            return;
+        }
+
         // Enum types are their NameFrom
         if (type.IsEnum)
         {
@@ -121,7 +127,7 @@ public static class TypeNames
             var i = typeName.IndexOf('`');
             if (i >= 0)
             {
-                name.AppendFormatted(typeName[..i]);
+                name.AppendFormatted(typeName.Slice(0, i));
             }
             else
             {
