@@ -7,7 +7,7 @@ public static class EqualityComparerExtensions
     public static int GetNullSafeHashCode<T>(this IEqualityComparer<T> equalityComparer, [AllowNull] T value)
     {
         if (value is null)
-            return 0;
+            return Hasher.NullHash;
         return equalityComparer.GetHashCode(value);
     }
 }

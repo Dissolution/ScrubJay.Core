@@ -98,7 +98,7 @@ public sealed class ObjectPool<T> : IDisposable
                 return instance;
             }
 
-            // no object available, so go get a brand new one
+            // no instance available, create a new one
             return _createInstance();
         }
 
@@ -114,7 +114,7 @@ public sealed class ObjectPool<T> : IDisposable
         if (instance is null)
             return false;
 
-        // Try to clean the instance
+        // If we are disposed or cleaning fails, just dispose the instance and return
         if (_instances is null || !_tryCleanInstance(instance))
         {
             // could not clean, discard
@@ -180,20 +180,20 @@ public sealed class ObjectPool<T> : IDisposable
     public void Dispose()
     {
         T? instance;
-        // we use _instances == null to determine disposal in Return()
+        // we use _instances == null to determine disposal
         var instances = Interlocked.Exchange<ConcurrentQueue<T>?>(ref _instances, null);
         if (instances is not null)
         {
             while (instances.TryDequeue(out instance))
             {
-                _disposeInstance?.Invoke(instance);
+                _disposeInstance.Invoke(instance);
             }
 
-            // continue to dispose the first instance
+            // also dispose the first instance
             instance = Interlocked.Exchange<T?>(ref _firstInstance, null);
             if (instance is not null)
             {
-                _disposeInstance?.Invoke(instance);
+                _disposeInstance.Invoke(instance);
             }
         }
     }

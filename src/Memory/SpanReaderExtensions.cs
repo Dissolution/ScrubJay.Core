@@ -4,7 +4,7 @@
 /// Extensions on <see cref="SpanReader{T}"/>
 /// </summary>
 /// <remarks>
-/// These methods are extensions because they work on a constrained <see cref="SpanReader{T}"/> 
+/// These methods are extensions because they work on a constrained <see cref="SpanReader{T}"/>
 /// </remarks>
 [PublicAPI]
 public static class SpanReaderExtensions
@@ -111,7 +111,7 @@ public static class SpanReaderExtensions
 
     public static T TakeValue<T>(this ref SpanReader<byte> byteEnumerator)
         where T : unmanaged
-        => TryTakeValue<T>(ref byteEnumerator).SomeOrThrow($"There were not enough bytes to take a {typeof(T).Name} value");
+        => TryTakeValue<T>(ref byteEnumerator).SomeOrThrow($"There were not enough bytes to take a {typeof(T).NameOf()} value");
 
 #endregion
 }

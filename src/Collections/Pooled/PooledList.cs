@@ -36,7 +36,7 @@ public sealed class PooledList<T> :
     /// <summary>
     /// Get a <see cref="Span{T}"/> over items in this <see cref="PooledList{T}"/>
     /// </summary>
-    public Span<T> Written
+    internal Span<T> Written
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _array.AsSpan(0, _position);
@@ -494,6 +494,14 @@ public sealed class PooledList<T> :
     }
 
     /// <summary>
+    /// Reverses the order of the items in this <see cref="PooledList{T}"/>
+    /// </summary>
+    public void Reverse()
+    {
+        Array.Reverse(_array, 0, _position);
+    }
+
+    /// <summary>
     /// Does this <see cref="PooledList{T}"/> contain any instances of the <paramref name="item"/>?
     /// </summary>
     /// <param name="item">
@@ -778,6 +786,30 @@ public sealed class PooledList<T> :
         return None();
     }
 
+    public Option<T> TryGet(Index index) => Validate.Index(index, _position).Select(i => _array[i]).AsOption();
+
+    public OptionReadOnlySpan<T> TryGet(Range range)
+    {
+        if (Validate.Range(range, _position).HasOk(out var ol))
+            return OptionReadOnlySpan<T>.Some(_array.AsSpan(ol.Offset, ol.Length));
+        return None();
+    }
+
+    public bool TrySet(Index index, T item)
+    {
+        return Validate.Index(index, _position).Select(i => _array[i] = item).IsOk;
+    }
+
+    public bool TrySet(Range range, scoped ReadOnlySpan<T> items)
+    {
+        if (!Validate.Range(range, _position).HasOk(out var ol))
+            return false;
+        if (items.Length != ol.Length)
+            return false;
+        Sequence.CopyTo(items, _array.AsSpan(ol.Offset, ol.Length));
+        return true;
+    }
+
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
     void IList<T>.RemoveAt(int index) => TryRemoveAt(index);
 
@@ -861,10 +893,7 @@ public sealed class PooledList<T> :
     }
 
     /// <inheritdoc cref="ICollection{T}.Remove"/>
-    bool ICollection<T>.Remove(T item)
-    {
-        return TryFindIndex(item).HasSome(out int index) && TryRemoveAt(index);
-    }
+    bool ICollection<T>.Remove(T item) => TryFindIndex(item).IsSomeAnd(index => TryRemoveAt(index));
 
     /// <summary>
     /// Remove all the items in this <see cref="PooledList{T}"/> that match an <paramref name="itemPredicate"/>
@@ -945,10 +974,11 @@ public sealed class PooledList<T> :
             return [];
 
         int pos = _position;
+        int newPos = pos + length;
         var array = _array;
-        if (pos + length <= array.Length)
+        if (newPos <= array.Length)
         {
-            _position = pos + length;
+            _position = newPos;
             return array.AsSpan(pos, length);
         }
         else
@@ -991,6 +1021,24 @@ public sealed class PooledList<T> :
         for (int i = 0; i < pos; i++)
         {
             perItem(ref array[i]);
+        }
+    }
+
+    /// <summary>
+    /// Performs a <see cref="RefItemAndIndex{T}"/> operation on each item in this <see cref="PooledList{T}"/>
+    /// </summary>
+    /// <param name="perItem">
+    /// The <see cref="RefItemAndIndex{T}"/> delegate that can mutate items
+    /// </param>
+    public void ForEach(RefItemAndIndex<T>? perItem)
+    {
+        if (perItem is null)
+            return;
+        int pos = _position;
+        var array = _array;
+        for (int i = 0; i < pos; i++)
+        {
+            perItem(ref array[i], i);
         }
     }
 
@@ -1141,14 +1189,26 @@ public sealed class PooledList<T> :
         return text.ToStringAndClear();
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        {
+            for (var i = 0; i < _position; i++)
+            {
+                yield return _array[i];
+            }
+        }
+    }
 
-    /// <inheritdoc/>
-    public IEnumerator<T> GetEnumerator()
+    IEnumerator<T> IEnumerable<T>.GetEnumerator()
     {
         for (var i = 0; i < _position; i++)
         {
             yield return _array[i];
         }
+    }
+
+    public Span<T>.Enumerator GetEnumerator()
+    {
+        return Written.GetEnumerator();
     }
 }

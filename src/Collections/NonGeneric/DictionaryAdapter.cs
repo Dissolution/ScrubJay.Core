@@ -6,10 +6,8 @@
 namespace ScrubJay.Collections.NonGeneric;
 
 /// <summary>
-/// An adapter to consume an <see cref="IDictionary"/> with generically-typed Keys and Values
+/// An <see cref="IDictionary{K,V}"/> wrapper around an <see cref="IDictionary"/>
 /// </summary>
-/// <typeparam name="TKey"></typeparam>
-/// <typeparam name="TValue"></typeparam>
 [PublicAPI]
 public sealed class DictionaryAdapter<TKey, TValue> :
     IDictionary<TKey, TValue>,

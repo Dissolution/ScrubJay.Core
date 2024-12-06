@@ -1,13 +1,12 @@
-﻿#if NET48_OR_GREATER || NETSTANDARD2_0
-
-namespace ScrubJay.Extensions;
+﻿namespace ScrubJay.Extensions;
 
 /// <summary>
-/// Extensions on <see cref="Stack{T}"/> to bring it up to parity with <c>.net 8.0</c>
+/// Extensions on <see cref="Stack{T}"/>
 /// </summary>
+[PublicAPI]
 public static class StackExtensions
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if NETFRAMEWORK || NETSTANDARD2_0
     public static bool TryPeek<T>(this Stack<T> stack, [MaybeNullWhen(false)] out T value)
     {
         if (stack.Count > 0)
@@ -19,8 +18,7 @@ public static class StackExtensions
         value = default;
         return false;
     }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool TryPop<T>(this Stack<T> stack, [MaybeNullWhen(false)] out T value)
     {
         if (stack.Count > 0)
@@ -32,5 +30,23 @@ public static class StackExtensions
         value = default;
         return false;
     }
-}
 #endif
+
+    public static T PeekOr<T>(this Stack<T> stack, T defaultValue)
+    {
+        return stack.Count > 0 ? stack.Peek() : defaultValue;
+    }
+
+    public static T PeekOrPush<T>(this Stack<T> stack, T pushValue)
+    {
+        if (stack.Count > 0)
+            return stack.Peek();
+        stack.Push(pushValue);
+        return pushValue;
+    }
+
+    public static T PopOr<T>(this Stack<T> stack, T defaultValue)
+    {
+        return stack.Count > 0 ? stack.Pop() : defaultValue;
+    }
+}

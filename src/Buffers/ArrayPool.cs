@@ -2,8 +2,6 @@
 
 namespace ScrubJay.Buffers;
 
-
-
 /// <summary>
 /// A wrapper around <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
 /// </summary>
@@ -11,25 +9,32 @@ namespace ScrubJay.Buffers;
 public static class ArrayPool
 {
     /// <summary>
-    /// The minimum capacity for any array returned from <see cref="Rent{T}()"/>
+    /// The minimum capacity for a <see cref="Rent{T}()">Rented</see> <c>T[]</c>
     /// </summary>
-    public const int MinCapacity = 16; // tested
+    /// <typeparam name="T">
+    /// The <see cref="Type"/> of values that will be stored in the array
+    /// </typeparam>
+    public static int MinCapacity<T>() => typeof(T) == typeof(char) ? 64 : 16; // larger char pools, 16 was tested as the minimum
 
     /// <summary>
-    /// The maximum capacity for any array returned from <see cref="Rent{T}()"/>
+    /// The maximum capacity for a <see cref="Rent{T}()">Rented</see> <c>T[]</c>
     /// </summary>
-    public const int MaxCapacity = 0X7FFFFFC7; // == Array.MaxLength
+    /// <typeparam name="T">
+    /// The <see cref="Type"/> of values that will be stored in the array
+    /// </typeparam>
+    public static int MaxCapacity<T>() => typeof(T) == typeof(char) ? 0x3FFFFFDF : 0X7FFFFFC7; // string.MaxLength, Array.MaxLength
 
+    public static (int Min, int Max) Capacities<T>() => (MinCapacity<T>(), MaxCapacity<T>());
 
     /// <summary>
-    /// Rents a <see cref="Array">T[]</see> with a <see cref="Array.Length"/> of at least <see cref="MinCapacity"/>
+    /// Rents a <see cref="Array">T[]</see> with a <see cref="Array.Length"/> of at least <see cref="MinCapacity{T}"/>
     /// from <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
     /// </summary>
     /// <typeparam name="T">
     /// The <see cref="Type"/> of items in the <see cref="Array">T[]</see>
     /// </typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Rent<T>() => ArrayPool<T>.Shared.Rent(MinCapacity);
+    public static T[] Rent<T>() => ArrayPool<T>.Shared.Rent(MinCapacity<T>());
 
     /// <summary>
     /// Rents a <see cref="Array">T[]</see> with a <see cref="Array.Length"/> of at least <paramref name="minCapacity"/>
@@ -44,13 +49,18 @@ public static class ArrayPool
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Rent<T>(int minCapacity)
     {
-        return minCapacity switch
-        {
-            <= 0 => [],
-            < MinCapacity => ArrayPool<T>.Shared.Rent(MinCapacity),
-            > MaxCapacity => ArrayPool<T>.Shared.Rent(MaxCapacity),
-            _ => ArrayPool<T>.Shared.Rent(minCapacity),
-        };
+        if (minCapacity <= 0)
+            return [];
+
+        int capacity;
+        var (min, max) = Capacities<T>();
+        if (minCapacity < min)
+            capacity = min;
+        else if (minCapacity > max)
+            capacity = max;
+        else
+            capacity = minCapacity;
+        return ArrayPool<T>.Shared.Rent(capacity);
     }
 
     /// <summary>

@@ -1,11 +1,9 @@
-#pragma warning disable MA0025
-
-
 namespace ScrubJay.Constraints;
 
+[PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 [InterpolatedStringHandler]
-public ref struct BoundBuilder<T>
+public ref struct BoundsStringHandler<T>
 {
     private enum Step
     {
@@ -39,18 +37,18 @@ public ref struct BoundBuilder<T>
     public Bounds<T> Bounds => new Bounds<T>(Lower, Upper);
 
 
-    public BoundBuilder(int formattedLength, int argumentCount)
+    public BoundsStringHandler(int formattedLength, int argumentCount)
     {
         if (argumentCount is < 0 or > 2)
         {
             Debugger.Break();
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Argument count must be 0, 1, or 2");
         }
 
         if (formattedLength is < 2 or > 4)
         {
             Debugger.Break();
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Formatted length must be 2, 3, or 4");
         }
     }
 

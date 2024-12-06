@@ -6,7 +6,7 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class ArrayExtensions
 {
-#if NET48_OR_GREATER || NETSTANDARD2_0
+#if NETFRAMEWORK || NETSTANDARD2_0
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this T[]? array, Range range)
     {

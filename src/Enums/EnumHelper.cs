@@ -33,7 +33,7 @@ public static class EnumHelper
             }
             else
             {
-                return new ArgumentException($"Could not parse segment '{segment}' to a '{typeof(TEnum).Name}'", nameof(text));
+                return new ArgumentException($"Could not parse segment '{segment}' to a '{typeof(TEnum).NameOf()}'", nameof(text));
             }
         }
 
@@ -51,7 +51,7 @@ public static class EnumHelper
             }
             else
             {
-                return new ArgumentException($"Could not parse segment '{trimmed}' to a '{typeof(TEnum).Name}'", nameof(text));
+                return new ArgumentException($"Could not parse segment '{trimmed}' to a '{typeof(TEnum).NameOf()}'", nameof(text));
             }
         }
 

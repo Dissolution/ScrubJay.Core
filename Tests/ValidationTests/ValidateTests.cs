@@ -1,4 +1,4 @@
-﻿#if NET48_OR_GREATER
+﻿#if NETFRAMEWORK
 using ScrubJay.Collections;
 #endif
 using ScrubJay.Validation;
@@ -69,7 +69,7 @@ public class ValidateTests
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
-#if NET481_OR_GREATER
+#if NETFRAMEWORK
             Assert.True(Sequence.Equal<int>(slice, thisSlice));
 #else
             Assert.Equal<int>(slice, thisSlice);
@@ -107,7 +107,7 @@ public class ValidateTests
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
-#if NET481_OR_GREATER
+#if NETFRAMEWORK
             Assert.True(Sequence.Equal<int>(slice, thisSlice));
 #else
             Assert.Equal<int>(slice, thisSlice);
@@ -143,7 +143,7 @@ public class ValidateTests
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
-#if NET481_OR_GREATER
+#if NETFRAMEWORK
             Assert.True(Sequence.Equal<int>(slice, thisSlice));
 #else
             Assert.Equal<int>(slice, thisSlice);

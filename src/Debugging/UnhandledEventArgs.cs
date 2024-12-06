@@ -1,5 +1,6 @@
 namespace ScrubJay.Debugging;
 
+[PublicAPI]
 public class UnhandledEventArgs : EventArgs
 {
     public required UnhandledEventSource Source { get; init; }

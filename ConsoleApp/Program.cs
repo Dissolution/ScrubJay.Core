@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Linq.Expressions;
-using ScrubJay.Extensions;
 
 Expression expr = () => int.Parse("123");
 var type = expr.GetType();

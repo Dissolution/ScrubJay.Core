@@ -2,6 +2,7 @@
 
 namespace ScrubJay.Debugging;
 
+[PublicAPI]
 public enum UnhandledEventSource
 {
     Unknown = 0,

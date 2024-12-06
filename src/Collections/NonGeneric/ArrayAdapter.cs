@@ -10,8 +10,8 @@ namespace ScrubJay.Collections.NonGeneric;
 public sealed class ArrayAdapter<T> :
     /* Does not implement
      * IList<T>, IList, ICollection<T>, nor ICollection
-     * as those types imply some ability to Add and Remove from a collection
-     * that does not exist for an Array
+     * as those types imply the capacity to Add and Remove from a collection
+     * that Array does not have
      */
     IReadOnlyList<T>,
     IReadOnlyCollection<T>,
@@ -28,7 +28,7 @@ public sealed class ArrayAdapter<T> :
     {
         if (objValue.CanBe<T>(out var value))
             return value;
-        throw new ArgumentException($"Value '{objValue}' is not a '{typeof(T).Name}'", valueName);
+        throw new ArgumentException($"Value '{objValue}' is not a '{typeof(T).NameOf()}'", valueName);
     }
 
     public T this[int index]

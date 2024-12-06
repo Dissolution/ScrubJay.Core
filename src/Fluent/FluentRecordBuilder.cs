@@ -1,6 +1,4 @@
-﻿using ScrubJay.Comparison;
-
-#pragma warning disable CA1715
+﻿#pragma warning disable CA1715
 
 namespace ScrubJay.Fluent;
 

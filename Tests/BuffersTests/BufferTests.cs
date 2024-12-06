@@ -71,13 +71,13 @@ public class BufferTests
     {
         using var buffer = new Buffer<int>(1);
         Assert.Equal(0, buffer.Count);
-        Assert.Equal(ArrayPool.MinCapacity, buffer.Capacity);
+        Assert.Equal(ArrayPool.MinCapacity<int>(), buffer.Capacity);
 
         var numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
         buffer.AddMany(numbers);
 
         Assert.Equal(numbers.Length, buffer.Count);
-        Assert.True(buffer.Capacity > ArrayPool.MinCapacity);
+        Assert.True(buffer.Capacity > ArrayPool.MinCapacity<int>());
         Assert.True(buffer.Capacity >= buffer.Count);
 
         for (var i = 0; i < buffer.Count; i++)
@@ -130,7 +130,7 @@ public class BufferTests
         using Buffer<int> buffer = new();
         buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
-#if !NET481_OR_GREATER
+#if !NETFRAMEWORK
         Assert.Equal<int>(buffer[0..2], [0, 1]);
         Assert.Equal<int>(buffer[3..5], [3, 4]);
         Assert.Equal<int>(buffer[..^4], [0, 1, 2, 3]);

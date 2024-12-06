@@ -1,7 +1,7 @@
 #pragma warning disable IDE0058
 
 using ScrubJay.Collections;
-using InterpolatedText = System.Runtime.CompilerServices.DefaultInterpolatedStringHandler;
+using ScrubJay.Text;
 
 namespace ScrubJay.Utilities;
 
@@ -156,7 +156,7 @@ public static class TypeNames
     {
         var text = new InterpolatedText(32, 1);
         AppendTypeName(ref text, type);
-        return text.ToStringAndClear();
+        return text.ToStringAndDispose();
     }
 
     /// <summary>

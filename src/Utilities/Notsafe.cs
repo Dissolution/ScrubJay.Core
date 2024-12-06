@@ -5,6 +5,10 @@ using static InlineIL.IL;
 
 namespace ScrubJay.Utilities;
 
+/// <summary>
+/// Very <b>unsafe</b> methods
+/// </summary>
+[PublicAPI]
 public static class Notsafe
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,7 +91,6 @@ public static class Notsafe
         Emit.Ldc_I4_1(); // count == 1
         Emit.Newobj(MethodRef.Constructor(typeof(ReadOnlySpan<T>), typeof(void*), typeof(int)));
 #endif
-
         Emit.Ret();
         throw Unreachable();
     }

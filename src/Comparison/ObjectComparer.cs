@@ -50,7 +50,7 @@ internal sealed class ObjectComparer :
 
         Type xType = x.GetType();
         if (xType == typeof(object))
-            return 1; // both objects should have been caught in RefEquals, so x is 'more complex' than y
+            return -1; // both objects should have been caught in RefEquals, so x is 'less complex' than y
         return Comparison.Compare.GetComparer(xType).Compare(x, y);
     }
 }

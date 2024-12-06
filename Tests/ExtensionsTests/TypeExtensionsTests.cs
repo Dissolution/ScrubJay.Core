@@ -92,7 +92,7 @@ public class TypeExtensionsTests
         }
         else if (type.IsPointer)
         {
-#if NET48_OR_GREATER
+#if NETFRAMEWORK
             Assert.True(typeof(object).IsAssignableFrom(typeof(void*)));
 #else
             Assert.False(typeof(object).IsAssignableFrom(typeof(void*)));
@@ -192,7 +192,7 @@ public class TypeExtensionsTests
                     left.GetBaseTypes().Any(t => t.HasGenericTypeDefinition(right)) |
                     left.GetInterfaces().Any(i => i.HasGenericTypeDefinition(right));
             }
-#if NET48_OR_GREATER
+#if NETFRAMEWORK
             else if (left.IsPointer)
             {
                 assignable = left == right;

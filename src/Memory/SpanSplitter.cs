@@ -1,4 +1,17 @@
-﻿namespace ScrubJay.Memory;
+﻿using ScrubJay.Enums;
+
+namespace ScrubJay.Memory;
+
+[PublicAPI]
+[Flags]
+public enum SpanSplitterOptions
+{
+    None = 0,
+    /// <summary>
+    /// Do not return any Length == 0 segments
+    /// </summary>
+    IgnoreEmpty = 1,
+}
 
 /// <summary>
 /// Enables enumerating each split within a <see cref="ReadOnlySpan{T}"/> that has been divided using one or more separators.
@@ -8,42 +21,42 @@
 /// SpanSplitter&lt;T&gt; : IEnumerator&lt;ReadOnlySpan&lt;T&gt;&gt;
 /// </code>
 /// </remarks>
-public ref struct SpanSplitter<T>
-    where T : IEquatable<T>
+[PublicAPI]
+[StructLayout(LayoutKind.Auto)]
+public ref struct SpanSplitter<T> // : IEnumerable<ReadOnlySpan<T>>
+    where T : IEquatable<T> // IndexOf requires this
 {
-    public static SpanSplitter<T> Split(ReadOnlySpan<T> span, T separator)
-        => new(span, separator);
+    public static SpanSplitter<T> Split(ReadOnlySpan<T> span, T separator, SpanSplitterOptions options = SpanSplitterOptions.None)
+        => new(span, separator, options);
 
-    public static SpanSplitter<T> Split(ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-        => new(span, separator, SpanSplitterSeparatorKind.Span);
+    public static SpanSplitter<T> Split(ReadOnlySpan<T> span, ReadOnlySpan<T> separator, SpanSplitterOptions options = SpanSplitterOptions.None)
+        => new(span, separator, SpanSplitterSeparatorKind.Span, options);
 
-    public static SpanSplitter<T> SplitAny(ReadOnlySpan<T> span, ReadOnlySpan<T> separators)
-        => new(span, separators, SpanSplitterSeparatorKind.AnySpan);
+    public static SpanSplitter<T> SplitAny(ReadOnlySpan<T> span, ReadOnlySpan<T> separators, SpanSplitterOptions options = SpanSplitterOptions.None)
+        => new(span, separators, SpanSplitterSeparatorKind.AnySpan, options);
 
 
     // The span being split
     private readonly ReadOnlySpan<T> _span;
-
     /// The single-item separator for <see cref="SpanSplitterSeparatorKind.Item"/>
     private readonly T _separator = default!;
-
-
     /// <see cref="SpanSplitterSeparatorKind.Span"/>: A multi-item separator<br/>
     /// <see cref="SpanSplitterSeparatorKind.AnySpan"/>: Multiple single-item separators
     private readonly ReadOnlySpan<T> _separators = default!;
-
     /// How are we storing the separator(s)?
-    private SpanSplitterSeparatorKind _separatorKind;
+    private readonly SpanSplitterSeparatorKind _separatorKind;
+    /// Options for Splitting
+    private readonly SpanSplitterOptions _options;
+
 
     /// Inclusive starting index for Current
     private int _currentRangeStart = 0;
-
     /// Exclusive ending index for Current
     private int _currentRangeEnd = 0;
-
     /// Index to start scanning for the next item
     private int _nextStart = 0;
 
+    private bool _finished = false;
 
     /// <summary>
     /// Gets the current segment of <see cref="ReadOnlySpan{T}"/> items
@@ -63,18 +76,20 @@ public ref struct SpanSplitter<T>
         get => new(_currentRangeStart, _currentRangeEnd);
     }
 
-    private SpanSplitter(ReadOnlySpan<T> span, T separator)
+    private SpanSplitter(ReadOnlySpan<T> span, T separator, SpanSplitterOptions options)
     {
         _span = span;
         _separator = separator;
         _separatorKind = SpanSplitterSeparatorKind.Item;
+        _options = options;
     }
 
-    private SpanSplitter(ReadOnlySpan<T> span, ReadOnlySpan<T> separators, SpanSplitterSeparatorKind separatorKind)
+    private SpanSplitter(ReadOnlySpan<T> span, ReadOnlySpan<T> separators, SpanSplitterSeparatorKind separatorKind, SpanSplitterOptions options)
     {
         _span = span;
         _separators = separators;
         _separatorKind = separators.Length == 0 ? SpanSplitterSeparatorKind.Empty : separatorKind;
+        _options = options;
     }
 
     /// <summary>
@@ -82,6 +97,9 @@ public ref struct SpanSplitter<T>
     /// </summary>
     public bool MoveNext()
     {
+        if (_finished)
+            return false;
+
         int index;
         int length;
         switch (_separatorKind)
@@ -113,6 +131,7 @@ public ref struct SpanSplitter<T>
             }
             case SpanSplitterSeparatorKind.None:
             default:
+                _finished = true;
                 return false;
         }
 
@@ -127,11 +146,38 @@ public ref struct SpanSplitter<T>
             _currentRangeEnd = _span.Length;
             _nextStart = _currentRangeEnd;
 
-            // stops further enumeration
-            _separatorKind = SpanSplitterSeparatorKind.None;
+            // stop further enumeration
+            _finished = true;
+        }
+
+        if (_options.HasFlags(SpanSplitterOptions.IgnoreEmpty))
+        {
+            int rangeLen = _currentRangeEnd - _currentRangeStart;
+            if (rangeLen == 0)
+                return MoveNext();
         }
 
         return true;
+    }
+
+    public void Reset()
+    {
+        _currentRangeStart = 0;
+        _currentRangeEnd = 0;
+        _nextStart = 0;
+        _finished = false;
+    }
+
+    public IReadOnlyList<IReadOnlyList<T>> ToLists()
+    {
+        // we always start consumtion here, they can Reset if they wish
+        var segments = new List<IReadOnlyList<T>>();
+        while (this.MoveNext())
+        {
+            segments.Add(this.Current.ToArray());
+        }
+        return segments;
+
     }
 
     /// <summary>

@@ -187,7 +187,7 @@ public static class Throw
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)
     {
-        throw new NotSupportedException($"{typeof(T).Name} '{instance}' is read-only");
+        throw new NotSupportedException($"{typeof(T).NameOf()} '{instance}' is read-only");
     }
 
     [DoesNotReturn]
@@ -198,6 +198,6 @@ public static class Throw
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)
     {
-        throw new NotSupportedException($"{typeof(T).Name} '{instance}' is read-only");
+        throw new NotSupportedException($"{typeof(T).NameOf()} '{instance}' is read-only");
     }
 }

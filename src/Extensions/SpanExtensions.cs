@@ -148,21 +148,21 @@ public static class SpanExtensions
         return false;
     }
 
-    public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, T separator)
+    public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, T separator, SpanSplitterOptions options = SpanSplitterOptions.None)
         where T : IEquatable<T>
     {
-        return SpanSplitter<T>.Split(span, separator);
+        return SpanSplitter<T>.Split(span, separator, options);
     }
 
-    public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+    public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator, SpanSplitterOptions options = SpanSplitterOptions.None)
         where T : IEquatable<T>
     {
-        return SpanSplitter<T>.Split(span, separator);
+        return SpanSplitter<T>.Split(span, separator, options);
     }
 
-    public static SpanSplitter<T> SplitterAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separators)
+    public static SpanSplitter<T> SplitterAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separators, SpanSplitterOptions options = SpanSplitterOptions.None)
         where T : IEquatable<T>
     {
-        return SpanSplitter<T>.SplitAny(span, separators);
+        return SpanSplitter<T>.SplitAny(span, separators, options);
     }
 }

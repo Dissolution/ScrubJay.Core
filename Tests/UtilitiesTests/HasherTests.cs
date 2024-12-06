@@ -20,7 +20,7 @@
 //         {
 //             var array = new object?[i];
 //             theoryObjects.CopyTo(destination: array.AsSpan());
-// #if NET48_OR_GREATER
+// #if NETFRAMEWORK
 //             new Random().Shuffle(array);
 // #else
 //             Random.Shared.Shuffle(array);

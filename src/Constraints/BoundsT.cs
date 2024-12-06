@@ -1,27 +1,13 @@
-﻿#pragma warning disable MA0048
+﻿using ScrubJay.Text;
+
+#pragma warning disable MA0048
 
 namespace ScrubJay.Constraints;
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public readonly struct Bounds<T> :
-#if NET7_0_OR_GREATER
-    IEqualityOperators<Bounds<T>, Bounds<T>, bool>,
-#endif
-IEquatable<Bounds<T>>
+public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>> Upper)
 {
-    public static bool operator ==(Bounds<T> left, Bounds<T> right) => left.Equals(right);
-    public static bool operator !=(Bounds<T> left, Bounds<T> right) => !left.Equals(right);
-
-    public readonly Option<Bound<T>> Lower;
-    public readonly Option<Bound<T>> Upper;
-
-    public Bounds(Option<Bound<T>> lower, Option<Bound<T>> upper)
-    {
-        this.Lower = lower;
-        this.Upper = upper;
-    }
-
     public bool Contains(T? value)
     {
         if (Lower.HasSome(out Bound<T> lowerBounds))
@@ -50,6 +36,43 @@ IEquatable<Bounds<T>>
             else
             {
                 if (Comparer<T>.Default.Compare(value!, upper!) >= 0)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    public bool Contains(T? value, IComparer<T>? comparer)
+    {
+        comparer ??= Comparer<T>.Default;
+
+        if (Lower.HasSome(out Bound<T> lowerBounds))
+        {
+            (T lower, bool lowerInc) = lowerBounds;
+            if (lowerInc)
+            {
+                if (comparer.Compare(value!, lower!) < 0)
+                    return false;
+            }
+            else
+            {
+                if (comparer.Compare(value!, lower!) <= 0)
+                    return false;
+            }
+        }
+
+        if (Upper.HasSome(out Bound<T> upperBounds))
+        {
+            (T upper, bool upperInc) = upperBounds;
+            if (upperInc)
+            {
+                if (comparer.Compare(value!, upper!) > 0)
+                    return false;
+            }
+            else
+            {
+                if (comparer.Compare(value!, upper!) >= 0)
                     return false;
             }
         }
@@ -93,15 +116,9 @@ IEquatable<Bounds<T>>
         return value;
     }
 
-    public bool Equals(Bounds<T> other) => other.Lower.Equals(this.Lower) && other.Upper.Equals(this.Upper);
-
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is Bounds<T> bounds && Equals(bounds);
-
-    public override int GetHashCode() => Hasher.Combine(Lower, Upper);
-
     public override string ToString()
     {
-        var text = new DefaultInterpolatedStringHandler(4, 2);
+        using var text = new InterpolatedText(4, 2);
 
         if (Lower.HasSome(out var lower))
         {
@@ -132,6 +149,6 @@ IEquatable<Bounds<T>>
             }
         }
 
-        return text.ToStringAndClear();
+        return text.ToString();
     }
 }

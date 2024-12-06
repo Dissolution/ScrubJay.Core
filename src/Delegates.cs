@@ -168,6 +168,21 @@ public delegate Span<TSOut> RSFunWS<TSIn, in T1, in T2, in T3, in T4, TSOut>(Rea
 public delegate void RefItem<T>(ref T item);
 
 /// <summary>
+/// A delegate that acts upon an item reference and its index
+/// </summary>
+/// <typeparam name="T">
+/// The <see cref="Type"/> of <paramref name="item"/> being referenced
+/// </typeparam>
+/// <param name="item">
+/// The item being used by <c>ref</c>
+/// </param>
+/// <param name="index">
+/// The index of the referenced item
+/// </param>
+[PublicAPI]
+public delegate void RefItemAndIndex<T>(ref T item, int index);
+
+/// <summary>
 /// A delegate that represents access to an available, unwritten portion of a <see cref="Span{T}"/>
 /// </summary>
 /// <param name="emptyBuffer">
