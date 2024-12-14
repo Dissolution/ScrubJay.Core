@@ -72,35 +72,25 @@ public static class EnumExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool LessThan<TEnum>(this TEnum @enum, TEnum other)
         where TEnum : struct, Enum
-    {
-        return Comparer<TEnum>.Default.Compare(@enum, other) < 0;
-    }
+        => Comparer<TEnum>.Default.Compare(@enum, other) < 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool LessThanOrEqual<TEnum>(this TEnum @enum, TEnum other)
         where TEnum : struct, Enum
-    {
-        return Comparer<TEnum>.Default.Compare(@enum, other) <= 0;
-    }
+        => Comparer<TEnum>.Default.Compare(@enum, other) <= 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool GreaterThan<TEnum>(this TEnum @enum, TEnum other)
         where TEnum : struct, Enum
-    {
-        return Comparer<TEnum>.Default.Compare(@enum, other) > 0;
-    }
+        => Comparer<TEnum>.Default.Compare(@enum, other) > 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool GreaterThanOrEqual<TEnum>(this TEnum @enum, TEnum other)
         where TEnum : struct, Enum
-    {
-        return Comparer<TEnum>.Default.Compare(@enum, other) >= 0;
-    }
+        => Comparer<TEnum>.Default.Compare(@enum, other) >= 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int CompareTo<TEnum>(this TEnum @enum, TEnum other)
         where TEnum : struct, Enum
-    {
-        return Comparer<TEnum>.Default.Compare(@enum, other);
-    }
+        => Comparer<TEnum>.Default.Compare(@enum, other);
 }

@@ -206,7 +206,7 @@ public ref struct Buffer<T>
         _position = 0;
     }
 
-#region nonpublic methods
+    #region nonpublic methods
 
     /// <summary>
     /// Increases the size of the rented array by at least <paramref name="adding"/> items
@@ -256,8 +256,7 @@ public ref struct Buffer<T>
         _ = TryInsertMany(index, buffer).OkOrThrow();
     }
 
-#endregion nonpublic methods
-
+    #endregion nonpublic methods
 
     /// <summary>
     /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least twice its current value
@@ -265,10 +264,7 @@ public ref struct Buffer<T>
     /// <remarks>
     /// This method causes a rental from <see cref="ArrayPool{T}"/>
     /// </remarks>
-    public void Grow()
-    {
-        GrowTo(Capacity * 2);
-    }
+    public void Grow() => GrowTo(Capacity * 2);
 
     /// <summary>
     /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least <paramref name="minCapacity"/>
@@ -370,14 +366,18 @@ public ref struct Buffer<T>
     public void AddMany(IEnumerable<T>? items)
     {
         if (items is null)
+        {
             return;
+        }
 
         int itemCount;
         if (items is ICollection<T> collection)
         {
             itemCount = collection.Count;
             if (itemCount == 0)
+            {
                 return;
+            }
 
             int pos = _position;
             int newPos = pos + itemCount;
@@ -412,7 +412,9 @@ public ref struct Buffer<T>
         int pos = _position;
         var vr = Validate.InsertIndex(index, pos);
         if (!vr.HasOk(out int offset))
+        {
             return vr;
+        }
 
         if (offset == pos)
         {
@@ -445,14 +447,20 @@ public ref struct Buffer<T>
         int itemCount = items.Length;
 
         if (itemCount == 0)
+        {
             return Validate.InsertIndex(index, _position);
+        }
 
         if (itemCount == 1)
+        {
             return TryInsert(index, items[0]);
+        }
 
         var vr = Validate.InsertIndex(index, _position);
-        if (!vr.HasOk(out var offset))
+        if (!vr.HasOk(out int offset))
+        {
             return vr;
+        }
 
         if (offset == _position)
         {
@@ -493,13 +501,17 @@ public ref struct Buffer<T>
     public Result<int, Exception> TryInsertMany(Index index, IEnumerable<T>? items)
     {
         if (items is null)
+        {
             return Validate.InsertIndex(index, _position);
+        }
 
         int pos = _position;
 
         var vr = Validate.InsertIndex(index, pos);
-        if (!vr.HasOk(out var offset))
+        if (!vr.HasOk(out int offset))
+        {
             return vr;
+        }
 
         if (offset == _position)
         {
@@ -512,7 +524,9 @@ public ref struct Buffer<T>
         {
             itemCount = collection.Count;
             if (itemCount == 0)
+            {
                 return offset;
+            }
 
             int newPos = pos + itemCount;
             if (newPos > Capacity || _array is null)
@@ -542,7 +556,9 @@ public ref struct Buffer<T>
         if (_array is null)
         {
             if (_position <= 0)
+            {
                 return; // nothing to sort
+            }
 
             // Force us to allocate an array
             Grow();
@@ -562,7 +578,9 @@ public ref struct Buffer<T>
         if (_array is null)
         {
             if (_position <= 0)
+            {
                 return; // nothing to sort
+            }
 
             // Force us to allocate an array
             Grow();
@@ -583,10 +601,12 @@ public ref struct Buffer<T>
     /// </returns>
     public bool Contains(T item)
     {
-        for (var i = 0; i < _position; i++)
+        for (int i = 0; i < _position; i++)
         {
             if (EqualityComparer<T>.Default.Equals(item, _span[i]))
+            {
                 return true;
+            }
         }
 
         return false;
@@ -612,7 +632,7 @@ public ref struct Buffer<T>
     /// </returns>
     public Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = default, IEqualityComparer<T>? itemComparer = null)
     {
-        var pos = _position;
+        int pos = _position;
         var span = _span;
 
         // get a valid item comparer
@@ -627,7 +647,9 @@ public ref struct Buffer<T>
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.HasOk(out index))
+                {
                     return None();
+                }
             }
             else
             {
@@ -653,7 +675,9 @@ public ref struct Buffer<T>
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.HasOk(out index))
+                {
                     return None();
+                }
             }
             else
             {
@@ -699,11 +723,13 @@ public ref struct Buffer<T>
         IEqualityComparer<T>? itemComparer = null)
     {
         int itemCount = items.Length;
-        var pos = _position;
+        int pos = _position;
         var span = _span;
 
         if (itemCount == 0 || itemCount > pos)
+        {
             return None();
+        }
 
         // we can only scan until an end item (past that there wouldn't be enough items to match)
         int end = pos - itemCount;
@@ -720,7 +746,9 @@ public ref struct Buffer<T>
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.HasOk(out index))
+                {
                     return None();
+                }
             }
             else
             {
@@ -731,7 +759,9 @@ public ref struct Buffer<T>
             for (; index <= end; index++)
             {
                 if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
+                {
                     return Some(index);
+                }
             }
         }
         else // lastToFirst
@@ -743,11 +773,15 @@ public ref struct Buffer<T>
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.HasOk(out index))
+                {
                     return None();
+                }
 
                 // No point in scanning until the last valid index
                 if (index > end)
+                {
                     index = end;
+                }
             }
             else
             {
@@ -759,13 +793,14 @@ public ref struct Buffer<T>
             for (; index >= 0; index--)
             {
                 if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
+                {
                     return Some(index);
+                }
             }
         }
 
         return None();
     }
-
 
     /// <summary>
     /// Try to find the Index and Item that match an <paramref name="itemPredicate"/>
@@ -789,9 +824,11 @@ public ref struct Buffer<T>
         Index? offset = default)
     {
         if (itemPredicate is null)
+        {
             return None();
+        }
 
-        var pos = _position;
+        int pos = _position;
         var span = _span;
 
         int index;
@@ -805,7 +842,9 @@ public ref struct Buffer<T>
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.HasOk(out index))
+                {
                     return None();
+                }
             }
             else
             {
@@ -831,7 +870,9 @@ public ref struct Buffer<T>
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.HasOk(out index))
+                {
                     return None();
+                }
             }
             else
             {
@@ -865,12 +906,14 @@ public ref struct Buffer<T>
     /// </returns>
     public bool TryRemoveAt(Index index)
     {
-        if (!Validate.Index(index, _position).HasOk(out var offset))
+        if (!Validate.Index(index, _position).HasOk(out int offset))
+        {
             return None<T>();
+        }
+
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
         return true;
     }
-
 
     /// <summary>
     /// Try to remove and return the item at the given <see cref="Index"/>
@@ -883,8 +926,11 @@ public ref struct Buffer<T>
     /// </returns>
     public Option<T> TryRemoveAndGetAt(Index index)
     {
-        if (!Validate.Index(index, _position).HasOk(out var offset))
+        if (!Validate.Index(index, _position).HasOk(out int offset))
+        {
             return None<T>();
+        }
+
         T item = Written[offset];
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
         return Some(item);
@@ -903,7 +949,10 @@ public ref struct Buffer<T>
     public bool TryRemoveMany(Range range)
     {
         if (!Validate.Range(range, _position).HasOk(out var ol))
+        {
             return false;
+        }
+
         (int offset, int length) = ol;
         Sequence.SelfCopy(Written, (offset + length).., offset..);
         return true;
@@ -921,7 +970,10 @@ public ref struct Buffer<T>
     public Option<T[]> TryRemoveAndGetMany(Range range)
     {
         if (!Validate.Range(range, _position).HasOk(out var ol))
+        {
             return None<T[]>();
+        }
+
         (int offset, int length) = ol;
         T[] items = _span.Slice(offset, length).ToArray();
         Sequence.SelfCopy(_span, (offset + length).., offset..);
@@ -940,7 +992,9 @@ public ref struct Buffer<T>
     public int RemoveWhere(Func<T, bool>? itemPredicate)
     {
         if (itemPredicate is null)
+        {
             return 0;
+        }
 
         int freeIndex = 0; // the first free slot in items array
         int pos = _position;
@@ -948,17 +1002,23 @@ public ref struct Buffer<T>
 
         // Find the first item which needs to be removed.
         while (freeIndex < pos && !itemPredicate(span[freeIndex]))
+        {
             freeIndex++;
+        }
 
         if (freeIndex >= pos)
+        {
             return 0;
+        }
 
         int current = freeIndex + 1;
         while (current < pos)
         {
             // Find the first item which needs to be kept.
             while (current < pos && itemPredicate(span[current]))
+            {
                 current++;
+            }
 
             if (current < pos)
             {
@@ -978,10 +1038,7 @@ public ref struct Buffer<T>
     /// <remarks>
     /// This does not release references to any items that had been added, use <see cref="Dispose"/> to ensure proper cleanup
     /// </remarks>
-    public void Clear()
-    {
-        _position = 0;
-    }
+    public void Clear() => _position = 0;
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private Span<T> AllocateGrow(int length)
@@ -1005,7 +1062,9 @@ public ref struct Buffer<T>
     public Span<T> Allocate(int length)
     {
         if (length <= 0)
+        {
             return [];
+        }
 
         int pos = _position;
         Span<T> span = _span;
@@ -1034,7 +1093,10 @@ public ref struct Buffer<T>
     {
         int used = useAvailable(Available);
         if (used < 0 || used > Available.Length)
+        {
             return false;
+        }
+
         _position += used;
         return true;
     }
@@ -1048,7 +1110,10 @@ public ref struct Buffer<T>
     public void ForEach(RefItem<T>? perItem)
     {
         if (perItem is null)
+        {
             return;
+        }
+
         int pos = _position;
         var span = _span;
         for (int i = 0; i < pos; i++)
@@ -1056,7 +1121,6 @@ public ref struct Buffer<T>
             perItem(ref span[i]);
         }
     }
-
 
     /// <summary>
     /// Try to copy the items in this <see cref="Buffer{T}"/> to a <see cref="Span{T}"/>
@@ -1067,10 +1131,7 @@ public ref struct Buffer<T>
     /// Get the <see cref="Span{T}"/> of written items in this <see cref="Buffer{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<T> AsSpan()
-    {
-        return _span.Slice(0, _position);
-    }
+    public Span<T> AsSpan() => _span.Slice(0, _position);
 
 #pragma warning disable CA1002
     /// <summary>
@@ -1108,7 +1169,7 @@ public ref struct Buffer<T>
     /// <summary>
     /// <see cref="Buffer{T}"/> is a <c>ref struct</c> and should not be used for comparison
     /// </summary>
-    public override bool Equals(object? _) => false;
+    public override bool Equals(object? obj) => false;
 
     /// <summary>
     /// <see cref="Buffer{T}"/> is a <c>ref struct</c> and should not be used for comparison
@@ -1132,7 +1193,7 @@ public ref struct Buffer<T>
         if (written.Length > 0)
         {
             text.AppendFormatted<T>(written[0]);
-            for (var i = 1; i < written.Length; i++)
+            for (int i = 1; i < written.Length; i++)
             {
                 text.AppendLiteral(", ");
                 text.AppendFormatted<T>(written[i]);

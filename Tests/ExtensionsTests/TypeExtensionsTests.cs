@@ -48,7 +48,7 @@ public class TypeExtensionsTests
 
     [Theory]
     [MemberData(nameof(MemberDataTypes))]
-    public void GetBaseTypes_Works(Type? type)
+    public void GetBaseTypesWorks(Type? type)
     {
         var baseTypesList = TypeExtensions.GetBaseTypes(type).ToList();
         Assert.NotNull(baseTypesList);
@@ -73,18 +73,22 @@ public class TypeExtensionsTests
 
     [Theory]
     [MemberData(nameof(MemberDataTypes))]
-    public void Implements_Self_AllShould(Type? type)
+    public void ImplementsSelfAllShould(Type? type)
     {
         var impl = TypeExtensions.Implements(type, type);
         if (type is null)
+        {
             Assert.False(impl);
+        }
         else
+        {
             Assert.True(impl);
+        }
     }
 
     [Theory]
     [MemberData(nameof(MemberDataTypes))]
-    public void Implements_Object_MostShould(Type? type)
+    public void ImplementsObjectMostShould(Type? type)
     {
         if (type is null)
         {
@@ -107,7 +111,7 @@ public class TypeExtensionsTests
 
     [Theory]
     [MemberData(nameof(MemberDataTypes))]
-    public void Implements_BaseClasses_AllShould(Type? type)
+    public void ImplementsBaseClassesAllShould(Type? type)
     {
         foreach (Type baseType in type.GetBaseTypes())
         {
@@ -122,10 +126,13 @@ public class TypeExtensionsTests
 
     [Theory]
     [MemberData(nameof(MemberDataTypes))]
-    public void Implements_Interfaces_AllShould(Type? type)
+    public void ImplementsInterfacesAllShould(Type? type)
     {
         if (type is null)
+        {
             return;
+        }
+
         foreach (Type interfaceType in type.GetInterfaces())
         {
             Assert.True(TypeExtensions.Implements(type, interfaceType));
@@ -139,7 +146,7 @@ public class TypeExtensionsTests
 
     [Theory]
     [MemberData(nameof(MemberDataTypes))]
-    public void Type_CanContainNull_Works(Type? type)
+    public void TypeCanContainNullWorks(Type? type)
     {
         bool canBeNull = TypeExtensions.CanContainNull(type);
 

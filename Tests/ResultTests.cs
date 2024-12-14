@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#pragma warning disable CA2201
+
+using System.Collections;
 using System.Reflection;
 using ScrubJay.Extensions;
 using ScrubJay.Functional;
@@ -345,10 +347,13 @@ public class ResultTests
     private static Result<TestClassRecord, Exception> IsOdd(TestClassRecord testRecord)
     {
         if (!testRecord.Id.IsEven())
+        {
             return testRecord;
+        }
+
         return new ArgumentException("Record is Even", nameof(testRecord));
     }
-    
+
     [Theory]
     [MemberData(nameof(TestRecords))]
     public void SelectManyWorks(TestClassRecord? testRecord)

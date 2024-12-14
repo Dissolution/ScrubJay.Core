@@ -2,10 +2,7 @@
 
 public static class TheoryDataHelper
 {
-    public static TheoryData<T> OneParamCombinations<T>(params T[] values)
-    {
-        return new TheoryData<T>(values);
-    }
+    public static TheoryData<T> OneParamCombinations<T>(params T[] values) => new(values);
 
     public static TheoryData<T, T> TwoParamCombinations<T>(params T[] values)
     {

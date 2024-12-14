@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Memory;
+﻿#pragma warning disable CA1000 // Do not declare static members on generic types
+
+namespace ScrubJay.Memory;
 
 /// <summary>
 /// A <see cref="SpanReader{T}"/> wraps a <see cref="ReadOnlySpan{T}"/>
@@ -17,10 +19,7 @@ public ref struct SpanReader<T>
     /// </summary>
     /// <param name="span"></param>
     /// <returns></returns>
-    public static SpanReader<T> AsEnumerator(ReadOnlySpan<T> span)
-    {
-        return new SpanReader<T>(span, -1);
-    }
+    public static SpanReader<T> AsEnumerator(ReadOnlySpan<T> span) => new(span, -1);
 
 
     private readonly ReadOnlySpan<T> _span;

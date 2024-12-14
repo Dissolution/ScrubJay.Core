@@ -2,6 +2,8 @@
 #pragma warning disable CA1710
 // Properties should not copy collections
 #pragma warning disable S2365
+// Remove unnecessary cast (IDE0004)
+#pragma warning disable IDE0004
 
 namespace ScrubJay.Collections.NonGeneric;
 
@@ -26,7 +28,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
         string? keyName = null)
         => Validate.Is<TKey>(objKey, keyName).OkOrThrow()!;
 
-    [return: MaybeNull, NotNullIfNotNull(nameof(objValue))]
+    [return: NotNullIfNotNull(nameof(objValue))]
     private static TValue ObjectToValue(
         object? objValue,
         [CallerArgumentExpression(nameof(objValue))]

@@ -50,10 +50,13 @@ public static class TypeExtensions
     /// </returns>
     public static bool Implements(this Type? type, Type? checkType)
     {
-        if (checkType is null) return false;
-        if (type is null) return false;
+        if (checkType is null)
+            return false;
+        if (type is null)
+            return false;
 
-        if (type == checkType) return true;
+        if (type == checkType)
+            return true;
         // Everything implements object
         if (checkType == typeof(object) && !type.IsPointer)
             return true;
@@ -122,10 +125,7 @@ public static class TypeExtensions
     /// Is this <paramref name="type"/> a <c>static</c> <see cref="Type"/>?
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsStatic(this Type type)
-    {
-        return type is { IsAbstract: true, IsSealed: true };
-    }
+    public static bool IsStatic(this Type type) => type is { IsAbstract: true, IsSealed: true };
 
     /// <summary>
     /// Can instances of this <see cref="Type"/> be <c>null</c>?
@@ -141,8 +141,10 @@ public static class TypeExtensions
     /// </remarks>
     public static bool CanContainNull(this Type? type)
     {
-        if (type is null) return true;
-        if (type.IsStatic()) return false;
+        if (type is null)
+            return true;
+        if (type.IsStatic())
+            return false;
         if (type.IsValueType)
             return Nullable.GetUnderlyingType(type) is not null;
         return true; // non-value types can always contain null

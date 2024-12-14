@@ -1,4 +1,9 @@
-﻿using ScrubJay.Memory;
+﻿// CA1051: Do not declare visible instance fields
+// Done for optimizations
+#pragma warning disable CA1051, CA1000, CA1305
+
+
+using ScrubJay.Memory;
 
 namespace ScrubJay.Enums;
 
@@ -38,11 +43,8 @@ public readonly struct EnumWrapper<TEnum> :
 
 #region Parse
 
-    public static EnumWrapper<TEnum> Parse(string str, IFormatProvider? _ = default)
-    {
-        return EnumHelper.TryParse<TEnum>(str).OkOrThrow();
-    }
-    
+    public static EnumWrapper<TEnum> Parse(string str, IFormatProvider? _ = default) => EnumHelper.TryParse<TEnum>(str).OkOrThrow();
+
     public static EnumWrapper<TEnum> Parse(ReadOnlySpan<char> text, IFormatProvider? _ = default)
     {
         // for now, have to cast ToString()
@@ -78,35 +80,17 @@ public readonly struct EnumWrapper<TEnum> :
         this.Enum = @enum;
     }
 
-    public int CompareTo(TEnum other)
-    {
-        return Comparer<TEnum>.Default.Compare(Enum, other);
-    }
-    
-    public int CompareTo(EnumWrapper<TEnum> other)
-    {
-        return Comparer<TEnum>.Default.Compare(Enum, other.Enum);
-    }
+    public int CompareTo(TEnum other) => Comparer<TEnum>.Default.Compare(Enum, other);
 
-    public bool Equals(TEnum other)
-    {
-        return this.Enum.IsEqual(other);
-    }
+    public int CompareTo(EnumWrapper<TEnum> other) => Comparer<TEnum>.Default.Compare(Enum, other.Enum);
 
-    public bool Equals(EnumWrapper<TEnum> other)
-    {
-        return this.Enum.IsEqual(other.Enum);
-    }
+    public bool Equals(TEnum other) => this.Enum.IsEqual(other);
 
-    public bool Equals(long value)
-    {
-        return this.Enum.ToInt64() == value;
-    }
+    public bool Equals(EnumWrapper<TEnum> other) => this.Enum.IsEqual(other.Enum);
 
-    public bool Equals(ulong value)
-    {
-        return this.Enum.ToUInt64() == value;
-    }
+    public bool Equals(long value) => this.Enum.ToInt64() == value;
+
+    public bool Equals(ulong value) => this.Enum.ToUInt64() == value;
 
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
@@ -122,13 +106,10 @@ public readonly struct EnumWrapper<TEnum> :
         // Should we also support string?
     }
 
-    public override int GetHashCode()
-    {
-        return this.Enum.GetHashCode();
-    }
+    public override int GetHashCode() => this.Enum.GetHashCode();
 
-    public bool TryFormat(Span<char> destination, out int charsWritten, 
-        ReadOnlySpan<char> format = default, 
+    public bool TryFormat(Span<char> destination, out int charsWritten,
+        ReadOnlySpan<char> format = default,
         IFormatProvider? provider = default)
     {
         var writer = new FormatWriter(destination);
@@ -142,14 +123,11 @@ public readonly struct EnumWrapper<TEnum> :
         charsWritten = writer.Count;
         return true;
     }
-    
-    public string ToString([StringSyntax(StringSyntaxAttribute.EnumFormat)] string? format, IFormatProvider? _ = default)
-    {
-        return this.Enum.ToString(format);
-    }
 
-    public override string ToString()
-    {
-        return EnumHelper<TEnum>.GetName(Enum);
-    }
+    public string ToString(
+        [StringSyntax(StringSyntaxAttribute.EnumFormat)]
+        string? format,
+        IFormatProvider? formatProvider = default) => this.Enum.ToString(format);
+
+    public override string ToString() => EnumHelper<TEnum>.GetName(Enum);
 }

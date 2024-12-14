@@ -8,9 +8,7 @@ public record class ObjectPoolPolicy
 {
     public static ObjectPoolPolicy<T> Default<T>(T? _ = default)
         where T : class
-    {
-        return new();
-    }
+        => new();
 
     public static ObjectPoolPolicy<T> Default<T>(GenericTypeConstraint.IsNew<T> _ = default)
         where T : class, new()

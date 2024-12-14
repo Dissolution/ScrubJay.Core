@@ -6,7 +6,7 @@ namespace ScrubJay.Tests.UtilitiesTests;
 public class NotsafeTests
 {
     [Fact]
-    public void CanUnboxToSpanOfOne_Struct()
+    public void CanUnboxToSpanOfOneStruct()
     {
         object obj;
 
@@ -45,7 +45,7 @@ public class NotsafeTests
     }
 
     [Fact]
-    public void CanUnboxToSpanOfOne_Class()
+    public void CanUnboxToSpanOfOneClass()
     {
         object obj;
 

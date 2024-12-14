@@ -49,10 +49,7 @@ public static class ObjectExtensions
     /// <see cref="Option{T}.None"/> otherwise
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> As<T>(this object? input)
-    {
-        return input is T ? Some((T)input) : None<T>();
-    }
+    public static Option<T> As<T>(this object? input) => input is T ? Some((T)input) : None<T>();
 
     /// <summary>
     /// Tests if this <see cref="object"/> can be a <typeparamref name="T"/> value,<br/>

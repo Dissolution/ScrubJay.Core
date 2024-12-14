@@ -17,21 +17,21 @@ public sealed class ObjectPoolPolicyBuilder<T> : FluentRecordBuilder<ObjectPoolP
     public ObjectPoolPolicyBuilder<T> Create(Func<T> createInstance)
     {
         Throw.IfNull(createInstance);
-        _record.CreateInstance = createInstance;
+        Record.CreateInstance = createInstance;
         return _builder;
     }
 
     public ObjectPoolPolicyBuilder<T> Clean(Func<T, bool> tryCleanInstance)
     {
         Throw.IfNull(tryCleanInstance);
-        _record.TryCleanInstance = tryCleanInstance;
+        Record.TryCleanInstance = tryCleanInstance;
         return _builder;
     }
 
     public ObjectPoolPolicyBuilder<T> Clean(Action<T> cleanInstance)
     {
         Throw.IfNull(cleanInstance);
-        _record.TryCleanInstance = inst =>
+        Record.TryCleanInstance = inst =>
         {
             cleanInstance(inst);
             return true;
@@ -43,7 +43,7 @@ public sealed class ObjectPoolPolicyBuilder<T> : FluentRecordBuilder<ObjectPoolP
     public ObjectPoolPolicyBuilder<T> Dispose(Action<T> disposeInstance)
     {
         Throw.IfNull(disposeInstance);
-        _record.DisposeInstance = disposeInstance;
+        Record.DisposeInstance = disposeInstance;
         return _builder;
     }
 #pragma warning restore S2953
@@ -51,7 +51,7 @@ public sealed class ObjectPoolPolicyBuilder<T> : FluentRecordBuilder<ObjectPoolP
     public ObjectPoolPolicyBuilder<T> MaxCapacity(int maxCapacity)
     {
         Validate.InBounds(maxCapacity, Bound.Inclusive(ObjectPool.MinCapacity), Bound.Inclusive(ObjectPool.MaxCapacity)).ThrowIfError();
-        _record.Capacity = maxCapacity;
+        Record.Capacity = maxCapacity;
         return _builder;
     }
 }

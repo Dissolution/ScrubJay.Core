@@ -1,4 +1,6 @@
 ﻿#pragma warning disable S907
+#pragma warning disable CA1000, CA1045
+// ReSharper disable ArrangeThisQualifier
 
 using ScrubJay.Memory;
 
@@ -39,10 +41,7 @@ public static class Pair
 
     public static Pair<TKey, TValue> New<TKey, TValue>(TKey key, TValue value) => new(key, value);
 
-    public static Pair<TKey, TValue> Parse<TKey, TValue>(ref PairBuilder<TKey, TValue> pairText)
-    {
-        return pairText.TryGetPair().OkOrThrow();
-    }
+    public static Pair<TKey, TValue> Parse<TKey, TValue>(ref PairBuilder<TKey, TValue> pairText) => pairText.TryGetPair().OkOrThrow();
 }
 
 /// <summary>
@@ -152,10 +151,7 @@ public readonly struct Pair<TKey, TValue> :
         };
     }
 
-    public override int GetHashCode()
-    {
-        return Hasher.Combine<TKey, TValue>(this.Key, this.Value);
-    }
+    public override int GetHashCode() => Hasher.Combine<TKey, TValue>(this.Key, this.Value);
 
     public bool TryFormat(
         Span<char> destination,
@@ -195,8 +191,5 @@ public readonly struct Pair<TKey, TValue> :
         return text.ToStringAndClear();
     }
 
-    public override string ToString()
-    {
-        return $"({this.Key}, {this.Value})";
-    }
+    public override string ToString() => $"({this.Key}, {this.Value})";
 }

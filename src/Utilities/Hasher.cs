@@ -1,5 +1,5 @@
-﻿#pragma warning disable S2436, CS0809
-// ReSharper disable CyclomaticComplexity
+﻿#pragma warning disable CS0809
+
 
 /*
 
@@ -51,11 +51,11 @@ namespace ScrubJay.Utilities;
 [StructLayout(LayoutKind.Auto)]
 public ref struct Hasher
 {
-    private const uint PRIME1 = 0x9E3779B1U;
-    private const uint PRIME2 = 0x85EBCA77U;
-    private const uint PRIME3 = 0xC2B2AE3DU;
-    private const uint PRIME4 = 0x27D4EB2FU;
-    private const uint PRIME5 = 0x165667B1U;
+    private const uint Prime1 = 0x9E3779B1U;
+    private const uint Prime2 = 0x85EBCA77U;
+    private const uint Prime3 = 0xC2B2AE3DU;
+    private const uint Prime4 = 0x27D4EB2FU;
+    private const uint Prime5 = 0x165667B1U;
 
     /// <summary>
     /// The seed for this Hasher
@@ -99,44 +99,36 @@ public ref struct Hasher
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StartingHash()
-    {
-        return _seed + PRIME5;
-    }
+        => _seed + Prime5;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void StartingStates(out uint state1, out uint state2, out uint state3, out uint state4)
     {
-        state1 = _seed + PRIME1 + PRIME2;
-        state2 = _seed + PRIME2;
+        state1 = _seed + Prime1 + Prime2;
+        state2 = _seed + Prime2;
         state3 = _seed;
-        state4 = _seed - PRIME1;
+        state4 = _seed - Prime1;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateAdd(uint hash, uint input)
-    {
-        return RotateLeft(hash + (input * PRIME2), 13) * PRIME1;
-    }
+        => RotateLeft(hash + (input * Prime2), 13) * Prime1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashAdd(uint hash, uint queuedValue)
-    {
-        return RotateLeft(hash + (queuedValue * PRIME3), 17) * PRIME4;
-    }
+        => RotateLeft(hash + (queuedValue * Prime3), 17) * Prime4;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateToHash(uint value1, uint value2, uint value3, uint value4)
-    {
-        return RotateLeft(value1, 1) + RotateLeft(value2, 7) + RotateLeft(value3, 12) + RotateLeft(value4, 18);
-    }
+        => RotateLeft(value1, 1) + RotateLeft(value2, 7) + RotateLeft(value3, 12) + RotateLeft(value4, 18);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashFinalize(uint hash)
     {
         hash ^= hash >> 15;
-        hash *= PRIME2;
+        hash *= Prime2;
         hash ^= hash >> 13;
-        hash *= PRIME3;
+        hash *= Prime3;
         hash ^= hash >> 16;
         return hash;
     }
@@ -147,7 +139,7 @@ public ref struct Hasher
     /// </summary>
     public static int GetHashCode<T>(T? value)
     {
-        var hc1 = (uint)(value?.GetHashCode() ?? 0);
+        uint hc1 = (uint)(value?.GetHashCode() ?? 0);
 
         uint hash = StartingHash();
         hash += 4;
@@ -173,8 +165,8 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T1, T2>(T1? value1, T2? value2)
     {
-        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
 
         uint hash = StartingHash();
         hash += 8;
@@ -191,9 +183,9 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T1, T2, T3>(T1? value1, T2? value2, T3? value3)
     {
-        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
 
         uint hash = StartingHash();
         hash += 12;
@@ -211,10 +203,10 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T1, T2, T3, T4>(T1? value1, T2? value2, T3? value3, T4? value4)
     {
-        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
 
         StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
@@ -235,11 +227,11 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T1, T2, T3, T4, T5>(T1? value1, T2? value2, T3? value3, T4? value4, T5? value5)
     {
-        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        var hc5 = (uint)(value5?.GetHashCode() ?? 0);
+        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
 
         StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
@@ -262,12 +254,12 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T1, T2, T3, T4, T5, T6>(T1? value1, T2? value2, T3? value3, T4? value4, T5? value5, T6? value6)
     {
-        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        var hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        var hc6 = (uint)(value6?.GetHashCode() ?? 0);
+        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
+        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
 
         StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
@@ -291,13 +283,13 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T1, T2, T3, T4, T5, T6, T7>(T1? value1, T2? value2, T3? value3, T4? value4, T5? value5, T6? value6, T7? value7)
     {
-        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        var hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        var hc6 = (uint)(value6?.GetHashCode() ?? 0);
-        var hc7 = (uint)(value7?.GetHashCode() ?? 0);
+        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
+        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
+        uint hc7 = (uint)(value7?.GetHashCode() ?? 0);
 
         StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
@@ -323,14 +315,14 @@ public ref struct Hasher
     public static int Combine<T1, T2, T3, T4, T5, T6, T7, T8>(T1? value1, T2? value2, T3? value3, T4? value4, T5? value5, T6? value6, T7? value7,
         T8? value8)
     {
-        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        var hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        var hc6 = (uint)(value6?.GetHashCode() ?? 0);
-        var hc7 = (uint)(value7?.GetHashCode() ?? 0);
-        var hc8 = (uint)(value8?.GetHashCode() ?? 0);
+        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
+        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
+        uint hc7 = (uint)(value7?.GetHashCode() ?? 0);
+        uint hc8 = (uint)(value8?.GetHashCode() ?? 0);
 
         StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
 
@@ -391,7 +383,8 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T>(params T[]? array)
     {
-        if (array is null) return NullHash;
+        if (array is null)
+            return NullHash;
         switch (array.Length)
         {
             case 0: return EmptyHash;
@@ -417,7 +410,8 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T>(T[]? array, IEqualityComparer<T>? comparer)
     {
-        if (array is null) return NullHash;
+        if (array is null)
+            return NullHash;
         var hasher = new Hasher();
         hasher.AddMany<T>(array, comparer);
         return hasher.ToHashCode();
@@ -428,7 +422,8 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T>(IEnumerable<T>? enumerable)
     {
-        if (enumerable is null) return NullHash;
+        if (enumerable is null)
+            return NullHash;
         var hasher = new Hasher();
         hasher.AddMany<T>(enumerable);
         return hasher.ToHashCode();
@@ -439,7 +434,8 @@ public ref struct Hasher
     /// </summary>
     public static int Combine<T>(IEnumerable<T>? enumerable, IEqualityComparer<T>? comparer)
     {
-        if (enumerable is null) return NullHash;
+        if (enumerable is null)
+            return NullHash;
         var hasher = new Hasher();
         hasher.AddMany<T>(enumerable, comparer);
         return hasher.ToHashCode();
@@ -466,11 +462,17 @@ public ref struct Hasher
         uint position = previousLength % 4;
 
         if (position == 0)
+        {
             _queue1 = val;
+        }
         else if (position == 1)
+        {
             _queue2 = val;
+        }
         else if (position == 2)
+        {
             _queue3 = val;
+        }
         else // position == 3
         {
             if (previousLength == 3)
@@ -522,7 +524,7 @@ public ref struct Hasher
     /// </summary>
     public void AddMany<T>(scoped ReadOnlySpan<T> values)
     {
-        for (var i = 0; i < values.Length; i++)
+        for (int i = 0; i < values.Length; i++)
         {
             Add<T>(values[i]);
         }
@@ -533,7 +535,7 @@ public ref struct Hasher
     /// </summary>
     public void AddMany<T>(scoped ReadOnlySpan<T> values, IEqualityComparer<T>? comparer)
     {
-        for (var i = 0; i < values.Length; i++)
+        for (int i = 0; i < values.Length; i++)
         {
             Add<T>(values[i], comparer);
         }
@@ -544,8 +546,9 @@ public ref struct Hasher
     /// </summary>
     public void AddMany<T>(params T[]? values)
     {
-        if (values is null) return;
-        for (var i = 0; i < values.Length; i++)
+        if (values is null)
+            return;
+        for (int i = 0; i < values.Length; i++)
         {
             Add<T>(values[i]);
         }
@@ -556,8 +559,9 @@ public ref struct Hasher
     /// </summary>
     public void AddMany<T>(T[]? values, IEqualityComparer<T>? comparer)
     {
-        if (values is null) return;
-        for (var i = 0; i < values.Length; i++)
+        if (values is null)
+            return;
+        for (int i = 0; i < values.Length; i++)
         {
             Add<T>(values[i], comparer);
         }
@@ -568,7 +572,8 @@ public ref struct Hasher
     /// </summary>
     public void AddMany<T>(IEnumerable<T>? values)
     {
-        if (values is null) return;
+        if (values is null)
+            return;
         foreach (var value in values)
         {
             Add<T>(value);
@@ -580,7 +585,8 @@ public ref struct Hasher
     /// </summary>
     public void AddMany<T>(IEnumerable<T>? values, IEqualityComparer<T>? comparer)
     {
-        if (values is null) return;
+        if (values is null)
+            return;
         foreach (var value in values)
         {
             Add<T>(value, comparer);
@@ -591,7 +597,7 @@ public ref struct Hasher
     /// Gets the hashcode generated by this <see cref="Hasher"/> instance
     /// </summary>
     /// <returns></returns>
-    public int ToHashCode()
+    public readonly int ToHashCode()
     {
         uint length = _length;
 
@@ -625,14 +631,11 @@ public ref struct Hasher
 
     [Obsolete("Use ToHashCode() instead")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override int GetHashCode() => ToHashCode();
+    public override readonly int GetHashCode() => ToHashCode();
 
     [Obsolete("Hasher does not equate", true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object? _) => false;
+    public override readonly bool Equals(object? obj) => false;
 
-    public override string ToString()
-    {
-        return $"Hasher: {ToHashCode()}";
-    }
+    public override readonly string ToString() => $"Hasher: {ToHashCode()}";
 }

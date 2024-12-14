@@ -116,6 +116,4 @@ public ref struct PairBuilder<TKey, TValue>
         _value = Some(value);
         _step = Step.PreEndParen;
     }
-
-
 }

@@ -1,4 +1,6 @@
-﻿using ScrubJay.Enums;
+﻿#pragma warning disable CA1000 // Do not declare static members on generic types
+
+using ScrubJay.Enums;
 
 namespace ScrubJay.Memory;
 
@@ -170,11 +172,11 @@ public ref struct SpanSplitter<T> // : IEnumerable<ReadOnlySpan<T>>
 
     public IReadOnlyList<IReadOnlyList<T>> ToLists()
     {
-        // we always start consumtion here, they can Reset if they wish
+        // we always start consumption here, they can Reset if they wish
         var segments = new List<IReadOnlyList<T>>();
-        while (this.MoveNext())
+        while (MoveNext())
         {
-            segments.Add(this.Current.ToArray());
+            segments.Add(Current.ToArray());
         }
         return segments;
 

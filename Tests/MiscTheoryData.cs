@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#pragma warning disable CA1710
+
+using System.Collections;
 using ScrubJay.Collections;
 
 namespace ScrubJay.Tests;
@@ -14,29 +16,24 @@ public sealed class MiscTheoryData : IReadOnlyCollection<object?[]>
         _rows = new(64);
     }
 
-    public void Add<T>(T? value)
-    {
-        _rows.Add(new object?[1] { (object?)value });
-    }
+    public void Add<T>(T? value) => _rows.Add(new object?[1] { (object?)value });
 
-    public void Add(object? obj)
-    {
-        _rows.Add(new object?[1] { obj });
-    }
+    public void Add(object? obj) => _rows.Add(new object?[1] { obj });
 
-    public void AddRow(params object?[] objects)
-    {
-        _rows.Add(objects);
-    }
+    public void AddRow(params object?[] objects) => _rows.Add(objects);
 
     public MiscTheoryData Combinations(int columns)
     {
-        if (columns < 1) 
+        if (columns < 1)
+        {
             throw new ArgumentOutOfRangeException(nameof(columns));
+        }
 
         var rows = _rows;
-        if (rows.Count == 0) 
+        if (rows.Count == 0)
+        {
             return new MiscTheoryData();
+        }
 
         var lengths = new int[columns];
         lengths.AsSpan().Fill(rows.Count);

@@ -1,4 +1,8 @@
-﻿using ScrubJay.Constraints;
+﻿// CA1716: Identifiers should not match keywords
+#pragma warning disable CA1716
+
+
+using ScrubJay.Constraints;
 
 namespace ScrubJay.Validation;
 
@@ -72,10 +76,7 @@ public static class Throw
     [StackTraceHidden]
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void KeyNotFound<TKey>(TKey key)
-    {
-        throw new KeyNotFoundException($"Key '{key}' was not found");
-    }
+    public static void KeyNotFound<TKey>(TKey key) => throw new KeyNotFoundException($"Key '{key}' was not found");
 
     [StackTraceHidden]
     [DoesNotReturn]
@@ -83,9 +84,7 @@ public static class Throw
     public static void DuplicateKeyException<TKey>(
         TKey key,
         [CallerMemberName] string? keyName = null)
-    {
-        throw new ArgumentException($"Duplicate key '{key}' was found", keyName);
-    }
+        => throw new ArgumentException($"Duplicate key '{key}' was found", keyName);
 
 
     /// <summary>
@@ -186,9 +185,7 @@ public static class Throw
         T? instance,
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)
-    {
-        throw new NotSupportedException($"{typeof(T).NameOf()} '{instance}' is read-only");
-    }
+        => throw new NotSupportedException($"{typeof(T).NameOf()} '{instance}' is read-only");
 
     [DoesNotReturn]
     [StackTraceHidden]
@@ -197,7 +194,5 @@ public static class Throw
         T? instance,
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)
-    {
-        throw new NotSupportedException($"{typeof(T).NameOf()} '{instance}' is read-only");
-    }
+        => throw new NotSupportedException($"{typeof(T).NameOf()} '{instance}' is read-only");
 }

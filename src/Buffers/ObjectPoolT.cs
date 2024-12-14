@@ -43,7 +43,6 @@ public sealed class ObjectPool<T> : IDisposable
     /// </summary>
     private readonly Action<T> _disposeInstance;
 
-
     /// <summary>
     /// The first instance is stored in a dedicated field as we expect to be able to satisfy most requests from it
     /// </summary>
@@ -112,7 +111,9 @@ public sealed class ObjectPool<T> : IDisposable
     {
         // skip null instances
         if (instance is null)
+        {
             return false;
+        }
 
         // If we are disposed or cleaning fails, just dispose the instance and return
         if (_instances is null || !_tryCleanInstance(instance))

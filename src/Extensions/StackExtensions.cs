@@ -32,10 +32,7 @@ public static class StackExtensions
     }
 #endif
 
-    public static T PeekOr<T>(this Stack<T> stack, T defaultValue)
-    {
-        return stack.Count > 0 ? stack.Peek() : defaultValue;
-    }
+    public static T PeekOr<T>(this Stack<T> stack, T defaultValue) => stack.Count > 0 ? stack.Peek() : defaultValue;
 
     public static T PeekOrPush<T>(this Stack<T> stack, T pushValue)
     {
@@ -45,8 +42,5 @@ public static class StackExtensions
         return pushValue;
     }
 
-    public static T PopOr<T>(this Stack<T> stack, T defaultValue)
-    {
-        return stack.Count > 0 ? stack.Pop() : defaultValue;
-    }
+    public static T PopOr<T>(this Stack<T> stack, T defaultValue) => stack.Count > 0 ? stack.Pop() : defaultValue;
 }

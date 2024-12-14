@@ -86,7 +86,6 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
         return new(lowerBounds, upperBounds);
     }
 
-
     private readonly int[] _lowerBounds;
     private readonly int[] _upperBounds;
 
@@ -95,7 +94,6 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
 #pragma warning disable IDE0044
     private int[] _indices;
 #pragma warning restore IDE0044
-
 
     object IEnumerator.Current => _indices;
     int[] IEnumerator<int[]>.Current => _indices;

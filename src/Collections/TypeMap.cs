@@ -1,4 +1,5 @@
-﻿namespace ScrubJay.Collections;
+﻿// ReSharper disable RedundantBaseQualifier
+namespace ScrubJay.Collections;
 
 /// <summary>
 /// A <see cref="Dictionary{TKey,TValue}"/> where <c>TKey</c> is <see cref="Type"/> that supports using a generic type

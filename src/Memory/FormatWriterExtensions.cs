@@ -7,10 +7,7 @@ namespace ScrubJay.Memory;
 /// </summary>
 public static class FormatWriterExtensions
 {
-    public static bool TryWrite(this FormatWriter spanWriter, string? str)
-    {
-        return spanWriter.TryWriteMany(str.AsSpan());
-    }
+    public static bool TryWrite(this FormatWriter spanWriter, string? str) => spanWriter.TryWriteMany(str.AsSpan());
 
 #pragma warning disable S3247
     public static bool TryWrite<T>(this FormatWriter spanWriter, T? value)

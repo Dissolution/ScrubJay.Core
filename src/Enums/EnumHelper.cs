@@ -67,13 +67,11 @@ public static class EnumHelper<TEnum>
 {
     private static readonly ConcurrentDictionary<TEnum, string> _names = [];
 
-    public static readonly bool IsFlags;
+    public static readonly bool IsFlags = typeof(TEnum).GetCustomAttribute<FlagsAttribute>() is not null;
 
     static EnumHelper()
     {
         var type = typeof(TEnum);
-        IsFlags = type.GetCustomAttribute<FlagsAttribute>() is not null;
-
         var memberFields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
         foreach (var field in memberFields)
         {

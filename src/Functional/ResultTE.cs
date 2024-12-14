@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1710, MA0048
+﻿#pragma warning disable CA1710, MA0048, CA1000
 
 namespace ScrubJay.Functional;
 

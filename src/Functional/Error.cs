@@ -1,7 +1,15 @@
-﻿namespace ScrubJay.Functional;
+﻿// CA1716: Identifiers should not match keywords
+// Error doesn't appear to be a keyword (https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/)
+#pragma warning disable CA1716
+
+// CA1051: Do not declare visible instance fields
+// Done for optimizations
+#pragma warning disable CA1051
+
+namespace ScrubJay.Functional;
 
 /// <summary>
-/// 
+///
 /// </summary>
 /// <typeparam name="TError"></typeparam>
 /// <remarks>
@@ -26,8 +34,8 @@ public readonly struct Error<TError> :
     public static implicit operator bool(Error<TError> _) => false;
     public static bool operator true(Error<TError> _) => false;
     public static bool operator false(Error<TError> _) => true;
-    
-    // Error is a passthrough for its Value
+
+    // Error is a pass-through for its Value
     public static bool operator ==(Error<TError> left, Error<TError> right) => EqualityComparer<TError>.Default.Equals(left.Value, right.Value);
     public static bool operator !=(Error<TError> left, Error<TError> right) => !EqualityComparer<TError>.Default.Equals(left.Value, right.Value);
     public static bool operator ==(Error<TError> error, TError? errorValue) => EqualityComparer<TError>.Default.Equals(error.Value, errorValue!);
@@ -49,10 +57,7 @@ public readonly struct Error<TError> :
     {
         this.Value = errorValue;
     }
-    public void Deconstruct(out TError errorValue)
-    {
-        errorValue = Value;
-    }
+    public void Deconstruct(out TError errorValue) => errorValue = Value;
 
     public int CompareTo(Error<TError> other) => Comparer<TError>.Default.Compare(this.Value!, other.Value!);
     public int CompareTo(TError? other) => Comparer<TError>.Default.Compare(this.Value!, other!);
@@ -69,7 +74,7 @@ public readonly struct Error<TError> :
         _ => false,
     };
 
-    
+
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public IEnumerator<TError> GetEnumerator()
@@ -77,7 +82,7 @@ public readonly struct Error<TError> :
         // Same behavior as the Result this should end up as
         yield break;
     }
-    
+
     public override int GetHashCode() => Hasher.GetHashCode<TError>(Value);
     public override string ToString() => $"Error({Value})";
 }

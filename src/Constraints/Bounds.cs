@@ -36,8 +36,5 @@ public static class Bounds
         return Option.None();
     }
 
-    public static Bounds<T> Parse<T>(ref BoundsStringHandler<T> text)
-    {
-        return text.Bounds;
-    }
+    public static Bounds<T> Parse<T>(BoundsStringHandler<T> text) => text.Bounds;
 }

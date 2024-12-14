@@ -1,4 +1,7 @@
-#pragma warning disable CA1710 // Identifiers should have correct suffix
+// Identifiers should have correct suffix
+#pragma warning disable CA1710
+// Remove unnecessary cast (IDE0004)
+#pragma warning disable IDE0004
 
 namespace ScrubJay.Collections;
 
@@ -171,10 +174,7 @@ public readonly struct Values<T> :
     }
 
 
-    public bool IsValue([MaybeNullWhen(false)] out T value)
-    {
-        return _obj.Is(out value);
-    }
+    public bool IsValue([MaybeNullWhen(false)] out T value) => _obj.Is(out value);
 
     public Option<T> HasValue()
     {
@@ -183,10 +183,7 @@ public readonly struct Values<T> :
         return None<T>();
     }
 
-    public bool IsValues([MaybeNullWhen(false)] out T[] values)
-    {
-        return _obj.Is(out values);
-    }
+    public bool IsValues([MaybeNullWhen(false)] out T[] values) => _obj.Is(out values);
 
     public Option<T[]> HasValues()
     {
@@ -300,14 +297,10 @@ public readonly struct Values<T> :
     }
 
     public bool Equals(T? value)
-    {
-        return _obj is T myValue && EqualityComparer<T>.Default.Equals(myValue, value!);
-    }
+        => _obj is T myValue && EqualityComparer<T>.Default.Equals(myValue, value!);
 
     public bool Equals(params T[]? values)
-    {
-        return _obj is T[] myValues && Sequence.Equal(myValues, values!);
-    }
+        => _obj is T[] myValues && Sequence.Equal(myValues, values!);
 
     public bool Equals(Values<T> values)
     {

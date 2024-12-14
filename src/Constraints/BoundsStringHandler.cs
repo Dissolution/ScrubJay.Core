@@ -27,12 +27,12 @@ public ref struct BoundsStringHandler<T>
     private T? _upper = default;
 
 
-    private Step _parsedStep = default(Step);
+    private Step _parsedStep = default;
 
 
-    public Option<Bound<T>> Lower => !_hasLower ? None<Bound<T>>() : Some<Bound<T>>(new(_lower!, _incLower));
+    public readonly Option<Bound<T>> Lower => !_hasLower ? None<Bound<T>>() : Some<Bound<T>>(new(_lower!, _incLower));
 
-    public Option<Bound<T>> Upper => !_hasUpper ? None<Bound<T>>() : Some<Bound<T>>(new(_upper!, _incUpper));
+    public readonly Option<Bound<T>> Upper => !_hasUpper ? None<Bound<T>>() : Some<Bound<T>>(new(_upper!, _incUpper));
 
     public Bounds<T> Bounds => new Bounds<T>(Lower, Upper);
 
@@ -58,34 +58,49 @@ public ref struct BoundsStringHandler<T>
         if (str == "[")
         {
             if (_parsedStep != Step.PreLowerIncMarker)
+            {
                 throw new InvalidOperationException();
+            }
+
             _incLower = true;
             _parsedStep = Step.PostLowerIncMarker;
         }
         else if (str == "(")
         {
             if (_parsedStep != Step.PreLowerIncMarker)
+            {
                 throw new InvalidOperationException();
+            }
+
             _incLower = false;
             _parsedStep = Step.PostLowerIncMarker;
         }
         else if (str == "..")
         {
             if (_parsedStep is not (Step.PostLowerValue or Step.PreLowerIncMarker))
+            {
                 Debugger.Break();
+            }
+
             _parsedStep = Step.RangeSeparator;
         }
         else if (str == "]")
         {
             if (_parsedStep != Step.PostUpperValue)
+            {
                 throw new InvalidOperationException();
+            }
+
             _incUpper = true;
             _parsedStep = Step.PostUpperIncMarker;
         }
         else if (str == ")")
         {
             if (_parsedStep != Step.PostUpperValue)
+            {
                 throw new InvalidOperationException();
+            }
+
             _incLower = false;
             _parsedStep = Step.PostUpperIncMarker;
         }
@@ -114,5 +129,4 @@ public ref struct BoundsStringHandler<T>
             throw new NotImplementedException();
         }
     }
-
 }

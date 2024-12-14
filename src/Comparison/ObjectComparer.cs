@@ -11,7 +11,7 @@ internal sealed class ObjectComparer :
 
     bool IEqualityComparer.Equals(object? x, object? y) => Equals(x, y);
     bool IEqualityComparer<object>.Equals(object? x, object? y) => Equals(x, y);
-    public new static bool Equals(object? x, object? y)
+    public static new bool Equals(object? x, object? y)
     {
         if (ReferenceEquals(x, y))
             return true;

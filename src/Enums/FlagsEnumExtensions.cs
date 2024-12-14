@@ -1,5 +1,4 @@
-﻿#pragma warning disable IDE0060
-
+﻿#pragma warning disable IDE0060, CA1045
 // ReSharper disable EntityNameCapturedOnly.Global
 
 #if NET6_0_OR_GREATER
@@ -204,9 +203,7 @@ public static class FlagsEnumExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AddFlag<TEnum>(this ref TEnum @enum, TEnum flag)
         where TEnum : struct, Enum
-    {
-        @enum = Or(@enum, flag);
-    }
+        => @enum = Or(@enum, flag);
 
     /// <summary>
     /// Returns this <paramref name="enum"/> combined with the <paramref name="flag"/>
@@ -217,23 +214,17 @@ public static class FlagsEnumExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TEnum WithFlag<TEnum>(this TEnum @enum, TEnum flag)
         where TEnum : struct, Enum
-    {
-        return Or(@enum, flag);
-    }
+        => Or(@enum, flag);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RemoveFlag<TEnum>(this ref TEnum @enum, TEnum flag)
         where TEnum : struct, Enum
-    {
-        @enum = And(@enum, BitwiseComplement(flag));
-    }
+        => @enum = And(@enum, BitwiseComplement(flag));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TEnum WithoutFlag<TEnum>(this TEnum @enum, TEnum flag)
         where TEnum : struct, Enum
-    {
-        return And(@enum, BitwiseComplement(flag));
-    }
+        => And(@enum, BitwiseComplement(flag));
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -271,9 +262,7 @@ public static class FlagsEnumExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool HasAnyFlags<TEnum>(this TEnum @enum, TEnum flag1, TEnum flag2, TEnum flag3)
         where TEnum : struct, Enum
-    {
-        return @enum.And(flag1.Or(flag2).Or(flag3)).NotEqual(default);
-    }
+        => @enum.And(flag1.Or(flag2).Or(flag3)).NotEqual(default);
 
     public static bool HasAnyFlags<TEnum>(this TEnum @enum, params TEnum[] flags)
         where TEnum : struct, Enum

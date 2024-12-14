@@ -7,9 +7,9 @@ public ref struct SpanWriter<T>
     private int _position;
 
     public ref T this[Index index] => ref AsSpan()[index];
-    
+
     public Span<T> this[Range range] => AsSpan()[range];
-    
+
     private int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -26,7 +26,7 @@ public ref struct SpanWriter<T>
 
     internal Span<T> Written => _span.Slice(0, _position);
     internal Span<T> Available => _span.Slice(_position);
-    
+
     public SpanWriter(Span<T> span)
     {
         _span = span;
@@ -46,7 +46,7 @@ public ref struct SpanWriter<T>
         int used = useAvailable(_span.Slice(_position));
         _position += used;
     }
-    
+
     public bool TryWrite(T item)
     {
         int pos = _position;
@@ -74,7 +74,7 @@ public ref struct SpanWriter<T>
 
         return false;
     }
-    
+
     public bool TryWriteMany(params T[]? items)
     {
         if (items is null)
@@ -111,7 +111,7 @@ public ref struct SpanWriter<T>
 
         return false;
     }
-    
+
     public bool TryWriteMany(IReadOnlyCollection<T>? items)
     {
         if (items is null)
@@ -132,7 +132,7 @@ public ref struct SpanWriter<T>
 
         return false;
     }
-    
+
     public bool TryWriteMany(IList<T>? items)
     {
         if (items is null)
@@ -151,7 +151,7 @@ public ref struct SpanWriter<T>
 
         return false;
     }
-    
+
     public bool TryWriteMany(IReadOnlyList<T>? items)
     {
         if (items is null)
@@ -170,7 +170,7 @@ public ref struct SpanWriter<T>
 
         return false;
     }
-    
+
     public Result<int, Exception> TryWriteMany(IEnumerable<T>? items)
     {
         if (items is null)
@@ -198,17 +198,14 @@ public ref struct SpanWriter<T>
         // ReSharper restore PossibleMultipleEnumeration
     }
 
-    public void Clear()
-    {
-        _span.Slice(0, _position).Clear();
-    }
-    
-    
+    public void Clear() => _span.Slice(0, _position).Clear();
+
+
     public bool TryCopyTo(Span<T> span) => AsSpan().TryCopyTo(span);
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan() => _span.Slice(0, _position);
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T[] ToArray() => _span.Slice(0, _position).ToArray();
 

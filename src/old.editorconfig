@@ -1,0 +1,93 @@
+# Remove the line below if you want to inherit .editorconfig settings from higher directories
+root = true
+
+# C# files
+[*.cs]
+
+#### Core EditorConfig Options ####
+
+# Indentation and spacing
+indent_size = 4
+indent_style = space
+tab_width = 4
+
+### Warning Levels
+## error
+## warning
+## suggestion
+## silent
+## none
+## default
+
+### roslyn stuff
+# https://github.com/dotnet/roslyn/issues/41640
+dotnet_diagnostic.IDE0005.severity = none
+
+### .Net formatting Options
+#
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+dotnet_diagnostic.IDE0055.severity = none
+
+### IDE#### Rules
+
+# IDE0004 - Remove unnecessary cast
+dotnet_diagnostic.IDE0004.severity = none
+
+# IDE0011 - Add braces
+csharp_prefer_braces = when_multiline
+dotnet_diagnostic.IDE0011.severity = suggestion
+
+# IDE0022 - Use expression body for methods
+csharp_style_expression_bodied_methods = when_on_single_line
+dotnet_diagnostic.IDE0022.severity = suggestion
+
+# IDE0034 - Simplify 'default' expression
+csharp_prefer_simple_default_expression = true
+dotnet_diagnostic.IDE0034.severity = suggestion
+
+# IDE0036 Order modifiers
+csharp_preferred_modifier_order = public,private,protected,internal,file,new,static,extern,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async
+
+# IDE0160
+# IDE0161 - Namespace declaration preferences
+csharp_style_namespace_declarations = file_scoped
+dotnet_diagnostic.IDE0160.severity = error
+dotnet_diagnostic.IDE0161.severity = error
+
+# IDE0290 - Use primary constructor
+csharp_style_prefer_primary_constructors = false
+
+
+### CA#### Code Analysis Rules
+dotnet_diagnostic.CA1710.severity = error
+
+
+
+dotnet_style_prefer_conditional_expression_over_return = false
+dotnet_style_prefer_conditional_expression_over_assignment = false
+csharp_style_expression_bodied_operators = when_on_single_line
+
+csharp_style_prefer_range_operator = false
+
+csharp_style_var_for_built_in_types = false
+csharp_style_var_when_type_is_apparent = true
+csharp_style_var_elsewhere = true
+
+#### Diagnostic configuration ####
+
+# CA1000: Do not declare static members on generic types
+dotnet_diagnostic.CA1000.severity = warning
+# Member can be made 'readonly' (IDE0251)
+dotnet_diagnostic.IDE0251.severity = none
+# Use collection initializers or expressions (IDE0028)
+dotnet_diagnostic.IDE0028.severity = suggestion
+# 'var' preferences (IDE0007 and IDE0008)
+dotnet_diagnostic.IDE0007.severity = suggestion
+dotnet_diagnostic.IDE0008.severity = suggestion
+# Use auto-implemented property (IDE0032)
+dotnet_diagnostic.IDE0032.severity = suggestion
+# Simplify new expression (IDE0090)
+dotnet_diagnostic.IDE0090.severity = suggestion
+
+

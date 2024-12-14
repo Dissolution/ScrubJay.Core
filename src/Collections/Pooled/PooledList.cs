@@ -152,10 +152,7 @@ public sealed class PooledList<T> :
     /// </summary>
     /// <param name="adding"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void GrowBy(int adding)
-    {
-        GrowTo((Capacity + adding) * 2);
-    }
+    private void GrowBy(int adding) => GrowTo((Capacity + adding) * 2);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void GrowTo(int newCapacity)
@@ -201,10 +198,7 @@ public sealed class PooledList<T> :
     /// <remarks>
     /// This method causes a rental from <see cref="ArrayPool{T}"/>
     /// </remarks>
-    public void Grow()
-    {
-        GrowTo(Capacity * 2);
-    }
+    public void Grow() => GrowTo(Capacity * 2);
 
     /// <summary>
     /// Grows the <see cref="Capacity"/> of this <see cref="PooledList{T}"/> to at least <paramref name="minCapacity"/>
@@ -267,7 +261,7 @@ public sealed class PooledList<T> :
     /// Adds the given <paramref name="items"/> to this <see cref="PooledList{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(params ReadOnlySpan<T> items)
+    public void AddMany(ReadOnlySpan<T> items)
     {
         int count = items.Length;
 
@@ -298,7 +292,7 @@ public sealed class PooledList<T> :
     /// Adds the given <paramref name="items"/> to this <see cref="PooledList{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(T[]? items) => AddMany(items.AsSpan());
+    public void AddMany(params T[]? items) => AddMany(items.AsSpan());
 
     /// <summary>
     /// Adds the given <paramref name="items"/> to this <see cref="PooledList{T}"/>
@@ -328,7 +322,7 @@ public sealed class PooledList<T> :
         else
         {
             // slow path
-            foreach (T item in items)
+            foreach (var item in items)
             {
                 Add(item);
             }
@@ -350,7 +344,7 @@ public sealed class PooledList<T> :
     {
         int pos = _position;
         var vr = Validate.InsertIndex(index, pos);
-        if (!vr.HasOk(out var offset))
+        if (!vr.HasOk(out int offset))
             return vr;
 
         if (offset == pos)
@@ -390,7 +384,7 @@ public sealed class PooledList<T> :
             return TryInsert(index, items[0]);
 
         var vr = Validate.InsertIndex(index, _position);
-        if (!vr.HasOk(out var offset))
+        if (!vr.HasOk(out int offset))
             return vr;
 
         if (offset == _position)
@@ -438,7 +432,7 @@ public sealed class PooledList<T> :
         int pos = _position;
 
         var vr = Validate.InsertIndex(index, pos);
-        if (!vr.HasOk(out var offset))
+        if (!vr.HasOk(out int offset))
             return vr;
 
         if (offset == _position)
@@ -477,10 +471,7 @@ public sealed class PooledList<T> :
     /// <param name="itemComparer">
     /// An optional <see cref="IComparer{T}"/> used to sort the items, defaults to <see cref="Comparer{T}"/>.<see cref="Comparer{T}.Default"/>
     /// </param>
-    public void Sort(IComparer<T>? itemComparer = default)
-    {
-        Array.Sort(_array, 0, _position, itemComparer);
-    }
+    public void Sort(IComparer<T>? itemComparer = null) => Array.Sort(_array, 0, _position, itemComparer);
 
     /// <summary>
     /// Sorts the items in this <see cref="PooledList{T}"/> using a <see cref="Comparison{T}"/> delegate
@@ -488,18 +479,12 @@ public sealed class PooledList<T> :
     /// <param name="itemComparison">
     /// The <see cref="Comparison{T}"/> delegate used to sort the items
     /// </param>
-    public void Sort(Comparison<T> itemComparison)
-    {
-        Array.Sort(_array, 0, _position, Compare.CreateComparer<T>(itemComparison));
-    }
+    public void Sort(Comparison<T> itemComparison) => Array.Sort(_array, 0, _position, Compare.CreateComparer<T>(itemComparison));
 
     /// <summary>
     /// Reverses the order of the items in this <see cref="PooledList{T}"/>
     /// </summary>
-    public void Reverse()
-    {
-        Array.Reverse(_array, 0, _position);
-    }
+    public void Reverse() => Array.Reverse(_array, 0, _position);
 
     /// <summary>
     /// Does this <see cref="PooledList{T}"/> contain any instances of the <paramref name="item"/>?
@@ -514,7 +499,7 @@ public sealed class PooledList<T> :
     public bool Contains(T item)
     {
         var array = _array;
-        for (var i = 0; i < _position; i++)
+        for (int i = 0; i < _position; i++)
         {
             if (EqualityComparer<T>.Default.Equals(item, array[i]))
                 return true;
@@ -546,7 +531,7 @@ public sealed class PooledList<T> :
     /// </returns>
     public Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = default, IEqualityComparer<T>? itemComparer = null)
     {
-        var pos = _position;
+        int pos = _position;
         var span = new Span<T>(_array);
 
         // get a valid item comparer
@@ -633,7 +618,7 @@ public sealed class PooledList<T> :
         IEqualityComparer<T>? itemComparer = null)
     {
         int itemCount = items.Length;
-        var pos = _position;
+        int pos = _position;
         var span = new Span<T>(_array);
 
         if (itemCount == 0 || itemCount > pos)
@@ -724,7 +709,7 @@ public sealed class PooledList<T> :
         if (itemPredicate is null)
             return None();
 
-        var pos = _position;
+        int pos = _position;
         var span = new Span<T>(_array);
 
         int index;
@@ -795,10 +780,7 @@ public sealed class PooledList<T> :
         return None();
     }
 
-    public bool TrySet(Index index, T item)
-    {
-        return Validate.Index(index, _position).Select(i => _array[i] = item).IsOk;
-    }
+    public bool TrySet(Index index, T item) => Validate.Index(index, _position).Select(i => _array[i] = item).IsOk;
 
     public bool TrySet(Range range, scoped ReadOnlySpan<T> items)
     {
@@ -945,10 +927,7 @@ public sealed class PooledList<T> :
     /// <remarks>
     /// This does not release references to any items that had been added, use <see cref="Dispose"/> to ensure proper cleanup
     /// </remarks>
-    public void Clear()
-    {
-        _position = 0;
-    }
+    public void Clear() => _position = 0;
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private Span<T> AllocateGrow(int length)
@@ -1117,7 +1096,7 @@ public sealed class PooledList<T> :
     /// </summary>
     public List<T> ToList()
     {
-        List<T> list = new List<T>(Capacity);
+        var list = new List<T>(Capacity);
 #if NET8_0_OR_GREATER
         var listSpan = CollectionsMarshal.AsSpan<T>(list);
         Sequence.CopyTo(Written, listSpan);
@@ -1142,9 +1121,9 @@ public sealed class PooledList<T> :
         ArrayPool.Return(toReturn, true);
     }
 
-    public bool SequenceEqual(params ReadOnlySpan<T> items) => Sequence.Equal(Written, items);
+    public bool SequenceEqual(ReadOnlySpan<T> items) => Sequence.Equal(Written, items);
 
-    public bool SequenceEqual(T[]? items) => Sequence.Equal(Written, items);
+    public bool SequenceEqual(params T[]? items) => Sequence.Equal(Written, items);
 
     public bool SequenceEqual(IEnumerable<T>? items) => Sequence.Equal(Written, items);
 
@@ -1178,7 +1157,7 @@ public sealed class PooledList<T> :
         if (written.Length > 0)
         {
             text.AppendFormatted<T>(written[0]);
-            for (var i = 1; i < written.Length; i++)
+            for (int i = 1; i < written.Length; i++)
             {
                 text.AppendLiteral(", ");
                 text.AppendFormatted<T>(written[i]);
@@ -1192,7 +1171,7 @@ public sealed class PooledList<T> :
     IEnumerator IEnumerable.GetEnumerator()
     {
         {
-            for (var i = 0; i < _position; i++)
+            for (int i = 0; i < _position; i++)
             {
                 yield return _array[i];
             }
@@ -1201,14 +1180,11 @@ public sealed class PooledList<T> :
 
     IEnumerator<T> IEnumerable<T>.GetEnumerator()
     {
-        for (var i = 0; i < _position; i++)
+        for (int i = 0; i < _position; i++)
         {
             yield return _array[i];
         }
     }
 
-    public Span<T>.Enumerator GetEnumerator()
-    {
-        return Written.GetEnumerator();
-    }
+    public Span<T>.Enumerator GetEnumerator() => Written.GetEnumerator();
 }

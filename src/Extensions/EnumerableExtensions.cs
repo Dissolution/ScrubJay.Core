@@ -14,7 +14,7 @@ public static class EnumerableExtensions
     /// <typeparam name="TIn"></typeparam>
     /// <typeparam name="TOut"></typeparam>
     public delegate bool SelectWherePredicate<in TIn, TOut>(TIn input, out TOut output);
-    
+
     public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> source, SelectWherePredicate<TIn, TOut> selectWherePredicate)
     {
         foreach (TIn input in source)
@@ -25,16 +25,10 @@ public static class EnumerableExtensions
             }
         }
     }
-    
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> enumerable, Func<TIn, Option<TOut>> selectWhere)
-    {
-        return enumerable.SelectMany(i => selectWhere(i));
-    }
 
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut, TError>(this IEnumerable<TIn> enumerable, Func<TIn, Result<TOut, TError>> selectWhere)
-    {
-        return enumerable.SelectMany(i => selectWhere(i));
-    }
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> enumerable, Func<TIn, Option<TOut>> selectWhere) => enumerable.SelectMany(i => selectWhere(i));
+
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut, TError>(this IEnumerable<TIn> enumerable, Func<TIn, Result<TOut, TError>> selectWhere) => enumerable.SelectMany(i => selectWhere(i));
 
     public static T One<T>(this IEnumerable<T> enumerable)
     {
@@ -99,7 +93,8 @@ public static class EnumerableExtensions
     /// </returns>
     public static Option<T> FirstOption<T>(this IEnumerable<T>? enumerable)
     {
-        if (enumerable is null) return None();
+        if (enumerable is null)
+            return None();
         using var e = enumerable.GetEnumerator();
         return !e.MoveNext() ? None() : Some(e.Current);
     }
@@ -120,9 +115,11 @@ public static class EnumerableExtensions
     /// </returns>
     public static Option<T> MinOption<T>(this IEnumerable<T>? enumerable, IComparer<T>? itemComparer = null)
     {
-        if (enumerable is null) return None();
+        if (enumerable is null)
+            return None();
         using var e = enumerable.GetEnumerator();
-        if (!e.MoveNext()) return None();
+        if (!e.MoveNext())
+            return None();
         itemComparer ??= Comparer<T>.Default;
         T min = e.Current;
         while (e.MoveNext())
@@ -134,7 +131,7 @@ public static class EnumerableExtensions
         }
         return Some(min);
     }
-    
+
 
     /// <summary>
     /// Enumerates over the non-<c>null</c> items in <paramref name="source"/>
@@ -154,9 +151,7 @@ public static class EnumerableExtensions
 
     public static IEnumerable<T> OrderBy<T>(this IEnumerable<T> enumerable, T[] itemOrder)
         where T : IEquatable<T>
-    {
-        return enumerable.OrderBy(e => Array.IndexOf(itemOrder, e));
-    }
+        => enumerable.OrderBy(e => Array.IndexOf(itemOrder, e));
 
     /// <summary>
     /// Consume this <see cref="IEnumerable{T}"/> by performing an <see cref="Action{T}"/> on each of its values
@@ -175,7 +170,7 @@ public static class EnumerableExtensions
                 return;
             case IList<T> list:
             {
-                for (var i = 0; i < list.Count; i++)
+                for (int i = 0; i < list.Count; i++)
                 {
                     perItem(list[i]);
                 }

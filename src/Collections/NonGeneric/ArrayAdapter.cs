@@ -1,4 +1,7 @@
+// Identifiers should have correct suffix
 #pragma warning disable CA1710
+// Remove unnecessary cast (IDE0004)
+#pragma warning disable IDE0004
 
 namespace ScrubJay.Collections.NonGeneric;
 
@@ -46,15 +49,9 @@ public sealed class ArrayAdapter<T> :
 
     public bool Contains(T item) => IndexOf(item) >= 0;
 
-    public int IndexOf(T item)
-    {
-        return Array.IndexOf(_array, (object?)item);
-    }
+    public int IndexOf(T item) => Array.IndexOf(_array, (object?)item);
 
-    public void Clear()
-    {
-        Array.Clear(_array, 0, _array.Length);
-    }
+    public void Clear() => Array.Clear(_array, 0, _array.Length);
 
     public void CopyTo(T[] array, int arrayIndex = 0)
     {

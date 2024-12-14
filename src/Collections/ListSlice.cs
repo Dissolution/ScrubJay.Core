@@ -15,7 +15,6 @@ public abstract class ListSlice
     }
 }
 
-
 public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
 {
     private readonly IList<T> _list;
@@ -53,7 +52,7 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
 
     public int IndexOf(T item)
     {
-        for (var i = 0; i < _length; i++)
+        for (int i = 0; i < _length; i++)
         {
             if (EqualityComparer<T>.Default.Equals(this[i], item))
                 return i;
@@ -65,7 +64,7 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
     void ICollection<T>.CopyTo(T[] array, int arrayIndex)
     {
         Validate.CopyTo(array, arrayIndex, _length).ThrowIfError();
-        for (var i = 0; i < _length; i++)
+        for (int i = 0; i < _length; i++)
         {
             array[arrayIndex + i] = this[i];
         }
@@ -79,7 +78,7 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
 
     public void Clear()
     {
-        for (var i = 0; i < _length; i++)
+        for (int i = 0; i < _length; i++)
         {
             this[i] = default!;
         }
@@ -90,7 +89,7 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
 
     public IEnumerator<T> GetEnumerator()
     {
-        for (var i = 0; i < _length; i++)
+        for (int i = 0; i < _length; i++)
         {
             yield return this[i];
         }

@@ -50,16 +50,25 @@ public static class ArrayPool
     public static T[] Rent<T>(int minCapacity)
     {
         if (minCapacity <= 0)
+        {
             return [];
+        }
 
         int capacity;
         var (min, max) = Capacities<T>();
         if (minCapacity < min)
+        {
             capacity = min;
+        }
         else if (minCapacity > max)
+        {
             capacity = max;
+        }
         else
+        {
             capacity = minCapacity;
+        }
+
         return ArrayPool<T>.Shared.Rent(capacity);
     }
 

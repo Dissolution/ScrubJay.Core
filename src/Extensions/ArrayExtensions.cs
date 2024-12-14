@@ -19,10 +19,10 @@ public static class ArrayExtensions
 
 
     /// <inheritdoc cref="Array.ConvertAll{TInput,TOutput}"/>
-    public static TOutput[] ConvertAll<TInput, TOutput>(this TInput[] array, Converter<TInput, TOutput> converter)
-    {
-        return Array.ConvertAll<TInput, TOutput>(array, converter);
-    }
+    public static TOutput[] ConvertAll<TInput, TOutput>(
+        this TInput[] array,
+        Converter<TInput, TOutput> converter)
+        => Array.ConvertAll<TInput, TOutput>(array, converter);
 
     public static Result<T, Exception> TryGet<T>(
         this T[]? array,
@@ -57,7 +57,5 @@ public static class ArrayExtensions
     /// Returns <c>true</c> if <paramref name="array"/> is <c>null</c> or has a Length of 0
     /// </summary>
     public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this T[]? array)
-    {
-        return array is null || array.Length == 0;
-    }
+        => array is null || array.Length == 0;
 }

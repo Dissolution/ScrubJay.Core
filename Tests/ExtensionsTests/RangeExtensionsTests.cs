@@ -1,28 +1,28 @@
 ﻿namespace ScrubJay.Tests.ExtensionsTests;
 
-public class RangeExtensionsTests
+public static class RangeExtensionsTests
 {
     public static TheoryData<Range> Ranges { get; } = [];
 
     static RangeExtensionsTests()
     {
         Ranges.Add(Range.All);
-        
+
         Span<Index> indices = [0, 10, ^1, ^10];
-        
+
         foreach (Index index in indices)
         {
             Ranges.Add(Range.StartAt(index));
             Ranges.Add(Range.EndAt(index));
         }
-        
+
         foreach (Index start in indices)
         foreach (Index end in indices)
         {
             Ranges.Add(new Range(start, end));
         }
     }
-    
+
     // [Theory]
     // [MemberData(nameof(Ranges))]
     // public void GetLengthWorks(Range range)

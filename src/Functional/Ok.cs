@@ -1,7 +1,11 @@
+// CA1051: Do not declare visible instance fields
+// Done for optimizations
+#pragma warning disable CA1051
+
 namespace ScrubJay.Functional;
 
 /// <summary>
-/// 
+///
 /// </summary>
 /// <typeparam name="TOk"></typeparam>
 /// <remarks>
@@ -25,12 +29,12 @@ public readonly struct Ok<TOk> :
     public static implicit operator bool(Ok<TOk> _) => true;
     public static bool operator true(Ok<TOk> _) => true;
     public static bool operator false(Ok<TOk> _) => false;
-    
+
     public static bool operator ==(Ok<TOk> left, Ok<TOk> right) => EqualityComparer<TOk>.Default.Equals(left.Value, right.Value);
     public static bool operator !=(Ok<TOk> left, Ok<TOk> right) => !EqualityComparer<TOk>.Default.Equals(left.Value, right.Value);
     public static bool operator ==(Ok<TOk> left, TOk? right) => EqualityComparer<TOk>.Default.Equals(left.Value, right!);
     public static bool operator !=(Ok<TOk> left, TOk? right) => !EqualityComparer<TOk>.Default.Equals(left.Value, right!);
-    
+
     public static bool operator >(Ok<TOk> left, Ok<TOk> right) => Comparer<TOk>.Default.Compare(left.Value, right.Value) > 0;
     public static bool operator >(Ok<TOk> left, TOk right) => Comparer<TOk>.Default.Compare(left.Value, right) > 0;
     public static bool operator >=(Ok<TOk> left, Ok<TOk> right) => Comparer<TOk>.Default.Compare(left.Value, right.Value) >= 0;
@@ -52,10 +56,7 @@ public readonly struct Ok<TOk> :
     {
         this.Value = okValue;
     }
-    public void Deconstruct(out TOk okValue)
-    {
-        okValue = Value;
-    }
+    public void Deconstruct(out TOk okValue) => okValue = Value;
 
     public int CompareTo(Ok<TOk> other) => Comparer<TOk>.Default.Compare(this.Value!, other.Value!);
     public int CompareTo(TOk? other) => Comparer<TOk>.Default.Compare(this.Value!, other!);

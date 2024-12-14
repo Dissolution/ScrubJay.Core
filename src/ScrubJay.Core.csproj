@@ -26,33 +26,33 @@
         <PolyPublic>true</PolyPublic>
 
         <!-- Quiet Warnings -->
-        <NoWarn>
-            $(NoWarn);
+<!--        <NoWarn>-->
+<!--            $(NoWarn);-->
 
-            CS1591; RCS1138;    <!-- Missing XML Comments -->
+<!--            CS1591; RCS1138;    &lt;!&ndash; Missing XML Comments &ndash;&gt;-->
 
-            CA1000;     <!-- Do not declare static members on generic types -->
-            CA1051;     <!-- Do not declare visible instance fields -->
-            CA1062;     <!-- External nullability -->
-            CA1305;     <!-- Localization -->
-            CA1716;     <!-- Identifiers should not match keywords -->
-            CA1725; S927;   <!-- Rename parameters to match interface/root -->
-            CA2225;     <!-- Operator overloads have named alternates -->
-            CA2237;     <!-- Add [Serializable] to X as this type implements ISerializable -->
+<!--            CA1000;     &lt;!&ndash; Do not declare static members on generic types &ndash;&gt;-->
+<!--            CA1051;     &lt;!&ndash; Do not declare visible instance fields &ndash;&gt;-->
+<!--            CA1062;     &lt;!&ndash; External nullability &ndash;&gt;-->
+<!--            CA1305;     &lt;!&ndash; Localization &ndash;&gt;-->
+<!--            CA1716;     &lt;!&ndash; Identifiers should not match keywords &ndash;&gt;-->
+<!--            CA1725; S927;   &lt;!&ndash; Rename parameters to match interface/root &ndash;&gt;-->
+<!--            CA2225;     &lt;!&ndash; Operator overloads have named alternates &ndash;&gt;-->
+<!--            CA2237;     &lt;!&ndash; Add [Serializable] to X as this type implements ISerializable &ndash;&gt;-->
 
-            S1168;      <!-- Return an empty collection instead of 'null' -->
-            S1939;      <!-- implemented interface can be removed from inheritance list -->
-            S3963; CA1810;  <!-- Inialize static fields inline -->
-            S3267;      <!-- Loops should be simplified with 'Where' -->
+<!--            S1168;      &lt;!&ndash; Return an empty collection instead of 'null' &ndash;&gt;-->
+<!--            S1939;      &lt;!&ndash; implemented interface can be removed from inheritance list &ndash;&gt;-->
+<!--            S3963; CA1810;  &lt;!&ndash; Inialize static fields inline &ndash;&gt;-->
+<!--            S3267;      &lt;!&ndash; Loops should be simplified with 'Where' &ndash;&gt;-->
 
-            MA0006;         <!-- Use string.Equals instead of == operator -->
-            MA0016;         <!-- Prefer using collection abstractions instead of implementation -->
-            MA0051;         <!-- Method Complexity -->
-            MA0061; S1006;  <!-- Method overrides should not change default values -->
+<!--            MA0006;         &lt;!&ndash; Use string.Equals instead of == operator &ndash;&gt;-->
+<!--            MA0016;         &lt;!&ndash; Prefer using collection abstractions instead of implementation &ndash;&gt;-->
+<!--            MA0051;         &lt;!&ndash; Method Complexity &ndash;&gt;-->
+<!--            MA0061; S1006;  &lt;!&ndash; Method overrides should not change default values &ndash;&gt;-->
 
-            CA1063; S3881;  <!-- Dispose -->
-            IDE0130;        <!-- Folder Structure -->
-        </NoWarn>
+<!--            CA1063; S3881;  &lt;!&ndash; Dispose &ndash;&gt;-->
+<!--            IDE0130;        &lt;!&ndash; Folder Structure &ndash;&gt;-->
+<!--        </NoWarn>-->
     </PropertyGroup>
 
 

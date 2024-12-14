@@ -1,4 +1,5 @@
-﻿#pragma warning disable CA1710, CA1031
+﻿// CA1710: Identifiers should have correct suffix
+#pragma warning disable CA1710, IDE0028
 
 using ScrubJay.Collections;
 
@@ -18,6 +19,11 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
     public static Validations New => new();
 
     private Option<Exception> _hasException;
+
+    public Validations()
+    {
+        _hasException = Option<Exception>.None();
+    }
 
     public void Add(Action? action)
     {

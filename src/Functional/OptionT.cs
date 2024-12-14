@@ -1,4 +1,11 @@
-﻿#pragma warning disable CA1710, MA0048, CS1574, CS0419
+﻿// CA1716: Identifiers should not match keywords
+#pragma warning disable CA1716
+
+// CA1710: Identifiers should have correct suffix
+#pragma warning disable CA1710
+
+// CA1000: Do not declare static members on generic types
+#pragma warning disable CA1000
 
 namespace ScrubJay.Functional;
 
@@ -105,7 +112,7 @@ public readonly struct Option<T> :
     /// Gets <see cref="Option{T}"/>.None, which represents the lack of a value
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None() => default(Option<T>);
+    public static Option<T> None() => default;
 
     /// <summary>
     /// Get an <see cref="Option{T}"/>.Some containing a <paramref name="value"/>
@@ -226,7 +233,7 @@ public readonly struct Option<T> :
     {
         if (_isSome)
             return _value!;
-        return default(T);
+        return default;
     }
 
     /// <summary>
@@ -423,10 +430,7 @@ public readonly struct Option<T> :
         return !other._isSome;
     }
 
-    public bool Equals(T? value)
-    {
-        return _isSome && EqualityComparer<T>.Default.Equals(_value!, value!);
-    }
+    public bool Equals(T? value) => _isSome && EqualityComparer<T>.Default.Equals(_value!, value!);
 
     public bool Equals(None none) => !_isSome;
 
@@ -554,11 +558,11 @@ public readonly struct Option<T> :
         return Hasher.EmptyHash;
     }
 
-    public string ToString(string? format, IFormatProvider? provider = null)
+    public string ToString(string? format, IFormatProvider? formatProvider = null)
     {
         if (_isSome)
         {
-            DefaultInterpolatedStringHandler text = new(6, 1, provider);
+            DefaultInterpolatedStringHandler text = new(6, 1, formatProvider);
             text.AppendLiteral("Some(");
             text.AppendFormatted<T>(_value!, format);
             text.AppendLiteral(")");
@@ -568,8 +572,5 @@ public readonly struct Option<T> :
         return nameof(None);
     }
 
-    public override string ToString()
-    {
-        return _isSome ? $"Some({_value})" : nameof(None);
-    }
+    public override string ToString() => _isSome ? $"Some({_value})" : nameof(None);
 }

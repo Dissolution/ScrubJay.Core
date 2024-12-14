@@ -26,7 +26,6 @@ public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposabl
         }
     }
 
-
     public ArrayEnumerator(T[] array)
     {
         Throw.IfNull(array);
@@ -64,10 +63,7 @@ public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposabl
         return Some(_array[newIndex]);
     }
 
-    public void Reset()
-    {
-        _index = _startIndex - 1;
-    }
+    public void Reset() => _index = _startIndex - 1;
 
     void IDisposable.Dispose()
     {

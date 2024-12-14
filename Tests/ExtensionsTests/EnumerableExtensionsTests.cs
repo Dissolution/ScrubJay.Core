@@ -26,7 +26,7 @@ public class EnumerableExtensionsTests
 #pragma warning disable xUnit1037
     [MemberData(nameof(Enumerables))]
 #pragma warning restore xUnit1037
-    public void WhereNotNull_Works<T>(IEnumerable<T>? enumerable)
+    public void WhereNotNullWorks<T>(IEnumerable<T>? enumerable)
     {
 #pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
         var output = EnumerableExtensions.WhereNotNull(enumerable);
@@ -79,7 +79,7 @@ public class EnumerableExtensionsTests
 
     [Theory]
     [MemberData(nameof(SwallowedData))]
-    public void Swallowed_Works(IEnumerable<int>? enumerable)
+    public void SwallowedWorks(IEnumerable<int>? enumerable)
     {
         var a = enumerable.UnbreakableEnumerate().ToList();
         // No exception should be thrown
@@ -88,7 +88,7 @@ public class EnumerableExtensionsTests
 
     [Theory]
     [MemberData(nameof(SwallowedData))]
-    public void Swallowed_IsTransitive(IEnumerable<int>? enumerable)
+    public void SwallowedIsTransitive(IEnumerable<int>? enumerable)
     {
         // ReSharper disable PossibleMultipleEnumeration
         var stringList = enumerable
@@ -98,7 +98,10 @@ public class EnumerableExtensionsTests
         Assert.NotNull(stringList);
         // No exception thrown
 
-        if (enumerable is null) return;
+        if (enumerable is null)
+        {
+            return;
+        }
 
         var objList = enumerable
             .Select<int, object?>(_ => throw new InvalidOperationException())

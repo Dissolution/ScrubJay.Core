@@ -1,4 +1,7 @@
-﻿namespace ScrubJay.Functional;
+﻿// CA1716: Identifiers should not match keywords
+#pragma warning disable CA1716
+
+namespace ScrubJay.Functional;
 
 [PublicAPI]
 public static class Option
@@ -21,7 +24,7 @@ public static class Option
             return Option<T>.Some(value);
         return Option<T>.None();
     }
-    
+
     /// <summary>
     /// Converts a <see cref="Nullable{T}"/> to an <see cref="Option{T}"/>
     /// </summary>
@@ -43,13 +46,13 @@ public static class Option
         }
         return Option<T>.None();
     }
- 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static None None() => Functional.None.Default;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> None<T>() => Option<T>.None();
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
 

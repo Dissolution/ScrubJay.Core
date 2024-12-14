@@ -1,5 +1,5 @@
 // File name must match type name
-#pragma warning disable MA0048
+#pragma warning disable MA0048, CA1005
 
 // ReSharper disable InconsistentNaming
 namespace ScrubJay;

@@ -11,34 +11,29 @@ namespace ScrubJay.Utilities;
 [PublicAPI]
 public static class TypeNames
 {
-    private static readonly ConcurrentTypeMap<string> _typeNameCache;
-
-    static TypeNames()
+    // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/
+    private static readonly ConcurrentTypeMap<string> _typeNameCache = new()
     {
-        // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/
-        _typeNameCache = new()
-        {
-            // C# type aliases
-            [typeof(bool)] = "bool",
-            [typeof(char)] = "char",
-            [typeof(sbyte)] = "sbyte",
-            [typeof(byte)] = "byte",
-            [typeof(short)] = "short",
-            [typeof(ushort)] = "ushort",
-            [typeof(int)] = "int",
-            [typeof(uint)] = "uint",
-            [typeof(long)] = "long",
-            [typeof(ulong)] = "ulong",
-            [typeof(float)] = "float",
-            [typeof(double)] = "double",
-            [typeof(decimal)] = "decimal",
-            [typeof(string)] = "string",
-            [typeof(object)] = "object",
-            [typeof(void)] = "void",
-            [typeof(nint)] = "nint",
-            [typeof(nuint)] = "nuint",
-        };
-    }
+        // C# type aliases
+        [typeof(bool)] = "bool",
+        [typeof(char)] = "char",
+        [typeof(sbyte)] = "sbyte",
+        [typeof(byte)] = "byte",
+        [typeof(short)] = "short",
+        [typeof(ushort)] = "ushort",
+        [typeof(int)] = "int",
+        [typeof(uint)] = "uint",
+        [typeof(long)] = "long",
+        [typeof(ulong)] = "ulong",
+        [typeof(float)] = "float",
+        [typeof(double)] = "double",
+        [typeof(decimal)] = "decimal",
+        [typeof(string)] = "string",
+        [typeof(object)] = "object",
+        [typeof(void)] = "void",
+        [typeof(nint)] = "nint",
+        [typeof(nuint)] = "nuint",
+    };
 
     private static void AppendTypeName(
         this ref InterpolatedText name,
@@ -50,7 +45,7 @@ public static class TypeNames
             return;
         }
 
-        if (_typeNameCache.TryGetValue(type, out var n))
+        if (_typeNameCache.TryGetValue(type, out string? n))
         {
             name.AppendLiteral(n);
             return;
@@ -64,7 +59,7 @@ public static class TypeNames
         }
 
         // Nullable<T> => T?
-        Type? underType = Nullable.GetUnderlyingType(type);
+        var underType = Nullable.GetUnderlyingType(type);
         if (underType is not null)
         {
             // c# Nullable alias
@@ -73,7 +68,7 @@ public static class TypeNames
             return;
         }
 
-        // Pointer -> utype*
+        // Pointer -> uType*
         if (type.IsPointer)
         {
             underType = type.GetElementType()!;
@@ -101,7 +96,7 @@ public static class TypeNames
         }
 
         // Nested Type?
-        if (type.IsNested && !type.IsGenericParameter)
+        if (type is { IsNested: true, IsGenericParameter: false })
         {
             name.AppendTypeName(type.DeclaringType);
             name.AppendLiteral(".");
@@ -116,7 +111,7 @@ public static class TypeNames
         else
         {
             // Start processing type name
-            ReadOnlySpan<char> typeName = type.Name.AsSpan();
+            var typeName = type.Name.AsSpan();
 
             /* The default NameFrom for a generic type is:
              * Thing<>   = Thing`1
@@ -124,7 +119,7 @@ public static class TypeNames
              * Thing<,,> = Thing`3
              * ...
              */
-            var i = typeName.IndexOf('`');
+            int i = typeName.IndexOf('`');
             if (i >= 0)
             {
                 name.AppendFormatted(typeName.Slice(0, i));

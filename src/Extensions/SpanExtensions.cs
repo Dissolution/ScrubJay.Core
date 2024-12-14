@@ -150,19 +150,13 @@ public static class SpanExtensions
 
     public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, T separator, SpanSplitterOptions options = SpanSplitterOptions.None)
         where T : IEquatable<T>
-    {
-        return SpanSplitter<T>.Split(span, separator, options);
-    }
+        => SpanSplitter<T>.Split(span, separator, options);
 
     public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator, SpanSplitterOptions options = SpanSplitterOptions.None)
         where T : IEquatable<T>
-    {
-        return SpanSplitter<T>.Split(span, separator, options);
-    }
+        => SpanSplitter<T>.Split(span, separator, options);
 
     public static SpanSplitter<T> SplitterAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separators, SpanSplitterOptions options = SpanSplitterOptions.None)
         where T : IEquatable<T>
-    {
-        return SpanSplitter<T>.SplitAny(span, separators, options);
-    }
+        => SpanSplitter<T>.SplitAny(span, separators, options);
 }

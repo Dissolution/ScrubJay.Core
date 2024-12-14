@@ -1,4 +1,4 @@
-﻿#pragma warning disable MA0077, MA0094, CA1034
+﻿#pragma warning disable MA0077, MA0094, CA1034, CA1000
 
 // ReSharper disable InconsistentNaming
 
@@ -188,7 +188,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     }
 
     #if NET9_0_OR_GREATER
-        /// <summary>
+    /// <summary>
     ///
     /// </summary>
     /// <param name="getValue"></param>
@@ -557,10 +557,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         }
     }
 
-    public bool Equals(ReadOnlySpan<T> value)
-    {
-        return _isSome && Sequence.Equal(_value, value);
-    }
+    public bool Equals(ReadOnlySpan<T> value) => _isSome && Sequence.Equal(_value, value);
 
     public bool Equals(None _) => !_isSome;
 

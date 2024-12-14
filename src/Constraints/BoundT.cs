@@ -1,4 +1,7 @@
-﻿namespace ScrubJay.Constraints;
+﻿// CA1000: Do not declare static members on generic types
+#pragma warning disable CA1000
+
+namespace ScrubJay.Constraints;
 
 [PublicAPI]
 public static class Bound

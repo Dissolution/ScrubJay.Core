@@ -3,7 +3,7 @@
 namespace ScrubJay.Text;
 
 /// <summary>
-/// An minimal Interpolated String Handler
+/// A minimal Interpolated String Handler
 /// </summary>
 /// <remarks>
 /// This is a thin wrapper around <see cref="Buffer{T}"/>
@@ -12,7 +12,7 @@ namespace ScrubJay.Text;
 [StructLayout(LayoutKind.Auto)]
 [InterpolatedStringHandler]
 [MustDisposeResource(true)]
-public ref struct InterpolatedText : IDisposable
+public ref struct InterpolatedText //: IDisposable
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int GetStartingCapacity(int literalLength, int formattedCount) => literalLength + (formattedCount * 16);
@@ -20,6 +20,12 @@ public ref struct InterpolatedText : IDisposable
 
     // do not make readonly
     private Buffer<char> _buffer;
+
+    internal ref char this[int index] => ref _buffer[index];
+    internal Span<char> this[Range range] => _buffer[range];
+
+    public int Length => _buffer.Count;
+
 
     public InterpolatedText()
     {
@@ -38,10 +44,7 @@ public ref struct InterpolatedText : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendLiteral(string str)
-    {
-        _buffer.AddMany(str.AsSpan());
-    }
+    public void AppendLiteral(string str) => _buffer.AddMany(str.AsSpan());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AppendFormatted(char ch) => _buffer.Add(ch);
@@ -61,9 +64,11 @@ public ref struct InterpolatedText : IDisposable
     public void AppendFormatted<T>(T value)
     {
         string? str;
+        // ReSharper disable once MergeCastWithTypeCheck
         if (value is IFormattable)
         {
-            // If the value can format itself directly into our buffer, do so.
+            // If the value can format itself directly into our buffer, do so
+            // ReSharper disable once MergeCastWithTypeCheck
             if (value is ISpanFormattable)
             {
                 int charsWritten;
@@ -90,9 +95,11 @@ public ref struct InterpolatedText : IDisposable
     public void AppendFormatted<T>(T value, string? format)
     {
         string? str;
+        // ReSharper disable once MergeCastWithTypeCheck
         if (value is IFormattable)
         {
-            // If the value can format itself directly into our buffer, do so.
+            // If the value can format itself directly into our buffer, do so
+            // ReSharper disable once MergeCastWithTypeCheck
             if (value is ISpanFormattable)
             {
                 int charsWritten;
@@ -117,15 +124,12 @@ public ref struct InterpolatedText : IDisposable
     }
 
     [HandlesResourceDisposal]
-    public void Dispose()
-    {
-        _buffer.Dispose();
-    }
+    public void Dispose() => _buffer.Dispose();
 
     [HandlesResourceDisposal]
     public string ToStringAndDispose()
     {
-        string str = this.ToString();
+        string str = ToString();
         Dispose();
         return str;
     }

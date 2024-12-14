@@ -1,11 +1,13 @@
-﻿namespace ScrubJay.Tests.EnumsTests;
+﻿#pragma warning disable CA1028, CA1069
+
+namespace ScrubJay.Tests.EnumsTests;
 
 public static class EnumTestData
 {
     public static class NonFlagged
     {
         // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/types#836-integral-types
-        
+
         public enum ESbyte : sbyte
         {
             Min = sbyte.MinValue,
@@ -16,7 +18,7 @@ public static class EnumTestData
             Three = 3,
             Max = sbyte.MaxValue,
         }
-        
+
         public enum EByte : byte
         {
             Min = byte.MinValue,
@@ -26,7 +28,7 @@ public static class EnumTestData
             Three = 3,
             Max = byte.MaxValue,
         }
-        
+
         public enum EShort : short
         {
             Min = short.MinValue,
@@ -37,7 +39,7 @@ public static class EnumTestData
             Three = 3,
             Max = short.MaxValue,
         }
-        
+
         public enum EUshort : ushort
         {
             Min = ushort.MinValue,
@@ -47,7 +49,7 @@ public static class EnumTestData
             Three = 3,
             Max = ushort.MaxValue,
         }
-        
+
         public enum EInt : int
         {
             Min = int.MinValue,
@@ -58,7 +60,7 @@ public static class EnumTestData
             Three = 3,
             Max = int.MaxValue,
         }
-        
+
         public enum EUint : uint
         {
             Min = uint.MinValue,
@@ -68,7 +70,7 @@ public static class EnumTestData
             Three = 3,
             Max = uint.MaxValue,
         }
-        
+
         public enum ELong : long
         {
             Min = long.MinValue,
@@ -79,7 +81,7 @@ public static class EnumTestData
             Three = 3,
             Max = long.MaxValue,
         }
-        
+
         public enum EUlong : ulong
         {
             Min = ulong.MinValue,
@@ -115,7 +117,7 @@ public static class EnumTestData
             Alphabet = Alpha | Beta,
             //Max = byte.MaxValue,
         }
-        
+
         [Flags]
         public enum EfShort : short
         {
@@ -137,7 +139,7 @@ public static class EnumTestData
             Alphabet = Alpha | Beta,
             //Max = ushort.MaxValue,
         }
-        
+
         [Flags]
         public enum EfInt : int
         {
@@ -159,7 +161,7 @@ public static class EnumTestData
             Alphabet = Alpha | Beta,
             //Max = uint.MaxValue,
         }
-        
+
         [Flags]
         public enum EfLong : long
         {
@@ -188,7 +190,10 @@ public static class EnumTestData
         where TEnum : struct, Enum
     {
         if (paramCount < 1)
+        {
             throw new ArgumentOutOfRangeException(nameof(paramCount), paramCount, "Parameter count must be 1 or greater");
+        }
+
         var enumMembers = (TEnum[])Enum.GetValues(typeof(TEnum));
         int combinations = (int)Math.Pow(enumMembers.Length, paramCount);
         for (int i = 0; i < combinations; i++)
@@ -204,13 +209,19 @@ public static class EnumTestData
             yield return values;
         }
     }
-    
+
     public static IReadOnlyList<object[]> GetEnumTestData(Type enumType, int paramCount)
     {
         if (!enumType.IsEnum)
+        {
             throw new ArgumentException("Type must be an enum type", nameof(enumType));
+        }
+
         if (paramCount < 1)
+        {
             throw new ArgumentOutOfRangeException(nameof(paramCount), paramCount, "Parameter count must be 1 or greater");
+        }
+
         var enumMembers = Enum.GetValues(enumType);
         int combinations = (int)Math.Pow(enumMembers.Length, paramCount);
         var testData = new List<object[]>(combinations);
