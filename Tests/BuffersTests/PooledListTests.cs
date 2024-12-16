@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
-using ScrubJay.Collections.Pooled;
+using ScrubJay.Collections;
 
 // ReSharper disable CollectionNeverUpdated.Local
 

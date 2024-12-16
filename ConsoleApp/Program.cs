@@ -10,6 +10,8 @@ var name = type.NameOf();
 
 Console.WriteLine(name);
 
+using var pl = new PooledList<int>();
+Console.WriteLine(pl.GetType().NameOf());
 
 Console.WriteLine("Press any key to exit...");
 Console.ReadKey();

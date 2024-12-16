@@ -73,17 +73,18 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.11.0-alpha</PackageVersion>
+        <PackageVersion>0.11.1-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <!-- Create NuGet Package -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <!-- Generate XML documentation -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
-    <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+  
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
         <None Include="..\README.md" Pack="true" PackagePath="\"/>
         <None Include="..\LICENSE.txt" Pack="true" PackagePath="\"/>
         <None Include="..\jay.png" Pack="true" PackagePath="\"/>
@@ -124,13 +125,14 @@
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Polyfill" Version="7.5.0">
+        <PackageReference Include="Polyfill" Version="7.7.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
+  
     <!-- Need System.Memory for older frameworks -->
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
+    <ItemGroup Condition="'$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
         <PackageReference Include="System.Memory" Version="4.6.0"/>
     </ItemGroup>
 

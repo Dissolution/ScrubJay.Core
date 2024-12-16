@@ -4,7 +4,7 @@
 
 using System.Buffers;
 
-namespace ScrubJay.Collections.Pooled;
+namespace ScrubJay.Collections;
 
 /// <summary>
 /// A PooledList is an <see cref="IList{T}"/> implementation that operates on
