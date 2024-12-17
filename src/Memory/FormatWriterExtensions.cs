@@ -7,10 +7,10 @@ namespace ScrubJay.Memory;
 /// </summary>
 public static class FormatWriterExtensions
 {
-    public static bool TryWrite(this FormatWriter spanWriter, string? str) => spanWriter.TryWriteMany(str.AsSpan());
+    public static bool TryWrite(this ref FormatWriter spanWriter, string? str) => spanWriter.TryWriteMany(str.AsSpan());
 
 #pragma warning disable S3247
-    public static bool TryWrite<T>(this FormatWriter spanWriter, T? value)
+    public static bool TryWrite<T>(this ref FormatWriter spanWriter, T? value)
     {
         var avail = spanWriter.Available;
 #if NET6_0_OR_GREATER
@@ -42,8 +42,8 @@ public static class FormatWriterExtensions
         spanWriter.Count += str.Length;
         return true;
     }
-    
-    public static bool TryWriteFormatted<T>(this FormatWriter spanWriter, T? value, ReadOnlySpan<char> format, IFormatProvider? provider = null)
+
+    public static bool TryWriteFormatted<T>(this ref FormatWriter spanWriter, T? value, ReadOnlySpan<char> format, IFormatProvider? provider = null)
     {
         var avail = spanWriter.Available;
 #if NET6_0_OR_GREATER
@@ -75,8 +75,8 @@ public static class FormatWriterExtensions
         spanWriter.Count += str.Length;
         return true;
     }
-    
-    public static bool TryWriteFormatted<T>(this FormatWriter spanWriter, T? value, string? format, IFormatProvider? provider = null)
+
+    public static bool TryWriteFormatted<T>(this ref FormatWriter spanWriter, T? value, string? format, IFormatProvider? provider = null)
     {
         var avail = spanWriter.Available;
 #if NET6_0_OR_GREATER

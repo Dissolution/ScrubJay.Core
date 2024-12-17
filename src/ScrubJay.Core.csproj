@@ -73,7 +73,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.11.1-alpha</PackageVersion>
+        <PackageVersion>0.11.2-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
@@ -83,7 +83,7 @@
         <!-- Generate XML documentation -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
-  
+
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
         <None Include="..\README.md" Pack="true" PackagePath="\"/>
         <None Include="..\LICENSE.txt" Pack="true" PackagePath="\"/>
@@ -130,7 +130,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-  
+
     <!-- Need System.Memory for older frameworks -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
         <PackageReference Include="System.Memory" Version="4.6.0"/>
