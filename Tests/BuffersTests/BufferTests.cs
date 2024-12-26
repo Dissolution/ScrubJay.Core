@@ -54,7 +54,7 @@ public class BufferTests
         grownStackBuffer.Dispose();
 
         Buffer<object> grownBuffer = new(32);
-        for (var i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
             grownBuffer.AddMany(
                 "Eat", BindingFlags.Static, DateTime.Now, Guid.NewGuid(), typeof(void), 1, 2, 3,
@@ -73,14 +73,14 @@ public class BufferTests
         Assert.Equal(0, buffer.Count);
         Assert.Equal(ArrayPool.MinCapacity<int>(), buffer.Capacity);
 
-        var numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
+        int[] numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
         buffer.AddMany(numbers);
 
         Assert.Equal(numbers.Length, buffer.Count);
         Assert.True(buffer.Capacity > ArrayPool.MinCapacity<int>());
         Assert.True(buffer.Capacity >= buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(numbers[i], buffer[i]);
         }
@@ -92,7 +92,7 @@ public class BufferTests
         using Buffer<int> buffer = new();
         buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             ref int refItem = ref buffer[i];
             Assert.Equal(i, refItem);
@@ -111,7 +111,7 @@ public class BufferTests
         buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
         int bufferCount = buffer.Count;
 
-        for (var i = 1; i <= bufferCount; i++)
+        for (int i = 1; i <= bufferCount; i++)
         {
             Index index = ^i;
             ref int refItem = ref buffer[index];
@@ -157,7 +157,7 @@ public class BufferTests
         Assert.Equal(objects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(objects[i], buffer[i]);
         }
@@ -176,7 +176,7 @@ public class BufferTests
         Assert.Equal(TestHelper.TestObjects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(objects[i], buffer[i]);
         }
@@ -195,7 +195,7 @@ public class BufferTests
         Assert.Equal(objects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(objects[i], buffer[i]);
         }
@@ -214,7 +214,7 @@ public class BufferTests
         Assert.Equal(objects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(objects[i], buffer[i]);
         }
@@ -231,7 +231,7 @@ public class BufferTests
 
         Index index = 0;
         buffer.TryInsert(index, 147);
-        var bufferArray = buffer.ToArray();
+        byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -247,7 +247,7 @@ public class BufferTests
 
         Index index = 8;
         buffer.TryInsert(index, 147);
-        var bufferArray = buffer.ToArray();
+        byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -263,7 +263,7 @@ public class BufferTests
 
         Index index = ^0;
         buffer.TryInsert(index, 147);
-        var bufferArray = buffer.ToArray();
+        byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -279,7 +279,7 @@ public class BufferTests
 
         Index index = 0;
         buffer.TryInsertMany(index, [255, 250, 245, 240]);
-        var bufferArray = buffer.ToArray();
+        byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -295,7 +295,7 @@ public class BufferTests
 
         Index index = 8;
         buffer.TryInsertMany(index, [255, 250, 245, 240]);
-        var bufferArray = buffer.ToArray();
+        byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -311,7 +311,7 @@ public class BufferTests
 
         Index index = ^0;
         buffer.TryInsertMany(index, [255, 250, 245, 240]);
-        var bufferArray = buffer.ToArray();
+        byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -336,7 +336,7 @@ public class BufferTests
 
         Index index = 0;
         buffer.TryInsertMany(index, EnumerateInsertBytes());
-        var bufferArray = buffer.ToArray();
+        byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -352,7 +352,7 @@ public class BufferTests
 
         Index index = 8;
         buffer.TryInsertMany(index, EnumerateInsertBytes());
-        var bufferArray = buffer.ToArray();
+        byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -368,7 +368,7 @@ public class BufferTests
 
         Index index = ^0;
         buffer.TryInsertMany(index, EnumerateInsertBytes());
-        var bufferArray = buffer.ToArray();
+        byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -379,7 +379,7 @@ public class BufferTests
         using Buffer<int> intBuffer = new();
         intBuffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
-        for (var i = -10; i <= 20; i++)
+        for (int i = -10; i <= 20; i++)
         {
             if (i is >= 0 and <= 7)
             {
@@ -395,7 +395,7 @@ public class BufferTests
         using var guidBuffer = new Buffer<Guid>();
         guidBuffer.AddMany(guids);
 
-        for (var i = 0; i < 100; i++)
+        for (int i = 0; i < 100; i++)
         {
             Assert.False(guidBuffer.Contains(Guid.NewGuid()));
         }
@@ -408,7 +408,7 @@ public class BufferTests
 
         using var recordBuffer = new Buffer<TestClassRecord>();
         List<TestClassRecord> records = new List<TestClassRecord>();
-        for (var i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
             var obj = new TestClassRecord(i, "Record #{i}", i % 2 == 0);
             recordBuffer.Add(obj);
@@ -444,10 +444,10 @@ public class BufferTests
             8, 9, 10, 11, 12, 13, 14, 15);
 
         // basic search
-        for (var i = 0; i < 16; i++)
+        for (int i = 0; i < 16; i++)
         {
             var found = buffer.TryFindIndex(i);
-            Assert.True(found.HasSome(out var index));
+            Assert.True(found.HasSome(out int index));
             Assert.Equal(i, index);
 
             found = buffer.TryFindIndex(i, firstToLast: false);
@@ -459,7 +459,7 @@ public class BufferTests
         {
             IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
             var found = buffer.TryFindIndex(3, itemComparer: oddnessEqualityComparer);
-            Assert.True(found.HasSome(out var index));
+            Assert.True(found.HasSome(out int index));
             Assert.Equal(1, index); // first odd item is item #1
 
             found = buffer.TryFindIndex(3, firstToLast: false, itemComparer: oddnessEqualityComparer);
@@ -470,7 +470,7 @@ public class BufferTests
         // with index
         {
             var found = buffer.TryFindIndex(4, offset: 3);
-            Assert.True(found.HasSome(out var index));
+            Assert.True(found.HasSome(out int index));
             Assert.Equal(4, index);
 
             found = buffer.TryFindIndex(2, offset: 3);
@@ -511,7 +511,7 @@ public class BufferTests
         // basic search
         {
             var found = buffer.TryFindIndex([1, 2, 3]);
-            Assert.True(found.HasSome(out var index));
+            Assert.True(found.HasSome(out int index));
             Assert.Equal(1, index);
 
             found = buffer.TryFindIndex([8, 9, 10]);
@@ -530,7 +530,7 @@ public class BufferTests
         {
             IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
             var found = buffer.TryFindIndex([33, 22, 33], itemComparer: oddnessEqualityComparer);
-            Assert.True(found.HasSome(out var index));
+            Assert.True(found.HasSome(out int index));
             Assert.Equal(1, index); // first odd/even/odd is 1,2,3
 
             found = buffer.TryFindIndex([33, 22, 33], firstToLast: false, itemComparer: oddnessEqualityComparer);

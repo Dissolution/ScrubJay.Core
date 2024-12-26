@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Text.Tests;
+﻿using ScrubJay.Text;
+
+namespace ScrubJay.Tests.TextTests;
 
 public class InterpolatedTextTests
 {

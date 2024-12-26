@@ -218,7 +218,7 @@ public ref struct Buffer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void GrowTo(int newCapacity)
     {
-        Debug.Assert(newCapacity > Capacity);
+        Debug.Assert(newCapacity >= Capacity);
         T[] newArray = ArrayPool.Rent<T>(newCapacity);
         Sequence.CopyTo(Written, newArray);
 

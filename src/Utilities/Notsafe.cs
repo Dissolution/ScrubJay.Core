@@ -70,6 +70,13 @@ public static class Notsafe
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TOut DirectCast<TIn, TOut>(TIn input)
+    {
+        Emit.Ldarg_0();
+        return Return<TOut>();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> AsReadOnlySpan<T>(object obj)
     {
         if (typeof(T).IsValueType)

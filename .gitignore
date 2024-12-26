@@ -24,3 +24,6 @@ _ReSharper.*
 *.resharper.user
 .idea/
 *.DotSettings.*
+
+# Scratch
+Scratch/

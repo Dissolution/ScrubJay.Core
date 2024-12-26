@@ -1,4 +1,6 @@
-﻿// ReSharper disable MergeCastWithTypeCheck
+﻿#pragma warning disable CA1045
+
+// ReSharper disable MergeCastWithTypeCheck
 
 namespace ScrubJay.Memory;
 

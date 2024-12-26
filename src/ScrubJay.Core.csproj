@@ -20,10 +20,12 @@
         <!-- Static Code Analysis -->
         <AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>All</AnalysisMode>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
 
         <!-- Ensure that all Polyfilled types are public -->
         <PolyPublic>true</PolyPublic>
+        <Configurations>Debug;Release</Configurations>
+        <Platforms>AnyCPU</Platforms>
 
         <!-- Quiet Warnings -->
 <!--        <NoWarn>-->
