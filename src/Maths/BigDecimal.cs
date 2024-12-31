@@ -12,6 +12,7 @@ public readonly struct BigDecimal :
     //ISignedNumber<BigDecimal>,
     //INumber<BigDecimal>,
     //INumberBase<BigDecimal>,
+    //IFloatingPoint<BigDecimal>,
 #endif
     IEquatable<BigInteger>,
     IComparable<BigInteger>,
