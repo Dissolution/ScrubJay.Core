@@ -118,37 +118,37 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
 
     public override string ToString()
     {
-        using var text = new InterpolatedText(4, 2);
+        var text = new Buffer<char>();
 
         if (Lower.HasSome(out var lower))
         {
             if (lower.IsInclusive)
             {
-                text.AppendLiteral("[");
+                text.Write("[");
             }
             else
             {
-                text.AppendLiteral("(");
+                text.Write("(");
             }
-            text.AppendFormatted<T>(lower.Value);
+            text.Write<T>(lower.Value);
         }
 
-        text.AppendLiteral("..");
+        text.Write("..");
 
         if (Upper.HasSome(out var upper))
         {
-            text.AppendFormatted<T>(upper.Value);
+            text.Write<T>(upper.Value);
 
             if (upper.IsInclusive)
             {
-                text.AppendLiteral("]");
+                text.Write("]");
             }
             else
             {
-                text.AppendLiteral(")");
+                text.Write(")");
             }
         }
 
-        return text.ToString();
+        return text.ToStringAndDispose();
     }
 }

@@ -198,7 +198,7 @@ public sealed class PooledList<T> :
     /// <remarks>
     /// This method causes a rental from <see cref="ArrayPool{T}"/>
     /// </remarks>
-    public void Grow() => GrowTo(Capacity * 2);
+    public void Grow() => GrowBy(1);
 
     /// <summary>
     /// Grows the <see cref="Capacity"/> of this <see cref="PooledList{T}"/> to at least <paramref name="minCapacity"/>

@@ -486,6 +486,26 @@ public static class Validate
         }.GetResult();
     }
 
+    public static Result<Unit, Exception> CopyTo(
+       Array? array,
+       int arrayIndex,
+       int count,
+       [CallerArgumentExpression(nameof(array))]
+        string? arrayName = null,
+       [CallerArgumentExpression(nameof(arrayIndex))]
+        string? arrayIndexName = null)
+    {
+        return
+            from arr in IsNotNull(array, arrayName)
+            from arrIndex in InRange(arrayIndex, ..arr.Length, arrayIndexName)
+            from _ in ErrorIf(
+                count + arrIndex > arr.Length,
+                () => new ArgumentOutOfRangeException(
+                    arrayName, arr,
+                    $"Cannot fit {count} items into [{arr.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}"))
+            select Unit.Default;
+    }
+
     public static Result<Unit, Exception> CopyTo<T>(
         T[]? array,
         int arrayIndex,

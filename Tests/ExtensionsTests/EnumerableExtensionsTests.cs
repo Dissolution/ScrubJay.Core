@@ -7,30 +7,26 @@ namespace ScrubJay.Tests.ExtensionsTests;
 
 public class EnumerableExtensionsTests
 {
-    public static TheoryData Enumerables => new TheoryData<IEnumerable?>()
-    {
-        null!,
-        Array.Empty<object?>(),
-        "abc".ToCharArray(),
-        "11234566".Distinct(),
-        "kgbhfeeekg".ToCharArray().Select(c => c.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase),
-        Enumerable.Empty<int>(),
-        Array.CreateInstance(typeof(byte), 0),
-        new string?[4] { null, string.Empty, "c", "ABC" },
-        Enumerable.Empty<int?>().Append(1).Append(null).Append(4).Append(null).Append(7),
-
+    public static TheoryData<object?> Enumerables { get;} = new()
+    { 
+        (object?)null!,
+        (object?)Array.Empty<object?>(),
+        (object?)"abc".ToCharArray(),
+        (object?)"11234566".Distinct(),
+        (object?)"kgbhfeeekg".ToCharArray().Select(c => c.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase),
+        (object?)Enumerable.Empty<int>(),
+        (object?)Array.CreateInstance(typeof(byte), 0),
+        (object?)new string?[4] { null, string.Empty, "c", "ABC" },
+        (object?)Enumerable.Empty<int?>().Append(1).Append(null).Append(4).Append(null).Append(7),
     };
 
 
     [Theory]
-#pragma warning disable xUnit1037
     [MemberData(nameof(Enumerables))]
-#pragma warning restore xUnit1037
-    public void WhereNotNullWorks<T>(IEnumerable<T>? enumerable)
+    public void WhereNotNullWorks<T>(object? obj)
     {
-#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+        var enumerable = obj as IEnumerable<T>;
         var output = EnumerableExtensions.WhereNotNull(enumerable);
-#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
         Assert.NotNull(output);
         foreach (var value in output)
         {
@@ -68,13 +64,13 @@ public class EnumerableExtensionsTests
 
     public static TheoryData<IEnumerable<int>?> SwallowedData { get; } = new()
     {
-        null!,
-        new int[3] { 0, 1, 2 },
-        new BadEnumerableNull(),
-        new List<int> { 1, 2, 3 },
-        new BadEnumerableThrow(),
-        Enumerable.Range(0, 5),
-        new BadEnumerableBad(),
+        (IEnumerable<int>?)null!,
+        (IEnumerable<int>?)new int[3] { 0, 1, 2 },
+        (IEnumerable<int>?)new BadEnumerableNull(),
+        (IEnumerable<int>?)new List<int> { 1, 2, 3 },
+        (IEnumerable<int>?)new BadEnumerableThrow(),
+        (IEnumerable<int>?)Enumerable.Range(0, 5),
+        (IEnumerable<int>?)new BadEnumerableBad(),
     };
 
     [Theory]

@@ -35,26 +35,26 @@ public static class TypeNames
         [typeof(nuint)] = "nuint",
     };
 
-    private static void AppendTypeName(
-        this ref InterpolatedText name,
+    private static void WriteTypeName(
+        this ref Buffer<char> name,
         Type? type)
     {
         if (type is null)
         {
-            name.AppendLiteral("null");
+            name.Write("null");
             return;
         }
 
         if (_typeNameCache.TryGetValue(type, out string? n))
         {
-            name.AppendLiteral(n);
+            name.Write(n);
             return;
         }
 
         // Enum types are their NameFrom
         if (type.IsEnum)
         {
-            name.AppendLiteral(type.Name);
+            name.Write(type.Name);
             return;
         }
 
@@ -63,8 +63,8 @@ public static class TypeNames
         if (underType is not null)
         {
             // c# Nullable alias
-            name.AppendTypeName(underType);
-            name.AppendLiteral("?");
+            name.WriteTypeName(underType);
+            name.Write("?");
             return;
         }
 
@@ -72,8 +72,8 @@ public static class TypeNames
         if (type.IsPointer)
         {
             underType = type.GetElementType()!;
-            name.AppendTypeName(underType);
-            name.AppendLiteral("*");
+            name.WriteTypeName(underType);
+            name.Write("*");
             return;
         }
 
@@ -81,8 +81,8 @@ public static class TypeNames
         if (type.IsByRef)
         {
             underType = type.GetElementType()!;
-            name.AppendLiteral("ref ");
-            name.AppendTypeName(underType);
+            name.Write("ref ");
+            name.WriteTypeName(underType);
             return;
         }
 
@@ -90,23 +90,23 @@ public static class TypeNames
         if (type.IsArray)
         {
             underType = type.GetElementType()!;
-            name.AppendTypeName(underType);
-            name.AppendLiteral("[]");
+            name.WriteTypeName(underType);
+            name.Write("[]");
             return;
         }
 
         // Nested Type?
         if (type is { IsNested: true, IsGenericParameter: false })
         {
-            name.AppendTypeName(type.DeclaringType);
-            name.AppendLiteral(".");
+            name.WriteTypeName(type.DeclaringType);
+            name.Write(".");
         }
 
         // If non-generic
         if (!type.IsGenericType)
         {
             // Just write the type name and we're done
-            name.AppendLiteral(type.Name);
+            name.Write(type.Name);
         }
         else
         {
@@ -122,12 +122,12 @@ public static class TypeNames
             int i = typeName.IndexOf('`');
             if (i >= 0)
             {
-                name.AppendFormatted(typeName.Slice(0, i));
+                name.Write(typeName.Slice(0, i));
             }
             else
             {
                 // Odd... use the name
-                name.AppendFormatted(typeName);
+                name.Write(typeName);
             }
 
             // Add our generic types to finish
@@ -135,22 +135,22 @@ public static class TypeNames
             int argCount = argTypes.Length;
             Debug.Assert(argCount > 0);
 
-            name.AppendLiteral("<");
-            name.AppendTypeName(argTypes[0]);
+            name.Write("<");
+            name.WriteTypeName(argTypes[0]);
             for (i = 1; i < argCount; i++)
             {
-                name.AppendLiteral(", ");
-                name.AppendTypeName(argTypes[i]);
+                name.Write(", ");
+                name.WriteTypeName(argTypes[i]);
             }
 
-            name.AppendLiteral(">");
+            name.Write(">");
         }
     }
 
     private static string CreateTypeName(Type? type)
     {
-        var text = new InterpolatedText(32, 1);
-        AppendTypeName(ref text, type);
+        var text = new Buffer<char>();
+        WriteTypeName(ref text, type);
         return text.ToStringAndDispose();
     }
 

@@ -59,7 +59,7 @@ public static class ObjectExtensions
     /// <param name="output"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static bool CanBe<T>(this object? input, out T? output)
+    public static bool CanBe<T>(this object? input, [NotNullIfNotNull(nameof(input)), MaybeNullWhen(false)] out T? output)
     {
         if (input is T)
         {

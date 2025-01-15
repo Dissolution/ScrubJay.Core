@@ -264,7 +264,7 @@ public ref struct Buffer<T>
     /// <remarks>
     /// This method causes a rental from <see cref="ArrayPool{T}"/>
     /// </remarks>
-    public void Grow() => GrowTo(Capacity * 2);
+    public void Grow() => GrowBy(1);
 
     /// <summary>
     /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least <paramref name="minCapacity"/>

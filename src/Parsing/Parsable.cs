@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Text.Parsing;
+﻿namespace ScrubJay.Parsing;
 
 [PublicAPI]
 public static class Parsable
@@ -10,7 +10,7 @@ public static class Parsable
         return TParsable.Parse(str, provider);
     }
 
-    public static TSpanParsable Parse<TSpanParsable>(text text, IFormatProvider? provider = default)
+    public static TSpanParsable Parse<TSpanParsable>(ReadOnlySpan<char> text, IFormatProvider? provider = default)
         where TSpanParsable : ISpanParsable<TSpanParsable>
     {
         return TSpanParsable.Parse(text, provider);
@@ -25,7 +25,7 @@ public static class Parsable
     }
 
     public static bool TryParse<TSpanParsable>(
-        text text,
+        ReadOnlySpan<char> text,
         [MaybeNullWhen(false)] out TSpanParsable result)
         where TSpanParsable : ISpanParsable<TSpanParsable>
     {

@@ -137,7 +137,7 @@ public static class EnumerableExtensions
     /// Enumerates over the non-<c>null</c> items in <paramref name="source"/>
     /// </summary>
     public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?>? source)
-        where T : notnull
+        //where T : notnull
     {
         if (source is null)
             yield break;

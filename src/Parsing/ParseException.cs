@@ -1,79 +1,129 @@
-﻿// Standard Exceptions
-#pragma warning disable CA1032, RCS1194
+﻿#pragma warning disable CA1032, CA1710, CA1010
 
-namespace ScrubJay.Text.Parsing;
+using ScrubJay.Collections.NonGeneric;
+using ScrubJay.Text;
+
+namespace ScrubJay.Parsing;
 
 [PublicAPI]
-public class ParseException : InvalidOperationException
+public class ParseException : InvalidOperationException, IEnumerable
 {
-    private static string GetMessage(string? input, Type destType, string? info)
+    public static ParseException Create(ReadOnlySpan<char> input, Type? destType, string? additionalInfo = null)
     {
-        using InterpolatedText text = new();
-        text.AppendLiteral("Could not parse ");
+        return new ParseException(input, destType, additionalInfo);
+    }
+
+    public static ParseException Create(string? input, Type? destType, string? additionalInfo = null)
+    {
+        return new ParseException(input, destType, additionalInfo);
+    }
+
+    public static ParseException Create<TDest>(ReadOnlySpan<char> input, string? additionalInfo = null)
+    {
+        return new ParseException(input, typeof(TDest), additionalInfo);
+    }
+
+    public static ParseException Create<TDest>(string? input, string? additionalInfo = null)
+    {
+        return new ParseException(input, typeof(TDest), additionalInfo);
+    }
+
+
+    private static string GetMessage(ReadOnlySpan<char> input, Type? destType, string? info)
+    {
+        var text = new Buffer<char>();
+        text.Write("Could not parse ");
+        text.Write('\"');
+        text.Write(input);
+        text.Write('\"');
+        text.Write(" into a ");
+        text.Write(destType.NameOf());
+        if (!string.IsNullOrEmpty(info))
+        {
+            text.Write(": ");
+            text.Write(info!);
+        }
+
+        return text.ToStringAndDispose();
+    }
+
+    private static string GetMessage(string? input, Type? destType, string? info)
+    {
+        var text = new Buffer<char>();
+        text.Write("Could not parse ");
         if (input is null)
         {
-            text.AppendLiteral("null");
+            text.Write("null");
         }
         else
         {
-            text.AppendFormatted('\"');
-            text.AppendLiteral(input);
-            text.AppendFormatted('\"');
+            text.Write('\"');
+            text.Write(input);
+            text.Write('\"');
         }
-        text.AppendLiteral(" into a ");
-        text.AppendFormatted(destType);
+        text.Write(" into a ");
+        text.Write(destType.NameOf());
         if (!string.IsNullOrEmpty(info))
         {
-            text.AppendLiteral(": ");
-            text.AppendLiteral(info!);
+            text.Write(": ");
+            text.Write(info!);
         }
-        return text.ToString();
-    }
-
-    private static string GetMessage(text input, Type destType, string? info)
-    {
-        using InterpolatedText text = new();
-        text.AppendLiteral("Could not parse ");
-        text.AppendFormatted('\"');
-        text.AppendFormatted(input);
-        text.AppendFormatted('\"');
-        text.AppendLiteral(" into a ");
-        text.AppendFormatted(destType);
-        if (!string.IsNullOrEmpty(info))
-        {
-            text.AppendLiteral(": ");
-            text.AppendLiteral(info!);
-        }
-        return text.ToString();
+        return text.ToStringAndDispose();
     }
 
 
-    public static ParseException Create(string? input, Type destType, string? info = null)
-    {
-        Throw.IfNull(destType);
-        return new ParseException(input, destType, info);
-    }
+    private DictionaryAdapter<string, object?>? _data;
 
-    public static ParseException Create(text input, Type destType, string? info = null)
-    {
-        Throw.IfNull(destType);
-        return new ParseException(input, destType, info);
-    }
+    /// <summary>
+    /// The input text that was being parsed
+    /// </summary>
+    public string? Input { get; }
 
-    public string? Input { get;}
+    /// <summary>
+    /// The <see cref="Type"/> the <see cref="Input"/> text was being converted into, if known
+    /// </summary>
     public Type? DestType { get; }
 
-    private ParseException(string? input, Type destType, string? info)
-        : base(GetMessage(input, destType, info))
+    public override IDictionary Data => _data ??= new DictionaryAdapter<string, object?>(base.Data);
+
+    public ParseException(ReadOnlySpan<char> input,
+        Type? destType = null,
+        string? additionalInfo = null,
+        Exception? innerException = null)
+        : base(GetMessage(input, destType, additionalInfo), innerException)
+    {
+        this.Input = input.AsString();
+        this.DestType = destType;
+    }
+
+    public ParseException(string? input,
+        Type? destType = null,
+        string? additionalInfo = null,
+        Exception? innerException = null)
+        : base(GetMessage(input, destType, additionalInfo), innerException)
     {
         this.Input = input;
         this.DestType = destType;
     }
 
-    public ParseException(text input, Type destType, string? info)
-        : base(GetMessage(input, destType, info))
+    /// <summary>
+    /// Adds a key/value pair into <see cref="this.Data"/>
+    /// </summary>
+    /// <remarks>
+    /// Support for fluent setting of Data during Exception creation
+    /// </remarks>
+    public void Add(string key, object? value)
     {
-        this.Input = input.AsString();
-        this.DestType = destType;
+        Throw.IfEmpty(key);
+        if (value is not null)
+        {
+            this.Data.Add(key, value);
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        // do nothing
+        yield break;
     }
 }

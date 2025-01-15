@@ -3,6 +3,7 @@
 // ReSharper disable ArrangeThisQualifier
 
 using ScrubJay.Memory;
+using ScrubJay.Text;
 
 namespace ScrubJay.Utilities;
 
@@ -162,11 +163,11 @@ public readonly struct Pair<TKey, TValue> :
         var writer = new FormatWriter(destination);
         if (!writer.TryWrite('('))
             goto FAIL;
-        if (!writer.TryWriteFormatted<TKey>(this.Key, format, provider))
+        if (!writer.TryWrite<TKey>(this.Key, format, provider))
             goto FAIL;
         if (!writer.TryWrite(", "))
             goto FAIL;
-        if (!writer.TryWriteFormatted<TValue>(this.Value, format, provider))
+        if (!writer.TryWrite<TValue>(this.Value, format, provider))
             goto FAIL;
         if (!writer.TryWrite(')'))
             goto FAIL;

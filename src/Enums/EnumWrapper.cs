@@ -1,9 +1,4 @@
-﻿// CA1051: Do not declare visible instance fields
-// Done for optimizations
-#pragma warning disable CA1051, CA1000, CA1305
-
-
-using ScrubJay.Memory;
+﻿using ScrubJay.Text;
 
 namespace ScrubJay.Enums;
 
@@ -17,9 +12,7 @@ public readonly struct EnumWrapper<TEnum> :
     ISpanParsable<EnumWrapper<TEnum>>,
     IParsable<EnumWrapper<TEnum>>,
 #endif
-    IEquatable<EnumWrapper<TEnum>>,
     IEquatable<TEnum>,
-    IComparable<EnumWrapper<TEnum>>,
     IComparable<TEnum>,
     ISpanFormattable,
     IFormattable
@@ -113,7 +106,7 @@ public readonly struct EnumWrapper<TEnum> :
         IFormatProvider? provider = default)
     {
         var writer = new FormatWriter(destination);
-        if (!writer.TryWriteFormatted(Enum, format, provider))
+        if (!writer.TryWrite(Enum, format, provider))
         {
             destination.Clear();
             charsWritten = 0;

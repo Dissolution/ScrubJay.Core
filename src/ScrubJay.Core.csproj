@@ -75,7 +75,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.11.2-alpha</PackageVersion>
+        <PackageVersion>0.12.1-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
@@ -87,32 +87,32 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
-        <None Include="..\README.md" Pack="true" PackagePath="\"/>
-        <None Include="..\LICENSE.txt" Pack="true" PackagePath="\"/>
-        <None Include="..\jay.png" Pack="true" PackagePath="\"/>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\LICENSE.txt" Pack="true" PackagePath="\" />
+        <None Include="..\jay.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 
     <!-- Global Usings -->
     <ItemGroup>
-        <Using Include="System.Collections"/>
-        <Using Include="System.ComponentModel"/>
-        <Using Include="System.Diagnostics"/>
-        <Using Include="System.Diagnostics.CodeAnalysis"/>
-        <Using Include="System.Numerics"/>
-        <Using Include="System.Runtime.CompilerServices"/>
-        <Using Include="System.Runtime.InteropServices"/>
+        <Using Include="System.Collections" />
+        <Using Include="System.ComponentModel" />
+        <Using Include="System.Diagnostics" />
+        <Using Include="System.Diagnostics.CodeAnalysis" />
+        <Using Include="System.Numerics" />
+        <Using Include="System.Runtime.CompilerServices" />
+        <Using Include="System.Runtime.InteropServices" />
 
         <!-- import ourself -->
-        <Using Include="ScrubJay.Comparison"/>
-        <Using Include="ScrubJay.GlobalHelper" Static="true"/>
-        <Using Include="ScrubJay.Buffers"/>
-        <Using Include="ScrubJay.Extensions"/>
-        <Using Include="ScrubJay.Functional"/>
-        <Using Include="ScrubJay.Utilities"/>
-        <Using Include="ScrubJay.Validation"/>
+        <Using Include="ScrubJay.Comparison" />
+        <Using Include="ScrubJay.GlobalHelper" Static="true" />
+        <Using Include="ScrubJay.Buffers" />
+        <Using Include="ScrubJay.Extensions" />
+        <Using Include="ScrubJay.Functional" />
+        <Using Include="ScrubJay.Utilities" />
+        <Using Include="ScrubJay.Validation" />
 
-        <Using Include="JetBrains.Annotations"/>
+        <Using Include="JetBrains.Annotations" />
     </ItemGroup>
 
     <!-- NuGet Packages -->
@@ -127,7 +127,7 @@
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Polyfill" Version="7.7.0">
+        <PackageReference Include="Polyfill" Version="7.12.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -135,7 +135,7 @@
 
     <!-- Need System.Memory for older frameworks -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Memory" Version="4.6.0"/>
+        <PackageReference Include="System.Memory" Version="4.6.0" />
     </ItemGroup>
 
     <!-- Static Code Analyzers -->

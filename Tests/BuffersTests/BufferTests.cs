@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
 using ScrubJay.Comparison;
@@ -135,9 +135,9 @@ public class BufferTests
         Assert.Equal<int>(buffer[3..5], [3, 4]);
         Assert.Equal<int>(buffer[..^4], [0, 1, 2, 3]);
 #else
-        Assert.Equal<int>(buffer[0..2].ToArray(), [0, 1]);
-        Assert.Equal<int>(buffer[3..5].ToArray(), [3, 4]);
-        Assert.Equal<int>(buffer[..^4].ToArray(), [0, 1, 2, 3]);
+        Assert.Equal(buffer[0..2], [0, 1]);
+        Assert.Equal(buffer[3..5], [3, 4]);
+        Assert.Equal(buffer[..^4], [0, 1, 2, 3]);
 #endif
     }
 

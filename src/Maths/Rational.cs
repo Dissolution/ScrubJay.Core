@@ -2,6 +2,7 @@
 
 using System.Globalization;
 using ScrubJay.Memory;
+using ScrubJay.Text;
 
 // ReSharper disable RedundantOverflowCheckingContext
 
@@ -9,6 +10,7 @@ using ScrubJay.Memory;
 // https://github.com/danm-de/Fractions
 
 /* The order when referencing other types (equality, comparison, etc):
+ * Rational
  * BigDecimal
  * decimal
  * double
@@ -18,20 +20,6 @@ using ScrubJay.Memory;
  */
 
 namespace ScrubJay.Maths;
-
-public interface IAlgebraic<S, O> :
-#if NET7_0_OR_GREATER
-    IEqualityOperators<S, O, bool>,
-    IComparisonOperators<S, O, bool>,
-    IAdditionOperators<S, O, S>,
-    ISubtractionOperators<S, O, S>,
-    IMultiplyOperators<S, O, S>,
-    IDivisionOperators<S, O, S>,
-    IModulusOperators<S, O, S>,
-#endif
-    IEquatable<O>,
-    IComparable<O>
-    where S : IAlgebraic<S, O>;
 
 /// <summary>
 /// 
@@ -75,7 +63,6 @@ public readonly struct Rational :
     public static explicit operator double(Rational rational) => rational.ToDouble();
     public static explicit operator BigInteger(Rational rational) => rational.ToBigInteger();
     public static explicit operator long(Rational rational) => rational.ToInt64();
-
 
     public static Rational operator -(Rational value) => new Rational(-value.Numerator, value.Denominator);
     public static Rational operator +(Rational value) => value; // no-op
@@ -400,8 +387,8 @@ public readonly struct Rational :
         BigInteger bigInt = unchecked(high | mid | low);
 
         // High integer massaging
-        int massaged = (bits[3] >> 30) & 0x02;
-        int exponent = (bits[3] >> 16) & 0xFF;
+        int massaged = (bits[3] >> 30) & 0b00000010;
+        int exponent = (bits[3] >> 16) & 0b11111111;
 
         BigInteger numerator = (1 - massaged) * bigInt;
         BigInteger denominator = BigInteger.Pow(MathHelper.BigInteger_Ten, exponent);

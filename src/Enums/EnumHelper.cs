@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Reflection;
+using ScrubJay.Text;
 
 namespace ScrubJay.Enums;
 
@@ -107,14 +108,14 @@ public static class EnumHelper<TEnum>
         if (flags.Length is 0 or 1)
             return @enum.ToString();
 
-        var text = new DefaultInterpolatedStringHandler(8, flags.Length);
-        text.AppendLiteral(GetName(flags[0]));
+        var text = new Buffer<char>();
+        text.Write(GetName(flags[0]));
         for (var i = 1; i < flags.Length; i++)
         {
-            text.AppendLiteral(" | ");
-            text.AppendLiteral(GetName(flags[i]));
+            text.Write(" | ");
+            text.Write(GetName(flags[i]));
         }
 
-        return text.ToStringAndClear();
+        return text.ToStringAndDispose();
     }
 }

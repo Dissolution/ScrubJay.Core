@@ -2,7 +2,7 @@
 
 // ReSharper disable MergeCastWithTypeCheck
 
-namespace ScrubJay.Memory;
+namespace ScrubJay.Text;
 
 /// <summary>
 /// Extensions on <see cref="Buffer{T}">Buffer&lt;char&gt;</see>
@@ -10,8 +10,16 @@ namespace ScrubJay.Memory;
 public static class CharBufferExtensions
 {
     public static void Write(this ref Buffer<char> buffer, char ch) => buffer.Add(ch);
-    public static void Write(this ref Buffer<char> buffer, ReadOnlySpan<char> text) => buffer.AddMany(text);
-    public static void Write(this ref Buffer<char> buffer, string? str) => buffer.AddMany(str.AsSpan());
+    
+    public static void Write(this ref Buffer<char> buffer, scoped ReadOnlySpan<char> text) => buffer.AddMany(text);
+
+    public static void Write(this ref Buffer<char> buffer, string? str)
+    {
+        if (str is not null)
+        {
+            buffer.AddMany(str.AsSpan());
+        }
+    }
 
     public static void Write<T>(this ref Buffer<char> buffer, T? value)
     {
