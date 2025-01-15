@@ -1,6 +1,8 @@
-﻿#pragma warning disable CA1045
+﻿using ScrubJay.Memory;
 
-namespace ScrubJay.Memory;
+#pragma warning disable CA1045
+
+namespace ScrubJay.Text;
 
 /// <summary>
 /// Extensions on <see cref="SpanReader{T}"/>

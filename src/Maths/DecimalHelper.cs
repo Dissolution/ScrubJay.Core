@@ -1,6 +1,6 @@
 ﻿namespace ScrubJay.Maths;
 
-public struct BigDecimal
+public class DecimalHelper
 {
     
 }
