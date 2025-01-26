@@ -1,4 +1,4 @@
-// Identifiers should have correct suffix
+﻿// Identifiers should have correct suffix
 #pragma warning disable CA1710
 // Properties should not copy collections
 #pragma warning disable S2365
@@ -62,27 +62,18 @@ public sealed class DictionaryAdapter<TKey, TValue> :
             _adapter = adapter;
         }
 
-        void ICollection<TKey>.Add(TKey item)
-        {
-            throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
-        }
+        void ICollection<TKey>.Add(TKey item) => Throw.IsReadOnly(this);
 
-        bool ICollection<TKey>.Remove(TKey item)
-        {
-            throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
-        }
+        bool ICollection<TKey>.Remove(TKey item) => Throw.IsReadOnly<KeyCollection, bool>(this);
 
-        void ICollection<TKey>.Clear()
-        {
-            throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
-        }
+        void ICollection<TKey>.Clear() => Throw.IsReadOnly(this);
 
         void ICollection.CopyTo(Array array, int index)
         {
             Validate.CopyTo(array, index, Count).ThrowIfError();
 
             var keys = UntypedKeys;
-            foreach (object key in keys)
+            foreach (var key in keys)
             {
                 array.SetValue(key, index++);
             }
@@ -93,16 +84,13 @@ public sealed class DictionaryAdapter<TKey, TValue> :
             Validate.CopyTo(array, arrayIndex, Count).ThrowIfError();
 
             var keys = UntypedKeys;
-            foreach (object key in keys)
+            foreach (var key in keys)
             {
                 array[arrayIndex++] = ObjectToKey(key);
             }
         }
 
-        public bool Contains(TKey key)
-        {
-            return _adapter.ContainsKey(key);
-        }      
+        public bool Contains(TKey key) => _adapter.ContainsKey(key);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -136,27 +124,18 @@ public sealed class DictionaryAdapter<TKey, TValue> :
             _adapter = adapter;
         }
 
-        void ICollection<TValue>.Add(TValue item)
-        {
-            throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
-        }
+        void ICollection<TValue>.Add(TValue item) => throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
 
-        bool ICollection<TValue>.Remove(TValue item)
-        {
-            throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
-        }
+        bool ICollection<TValue>.Remove(TValue item) => throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
 
-        void ICollection<TValue>.Clear()
-        {
-            throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
-        }
+        void ICollection<TValue>.Clear() => throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
 
         void ICollection.CopyTo(Array array, int index)
         {
             Validate.CopyTo(array, index, Count).ThrowIfError();
 
             var values = UntypedValues;
-            foreach (object value in values)
+            foreach (var value in values)
             {
                 array.SetValue(value, index++);
             }
@@ -167,7 +146,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
             Validate.CopyTo(array, arrayIndex, Count).ThrowIfError();
 
             var values = UntypedValues;
-            foreach (object value in values)
+            foreach (var value in values)
             {
                 array[arrayIndex++] = ObjectToValue(value);
             }
@@ -244,7 +223,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
         _dictionary = dictionary;
     }
 
-    void IDictionary.Add(object key, object value) => _dictionary.Add(key, value);
+    void IDictionary.Add(object key, object? value) => _dictionary.Add(key, value);
 
     public void Add(TKey key, TValue value) => _dictionary.Add((object)key, (object?)value);
 
@@ -320,16 +299,13 @@ public sealed class DictionaryAdapter<TKey, TValue> :
     public void Clear() => _dictionary.Clear();
 
 
-    void ICollection.CopyTo(Array array, int index)
-    {
-        _dictionary.CopyTo(array, index);
-    }
+    void ICollection.CopyTo(Array array, int index) => _dictionary.CopyTo(array, index);
 
     void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
         Validate.CopyTo(array, arrayIndex, _dictionary.Count).ThrowIfError();
 
-        foreach (DictionaryEntry entry in _dictionary)
+        foreach (DictionaryEntry entry in _dictionary.Cast<DictionaryEntry>())
         {
             array[arrayIndex++] = new(ObjectToKey(entry.Key), ObjectToValue(entry.Value)!);
         }
@@ -338,14 +314,11 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    IDictionaryEnumerator IDictionary.GetEnumerator()
-    {
-        return _dictionary.GetEnumerator();
-    }
+    IDictionaryEnumerator IDictionary.GetEnumerator() => _dictionary.GetEnumerator();
 
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
     {
-        foreach (DictionaryEntry entry in _dictionary)
+        foreach (DictionaryEntry entry in _dictionary.Cast<DictionaryEntry>())
         {
             yield return new KeyValuePair<TKey, TValue>(
                 ObjectToKey(entry.Key),

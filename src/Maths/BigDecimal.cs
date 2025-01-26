@@ -1,12 +1,6 @@
 ﻿using ScrubJay.Parsing;
 using ScrubJay.Text;
-
-using System.CodeDom;
 using System.Globalization;
-using System.Runtime.CompilerServices;
-
-using static ScrubJay.Maths.DecimalHelper;
-using static System.Net.Mime.MediaTypeNames;
 
 // https://gist.github.com/JcBernack/0b4eef59ca97ee931a2f45542b9ff06d
 
@@ -139,7 +133,7 @@ public readonly struct BigDecimal :
         BigInteger remainder = BigInteger.Zero;
         while (remainder == BigInteger.Zero)
         {
-            var shortened = BigInteger.DivRem(mantissa, MathHelper.BigInteger_Ten, out remainder);
+            var shortened = BigInteger.DivRem(mantissa, MathHelper.BigInt.Ten, out remainder);
             if (remainder == BigInteger.Zero)
             {
                 mantissa = shortened;
@@ -168,7 +162,7 @@ public readonly struct BigDecimal :
         var tmp = (BigDecimal)1;
         while (Math.Abs(exponent) > 100)
         {
-            var diff = exponent > 0 ? 100 : -100;
+            int diff = exponent > 0 ? 100 : -100;
             tmp *= (BigDecimal)Math.Pow(basis, diff);
             exponent -= diff;
         }
@@ -188,84 +182,49 @@ public readonly struct BigDecimal :
         var (mantissa, exponent) = x;
         while (mantissa.NumberOfDigits() > digits)
         {
-            mantissa /= MathHelper.BigInteger_Ten;
+            mantissa /= MathHelper.BigInt.Ten;
             exponent++;
         }
         return Normalized(mantissa, exponent);
     }
 
-    public static BigDecimal Round(BigDecimal x, int digits, MidpointRounding mode)
-    {
-        throw new NotImplementedException();
-    }
+    public static BigDecimal Round(BigDecimal x, int digits, MidpointRounding mode) => throw new NotImplementedException();
 
 
-    public static BigDecimal MinMagnitude(BigDecimal x, BigDecimal y)
-    {
-        throw new NotImplementedException();
-    }
+    public static BigDecimal MinMagnitude(BigDecimal x, BigDecimal y) => throw new NotImplementedException();
 
-    public static BigDecimal MinMagnitudeNumber(BigDecimal x, BigDecimal y)
-    {
-        throw new NotImplementedException();
-    }
+    public static BigDecimal MinMagnitudeNumber(BigDecimal x, BigDecimal y) => throw new NotImplementedException();
 
-    public static BigDecimal MaxMagnitude(BigDecimal x, BigDecimal y)
-    {
-        throw new NotImplementedException();
-    }
+    public static BigDecimal MaxMagnitude(BigDecimal x, BigDecimal y) => throw new NotImplementedException();
 
-    public static BigDecimal MaxMagnitudeNumber(BigDecimal x, BigDecimal y)
-    {
-        throw new NotImplementedException();
-    }
+    public static BigDecimal MaxMagnitudeNumber(BigDecimal x, BigDecimal y) => throw new NotImplementedException();
     #endregion
 
     #region IsXyz
-    public static bool IsCanonical(BigDecimal value)
-    {
+    public static bool IsCanonical(BigDecimal _) =>
         // Right now, so long as everything goes through Normalize, this is always true
-        return true;
-    }
+        true;
 
-    public static bool IsComplexNumber(BigDecimal value) => false;
-    public static bool IsImaginaryNumber(BigDecimal value) => false;
-    public static bool IsRealNumber(BigDecimal value) => true;
+    public static bool IsComplexNumber(BigDecimal _) => false;
+    public static bool IsImaginaryNumber(BigDecimal _) => false;
+    public static bool IsRealNumber(BigDecimal _) => true;
 
-    public static bool IsFinite(BigDecimal value) => true;
-    public static bool IsNaN(BigDecimal value) => false;
-    public static bool IsInfinity(BigDecimal value) => false;
-    public static bool IsNegativeInfinity(BigDecimal value) => false;
-    public static bool IsPositiveInfinity(BigDecimal value) => false;
+    public static bool IsFinite(BigDecimal _) => true;
+    public static bool IsNaN(BigDecimal _) => false;
+    public static bool IsInfinity(BigDecimal _) => false;
+    public static bool IsNegativeInfinity(BigDecimal _) => false;
+    public static bool IsPositiveInfinity(BigDecimal _) => false;
 
-    public static bool IsInteger(BigDecimal value)
-    {
-        return value._exponent == 0;
-    }
-    public static bool IsEvenInteger(BigDecimal value)
-    {
-        return value._exponent == 0 && value._mantissa.IsEven;
-    }
-    public static bool IsOddInteger(BigDecimal value)
-    {
-        return value._exponent == 0 && !value._mantissa.IsEven;
-    }
-    public static bool IsZero(BigDecimal value)
-    {
-        return value._mantissa.IsZero;
-    }
-    public static bool IsNegative(BigDecimal value)
-    {
-        return value._mantissa < BigInteger.Zero;
-    }
-    public static bool IsPositive(BigDecimal value)
-    {
-        return value._mantissa > BigInteger.Zero;
-    }
-
+    public static bool IsInteger(BigDecimal value) => value._exponent == 0;
+    public static bool IsEvenInteger(BigDecimal value) => value._exponent == 0 && value._mantissa.IsEven;
+    public static bool IsOddInteger(BigDecimal value) => value._exponent == 0 && !value._mantissa.IsEven;
+    public static bool IsZero(BigDecimal value) => value._mantissa.IsZero;
+    public static bool IsNegative(BigDecimal value) => value._mantissa < BigInteger.Zero;
+    public static bool IsPositive(BigDecimal value) => value._mantissa > BigInteger.Zero;
 
     public static bool IsNormal(BigDecimal value) => value != Zero;
-    public static bool IsSubnormal(BigDecimal value) => false;
+
+    public static bool IsSubnormal(BigDecimal _) => false;
 
 
     #endregion
@@ -376,10 +335,7 @@ public readonly struct BigDecimal :
         return TryParse(str.AsSpan(), NumberStyles.Float, provider, out bigDec);
     }
 
-    public static bool TryParse(ReadOnlySpan<char> text, IFormatProvider? provider, out BigDecimal bigDec)
-    {
-        return TryParse(text, NumberStyles.Float, provider, out bigDec);
-    }
+    public static bool TryParse(ReadOnlySpan<char> text, IFormatProvider? provider, out BigDecimal bigDec) => TryParse(text, NumberStyles.Float, provider, out bigDec);
 
     public static bool TryParse([NotNullWhen(true)] string? str, NumberStyles style, IFormatProvider? provider, out BigDecimal bigDec)
     {
@@ -457,23 +413,14 @@ public readonly struct BigDecimal :
     #endregion
     #region From
 #if NET7_0_OR_GREATER
-    static bool INumberBase<BigDecimal>.TryConvertFromChecked<TOther>(TOther value, out BigDecimal result)
-    {
-        throw new NotImplementedException();
-    }
+    static bool INumberBase<BigDecimal>.TryConvertFromChecked<TOther>(TOther value, out BigDecimal result) => throw new NotImplementedException();
 
-    static bool INumberBase<BigDecimal>.TryConvertFromSaturating<TOther>(TOther value, out BigDecimal result)
-    {
-        throw new NotImplementedException();
-    }
+    static bool INumberBase<BigDecimal>.TryConvertFromSaturating<TOther>(TOther value, out BigDecimal result) => throw new NotImplementedException();
 
-    static bool INumberBase<BigDecimal>.TryConvertFromTruncating<TOther>(TOther value, out BigDecimal result)
-    {
-        throw new NotImplementedException();
-    }
+    static bool INumberBase<BigDecimal>.TryConvertFromTruncating<TOther>(TOther value, out BigDecimal result) => throw new NotImplementedException();
 #endif
 
-    public static Result<BigDecimal, Exception> TryConvertFrom<O>(O? value)
+    public static Result<BigDecimal, Exception> TryConvertFrom<TValue>(TValue? value)
     {
         switch (value)
         {
@@ -504,9 +451,11 @@ public readonly struct BigDecimal :
                 var bigDec = new BigDecimal(i64, 0);
                 return bigDec;
             }
+            default:
+                throw new NotImplementedException();
         }
 
-        return new NotImplementedException();
+        //return new NotImplementedException();
         //bigDec = BigDecimal.Zero;
         //return false;
     }
@@ -514,26 +463,14 @@ public readonly struct BigDecimal :
     #endregion
     #region To
 #if NET7_0_OR_GREATER
-    static bool INumberBase<BigDecimal>.TryConvertToChecked<TOther>(BigDecimal value, [MaybeNullWhen(false)] out TOther result)
-    {
-        throw new NotImplementedException();
-    }
+    static bool INumberBase<BigDecimal>.TryConvertToChecked<TOther>(BigDecimal value, [MaybeNullWhen(false)] out TOther result) => throw new NotImplementedException();
 
-    static bool INumberBase<BigDecimal>.TryConvertToSaturating<TOther>(BigDecimal value, [MaybeNullWhen(false)] out TOther result)
-    {
-        throw new NotImplementedException();
-    }
+    static bool INumberBase<BigDecimal>.TryConvertToSaturating<TOther>(BigDecimal value, [MaybeNullWhen(false)] out TOther result) => throw new NotImplementedException();
 
-    static bool INumberBase<BigDecimal>.TryConvertToTruncating<TOther>(BigDecimal value, [MaybeNullWhen(false)] out TOther result)
-    {
-        throw new NotImplementedException();
-    }
+    static bool INumberBase<BigDecimal>.TryConvertToTruncating<TOther>(BigDecimal value, [MaybeNullWhen(false)] out TOther result) => throw new NotImplementedException();
 #endif
 
-    public static bool TryConvertTo<O>(BigDecimal bigDec, [MaybeNullWhen(false)] out O? result)
-    {
-        throw new NotImplementedException();
-    }
+    public static bool TryConvertTo<TOut>(BigDecimal bigDec, [MaybeNullWhen(false)] out TOut? result) => throw new NotImplementedException();
 
     #endregion
 
@@ -614,10 +551,7 @@ public readonly struct BigDecimal :
     public BigDecimal Divide(long other) => Divide((BigDecimal)other);
 
 
-    public BigDecimal Mod(BigDecimal other)
-    {
-        return this - (other * (this / other));
-    }
+    public BigDecimal Mod(BigDecimal other) => this - (other * (this / other));
     public BigDecimal Mod(Rational other) => Mod((BigDecimal)other);
     public BigDecimal Mod(decimal other) => Mod((BigDecimal)other);
     public BigDecimal Mod(double other) => Mod((BigDecimal)other);
@@ -633,8 +567,8 @@ public readonly struct BigDecimal :
     #region Compare
     public int CompareTo(BigDecimal other)
     {
-        var (LeftMantissa, RightMantissa, _) = Aligned(this, other);
-        return LeftMantissa.CompareTo(RightMantissa);
+        var (leftMantissa, rightMantissa, _) = Aligned(this, other);
+        return leftMantissa.CompareTo(rightMantissa);
     }
 
     public int CompareTo(decimal other)
@@ -685,8 +619,8 @@ public readonly struct BigDecimal :
     #region Equate
     public bool Equals(BigDecimal other)
     {
-        return other._mantissa == this._mantissa &&
-            other._exponent == this._exponent;
+        return other._mantissa == _mantissa &&
+            other._exponent == _exponent;
     }
 
     public bool Equals(decimal other)
@@ -730,22 +664,13 @@ public readonly struct BigDecimal :
 
     #endregion
 
-    public override int GetHashCode()
-    {
-        return Hasher.Combine(_mantissa, _exponent);
-    }
+    public override int GetHashCode() => Hasher.Combine(_mantissa, _exponent);
 
     public bool TryFormat(Span<char> destination, out int charsWritten,
         ReadOnlySpan<char> format = default,
-        IFormatProvider? provider = default)
-    {
-        throw new NotImplementedException();
-    }
+        IFormatProvider? provider = default) => throw new NotImplementedException();
 
-    public string ToString(string? format, IFormatProvider? formatProvider = default)
-    {
-        throw new NotImplementedException();
-    }
+    public string ToString(string? format, IFormatProvider? formatProvider = default) => throw new NotImplementedException();
 
     public override string ToString()
     {
@@ -793,47 +718,23 @@ public readonly struct BigDecimal :
 
 
 
-    public int GetExponentByteCount()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetExponentByteCount() => throw new NotImplementedException();
 
-    public int GetExponentShortestBitLength()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetExponentShortestBitLength() => throw new NotImplementedException();
 
-    public int GetSignificandBitLength()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetSignificandBitLength() => throw new NotImplementedException();
 
-    public int GetSignificandByteCount()
-    {
-        throw new NotImplementedException();
-    }
+    public int GetSignificandByteCount() => throw new NotImplementedException();
 
 
 
-    public bool TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten)
-    {
-        throw new NotImplementedException();
-    }
+    public bool TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
 
-    public bool TryWriteExponentLittleEndian(Span<byte> destination, out int bytesWritten)
-    {
-        throw new NotImplementedException();
-    }
+    public bool TryWriteExponentLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
 
-    public bool TryWriteSignificandBigEndian(Span<byte> destination, out int bytesWritten)
-    {
-        throw new NotImplementedException();
-    }
+    public bool TryWriteSignificandBigEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
 
-    public bool TryWriteSignificandLittleEndian(Span<byte> destination, out int bytesWritten)
-    {
-        throw new NotImplementedException();
-    }
+    public bool TryWriteSignificandLittleEndian(Span<byte> destination, out int bytesWritten) => throw new NotImplementedException();
 
 
 }

@@ -1,5 +1,9 @@
-namespace ScrubJay.Collections;
+﻿namespace ScrubJay.Collections;
 
+/// <summary>
+/// An <see cref="IEnumerator{T}"/> that returns a single value
+/// </summary>
+/// <typeparam name="T"></typeparam>
 [PublicAPI]
 [MustDisposeResource(false)]
 public sealed class SingleValueEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposable
@@ -30,10 +34,7 @@ public sealed class SingleValueEnumerator<T> : IEnumerator<T>, IEnumerator, IDis
         return true;
     }
 
-    public void Reset() => _canYield = true;
+    void IEnumerator.Reset() => throw new NotSupportedException();
 
-    void IDisposable.Dispose()
-    {
-        // Do nothing
-    }
+    void IDisposable.Dispose() { /* Do Nothing */ }
 }

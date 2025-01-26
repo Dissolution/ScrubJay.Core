@@ -1,4 +1,5 @@
-﻿#pragma warning disable IDE0060
+﻿// We're using these parameters
+#pragma warning disable IDE0060
 
 // ReSharper disable EntityNameCapturedOnly.Global
 
@@ -93,4 +94,8 @@ public static class EnumExtensions
     public static int CompareTo<TEnum>(this TEnum @enum, TEnum other)
         where TEnum : struct, Enum
         => Comparer<TEnum>.Default.Compare(@enum, other);
+
+    public static string AsString<TEnum>(this TEnum @enum)
+        where TEnum : struct, Enum
+        => EnumInfo<TEnum>.Instance.AsString(@enum);
 }

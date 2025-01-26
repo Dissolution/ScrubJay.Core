@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Extensions;
+﻿#pragma warning disable IDE0022
+
+namespace ScrubJay.Extensions;
 
 /// <summary>
 /// Extensions on <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see> and
@@ -9,13 +11,13 @@ public static class TextExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string AsString(this string? str) => str ?? string.Empty;
-    
+
     /// <summary>
-    /// Gets this <see cref="text"/> as a <see cref="string"/>
+    /// Gets this <see cref="text"/> as a <see #pragma warning disable cref="string"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string AsString(this scoped Span<char> text)
-    {
+    { 
 #if NETFRAMEWORK || NETSTANDARD2_0
         unsafe
         {
@@ -28,13 +30,13 @@ public static class TextExtensions
         return new string(text);
 #endif
     }
-    
+
     /// <summary>
     /// Gets this <see cref="text"/> as a <see cref="string"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string AsString(this scoped ReadOnlySpan<char> text)
-    {
+    { 
 #if NETFRAMEWORK || NETSTANDARD2_0
         unsafe
         {
@@ -47,6 +49,7 @@ public static class TextExtensions
         return new string(text);
 #endif
     }
+
 
     public static string AsString(this IEnumerable<char>? characters)
     {
@@ -60,7 +63,7 @@ public static class TextExtensions
         }
 
         using var buffer = new Buffer<char>();
-        foreach (var character in characters)
+        foreach (char character in characters)
         {
             buffer.Add(character);
         }

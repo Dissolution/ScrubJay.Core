@@ -54,12 +54,12 @@ public readonly struct Ok<TOk> :
     /// </summary>
     public Ok(TOk okValue)
     {
-        this.Value = okValue;
+        Value = okValue;
     }
     public void Deconstruct(out TOk okValue) => okValue = Value;
 
-    public int CompareTo(Ok<TOk> other) => Comparer<TOk>.Default.Compare(this.Value!, other.Value!);
-    public int CompareTo(TOk? other) => Comparer<TOk>.Default.Compare(this.Value!, other!);
+    public int CompareTo(Ok<TOk> other) => Comparer<TOk>.Default.Compare(Value!, other.Value!);
+    public int CompareTo(TOk? other) => Comparer<TOk>.Default.Compare(Value!, other!);
 
     public bool Equals(Ok<TOk> ok) => EqualityComparer<TOk>.Default.Equals(Value!, ok.Value!);
     public bool Equals(TOk? okValue) => EqualityComparer<TOk>.Default.Equals(Value!, okValue!);

@@ -398,11 +398,9 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int CompareTo(None none)
-    {
+    public int CompareTo(None none) =>
         // Some > None, None == None
-        return _isSome ? 1 : 0;
-    }
+        _isSome ? 1 : 0;
 
     public int CompareTo(object? obj)
         => obj switch

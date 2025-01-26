@@ -1,37 +1,25 @@
-﻿//CA1051: Do not declare visible instance fields
-#pragma warning disable CA1051
-
-namespace ScrubJay.Fluent;
+﻿namespace ScrubJay.Fluent;
 
 /// <summary>
 /// A base class implementation of the Builder Pattern
 /// </summary>
-/// <typeparam name="B"></typeparam>
+/// <typeparam name="TBuilder"></typeparam>
 [PublicAPI]
-public abstract class FluentBuilder<B>
-    where B : FluentBuilder<B>
+public abstract class FluentBuilder<TBuilder>
+    where TBuilder : FluentBuilder<TBuilder>
 {
-    protected internal B _builder;
+    protected internal TBuilder _builder;
 
     protected FluentBuilder()
     {
-        _builder = (B)this;
+        _builder = (TBuilder)this;
     }
 
-    /// <summary>
-    /// Executes a <see cref="Action{T}"/> upon this <see cref="FluentBuilder{B}"/>
-    /// </summary>
-    /// <param name="build">
-    /// An <see cref="Action{T}"/> to invoke
-    /// </param>
-    /// <returns>
-    /// A reference to this <see cref="FluentBuilder{B}"/> instance after execution
-    /// </returns>
-    public virtual B Execute(Action<B>? build)
+    public virtual TBuilder Invoke(Action<TBuilder>? builderAction)
     {
-        build?.Invoke(_builder);
+        builderAction?.Invoke(_builder);
         return _builder;
     }
 
-    public override string ToString() => typeof(B).NameOf();
+    public override string ToString() => typeof(TBuilder).NameOf();
 }

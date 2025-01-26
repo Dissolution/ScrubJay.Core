@@ -1,7 +1,4 @@
-#pragma warning disable S3776, MA0051
-
-using ScrubJay.Collections;
-using ScrubJay.Memory;
+﻿#pragma warning disable S3776, MA0051
 
 namespace ScrubJay.Extensions;
 
@@ -25,7 +22,7 @@ public static class SpanExtensions
     /// </typeparam>
     public static void ForEach<T>(this Span<T> span, RefItem<T> perItem)
     {
-        for (var i = 0; i < span.Length; i++)
+        for (int i = 0; i < span.Length; i++)
         {
             perItem(ref span[i]);
         }
@@ -118,7 +115,7 @@ public static class SpanExtensions
     {
         int spanLen = span.Length;
         itemComparer ??= EqualityComparer<T>.Default;
-        for (var i = 0; i < spanLen; i++)
+        for (int i = 0; i < spanLen; i++)
         {
             if (itemComparer.Equals(span[i], item))
                 return true;
@@ -139,7 +136,7 @@ public static class SpanExtensions
     {
         int spanLen = span.Length;
         itemComparer ??= EqualityComparer<T>.Default;
-        for (var i = 0; i < spanLen; i++)
+        for (int i = 0; i < spanLen; i++)
         {
             if (itemComparer.Equals(span[i], item))
                 return true;

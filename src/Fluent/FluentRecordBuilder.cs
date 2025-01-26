@@ -1,26 +1,43 @@
 ﻿namespace ScrubJay.Fluent;
 
+
 [PublicAPI]
-public abstract class FluentRecordBuilder<B, R> : FluentBuilder<B>
-    where B : FluentRecordBuilder<B, R>
-    where R : class
+public abstract class FluentBuilder<TBuilder, TBuilding> : FluentBuilder<TBuilder>
+    where TBuilder : FluentBuilder<TBuilder, TBuilding>
 {
-    public static implicit operator R(FluentRecordBuilder<B, R> builder) => builder.Record;
+    public static implicit operator TBuilding(FluentBuilder<TBuilder, TBuilding> builder) => builder.TryBuild().OkOrThrow();
 
-
-    /// <summary>
-    /// Gets the <typeparamref name="R"/> being built
-    /// </summary>
-    public R Record { get; }
-
-    protected FluentRecordBuilder(R record) : base()
+    protected FluentBuilder() : base()
     {
-        this.Record = record;
+
     }
 
-    public virtual B Execute(Action<B, R>? buildWithRecord)
+    public abstract Result<TBuilding, Exception> TryBuild();
+}
+
+[PublicAPI]
+public abstract class FluentRecordBuilder<TBuilder, TRecord> : FluentBuilder<TBuilder, TRecord>
+    where TBuilder : FluentRecordBuilder<TBuilder, TRecord>
+    where TRecord : class, new()
+{
+    protected readonly TRecord _record;
+
+    protected virtual bool IsValid => _record is not null;
+
+    protected FluentRecordBuilder()
     {
-        buildWithRecord?.Invoke(_builder, Record);
-        return _builder;
+        _record = new();
+    }
+
+    protected FluentRecordBuilder(TRecord? record)
+    {
+        _record = record ?? new();
+    }
+
+    public override Result<TRecord, Exception> TryBuild()
+    {
+        if (!IsValid)
+            return new InvalidOperationException($"The {typeof(TRecord).NameOf()} is not in a valid state");
+        return _record;
     }
 }

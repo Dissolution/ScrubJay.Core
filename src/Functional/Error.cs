@@ -55,12 +55,12 @@ public readonly struct Error<TError> :
 
     public Error(TError errorValue)
     {
-        this.Value = errorValue;
+        Value = errorValue;
     }
     public void Deconstruct(out TError errorValue) => errorValue = Value;
 
-    public int CompareTo(Error<TError> other) => Comparer<TError>.Default.Compare(this.Value!, other.Value!);
-    public int CompareTo(TError? other) => Comparer<TError>.Default.Compare(this.Value!, other!);
+    public int CompareTo(Error<TError> other) => Comparer<TError>.Default.Compare(Value!, other.Value!);
+    public int CompareTo(TError? other) => Comparer<TError>.Default.Compare(Value!, other!);
 
 
     public bool Equals(Error<TError> other) => EqualityComparer<TError>.Default.Equals(Value!, other.Value!);

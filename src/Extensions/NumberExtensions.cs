@@ -7,6 +7,15 @@ public static class NumberExtensions
 {
     public static int Clamp(this int number, Bounds<int> bounds) => bounds.Clamped(number);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Clamp(this int number, int inclusiveMin)
+    {
+        if (number <= inclusiveMin)
+            return inclusiveMin;
+        return number;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Clamp(this int number, int inclusiveMin, int inclusiveMax)
     {
         if (number <= inclusiveMin)

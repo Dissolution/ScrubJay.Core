@@ -1,4 +1,6 @@
-﻿// ReSharper disable InvokeAsExtensionMethod
+﻿#pragma warning disable CA1812
+
+// ReSharper disable InvokeAsExtensionMethod
 
 using System.Collections;
 using System.Reflection;
@@ -12,7 +14,7 @@ public class TypeExtensionsTests
 {
     private class TestList<T> : List<T>, IList<T>;
 
-    private class NestedTestList<T> : TestList<T>, IList<T>;
+    private sealed class NestedTestList<T> : TestList<T>, IList<T>;
 
     public static IEnumerable<Type?> TestTypes { get; } =
     [

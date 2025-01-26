@@ -1,13 +1,16 @@
-﻿using System.Linq.Expressions;
+﻿// cannot
+#pragma warning disable CA1810
+
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace ScrubJay.Extensions;
 
 public static class DecimalExtensions
 {
-    private delegate int getDigits(ref decimal dec);
+    private delegate int GetDigits(ref decimal dec);
 
-    private static readonly getDigits _getDigits;
+    private static readonly GetDigits _getDigits;
 
     public static readonly decimal Epsilon = new decimal(1, 0, 0, false, 28); //1e-28m;
 
@@ -29,7 +32,7 @@ public static class DecimalExtensions
         var negMinValue = Expression.Constant(~int.MinValue, typeof(int));
         var sixteen = Expression.Constant(16, typeof(int));
         var getDigits = Expression.RightShift(Expression.And(decFlagsField, negMinValue), sixteen);
-        _getDigits = Expression.Lambda<getDigits>(getDigits, decParameter).Compile();
+        _getDigits = Expression.Lambda<GetDigits>(getDigits, decParameter).Compile();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

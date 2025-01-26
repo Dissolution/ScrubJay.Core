@@ -24,6 +24,11 @@ public static class ArrayPool
     /// </typeparam>
     public static int MaxCapacity<T>() => typeof(T) == typeof(char) ? 0x3FFFFFDF : 0X7FFFFFC7; // string.MaxLength, Array.MaxLength
 
+    /// <summary>
+    /// Gets the default Min and Max Capacities for rented arrays
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     public static (int Min, int Max) Capacities<T>() => (MinCapacity<T>(), MaxCapacity<T>());
 
     /// <summary>

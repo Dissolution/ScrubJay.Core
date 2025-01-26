@@ -136,13 +136,13 @@ public class ObjectPoolTests
     }
 
     [Fact]
-    public async Task IsAsyncSafe()
+    public async Task TestIfObjectPoolIsAsyncSafeAsync()
     {
         var rand = new Random();
         using var pool = ObjectPool.New<StringBuilder>(b => b.Create(() => new StringBuilder()).Clean(sb => sb.Clear()));
-        const int COUNT = 100;
-        var tasks = new Task<string>[COUNT];
-        for (var i = 0; i < COUNT; i++)
+        const int Count = 100;
+        var tasks = new Task<string>[Count];
+        for (var i = 0; i < Count; i++)
         {
             tasks[i] = Task.Run<string>(async () =>
                 {
@@ -161,6 +161,6 @@ public class ObjectPoolTests
         }
         var results = await Task.WhenAll(tasks);
         Assert.True(Array.TrueForAll(results, str => !string.IsNullOrWhiteSpace(str)));
-        Assert.Equal(COUNT, results.Distinct().Count());
+        Assert.Equal(Count, results.Distinct().Count());
     }
 }

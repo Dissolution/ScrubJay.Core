@@ -63,7 +63,7 @@ public ref struct SpanSplitter<T> // : IEnumerable<ReadOnlySpan<T>>
     /// <summary>
     /// Gets the current segment of <see cref="ReadOnlySpan{T}"/> items
     /// </summary>
-    public ReadOnlySpan<T> Current
+    public readonly ReadOnlySpan<T> Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _span[CurrentRange];
@@ -72,10 +72,10 @@ public ref struct SpanSplitter<T> // : IEnumerable<ReadOnlySpan<T>>
     /// <summary>
     /// Gets the <see cref="Range"/> in the original <see cref="ReadOnlySpan{T}"/> that <see cref="Current"/> covers
     /// </summary>
-    public Range CurrentRange
+    public readonly Range CurrentRange
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => new(_currentRangeStart, _currentRangeEnd);
+         get => new(_currentRangeStart, _currentRangeEnd);
     }
 
     private SpanSplitter(ReadOnlySpan<T> span, T separator, SpanSplitterOptions options)
@@ -181,6 +181,8 @@ public ref struct SpanSplitter<T> // : IEnumerable<ReadOnlySpan<T>>
         return segments;
 
     }
+
+    public readonly SpanSplitter<T> GetEnumerator() => this;
 
     /// <summary>
     /// What kind of separator is being used in a <see cref="SpanSplitter{T}"/>

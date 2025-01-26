@@ -1,7 +1,6 @@
-﻿#pragma warning disable IDE0004, CA2225
+﻿#pragma warning disable IDE0004, CA2225, IDE0002, IDE0090, IDE0018, IDE0047
 
 using System.Globalization;
-using ScrubJay.Memory;
 using ScrubJay.Text;
 
 // ReSharper disable RedundantOverflowCheckingContext
@@ -222,7 +221,7 @@ public readonly struct Rational :
         return null; // both are false
     }
     
-    private static bool? MaybeEqual<I>(Func<I, bool> predicate, I leftInstance, I rightInstance)
+    private static bool? MaybeEqual<TInstance>(Func<TInstance, bool> predicate, TInstance leftInstance, TInstance rightInstance)
     {
         if (predicate(leftInstance))
         {
@@ -243,7 +242,7 @@ public readonly struct Rational :
         }
     }
     
-    private static int? ComparePredicateResults<I>(Func<I, bool> predicate, I leftInstance, I rightInstance)
+    private static int? ComparePredicateResults<TInstance>(Func<TInstance, bool> predicate, TInstance leftInstance, TInstance rightInstance)
     {
         if (predicate(leftInstance))
         {
@@ -305,7 +304,7 @@ public readonly struct Rational :
         if (numerator != BigInteger.One && numerator != BigInteger.MinusOne &&
             denominator != BigInteger.One && denominator != BigInteger.MinusOne)
         {
-            BigInteger greatestCommonDivisor = BigInteger.GreatestCommonDivisor(numerator, denominator);
+            var greatestCommonDivisor = BigInteger.GreatestCommonDivisor(numerator, denominator);
             if (greatestCommonDivisor != BigInteger.One && greatestCommonDivisor != BigInteger.MinusOne)
             {
                 numerator /= greatestCommonDivisor;
@@ -372,7 +371,7 @@ public readonly struct Rational :
 
     private static Rational FromDecimalSlow(decimal dec)
     {
-#if NETFRAMEWORK || NETSTANDARD
+#if NETFRAMEWORK || NETSTANDARD || NETCOREAPP
         int[] bits = decimal.GetBits(dec);
 #else
         Span<int> bits = stackalloc int[4];
@@ -380,9 +379,9 @@ public readonly struct Rational :
 #endif
         // Convert the lowest three integers into a 96-bit int
 
-        BigInteger low = new BigInteger((uint)bits[0]);
-        BigInteger mid = new BigInteger((uint)bits[1]) << 32;
-        BigInteger high = new BigInteger((uint)bits[2]) << 64;
+        var low = new BigInteger((uint)bits[0]);
+        var mid = new BigInteger((uint)bits[1]) << 32;
+        var high = new BigInteger((uint)bits[2]) << 64;
 
         BigInteger bigInt = unchecked(high | mid | low);
 
@@ -391,20 +390,17 @@ public readonly struct Rational :
         int exponent = (bits[3] >> 16) & 0b11111111;
 
         BigInteger numerator = (1 - massaged) * bigInt;
-        BigInteger denominator = BigInteger.Pow(MathHelper.BigInteger_Ten, exponent);
+        var denominator = BigInteger.Pow(MathHelper.BigInt.Ten, exponent);
 
         var rational = New(numerator, denominator);
         return rational;
     }
 
-    public static Rational FromBigDecimal(BigDecimal bigDec)
-    {
-        throw new NotImplementedException();
-    }
-    
+    public static Rational FromBigDecimal(BigDecimal bigDec) => throw new NotImplementedException();
+
     public static Rational FromDecimal(decimal dec)
     {
-        var digitCount = dec.TrailingDigitCount();
+        int digitCount = dec.TrailingDigitCount();
         if (digitCount <= 18)
         {
             long denominator = (long)Math.Pow(10d, digitCount);
@@ -553,87 +549,43 @@ public readonly struct Rational :
 
     #region IsXYZ
 
-    public static bool IsCanonical(Rational value)
-    {
-        return IsInteger(value);
-    }
+    public static bool IsCanonical(Rational value) => IsInteger(value);
 
-    public static bool IsComplexNumber(Rational value) => false;
+    public static bool IsComplexNumber(Rational _) => false;
 
-    public static bool IsEvenInteger(Rational value)
-    {
-        return IsInteger(value) && ((value.Numerator % 2) == 0);
-    }
+    public static bool IsEvenInteger(Rational value) => IsInteger(value) && ((value.Numerator % 2) == 0);
 
-    public static bool IsFinite(Rational value)
-    {
-        return value.Denominator != BigInteger.Zero;
-    }
+    public static bool IsFinite(Rational value) => value.Denominator != BigInteger.Zero;
 
-    public static bool IsImaginaryNumber(Rational value) => false;
+    public static bool IsImaginaryNumber(Rational _) => false;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsInfinity(Rational value)
-    {
-        return value.Denominator == BigInteger.Zero;
-    }
+    public static bool IsInfinity(Rational value) => value.Denominator == BigInteger.Zero;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsInteger(Rational value)
-    {
-        return value.Denominator == BigInteger.One;
-    }
+    public static bool IsInteger(Rational value) => value.Denominator == BigInteger.One;
 
-    public static bool IsNaN(Rational value)
-    {
-        return value.Denominator == BigInteger.Zero && value.Numerator == BigInteger.Zero;
-    }
+    public static bool IsNaN(Rational value) => value.Denominator == BigInteger.Zero && value.Numerator == BigInteger.Zero;
 
-    public static bool IsNegative(Rational value)
-    {
-        return value.Numerator < BigInteger.Zero;
-    }
+    public static bool IsNegative(Rational value) => value.Numerator < BigInteger.Zero;
 
-    public static bool IsNegativeInfinity(Rational value)
-    {
-        return value.Denominator == BigInteger.Zero && value.Numerator < BigInteger.Zero;
-    }
+    public static bool IsNegativeInfinity(Rational value) => value.Denominator == BigInteger.Zero && value.Numerator < BigInteger.Zero;
 
-    public static bool IsNormal(Rational value)
-    {
-        return value != Zero;
-    }
+    public static bool IsNormal(Rational value) => value != Zero;
 
-    public static bool IsOddInteger(Rational value)
-    {
-        return IsInteger(value) && ((value.Numerator % 2) != 0);
-    }
+    public static bool IsOddInteger(Rational value) => IsInteger(value) && ((value.Numerator % 2) != 0);
 
-    public static bool IsPositive(Rational value)
-    {
-        return value.Numerator >= BigInteger.Zero;
-    }
+    public static bool IsPositive(Rational value) => value.Numerator >= BigInteger.Zero;
 
-    public static bool IsPositiveInfinity(Rational value)
-    {
-        return value.Denominator == BigInteger.Zero && value.Numerator > BigInteger.Zero;
-    }
+    public static bool IsPositiveInfinity(Rational value) => value.Denominator == BigInteger.Zero && value.Numerator > BigInteger.Zero;
 
-    public static bool IsRealNumber(Rational value)
-    {
-        return true;
-    }
+    public static bool IsRealNumber(Rational _) => true;
 
-    public static bool IsSubnormal(Rational value)
-    {
+    public static bool IsSubnormal(Rational _) =>
         // we are not floating-point
-        return false;
-    }
+        false;
 
-    public static bool IsZero(Rational value)
-    {
-        return value == Zero;
-    }
+    public static bool IsZero(Rational value) => value == Zero;
 
     #endregion
 
@@ -691,14 +643,14 @@ public readonly struct Rational :
     #region TryConvert
 
 #if NET7_0_OR_GREATER
-    static bool INumberBase<Rational>.TryConvertFromChecked<TOther>(TOther value, out Rational rational) => TryConvertFrom<TOther>(value, out rational, true);
+    static bool INumberBase<Rational>.TryConvertFromChecked<TOther>(TOther value, out Rational rational) => throw new NotImplementedException();
 
     static bool INumberBase<Rational>.TryConvertFromSaturating<TOther>(TOther value, out Rational rational) => TryConvertFrom<TOther>(value, out rational);
 
     static bool INumberBase<Rational>.TryConvertFromTruncating<TOther>(TOther value, out Rational rational) => TryConvertFrom<TOther>(value, out rational);
 #endif
 
-    public static bool TryConvertFrom<TOther>(TOther value, out Rational rational, bool isChecked = false)
+    public static bool TryConvertFrom<TOther>(TOther value, out Rational rational)
     {
         switch (value)
         {
@@ -772,39 +724,39 @@ public readonly struct Rational :
         {
             return rational
                 .TryConvertToFloat()
-                .Select(Notsafe.DirectCast<float, TOther>)
+                .Select(Notsafe.As<float, TOther>)
                 .HasOk(out other);
         }
         else if (otherType == typeof(double))
         {
             return rational
                 .TryConvertToDouble()
-                .Select(Notsafe.DirectCast<double, TOther>)
+                .Select(Notsafe.As<double, TOther>)
                 .HasOk(out other);
         }
         else if (otherType == typeof(decimal))
         {
             return rational
                 .TryConvertToDecimal()
-                .Select(Notsafe.DirectCast<decimal, TOther>)
+                .Select(Notsafe.As<decimal, TOther>)
                 .HasOk(out other);
         }
         else if (otherType == typeof(BigDecimal))
         {
             return rational
                 .TryConvertToBigDecimal()
-                .Select(Notsafe.DirectCast<BigDecimal, TOther>)
+                .Select(Notsafe.As<BigDecimal, TOther>)
                 .HasOk(out other);
         }
         else if (otherType == typeof(string))
         {
             string str = rational.ToString();
-            other = Notsafe.DirectCast<string, TOther>(str);
+            other = Notsafe.As<string, TOther>(str);
             return true;
         }
         else if (otherType == typeof(Rational))
         {
-            other = Notsafe.DirectCast<Rational, TOther>(rational);
+            other = Notsafe.As<Rational, TOther>(rational);
             return true;
         }
 
@@ -831,7 +783,7 @@ public readonly struct Rational :
                     uint8 = unchecked((byte)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<byte, TOther>(uint8);
+                other = Notsafe.As<byte, TOther>(uint8);
                 return true;
             }
             else if (otherType == typeof(sbyte))
@@ -854,7 +806,7 @@ public readonly struct Rational :
                     int8 = unchecked((sbyte)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<sbyte, TOther>(int8);
+                other = Notsafe.As<sbyte, TOther>(int8);
                 return true;
             }
             else if (otherType == typeof(short))
@@ -877,7 +829,7 @@ public readonly struct Rational :
                     int16 = unchecked((short)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<short, TOther>(int16);
+                other = Notsafe.As<short, TOther>(int16);
                 return true;
             }
             else if (otherType == typeof(ushort))
@@ -900,7 +852,7 @@ public readonly struct Rational :
                     uint16 = unchecked((ushort)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<ushort, TOther>(uint16);
+                other = Notsafe.As<ushort, TOther>(uint16);
                 return true;
             }
             else if (otherType == typeof(int))
@@ -923,7 +875,7 @@ public readonly struct Rational :
                     int32 = unchecked((int)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<int, TOther>(int32);
+                other = Notsafe.As<int, TOther>(int32);
                 return true;
             }
             else if (otherType == typeof(uint))
@@ -946,7 +898,7 @@ public readonly struct Rational :
                     uint32 = unchecked((uint)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<uint, TOther>(uint32);
+                other = Notsafe.As<uint, TOther>(uint32);
                 return true;
             }
             else if (otherType == typeof(long))
@@ -969,7 +921,7 @@ public readonly struct Rational :
                     int64 = unchecked((long)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<long, TOther>(int64);
+                other = Notsafe.As<long, TOther>(int64);
                 return true;
             }
             else if (otherType == typeof(ulong))
@@ -992,7 +944,7 @@ public readonly struct Rational :
                     uint64 = unchecked((ulong)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<ulong, TOther>(uint64);
+                other = Notsafe.As<ulong, TOther>(uint64);
                 return true;
             }
             else if (otherType == typeof(nint))
@@ -1015,7 +967,7 @@ public readonly struct Rational :
                     nint = unchecked((nint)(long)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<nint, TOther>(nint);
+                other = Notsafe.As<nint, TOther>(nint);
                 return true;
             }
             else if (otherType == typeof(nuint))
@@ -1038,12 +990,12 @@ public readonly struct Rational :
                     nuint = unchecked((nuint)(ulong)rational.Numerator);
                 }
 
-                other = Notsafe.DirectCast<nuint, TOther>(nuint);
+                other = Notsafe.As<nuint, TOther>(nuint);
                 return true;
             }
             else if (otherType == typeof(BigInteger))
             {
-                other = Notsafe.DirectCast<BigInteger, TOther>(rational.Numerator);
+                other = Notsafe.As<BigInteger, TOther>(rational.Numerator);
                 return true;
             }
         }
@@ -1068,62 +1020,62 @@ public readonly struct Rational :
 
     private Rational(BigInteger numerator, BigInteger denominator)
     {
-        this.Numerator = numerator;
-        this.Denominator = denominator;
+        Numerator = numerator;
+        Denominator = denominator;
     }
 
     public void Deconstruct(out BigInteger numerator, out BigInteger denominator)
     {
-        numerator = this.Numerator;
-        denominator = this.Denominator;
+        numerator = Numerator;
+        denominator = Denominator;
     }
 
     #region Math
 
     public Rational Add(Rational other) => New(
-            (this.Numerator * other.Denominator) + (this.Denominator * other.Numerator),
-            this.Denominator * other.Denominator);
+            (Numerator * other.Denominator) + (Denominator * other.Numerator),
+            Denominator * other.Denominator);
 
     public Rational Add(BigInteger bigInt) => New(
-            this.Numerator + (this.Denominator * bigInt),
-            this.Denominator);
+            Numerator + (Denominator * bigInt),
+            Denominator);
 
     public Rational Subtract(Rational other) => New(
-            (this.Numerator * other.Denominator) - (this.Denominator * other.Numerator),
-            this.Denominator * other.Denominator);
+            (Numerator * other.Denominator) - (Denominator * other.Numerator),
+            Denominator * other.Denominator);
 
     public Rational Subtract(BigInteger bigInt) => New(
-            this.Numerator - (this.Denominator * bigInt),
-            this.Denominator);
+            Numerator - (Denominator * bigInt),
+            Denominator);
 
     public Rational Multiply(Rational other) => New(
-        this.Numerator * other.Numerator,
-        this.Denominator * other.Denominator);
+        Numerator * other.Numerator,
+        Denominator * other.Denominator);
 
     public Rational Multiply(BigInteger bigInt) => New(
-            this.Numerator * bigInt,
-            this.Denominator);
+            Numerator * bigInt,
+            Denominator);
     
     public Rational Divide(Rational other) => New(
-        this.Numerator * other.Denominator,
-        this.Denominator * other.Numerator);
+        Numerator * other.Denominator,
+        Denominator * other.Numerator);
 
     public Rational Divide(BigInteger bigInt) => New(
-        this.Numerator,
-        this.Denominator * bigInt);
+        Numerator,
+        Denominator * bigInt);
     
     public Rational Mod(Rational other)
     {
-        BigInteger num = this.Numerator * other.Denominator;
-        BigInteger den = this.Denominator * other.Numerator;
+        BigInteger num = Numerator * other.Denominator;
+        BigInteger den = Denominator * other.Numerator;
         BigInteger mod = num % den;
         return New(mod, den);
     }
     
     public Rational Mod(BigInteger bigInt)
     {
-        BigInteger den = this.Denominator * bigInt;
-        BigInteger mod = this.Numerator % den;
+        BigInteger den = Denominator * bigInt;
+        BigInteger mod = Numerator % den;
         return New(mod, den);
     }
     
@@ -1154,10 +1106,12 @@ public readonly struct Rational :
     {
         if (Denominator == BigInteger.Zero)
             return new DivideByZeroException("The denominator of this Rational is Zero");
-        if (Numerator < MathHelper.BigInteger_DecimalMinValue ||
-            Numerator > MathHelper.BigInteger_DecimalMaxValue)
+        if (Numerator < MathHelper.BigInt.DecimalMinValue ||
+            Numerator > MathHelper.BigInt.DecimalMaxValue)
+        {
             return new InvalidOperationException($"Numerator '{Numerator}' is larger than a decimal");
-        if (Denominator > MathHelper.BigInteger_DecimalMaxValue)
+        }
+        if (Denominator > MathHelper.BigInt.DecimalMaxValue)
             return new InvalidOperationException($"Denominator '{Denominator}' is larger than decimal.MaxValue '{decimal.MaxValue}'");
         return (decimal)Numerator / (decimal)Denominator;
     }
@@ -1178,10 +1132,12 @@ public readonly struct Rational :
                 return double.NegativeInfinity;
             return double.NaN;
         }
-        if (Numerator < MathHelper.BigInteger_DoubleMinValue ||
-            Numerator > MathHelper.BigInteger_DoubleMaxValue)
+        if (Numerator < MathHelper.BigInt.DoubleMinValue ||
+            Numerator > MathHelper.BigInt.DoubleMaxValue)
+        {
             return new InvalidOperationException($"Numerator '{Numerator}' is larger than a double");
-        if (Denominator > MathHelper.BigInteger_DoubleMaxValue)
+        }
+        if (Denominator > MathHelper.BigInt.DoubleMaxValue)
             return new InvalidOperationException($"Denominator '{Denominator}' is larger than double.MaxValue '{double.MaxValue}'");
         return (double)Numerator / (double)Denominator;
     }
@@ -1201,10 +1157,12 @@ public readonly struct Rational :
                 return float.NegativeInfinity;
             return float.NaN;
         }
-        if (Numerator < MathHelper.BigInteger_FloatMinValue ||
-            Numerator > MathHelper.BigInteger_FloatMaxValue)
+        if (Numerator < MathHelper.BigInt.FloatMinValue ||
+            Numerator > MathHelper.BigInt.FloatMaxValue)
+        {
             return new InvalidOperationException($"Numerator '{Numerator}' is larger than a float");
-        if (Denominator > MathHelper.BigInteger_FloatMaxValue)
+        }
+        if (Denominator > MathHelper.BigInt.FloatMaxValue)
             return new InvalidOperationException($"Denominator '{Denominator}' is larger than float.MaxValue '{float.MaxValue}'");
         return (float)Numerator / (float)Denominator;
     }
@@ -1224,10 +1182,12 @@ public readonly struct Rational :
     {
         if (Denominator == BigInteger.Zero)
             return new DivideByZeroException("The denominator of this Rational is Zero");
-        if (Numerator < MathHelper.BigInteger_LongMinValue ||
-            Numerator > MathHelper.BigInteger_LongMaxValue)
+        if (Numerator < MathHelper.BigInt.LongMinValue ||
+            Numerator > MathHelper.BigInt.LongMaxValue)
+        {
             return new InvalidOperationException($"Numerator '{Numerator}' is larger than a long");
-        if (Denominator > MathHelper.BigInteger_LongMaxValue)
+        }
+        if (Denominator > MathHelper.BigInt.LongMaxValue)
             return new InvalidOperationException($"Denominator '{Denominator}' is larger than long.MaxValue '{long.MaxValue}'");
         return (long)Numerator / (long)Denominator;
     }
@@ -1250,8 +1210,8 @@ public readonly struct Rational :
             return compare; // same, match sorts last
 
         // cross multiplication compare
-        BigInteger left = this.Numerator * other.Denominator;
-        BigInteger right = this.Denominator * other.Numerator;
+        BigInteger left = Numerator * other.Denominator;
+        BigInteger right = Denominator * other.Numerator;
         return left.CompareTo(right);
     }
 
@@ -1260,8 +1220,8 @@ public readonly struct Rational :
         // Cannot be NaN or Infinity
         Rational other = FromBigDecimal(bigDec);
         // cross multiplication compare
-        BigInteger left = this.Numerator * other.Denominator;
-        BigInteger right = this.Denominator * other.Numerator;
+        BigInteger left = Numerator * other.Denominator;
+        BigInteger right = Denominator * other.Numerator;
         return left.CompareTo(right);
     }
 
@@ -1270,15 +1230,12 @@ public readonly struct Rational :
         // Cannot be NaN or Infinity
         Rational other = FromDecimal(dec);
         // cross multiplication compare
-        BigInteger left = this.Numerator * other.Denominator;
-        BigInteger right = this.Denominator * other.Numerator;
+        BigInteger left = Numerator * other.Denominator;
+        BigInteger right = Denominator * other.Numerator;
         return left.CompareTo(right);
     }
-    
-    public int CompareTo(double f64)
-    {
-        return CompareTo(FromDouble(f64));
-    }
+
+    public int CompareTo(double f64) => CompareTo(FromDouble(f64));
 
     public int CompareTo(BigInteger bigInt)
     {
@@ -1288,7 +1245,7 @@ public readonly struct Rational :
         }
 
         // cross multiplication
-        return this.Numerator.CompareTo(this.Denominator * bigInt);
+        return Numerator.CompareTo(Denominator * bigInt);
     }
     
     public int CompareTo(long i64)
@@ -1299,7 +1256,7 @@ public readonly struct Rational :
         }
 
         // cross multiplication
-        return this.Numerator.CompareTo(this.Denominator * i64);
+        return Numerator.CompareTo(Denominator * i64);
     }
     
 
@@ -1321,26 +1278,20 @@ public readonly struct Rational :
     public bool Equals(Rational other)
     {
         // cross multiplication
-        BigInteger left = this.Numerator * other.Denominator;
-        BigInteger right = this.Denominator * other.Numerator;
+        BigInteger left = Numerator * other.Denominator;
+        BigInteger right = Denominator * other.Numerator;
         return left.Equals(right);
     }
 
-    public bool Equals(BigDecimal bigDec)
-    {
-        return this.TryConvertToBigDecimal().Equals(bigDec);
-    }
-    
-    public bool Equals(decimal m)
-    {
-        return this.TryConvertToDecimal().Equals(m);
-    }
+    public bool Equals(BigDecimal bigDec) => TryConvertToBigDecimal().Equals(bigDec);
+
+    public bool Equals(decimal m) => TryConvertToDecimal().Equals(m);
 
     public bool Equals(double other) => Equals(other, double.Epsilon);
     
     public bool Equals(double other, double accuracy)
     {
-        if (TryConvertToDouble().HasOk(out var f64))
+        if (TryConvertToDouble().HasOk(out double f64))
         {
             bool? maybeEqual;
             bool equal;
@@ -1370,14 +1321,14 @@ public readonly struct Rational :
     {
         return IsFinite(this) &&
                // cross multiplication
-               this.Numerator.Equals(this.Denominator * other);
+               Numerator.Equals(Denominator * other);
     }
 
     public bool Equals(long other)
     {
         return IsFinite(this) &&
                // cross multiplication
-               this.Numerator.Equals(this.Denominator * other);
+               Numerator.Equals(Denominator * other);
     }
 
 
@@ -1496,8 +1447,5 @@ public readonly struct Rational :
         }
     }
 
-    public override string ToString()
-    {
-        return $"{Numerator}/{Denominator}";
-    }
+    public override string ToString() => $"{Numerator}/{Denominator}";
 }

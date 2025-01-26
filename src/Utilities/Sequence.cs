@@ -1,47 +1,55 @@
-﻿#pragma warning disable IDE0022
+﻿#pragma warning disable IDE0022, CA1045
 
-namespace ScrubJay.Collections;
+using static ScrubJay.Constraints.GenericTypeConstraint;
+
+namespace ScrubJay.Utilities;
 
 /// <summary>
-/// Methods for working with sequences
+/// Helper methods for working on Sequences
 /// </summary>
+/// <remarks>
+/// Generally for any Method in <see cref="Sequence"/>, its Parameters will cover:<br/>
+/// <b>Input</b><br/>
+/// <see cref="ReadOnlySpan{T}"/>,
+/// <see cref="Array">T[]</see>,
+/// <see cref="IEnumerable{T}"/><br/>
+/// <b>Output</b><br/>
+/// <see cref="Span{T}"/>,
+/// <see cref="Array">T[]</see>,
+/// <see cref="IList{T}"/><br/>
+/// </remarks>
 [PublicAPI]
 public static class Sequence
 {
+    /// <summary>
+    /// Copies a <paramref name="source"/> <see cref="Range"/> from a <see cref="Span{T}"/> to a <paramref name="destination"/> <see cref="Range"/> in that same <see cref="Span{T}"/>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="span"></param>
+    /// <param name="source"></param>
+    /// <param name="destination"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SelfCopy<T>(scoped Span<T> span, Range source, Range destination) => span[source].CopyTo(span[destination]);
+    public static void SelfCopy<T>(Span<T> span, Range source, Range destination) => span[source].CopyTo(span[destination]);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SelfCopy<T>(T[] array, Range source, Range destination) => array.AsSpan(source).CopyTo(array.AsSpan(destination));
 
-#region TryCopyTo
-
-    /* Permutations of:
-     * Input:
-     * ReadOnlySpan<T>, T[]?, IEnumerable<T>, string?*
-     * Output:
-     * Span<T>, T[]?, IList<T>,
-     */
-
+    #region TryCopyTo
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryCopyTo<T>(scoped ReadOnlySpan<T> source, Span<T> destination) => source.TryCopyTo(destination);
+    public static bool TryCopyTo<T>(ReadOnlySpan<T> source, Span<T> destination) => source.TryCopyTo(destination);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryCopyTo<T>(scoped ReadOnlySpan<T> source, T[]? destination) => source.TryCopyTo(new Span<T>(destination));
+    public static bool TryCopyTo<T>(ReadOnlySpan<T> source, T[]? destination) => source.TryCopyTo(new Span<T>(destination));
 
-    public static bool TryCopyTo<T>(scoped ReadOnlySpan<T> source, IList<T>? destination)
+    public static bool TryCopyTo<T>(ReadOnlySpan<T> source, IList<T>? destination)
     {
         int sourceCount = source.Length;
         if (destination is null)
-        {
             return sourceCount == 0;
-        }
 
         if (sourceCount > destination.Count)
-        {
             return false;
-        }
 
         for (int i = 0; i < sourceCount; i++)
         {
@@ -63,9 +71,7 @@ public static class Sequence
     public static bool TryCopyTo<T>(IEnumerable<T>? source, Span<T> destination, bool clearOnFailure = true)
     {
         if (source is null)
-        {
             return true;
-        }
 
         int destinationLength = destination.Length;
 
@@ -73,9 +79,7 @@ public static class Sequence
         {
             int sourceCount = collection.Count;
             if (sourceCount >= destinationLength)
-            {
                 return false;
-            }
 
             int i = 0;
             foreach (var item in collection)
@@ -91,9 +95,7 @@ public static class Sequence
                 if (i >= destinationLength)
                 {
                     if (clearOnFailure)
-                    {
                         destination.Clear();
-                    }
 
                     return false;
                 }
@@ -108,32 +110,24 @@ public static class Sequence
     public static bool TryCopyTo<T>(IEnumerable<T>? source, T[]? destination, bool clearOnFailure = true)
     {
         if (source is null)
-        {
             return true;
-        }
 
         if (source is ICollection<T> collection)
         {
             int sourceCount = collection.Count;
             if (destination is null)
-            {
                 return sourceCount == 0;
-            }
 
             int destinationLength = destination.Length;
             if (sourceCount >= destinationLength)
-            {
                 return false;
-            }
 
             collection.CopyTo(destination, 0);
         }
         else
         {
             if (destination is null)
-            {
                 return false;
-            }
 
             int destinationLength = destination.Length;
             int i = 0;
@@ -142,9 +136,7 @@ public static class Sequence
                 if (i >= destinationLength)
                 {
                     if (clearOnFailure)
-                    {
                         Array.Clear(destination, 0, destinationLength);
-                    }
 
                     return false;
                 }
@@ -159,23 +151,17 @@ public static class Sequence
     public static bool TryCopyTo<T>(IEnumerable<T>? source, IList<T>? destination, bool clearOnFailure = true)
     {
         if (source is null)
-        {
             return true;
-        }
 
         if (source is ICollection<T> collection)
         {
             int sourceCount = collection.Count;
             if (destination is null)
-            {
                 return sourceCount == 0;
-            }
 
             int destinationLength = destination.Count;
             if (sourceCount >= destinationLength)
-            {
                 return false;
-            }
 
             int i = 0;
             foreach (var item in source)
@@ -186,9 +172,7 @@ public static class Sequence
         else
         {
             if (destination is null)
-            {
                 return false;
-            }
 
             int destinationLength = destination.Count;
             int i = 0;
@@ -197,9 +181,7 @@ public static class Sequence
                 if (i >= destinationLength)
                 {
                     if (clearOnFailure)
-                    {
                         destination.Clear();
-                    }
 
                     return false;
                 }
@@ -220,9 +202,9 @@ public static class Sequence
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryCopyTo(string? source, IList<char>? destination) => TryCopyTo(source.AsSpan(), destination);
 
-#endregion
+    #endregion
 
-#region CopyTo
+    #region CopyTo
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void CopyTo<T>(scoped ReadOnlySpan<T> source, Span<T> destination) => source.CopyTo(destination);
@@ -236,17 +218,13 @@ public static class Sequence
         if (destination is null)
         {
             if (sourceCount == 0)
-            {
                 return;
-            }
 
             throw new ArgumentNullException(nameof(destination));
         }
 
         if (sourceCount > destination.Count)
-        {
             throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destination.Count}", nameof(destination));
-        }
 
         for (int i = 0; i < sourceCount; i++)
         {
@@ -266,9 +244,7 @@ public static class Sequence
     public static void CopyTo<T>(IEnumerable<T>? source, Span<T> destination, bool clearOnFailure = true)
     {
         if (source is null)
-        {
             return;
-        }
 
         int destinationLength = destination.Length;
 
@@ -276,9 +252,7 @@ public static class Sequence
         {
             int sourceCount = collection.Count;
             if (sourceCount > destinationLength)
-            {
                 throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destinationLength}", nameof(destination));
-            }
 
             int i = 0;
             foreach (var item in collection)
@@ -294,9 +268,7 @@ public static class Sequence
                 if (i >= destinationLength)
                 {
                     if (clearOnFailure)
-                    {
                         destination.Clear();
-                    }
 
                     throw new ArgumentException($"Source count of at least {i} will not fit in destination length of {destinationLength}", nameof(destination));
                 }
@@ -309,9 +281,7 @@ public static class Sequence
     public static void CopyTo<T>(IEnumerable<T>? source, T[]? destination, bool clearOnFailure = true)
     {
         if (source is null)
-        {
             return;
-        }
 
         if (source is ICollection<T> collection)
         {
@@ -319,18 +289,14 @@ public static class Sequence
             if (destination is null)
             {
                 if (sourceCount == 0)
-                {
                     return;
-                }
 
                 throw new ArgumentNullException(nameof(destination));
             }
 
             int destinationLength = destination.Length;
             if (sourceCount > destinationLength)
-            {
                 throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destinationLength}", nameof(destination));
-            }
 
             collection.CopyTo(destination, 0);
         }
@@ -344,9 +310,7 @@ public static class Sequence
                 if (i >= destinationLength)
                 {
                     if (clearOnFailure)
-                    {
                         Array.Clear(destination, 0, destinationLength);
-                    }
 
                     throw new ArgumentException($"Source count of at least {i} will not fit in destination length of {destinationLength}", nameof(destination));
                 }
@@ -359,9 +323,7 @@ public static class Sequence
     public static void CopyTo<T>(IEnumerable<T>? source, IList<T>? destination, bool clearOnFailure = true)
     {
         if (source is null)
-        {
             return;
-        }
 
         if (source is ICollection<T> collection)
         {
@@ -369,18 +331,14 @@ public static class Sequence
             if (destination is null)
             {
                 if (sourceCount == 0)
-                {
                     return;
-                }
 
                 throw new ArgumentNullException(nameof(destination));
             }
 
             int destinationLength = destination.Count;
             if (sourceCount > destinationLength)
-            {
                 throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destinationLength}", nameof(destination));
-            }
 
             int i = 0;
             foreach (var item in source)
@@ -398,9 +356,7 @@ public static class Sequence
                 if (i >= destinationLength)
                 {
                     if (clearOnFailure)
-                    {
                         destination.Clear();
-                    }
 
                     throw new ArgumentException($"Source count of at least {i} will not fit in destination length of {destinationLength}", nameof(destination));
                 }
@@ -419,148 +375,134 @@ public static class Sequence
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void CopyTo(string? source, IList<char>? destination) => CopyTo(source.AsSpan(), destination);
 
-#endregion
+    #endregion
 
 
-#region Compare
+    #region Compare
 
     /* comparision is supported for all combinations of:
      * T[], Span<T>, ReadOnlySpan<T>, IEnumerable<T>
      */
 
 
-#region where T : IComparable<T>
+    #region where T : IComparable<T>
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComparableCompare<T>(T[]? left, T[]? right)
+    public static int Compare<T>(T[]? left, T[]? right, IsComparable<T> _ = default)
         where T : IComparable<T>
-        => MemoryExtensions.SequenceCompareTo<T>(new ReadOnlySpan<T>(left), new ReadOnlySpan<T>(right));
+        => new ReadOnlySpan<T>(left).SequenceCompareTo(new ReadOnlySpan<T>(right));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComparableCompare<T>(T[]? left, Span<T> right)
+    public static int Compare<T>(T[]? left, Span<T> right, IsComparable<T> _ = default)
         where T : IComparable<T>
-        => MemoryExtensions.SequenceCompareTo<T>(new ReadOnlySpan<T>(left), right);
+        => new ReadOnlySpan<T>(left).SequenceCompareTo(right);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComparableCompare<T>(T[]? left, ReadOnlySpan<T> right)
+    public static int Compare<T>(T[]? left, ReadOnlySpan<T> right, IsComparable<T> _ = default)
         where T : IComparable<T>
-        => MemoryExtensions.SequenceCompareTo<T>(new ReadOnlySpan<T>(left), right);
+        => new ReadOnlySpan<T>(left).SequenceCompareTo(right);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComparableCompare<T>(Span<T> left, T[]? right)
+    public static int Compare<T>(Span<T> left, T[]? right, IsComparable<T> _ = default)
         where T : IComparable<T>
-        => MemoryExtensions.SequenceCompareTo<T>(left, new ReadOnlySpan<T>(right));
+        => left.SequenceCompareTo(new ReadOnlySpan<T>(right));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComparableCompare<T>(Span<T> left, Span<T> right)
+    public static int Compare<T>(Span<T> left, Span<T> right, IsComparable<T> _ = default)
         where T : IComparable<T>
-        => MemoryExtensions.SequenceCompareTo<T>(left, right);
+        => left.SequenceCompareTo(right);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComparableCompare<T>(Span<T> left, ReadOnlySpan<T> right)
+    public static int Compare<T>(Span<T> left, ReadOnlySpan<T> right, IsComparable<T> _ = default)
         where T : IComparable<T>
-        => MemoryExtensions.SequenceCompareTo<T>(left, right);
+        => left.SequenceCompareTo(right);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComparableCompare<T>(ReadOnlySpan<T> left, T[]? right)
+    public static int Compare<T>(ReadOnlySpan<T> left, T[]? right, IsComparable<T> _ = default)
         where T : IComparable<T>
-        => MemoryExtensions.SequenceCompareTo<T>(left, new ReadOnlySpan<T>(right));
+        => left.SequenceCompareTo(new ReadOnlySpan<T>(right));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComparableCompare<T>(ReadOnlySpan<T> left, Span<T> right)
+    public static int Compare<T>(ReadOnlySpan<T> left, Span<T> right, IsComparable<T> _ = default)
         where T : IComparable<T>
-        => MemoryExtensions.SequenceCompareTo<T>(left, right);
+        => left.SequenceCompareTo(right);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ComparableCompare<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)
+    public static int Compare<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right, IsComparable<T> _ = default)
         where T : IComparable<T>
-        => MemoryExtensions.SequenceCompareTo<T>(left, right);
+        => left.SequenceCompareTo(right);
 
-#endregion
+    #endregion
 
-#region no restriction w/IComparer<T>
+    #region no restriction w/IComparer<T>
 
     public static int Compare<T>(T[]? left, T[]? right, IComparer<T>? itemComparer = null)
     {
         // null sorts first
         if (left is null)
-        {
             return right is null ? 0 : -1;
-        }
 
         if (right is null)
-        {
             return 1;
-        }
 
-        return Compare<T>(new ReadOnlySpan<T>(left), new ReadOnlySpan<T>(right), itemComparer);
+        return Compare(new ReadOnlySpan<T>(left), new ReadOnlySpan<T>(right), itemComparer);
     }
 
     public static int Compare<T>(T[]? left, Span<T> right, IComparer<T>? itemComparer = null)
     {
         // null sorts first
         if (left is null)
-        {
             return -1;
-        }
 
-        return Compare<T>(new ReadOnlySpan<T>(left), (ReadOnlySpan<T>)right, itemComparer);
+        return Compare(new ReadOnlySpan<T>(left), (ReadOnlySpan<T>)right, itemComparer);
     }
 
     public static int Compare<T>(T[]? left, ReadOnlySpan<T> right, IComparer<T>? itemComparer = null)
     {
         // null sorts first
         if (left is null)
-        {
             return -1;
-        }
 
-        return Compare<T>(new ReadOnlySpan<T>(left), right, itemComparer);
+        return Compare(new ReadOnlySpan<T>(left), right, itemComparer);
     }
 
     public static int Compare<T>(T[]? left, IEnumerable<T>? right, IComparer<T>? itemComparer = null)
     {
         // null sorts first
         if (left is null)
-        {
             return right is null ? 0 : -1;
-        }
 
         if (right is null)
-        {
             return 1;
-        }
 
-        return Compare<T>(new ReadOnlySpan<T>(left), right, itemComparer);
+        return Compare(new ReadOnlySpan<T>(left), right, itemComparer);
     }
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(Span<T> left, T[]? right, IComparer<T>? itemComparer = null) => Compare<T>((ReadOnlySpan<T>)left, right, itemComparer);
+    public static int Compare<T>(Span<T> left, T[]? right, IComparer<T>? itemComparer = null) => Compare((ReadOnlySpan<T>)left, right, itemComparer);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(Span<T> left, Span<T> right, IComparer<T>? itemComparer = null) => Compare<T>((ReadOnlySpan<T>)left, (ReadOnlySpan<T>)right, itemComparer);
+    public static int Compare<T>(Span<T> left, Span<T> right, IComparer<T>? itemComparer = null) => Compare((ReadOnlySpan<T>)left, (ReadOnlySpan<T>)right, itemComparer);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(Span<T> left, ReadOnlySpan<T> right, IComparer<T>? itemComparer = null) => Compare<T>((ReadOnlySpan<T>)left, right, itemComparer);
+    public static int Compare<T>(Span<T> left, ReadOnlySpan<T> right, IComparer<T>? itemComparer = null) => Compare((ReadOnlySpan<T>)left, right, itemComparer);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(Span<T> left, IEnumerable<T>? right, IComparer<T>? itemComparer = null) => Compare<T>((ReadOnlySpan<T>)left, right, itemComparer);
+    public static int Compare<T>(Span<T> left, IEnumerable<T>? right, IComparer<T>? itemComparer = null) => Compare((ReadOnlySpan<T>)left, right, itemComparer);
 
 
     public static int Compare<T>(ReadOnlySpan<T> left, T[]? right, IComparer<T>? itemComparer = null)
     {
         // null sorts first
         if (right is null)
-        {
             return 1;
-        }
 
-        return Compare<T>(left, new ReadOnlySpan<T>(right), itemComparer);
+        return Compare(left, new ReadOnlySpan<T>(right), itemComparer);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(ReadOnlySpan<T> left, Span<T> right, IComparer<T>? itemComparer = null) => Compare<T>(left, (ReadOnlySpan<T>)right, itemComparer);
+    public static int Compare<T>(ReadOnlySpan<T> left, Span<T> right, IComparer<T>? itemComparer = null) => Compare(left, (ReadOnlySpan<T>)right, itemComparer);
 
     public static int Compare<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right, IComparer<T>? itemComparer = null)
     {
@@ -571,9 +513,7 @@ public static class Sequence
         {
             c = itemComparer.Compare(left[i], right[i]);
             if (c != 0)
-            {
                 return c;
-            }
         }
 
         return left.Length.CompareTo(right.Length);
@@ -583,9 +523,7 @@ public static class Sequence
     {
         // null sorts first
         if (right is null)
-        {
             return 1;
-        }
 
         int c;
         int leftCount = left.Length;
@@ -601,9 +539,7 @@ public static class Sequence
                 {
                     c = itemComparer.Compare(left[i], rightList[i]);
                     if (c != 0)
-                    {
                         return c;
-                    }
                 }
 
                 return leftCount.CompareTo(rightList.Count);
@@ -621,9 +557,7 @@ public static class Sequence
 #endif
                 c = itemComparer.Compare(left[i], rightEnumerator.Current);
                 if (c != 0)
-                {
                     return c;
-                }
             }
 
             return 0; // equal
@@ -634,23 +568,17 @@ public static class Sequence
             for (int i = 0; i < leftCount; i++)
             {
                 if (!rightEnumerator.MoveNext())
-                {
                     // right is shorter
                     return 1;
-                }
 
                 c = itemComparer.Compare(left[i], rightEnumerator.Current);
                 if (c != 0)
-                {
                     return c;
-                }
             }
 
             if (rightEnumerator.MoveNext())
-            {
                 // right is longer
                 return -1;
-            }
 
             // same
             return 0;
@@ -661,36 +589,28 @@ public static class Sequence
     {
         // null sorts first
         if (left is null)
-        {
             return right is null ? 0 : -1;
-        }
 
         if (right is null)
-        {
             return 1;
-        }
 
-        return Compare<T>(left, new ReadOnlySpan<T>(right), itemComparer);
+        return Compare(left, new ReadOnlySpan<T>(right), itemComparer);
     }
 
     public static int Compare<T>(IList<T>? left, Span<T> right, IComparer<T>? itemComparer = null)
     {
         // null sorts first
         if (left is null)
-        {
             return -1;
-        }
 
-        return Compare<T>(left, (ReadOnlySpan<T>)right, itemComparer);
+        return Compare(left, (ReadOnlySpan<T>)right, itemComparer);
     }
 
     public static int Compare<T>(IList<T>? left, ReadOnlySpan<T> right, IComparer<T>? itemComparer = null)
     {
         // null sorts first
         if (left is null)
-        {
             return -1;
-        }
 
         int minLength = Math.Min(left.Count, right.Length);
         itemComparer ??= Comparer<T>.Default;
@@ -699,9 +619,7 @@ public static class Sequence
         {
             c = itemComparer.Compare(left[i], right[i]);
             if (c != 0)
-            {
                 return c;
-            }
         }
 
         return left.Count.CompareTo(right.Length);
@@ -711,14 +629,10 @@ public static class Sequence
     {
         // null sorts first
         if (left is null)
-        {
             return right is null ? 0 : -1;
-        }
 
         if (right is null)
-        {
             return 1;
-        }
 
         int minLength = Math.Min(left.Count, right.Count);
         itemComparer ??= Comparer<T>.Default;
@@ -727,9 +641,7 @@ public static class Sequence
         {
             c = itemComparer.Compare(left[i], right[i]);
             if (c != 0)
-            {
                 return c;
-            }
         }
 
         return left.Count.CompareTo(right.Count);
@@ -739,14 +651,10 @@ public static class Sequence
     {
         // null sorts first
         if (left is null)
-        {
             return right is null ? 0 : -1;
-        }
 
         if (right is null)
-        {
             return 1;
-        }
 
         int c;
         int count = left.Count;
@@ -756,9 +664,7 @@ public static class Sequence
         {
             c = count.CompareTo(collection.Count);
             if (c != 0)
-            {
                 return c;
-            }
 
             if (right is IList<T> list)
             {
@@ -766,9 +672,7 @@ public static class Sequence
                 {
                     c = itemComparer.Compare(left[i], list[i]);
                     if (c != 0)
-                    {
                         return c;
-                    }
                 }
             }
             else
@@ -784,9 +688,7 @@ public static class Sequence
 #endif
                     c = itemComparer.Compare(left[i], e.Current);
                     if (c != 0)
-                    {
                         return c;
-                    }
                 }
             }
 
@@ -798,23 +700,17 @@ public static class Sequence
             for (int i = 0; i < count; i++)
             {
                 if (!e.MoveNext())
-                {
                     // right is shorter
                     return 1;
-                }
 
                 c = itemComparer.Compare(left[i], e.Current);
                 if (c != 0)
-                {
                     return c;
-                }
             }
 
             if (e.MoveNext())
-            {
                 // right is longer
                 return -1;
-            }
 
             // same
             return 0;
@@ -826,36 +722,28 @@ public static class Sequence
     {
         // null sorts first
         if (left is null)
-        {
             return right is null ? 0 : -1;
-        }
 
         if (right is null)
-        {
             return 1;
-        }
 
-        return Compare<T>(left, new ReadOnlySpan<T>(right), itemComparer);
+        return Compare(left, new ReadOnlySpan<T>(right), itemComparer);
     }
 
     public static int Compare<T>(IEnumerable<T>? left, Span<T> right, IComparer<T>? itemComparer = null)
     {
         // null sorts first
         if (left is null)
-        {
             return -1;
-        }
 
-        return Compare<T>(left, (ReadOnlySpan<T>)right, itemComparer);
+        return Compare(left, (ReadOnlySpan<T>)right, itemComparer);
     }
 
     public static int Compare<T>(IEnumerable<T>? left, ReadOnlySpan<T> right, IComparer<T>? itemComparer = null)
     {
         // null sorts first
         if (left is null)
-        {
             return -1;
-        }
 
         int c;
         int count = right.Length;
@@ -865,9 +753,7 @@ public static class Sequence
         {
             c = count.CompareTo(collection.Count);
             if (c != 0)
-            {
                 return c;
-            }
 
             if (left is IList<T> list)
             {
@@ -875,9 +761,7 @@ public static class Sequence
                 {
                     c = itemComparer.Compare(list[i], right[i]);
                     if (c != 0)
-                    {
                         return c;
-                    }
                 }
             }
             else
@@ -893,9 +777,7 @@ public static class Sequence
 #endif
                     c = itemComparer.Compare(e.Current, right[i]);
                     if (c != 0)
-                    {
                         return c;
-                    }
                 }
             }
 
@@ -907,23 +789,17 @@ public static class Sequence
             for (int i = 0; i < count; i++)
             {
                 if (!e.MoveNext())
-                {
                     // right is shorter
                     return 1;
-                }
 
                 c = itemComparer.Compare(e.Current, right[i]);
                 if (c != 0)
-                {
                     return c;
-                }
             }
 
             if (e.MoveNext())
-            {
                 // right is longer
                 return -1;
-            }
 
             // same
             return 0;
@@ -934,14 +810,10 @@ public static class Sequence
     {
         // null sorts first
         if (left is null)
-        {
             return right is null ? 0 : -1;
-        }
 
         if (right is null)
-        {
             return 1;
-        }
 
         int c;
         itemComparer ??= Comparer<T>.Default;
@@ -951,9 +823,7 @@ public static class Sequence
             int count = leftCollection.Count;
             c = count.CompareTo(rightCollection.Count);
             if (c != 0)
-            {
                 return c;
-            }
 
             if (leftCollection is IList<T> firstList && rightCollection is IList<T> secondList)
             {
@@ -961,9 +831,7 @@ public static class Sequence
                 {
                     c = itemComparer.Compare(firstList[i], secondList[i]);
                     if (c != 0)
-                    {
                         return c;
-                    }
                 }
 
                 return 0;
@@ -987,9 +855,7 @@ public static class Sequence
 #endif
                     c = itemComparer.Compare(leftEnumerator.Current, rightEnumerator.Current);
                     if (c != 0)
-                    {
                         return c;
-                    }
                 }
 
                 return 0;
@@ -1006,100 +872,88 @@ public static class Sequence
                 bool leftMoved = leftEnumerator.MoveNext();
                 bool rightMoved = rightEnumerator.MoveNext();
                 if (leftMoved != rightMoved)
-                {
                     return leftMoved ? 1 : -1; // different counts
-                }
 
                 if (!leftMoved)
-                {
                     return 0; // same items, same count
-                }
 
                 c = itemComparer.Compare(leftEnumerator.Current, rightEnumerator.Current);
                 if (c != 0)
-                {
                     return c;
-                }
             }
         }
     }
 
-#endregion
+    #endregion
 
-#endregion
+    #endregion
 
-#region Equal
+    #region Equal
 
-#region T: IEquatable<T>
+    #region T: IEquatable<T>
 
     public static bool EquatableEqual<T>(T[]? left, T[]? right)
         where T : IEquatable<T>
-        => MemoryExtensions.SequenceEqual<T>(new ReadOnlySpan<T>(left), new ReadOnlySpan<T>(right));
+        => new ReadOnlySpan<T>(left).SequenceEqual(new ReadOnlySpan<T>(right));
 
     public static bool EquatableEqual<T>(T[]? left, Span<T> right)
         where T : IEquatable<T>
-        => MemoryExtensions.SequenceEqual<T>(new ReadOnlySpan<T>(left), (ReadOnlySpan<T>)right);
+        => new ReadOnlySpan<T>(left).SequenceEqual((ReadOnlySpan<T>)right);
 
     public static bool EquatableEqual<T>(T[]? left, ReadOnlySpan<T> right)
         where T : IEquatable<T>
-        => MemoryExtensions.SequenceEqual<T>(left.AsSpan(), right);
+        => left.AsSpan().SequenceEqual(right);
 
     public static bool EquatableEqual<T>(Span<T> left, T[]? right)
         where T : IEquatable<T>
-        => MemoryExtensions.SequenceEqual<T>((ReadOnlySpan<T>)left, new ReadOnlySpan<T>(right));
+        => ((ReadOnlySpan<T>)left).SequenceEqual(new ReadOnlySpan<T>(right));
 
     public static bool EquatableEqual<T>(Span<T> left, Span<T> right)
         where T : IEquatable<T>
-        => MemoryExtensions.SequenceEqual<T>((ReadOnlySpan<T>)left, (ReadOnlySpan<T>)right);
+        => ((ReadOnlySpan<T>)left).SequenceEqual((ReadOnlySpan<T>)right);
 
     public static bool EquatableEqual<T>(Span<T> left, ReadOnlySpan<T> right)
         where T : IEquatable<T>
-        => MemoryExtensions.SequenceEqual<T>((ReadOnlySpan<T>)left, right);
+        => ((ReadOnlySpan<T>)left).SequenceEqual(right);
 
     public static bool EquatableEqual<T>(ReadOnlySpan<T> left, T[]? right)
         where T : IEquatable<T>
-        => MemoryExtensions.SequenceEqual<T>(left, new ReadOnlySpan<T>(right));
+        => left.SequenceEqual(new ReadOnlySpan<T>(right));
 
     public static bool EquatableEqual<T>(ReadOnlySpan<T> left, Span<T> right)
         where T : IEquatable<T>
-        => MemoryExtensions.SequenceEqual<T>(left, (ReadOnlySpan<T>)right);
+        => left.SequenceEqual((ReadOnlySpan<T>)right);
 
     public static bool EquatableEqual<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right)
         where T : IEquatable<T>
-        => MemoryExtensions.SequenceEqual<T>(left, right);
+        => left.SequenceEqual(right);
 
-#endregion
+    #endregion
 
-#region no constraints w/EqualityComparer
+    #region no constraints w/EqualityComparer
 
     public static bool Equal<T>(T[]? left, T[]? right, IEqualityComparer<T>? itemComparer = default)
     {
         if (left is null)
-        {
             return right is null;
-        }
 
         if (right is null)
-        {
             return false;
-        }
 #if NET6_0_OR_GREATER
-        return MemoryExtensions.SequenceEqual<T>(new ReadOnlySpan<T>(left), new ReadOnlySpan<T>(right), itemComparer);
+        return new ReadOnlySpan<T>(left).SequenceEqual(new ReadOnlySpan<T>(right), itemComparer);
 #else
-        return Equal<T>(new ReadOnlySpan<T>(left), new ReadOnlySpan<T>(right), itemComparer);
+        return Equal(new ReadOnlySpan<T>(left), new ReadOnlySpan<T>(right), itemComparer);
 #endif
     }
 
     public static bool Equal<T>(T[]? left, Span<T> right, IEqualityComparer<T>? itemComparer = default)
     {
         if (left is null)
-        {
             return false;
-        }
 #if NET6_0_OR_GREATER
-        return MemoryExtensions.SequenceEqual<T>(new ReadOnlySpan<T>(left), (ReadOnlySpan<T>)right, itemComparer);
+        return new ReadOnlySpan<T>(left).SequenceEqual((ReadOnlySpan<T>)right, itemComparer);
 #else
-        return Equal<T>(new ReadOnlySpan<T>(left), (ReadOnlySpan<T>)right, itemComparer);
+        return Equal(new ReadOnlySpan<T>(left), (ReadOnlySpan<T>)right, itemComparer);
 #endif
     }
 
@@ -1107,42 +961,34 @@ public static class Sequence
     public static bool Equal<T>(T[]? left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = default)
     {
         if (left is null)
-        {
             return false;
-        }
 #if NET6_0_OR_GREATER
-        return MemoryExtensions.SequenceEqual<T>(new ReadOnlySpan<T>(left), right, itemComparer);
+        return new ReadOnlySpan<T>(left).SequenceEqual(right, itemComparer);
 #else
-        return Equal<T>(new ReadOnlySpan<T>(left), right, itemComparer);
+        return Equal(new ReadOnlySpan<T>(left), right, itemComparer);
 #endif
     }
 
     public static bool Equal<T>(T[]? left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = default)
     {
         if (left is null)
-        {
             return right is null;
-        }
 
         if (right is null)
-        {
             return false;
-        }
 
-        return Equal<T>(new ReadOnlySpan<T>(left), right, itemComparer);
+        return Equal(new ReadOnlySpan<T>(left), right, itemComparer);
     }
 
 
     public static bool Equal<T>(Span<T> left, T[]? right, IEqualityComparer<T>? itemComparer = default)
     {
         if (right is null)
-        {
             return false;
-        }
 #if NET6_0_OR_GREATER
-        return MemoryExtensions.SequenceEqual<T>((ReadOnlySpan<T>)left, new ReadOnlySpan<T>(right), itemComparer);
+        return ((ReadOnlySpan<T>)left).SequenceEqual(new ReadOnlySpan<T>(right), itemComparer);
 #else
-        return Equal<T>((ReadOnlySpan<T>)left, new ReadOnlySpan<T>(right), itemComparer);
+        return Equal((ReadOnlySpan<T>)left, new ReadOnlySpan<T>(right), itemComparer);
 #endif
     }
 
@@ -1150,9 +996,9 @@ public static class Sequence
     public static bool Equal<T>(Span<T> left, Span<T> right, IEqualityComparer<T>? itemComparer = default)
     {
 #if NET6_0_OR_GREATER
-        return MemoryExtensions.SequenceEqual<T>((ReadOnlySpan<T>)left, (ReadOnlySpan<T>)right, itemComparer);
+        return ((ReadOnlySpan<T>)left).SequenceEqual((ReadOnlySpan<T>)right, itemComparer);
 #else
-        return Equal<T>((ReadOnlySpan<T>)left, (ReadOnlySpan<T>)right, itemComparer);
+        return Equal((ReadOnlySpan<T>)left, (ReadOnlySpan<T>)right, itemComparer);
 #endif
     }
 
@@ -1160,32 +1006,28 @@ public static class Sequence
     public static bool Equal<T>(Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = default)
     {
 #if NET6_0_OR_GREATER
-        return MemoryExtensions.SequenceEqual<T>((ReadOnlySpan<T>)left, right, itemComparer);
+        return ((ReadOnlySpan<T>)left).SequenceEqual(right, itemComparer);
 #else
-        return Equal<T>((ReadOnlySpan<T>)left, right, itemComparer);
+        return Equal((ReadOnlySpan<T>)left, right, itemComparer);
 #endif
     }
 
     public static bool Equal<T>(Span<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = default)
     {
         if (right is null)
-        {
             return false;
-        }
 
-        return Equal<T>((ReadOnlySpan<T>)left, right, itemComparer);
+        return Equal((ReadOnlySpan<T>)left, right, itemComparer);
     }
 
     public static bool Equal<T>(ReadOnlySpan<T> left, T[]? right, IEqualityComparer<T>? itemComparer = default)
     {
         if (right is null)
-        {
             return false;
-        }
 #if NET6_0_OR_GREATER
-        return MemoryExtensions.SequenceEqual<T>(left, new ReadOnlySpan<T>(right), itemComparer);
+        return left.SequenceEqual(new ReadOnlySpan<T>(right), itemComparer);
 #else
-        return Equal<T>(left, new ReadOnlySpan<T>(right), itemComparer);
+        return Equal(left, new ReadOnlySpan<T>(right), itemComparer);
 #endif
     }
 
@@ -1193,31 +1035,27 @@ public static class Sequence
     public static bool Equal<T>(ReadOnlySpan<T> left, Span<T> right, IEqualityComparer<T>? itemComparer = default)
     {
 #if NET6_0_OR_GREATER
-        return MemoryExtensions.SequenceEqual<T>(left, (ReadOnlySpan<T>)right, itemComparer);
+        return left.SequenceEqual((ReadOnlySpan<T>)right, itemComparer);
 #else
-        return Equal<T>(left, (ReadOnlySpan<T>)right, itemComparer);
+        return Equal(left, (ReadOnlySpan<T>)right, itemComparer);
 #endif
     }
 
     public static bool Equal<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = default)
     {
 #if NET6_0_OR_GREATER
-        return MemoryExtensions.SequenceEqual<T>(left, right, itemComparer);
+        return left.SequenceEqual(right, itemComparer);
 #else
         // If the spans differ in length, they're not equal.
         if (left.Length != right.Length)
-        {
             return false;
-        }
 
         // Use the comparer to compare each element.
         itemComparer ??= EqualityComparer<T>.Default;
         for (int i = 0; i < left.Length; i++)
         {
             if (!itemComparer.Equals(left[i], right[i]))
-            {
                 return false;
-            }
         }
 
         return true;
@@ -1227,9 +1065,7 @@ public static class Sequence
     public static bool Equal<T>(ReadOnlySpan<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null)
     {
         if (right is null)
-        {
             return false;
-        }
 
         itemComparer ??= EqualityComparer<T>.Default;
         int leftCount = left.Length;
@@ -1237,18 +1073,14 @@ public static class Sequence
         if (right is ICollection<T> rightCollection)
         {
             if (rightCollection.Count != leftCount)
-            {
                 return false;
-            }
 
             if (right is IList<T> rightList)
             {
                 for (int i = 0; i < leftCount; i++)
                 {
                     if (!itemComparer.Equals(left[i], rightList[i]))
-                    {
                         return false;
-                    }
                 }
 
                 return true;
@@ -1266,9 +1098,7 @@ public static class Sequence
 #endif
 
                 if (!itemComparer.Equals(left[i], rightEnumerator.Current))
-                {
                     return false;
-                }
             }
 
             return true;
@@ -1279,20 +1109,14 @@ public static class Sequence
             for (int i = 0; i < leftCount; i++)
             {
                 if (!rightEnumerator.MoveNext())
-                {
                     return false; // left has more items
-                }
 
                 if (!itemComparer.Equals(left[i], rightEnumerator.Current))
-                {
                     return false;
-                }
             }
 
             if (rightEnumerator.MoveNext())
-            {
                 return false; // right has more items
-            }
 
             return true;
         }
@@ -1301,34 +1125,26 @@ public static class Sequence
     public static bool Equal<T>(IEnumerable<T>? left, T[]? right, IEqualityComparer<T>? itemComparer = default)
     {
         if (left is null)
-        {
             return right is null;
-        }
 
         if (right is null)
-        {
             return false;
-        }
 
-        return Equal<T>(left, new ReadOnlySpan<T>(right), itemComparer);
+        return Equal(left, new ReadOnlySpan<T>(right), itemComparer);
     }
 
     public static bool Equal<T>(IEnumerable<T>? left, Span<T> right, IEqualityComparer<T>? itemComparer = default)
     {
         if (left is null)
-        {
             return false;
-        }
 
-        return Equal<T>(left, (ReadOnlySpan<T>)right, itemComparer);
+        return Equal(left, (ReadOnlySpan<T>)right, itemComparer);
     }
 
     public static bool Equal<T>(IEnumerable<T>? left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = default)
     {
         if (left is null)
-        {
             return false;
-        }
 
         itemComparer ??= EqualityComparer<T>.Default;
         int rightCount = right.Length;
@@ -1336,18 +1152,14 @@ public static class Sequence
         if (left is ICollection<T> leftCollection)
         {
             if (leftCollection.Count != rightCount)
-            {
                 return false;
-            }
 
             if (left is IList<T> leftList)
             {
                 for (int i = 0; i < rightCount; i++)
                 {
                     if (!itemComparer.Equals(leftList[i], right[i]))
-                    {
                         return false;
-                    }
                 }
 
                 return true;
@@ -1365,9 +1177,7 @@ public static class Sequence
 #endif
 
                 if (!itemComparer.Equals(leftEnumerator.Current, right[i]))
-                {
                     return false;
-                }
             }
 
             return true;
@@ -1378,20 +1188,14 @@ public static class Sequence
             for (int i = 0; i < rightCount; i++)
             {
                 if (!leftEnumerator.MoveNext())
-                {
                     return false; // right has more items
-                }
 
                 if (!itemComparer.Equals(leftEnumerator.Current, right[i]))
-                {
                     return false;
-                }
             }
 
             if (leftEnumerator.MoveNext())
-            {
                 return false; // left has more items
-            }
 
             return true;
         }
@@ -1400,14 +1204,10 @@ public static class Sequence
     public static bool Equal<T>(IEnumerable<T>? left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null)
     {
         if (left is null)
-        {
             return right is null;
-        }
 
         if (right is null)
-        {
             return false;
-        }
 
         itemComparer ??= EqualityComparer<T>.Default;
 
@@ -1419,9 +1219,7 @@ public static class Sequence
             bool leftMoved = leftEnumerator.MoveNext();
             bool rightMoved = rightEnumerator.MoveNext();
             if (leftMoved != rightMoved)
-            {
                 return false; // different lengths
-            }
 
             if (!leftMoved)
             {
@@ -1431,13 +1229,40 @@ public static class Sequence
             }
 
             if (!itemComparer.Equals(leftEnumerator.Current, rightEnumerator.Current))
-            {
                 return false; // items differ
-            }
         }
     }
 
-#endregion
+    #endregion
 
-#endregion
+    #endregion
+
+
+    #region StartsWith
+    public static bool StartsWith<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match, IsEquatable<T> _ = default)
+        where T : IEquatable<T>
+        => source.StartsWith(match);
+
+    public static bool StartsWith<T>(ReadOnlySpan<T> source, T[]? match, IsEquatable<T> _ = default)
+        where T : IEquatable<T>
+        => source.StartsWith(new ReadOnlySpan<T>(match));
+
+
+    public static bool StartsWith<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match)
+        => StartsWith(source, match, null);
+
+    public static bool StartsWith<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match, IEqualityComparer<T>? itemComparer)
+    {
+        int matchLen = match.Length;
+        if (matchLen == 0)
+            return false;
+        if (matchLen > source.Length)
+            return false;
+        // slice source down and equate
+        return Equal(source[..matchLen], match, itemComparer);
+    }
+
+
+
+    #endregion
 }

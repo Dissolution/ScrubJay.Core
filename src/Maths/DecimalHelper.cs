@@ -1,56 +1,56 @@
-﻿using ScrubJay.Memory;
-using ScrubJay.Text;
+﻿using ScrubJay.Text;
 
 namespace ScrubJay.Maths;
 
 [PublicAPI]
-public static class DecimalHelper
-{
 #if NET7_0_OR_GREATER
     public readonly record struct FloatingPointInfo(Int128 Mantissa, bool IsNegative, byte Exponent)
 #else
     public readonly record struct FloatingPointInfo(BigInteger Mantissa, bool IsNegative, byte Exponent)
 #endif
+{
+    public override string ToString()
     {
-        public override string ToString()
+        var text = new Buffer<char>();
+        text.Write(Mantissa);
+        if (Exponent == 0)
         {
-            var text = new Buffer<char>();
-            text.Write(Mantissa);
-            if (Exponent == 0)
-            {
-                // fin
-            }
-            else if (Exponent > text.Count)
-            {
-                int zeros = Exponent - text.Count;
-                int offset = 0;
-                if (Mantissa < 0)
-                {
-                    zeros += 1;
-                    offset = 1;
-                }
-
-                Span<char> buf = stackalloc char[2 + zeros];
-                buf[0] = '0';
-                buf[1] = '.';
-                buf[2..].Fill('0');
-
-                text.TryInsertMany(offset, buf).ThrowIfError();
-            }
-            else
-            {
-                int offset = text.Count - Exponent;
-                text.TryInsert(offset, '.').ThrowIfError();
-            }
-
-            return text.ToStringAndDispose();
+            // fin
         }
-    }
+        else if (Exponent > text.Count)
+        {
+            int zeros = Exponent - text.Count;
+            int offset = 0;
+            if (Mantissa < 0)
+            {
+                zeros += 1;
+                offset = 1;
+            }
 
+            Span<char> buf = stackalloc char[2 + zeros];
+            buf[0] = '0';
+            buf[1] = '.';
+            buf[2..].Fill('0');
+
+            text.TryInsertMany(offset, buf).ThrowIfError();
+        }
+        else
+        {
+            int offset = text.Count - Exponent;
+            text.TryInsert(offset, '.').ThrowIfError();
+        }
+
+        return text.ToStringAndDispose();
+    }
+}
+
+[PublicAPI]
+public static class DecimalHelper
+{
     public static FloatingPointInfo GetInfo(this decimal dec)
     {
         Span<int> ints = stackalloc int[4];
-#if NETFRAMEWORK || NETSTANDARD
+#if NETFRAMEWORK || NETSTANDARD || NETCOREAPP
         decimal.GetBits(dec).CopyTo(ints);
 #else
         decimal.GetBits(dec, ints);
@@ -92,7 +92,7 @@ public static class DecimalHelper
     public static FloatingPointInfo GetInfo(this float f32)
     {
         // Translate the float into sign, exponent and mantissa.
-        int bits = Notsafe.DirectCast<float, int>(f32);
+        int bits = Notsafe.As<float, int>(f32);
 
         // Note that the shift is sign-extended, hence the test against -1 not 1
         bool isNegative = (bits & (1 << 31)) != 0;
@@ -151,7 +151,7 @@ public static class DecimalHelper
         // bit to the front of the mantissa
         else
         {
-            mantissa = mantissa | (1L << 52);
+            mantissa |= (1L << 52);
         }
 
         // Bias the exponent. It's actually biased by 1023, but we're

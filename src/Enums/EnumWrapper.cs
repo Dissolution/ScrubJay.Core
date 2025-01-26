@@ -12,7 +12,9 @@ public readonly struct EnumWrapper<TEnum> :
     ISpanParsable<EnumWrapper<TEnum>>,
     IParsable<EnumWrapper<TEnum>>,
 #endif
+    IEquatable<EnumWrapper<TEnum>>,
     IEquatable<TEnum>,
+    IComparable<EnumWrapper<TEnum>>,
     IComparable<TEnum>,
     ISpanFormattable,
     IFormattable
@@ -36,17 +38,13 @@ public readonly struct EnumWrapper<TEnum> :
 
 #region Parse
 
-    public static EnumWrapper<TEnum> Parse(string str, IFormatProvider? _ = default) => EnumHelper.TryParse<TEnum>(str).OkOrThrow();
+    public static EnumWrapper<TEnum> Parse(string str, IFormatProvider? _ = default) => EnumInfo<TEnum>.TryParse(str).OkOrThrow();
 
-    public static EnumWrapper<TEnum> Parse(ReadOnlySpan<char> text, IFormatProvider? _ = default)
-    {
-        // for now, have to cast ToString()
-        return Parse(text.ToString());
-    }
+    public static EnumWrapper<TEnum> Parse(ReadOnlySpan<char> text, IFormatProvider? _ = default) => Parse(text.ToString());
 
     public static bool TryParse([NotNullWhen(true)] string? str, IFormatProvider? _, out EnumWrapper<TEnum> result)
     {
-        var parseResult = EnumHelper.TryParse<TEnum>(str);
+        var parseResult = EnumInfo.TryParse<TEnum>(str);
         if (!parseResult.HasOk(out var @enum))
         {
             result = default;
@@ -58,32 +56,29 @@ public readonly struct EnumWrapper<TEnum> :
     }
 
     public static bool TryParse(ReadOnlySpan<char> text, IFormatProvider? _, out EnumWrapper<TEnum> result)
-    {
-        // for now, have to cast ToString()
-        return TryParse(text.ToString(), _, out result);
-    }
+        => TryParse(text.ToString(), _, out result);
 
-#endregion
+    #endregion
 
 
     public readonly TEnum Enum;
 
     public EnumWrapper(TEnum @enum)
     {
-        this.Enum = @enum;
+        Enum = @enum;
     }
 
     public int CompareTo(TEnum other) => Comparer<TEnum>.Default.Compare(Enum, other);
 
     public int CompareTo(EnumWrapper<TEnum> other) => Comparer<TEnum>.Default.Compare(Enum, other.Enum);
 
-    public bool Equals(TEnum other) => this.Enum.IsEqual(other);
+    public bool Equals(TEnum other) => Enum.IsEqual(other);
 
-    public bool Equals(EnumWrapper<TEnum> other) => this.Enum.IsEqual(other.Enum);
+    public bool Equals(EnumWrapper<TEnum> other) => Enum.IsEqual(other.Enum);
 
-    public bool Equals(long value) => this.Enum.ToInt64() == value;
+    public bool Equals(long value) => Enum.ToInt64() == value;
 
-    public bool Equals(ulong value) => this.Enum.ToUInt64() == value;
+    public bool Equals(ulong value) => Enum.ToUInt64() == value;
 
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
@@ -99,7 +94,7 @@ public readonly struct EnumWrapper<TEnum> :
         // Should we also support string?
     }
 
-    public override int GetHashCode() => this.Enum.GetHashCode();
+    public override int GetHashCode() => Enum.GetHashCode();
 
     public bool TryFormat(Span<char> destination, out int charsWritten,
         ReadOnlySpan<char> format = default,
@@ -120,7 +115,7 @@ public readonly struct EnumWrapper<TEnum> :
     public string ToString(
         [StringSyntax(StringSyntaxAttribute.EnumFormat)]
         string? format,
-        IFormatProvider? formatProvider = default) => this.Enum.ToString(format);
+        IFormatProvider? formatProvider = default) => Enum.ToString(format);
 
-    public override string ToString() => EnumHelper<TEnum>.GetName(Enum);
+    public override string ToString() => Enum.AsString();
 }

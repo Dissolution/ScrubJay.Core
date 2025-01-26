@@ -1,8 +1,9 @@
-﻿#pragma warning disable MA0077, MA0094, CA1034, CA1000
+﻿// I do want these static members on this generic type
+#pragma warning disable CA1000
+// Enumerator is nested
+#pragma warning disable CA1034
 
 // ReSharper disable InconsistentNaming
-
-using ScrubJay.Collections;
 
 namespace ScrubJay.Functional;
 
@@ -592,7 +593,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     /// </summary>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
-    public OptionReadOnlySpanEnumerator GetEnumerator() => new OptionReadOnlySpanEnumerator(this);
+    public OptionReadOnlySpanEnumerator GetEnumerator() => new(this);
 
     [MustDisposeResource(false)]
     [StructLayout(LayoutKind.Auto)]
@@ -601,7 +602,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         private bool _yielded;
         private readonly ReadOnlySpan<T> _value;
 
-        public ReadOnlySpan<T> Current => _value;
+        public readonly ReadOnlySpan<T> Current => _value;
 
         public OptionReadOnlySpanEnumerator(OptionReadOnlySpan<T> option)
         {

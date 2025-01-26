@@ -184,7 +184,7 @@ public static class FlagsEnumExtensions
         int f = 0;
         int maxBits = Unsafe.SizeOf<TEnum>() * 8;
         ulong enumValue = ToUInt64(@enum);
-        for (var shift = 0; shift < maxBits; shift++)
+        for (int shift = 0; shift < maxBits; shift++)
         {
             ulong mask = 1UL << shift;
             if ((enumValue & mask) != 0UL)
@@ -268,7 +268,7 @@ public static class FlagsEnumExtensions
         where TEnum : struct, Enum
     {
         TEnum flag = default;
-        for (var i = 0; i < flags.Length; i++)
+        for (int i = 0; i < flags.Length; i++)
         {
             flag.AddFlag(flags[i]);
         }
@@ -308,7 +308,7 @@ public static class FlagsEnumExtensions
         where TEnum : struct, Enum
     {
         TEnum flag = default;
-        for (var i = 0; i < flags.Length; i++)
+        for (int i = 0; i < flags.Length; i++)
         {
             flag.AddFlag(flags[i]);
         }

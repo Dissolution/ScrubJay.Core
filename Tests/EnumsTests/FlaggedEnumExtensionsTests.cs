@@ -1,5 +1,8 @@
-﻿using ScrubJay.Collections;
+﻿// net481 does not have generic targets
+#pragma warning disable CA2263
+
 using ScrubJay.Enums;
+using ScrubJay.Utilities;
 using ScrubJay.Validation;
 using static ScrubJay.Tests.EnumsTests.EnumTestData;
 // ReSharper disable InvokeAsExtensionMethod
@@ -158,7 +161,7 @@ public class FlaggedEnumExtensionsTests
         return iCount;
     }
 
-    private static readonly Type[] _signedPrimitiveTypes = new Type[4] { typeof(long), typeof(int), typeof(short), typeof(sbyte) };
+    private static readonly Type[] _signedPrimitiveTypes = [typeof(long), typeof(int), typeof(short), typeof(sbyte)];
     
     [Theory]
     [MemberData(nameof(EnumTestData), 1)]
@@ -172,7 +175,6 @@ public class FlaggedEnumExtensionsTests
         }
         else
         {
-            
             countResult = GetULongBitCount(Convert.ToUInt64(e));
         }
 

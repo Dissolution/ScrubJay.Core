@@ -2,41 +2,69 @@
 #pragma warning disable CA1000, CA1045
 // ReSharper disable ArrangeThisQualifier
 
-using ScrubJay.Memory;
+#if NET7_0_OR_GREATER
+using ScrubJay.Parsing;
+#endif
 using ScrubJay.Text;
 
 namespace ScrubJay.Utilities;
 
 [PublicAPI]
-public static class Pair
+public static class Pair 
 {
-    #if NET7_0_OR_GREATER
-    public static Result<Pair<TKey, TValue>, Exception> TryParse<TKey, TValue>(scoped ReadOnlySpan<char> text, IFormatProvider? provider)
+#if NET7_0_OR_GREATER
+    public static Result<Pair<TKey, TValue>, ParseException> TryParse<TKey, TValue>(ReadOnlySpan<char> text, IFormatProvider? provider = default)
         where TKey : ISpanParsable<TKey>
         where TValue : ISpanParsable<TValue>
     {
         var reader = new SpanReader<char>(text);
-        var start = reader.TakeWhile('(');
-        if (start.Length != 1)
-            return new ArgumentException("A Pair's representation must be in the form '(value, value)'", nameof(text));
 
-        var keySpan = reader.TakeUntil(',').Trim();
+        reader.TrySkipWhile(char.IsWhiteSpace);
+
+        if (reader.RemainingCount == 0)
+            return getEx(text);
+
+        char ch = reader.Take();
+        if (ch != '(')
+            return getEx(text);
+
+        var takeUntilComma = reader.TryTakeUntilMatches(',');
+        if (takeUntilComma.StopReason == StopReason.EndOfSpan)
+            return getEx(text);
+
+        var keySpan = takeUntilComma.Span;
         if (!TKey.TryParse(keySpan, provider, out var key))
-            return new ArgumentException($"Could not parse '{keySpan}' to a {typeof(TKey)}", nameof(text));
+            return getEx(text, ParseException.Create<TKey>(keySpan));
 
-        var comma = reader.TakeWhile(',');
-        if (comma.Length !=1)
-            return new ArgumentException("A Pair's representation must be in the form '(value, value)'", nameof(text));
+        ch = reader.Take();
+        Debug.Assert(ch == ',');
 
-        var valueSpan = reader.TakeUntil(')').Trim();
+        var takeUntilRightParenthesis = reader.TryTakeUntilMatches(')');
+        if (takeUntilRightParenthesis.StopReason == StopReason.EndOfSpan)
+            return getEx(text);
+
+        var valueSpan = takeUntilRightParenthesis.Span;
         if (!TValue.TryParse(valueSpan, provider, out var value))
-            return new ArgumentException($"Could not parse '{valueSpan}' to a {typeof(TValue)}", nameof(text));
+            return getEx(text, ParseException.Create<TValue>(valueSpan));
 
-        var end = reader.TakeWhile(')');
-        if (end.Length != 1 || reader.RemainingCount != 0)
-            return new ArgumentException("A Pair's representation must be in the form '(value, value)'", nameof(text));
+        ch = reader.Take();
+        Debug.Assert(ch == ')');
 
-        return OkEx(New(key, value));
+        reader.TrySkipWhile(char.IsWhiteSpace);
+        if (reader.RemainingCount > 0)
+            return getEx(text);
+
+        var pair = new Pair<TKey, TValue>(key, value);
+        return pair;
+
+
+        static ParseException getEx(ReadOnlySpan<char> text, Exception? innerEx = null)
+        {
+            return ParseException.Create<Pair<TKey, TValue>>(
+                text,
+                $"Expected `({typeof(TKey).NameOf()}, {typeof(TValue).NameOf()})`",
+                innerEx);
+        }        
     }
 #endif
 
@@ -56,8 +84,6 @@ public readonly struct Pair<TKey, TValue> :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Pair<TKey, TValue>, Pair<TKey, TValue>, bool>,
     IComparisonOperators<Pair<TKey, TValue>, Pair<TKey, TValue>, bool>,
-    ISpanParsable<Pair<TKey, TValue>>,
-    IParsable<Pair<TKey, TValue>>,
 #endif
     IEquatable<Pair<TKey, TValue>>,
     IComparable<Pair<TKey, TValue>>,
@@ -83,55 +109,35 @@ public readonly struct Pair<TKey, TValue> :
     public static bool operator <(Pair<TKey, TValue> left, Pair<TKey, TValue> right) => left.CompareTo(right) < 0;
     public static bool operator <=(Pair<TKey, TValue> left, Pair<TKey, TValue> right) => left.CompareTo(right) <= 0;
 
-    public static Pair<TKey, TValue> Parse(string s, IFormatProvider? provider) => throw new NotImplementedException();
-
-    public static Pair<TKey, TValue> Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => throw new NotImplementedException();
-
-    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, out Pair<TKey, TValue> result) => throw new NotImplementedException();
-
-    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Pair<TKey, TValue> result) => throw new NotImplementedException();
-
-
-
-    // public static Result<Pair<TKey, TValue>, Exception> TryParse(scoped ReadOnlySpan<char> text, IFormatProvider? provider)
-    // {
-    //     var reader = new SpanReader<char>(text);
-    //     var start = reader.TakeWhile('(');
-    //     if (start.Length != 1)
-    //         return new ArgumentException("A Pair's representation must be in the form '(value, value)'", nameof(text));
-    //     var keySpan = reader.TakeUntil(',').Trim();
-    //     TKey.
-    // }
-
 
     public readonly TKey Key;
     public readonly TValue Value;
 
     public Pair(TKey key, TValue value)
     {
-        this.Key = key;
-        this.Value = value;
+        Key = key;
+        Value = value;
     }
 
     public void Deconstruct(out TKey key, out TValue value)
     {
-        key = this.Key;
-        value = this.Value;
+        key = Key;
+        value = Value;
     }
 
     public int CompareTo(Pair<TKey, TValue> pair)
     {
-        int c = Comparer<TKey>.Default.Compare(this.Key, pair.Key);
+        int c = Comparer<TKey>.Default.Compare(Key, pair.Key);
         if (c != 0)
             return c;
-        c = Comparer<TValue>.Default.Compare(this.Value, pair.Value);
+        c = Comparer<TValue>.Default.Compare(Value, pair.Value);
         return c;
     }
 
     public bool Equals(Pair<TKey, TValue> pair)
     {
-        return EqualityComparer<TKey>.Default.Equals(this.Key, pair.Key) &&
-            EqualityComparer<TValue>.Default.Equals(this.Value, pair.Value);
+        return EqualityComparer<TKey>.Default.Equals(Key, pair.Key) &&
+            EqualityComparer<TValue>.Default.Equals(Value, pair.Value);
     }
 
     public override bool Equals([NotNullWhen(true)] object? obj)
@@ -140,19 +146,19 @@ public readonly struct Pair<TKey, TValue> :
         {
             Pair<TKey, TValue> pair => Equals(pair),
             KeyValuePair<TKey, TValue> kvp =>
-                EqualityComparer<TKey>.Default.Equals(this.Key, kvp.Key) &&
-                EqualityComparer<TValue>.Default.Equals(this.Value, kvp.Value),
+                EqualityComparer<TKey>.Default.Equals(Key, kvp.Key) &&
+                EqualityComparer<TValue>.Default.Equals(Value, kvp.Value),
             Tuple<TKey, TValue> tuple =>
-                EqualityComparer<TKey>.Default.Equals(this.Key, tuple.Item1) &&
-                EqualityComparer<TValue>.Default.Equals(this.Value, tuple.Item2),
+                EqualityComparer<TKey>.Default.Equals(Key, tuple.Item1) &&
+                EqualityComparer<TValue>.Default.Equals(Value, tuple.Item2),
             ValueTuple<TKey, TValue> valueTuple =>
-                EqualityComparer<TKey>.Default.Equals(this.Key, valueTuple.Item1) &&
-                EqualityComparer<TValue>.Default.Equals(this.Value, valueTuple.Item2),
+                EqualityComparer<TKey>.Default.Equals(Key, valueTuple.Item1) &&
+                EqualityComparer<TValue>.Default.Equals(Value, valueTuple.Item2),
             _ => false,
         };
     }
 
-    public override int GetHashCode() => Hasher.Combine<TKey, TValue>(this.Key, this.Value);
+    public override int GetHashCode() => Hasher.Combine<TKey, TValue>(Key, Value);
 
     public bool TryFormat(
         Span<char> destination,
@@ -163,11 +169,11 @@ public readonly struct Pair<TKey, TValue> :
         var writer = new FormatWriter(destination);
         if (!writer.TryWrite('('))
             goto FAIL;
-        if (!writer.TryWrite<TKey>(this.Key, format, provider))
+        if (!writer.TryWrite<TKey>(Key, format, provider))
             goto FAIL;
         if (!writer.TryWrite(", "))
             goto FAIL;
-        if (!writer.TryWrite<TValue>(this.Value, format, provider))
+        if (!writer.TryWrite<TValue>(Value, format, provider))
             goto FAIL;
         if (!writer.TryWrite(')'))
             goto FAIL;
@@ -175,7 +181,7 @@ public readonly struct Pair<TKey, TValue> :
         charsWritten = writer.Count;
         return true;
 
-    FAIL:
+FAIL:
         destination.Clear();
         charsWritten = 0;
         return false;
@@ -185,12 +191,12 @@ public readonly struct Pair<TKey, TValue> :
     {
         var text = new DefaultInterpolatedStringHandler(4, 2, formatProvider);
         text.AppendLiteral("(");
-        text.AppendFormatted<TKey>(this.Key, format);
+        text.AppendFormatted<TKey>(Key, format);
         text.AppendLiteral(", ");
-        text.AppendFormatted<TValue>(this.Value, format);
+        text.AppendFormatted<TValue>(Value, format);
         text.AppendLiteral(")");
         return text.ToStringAndClear();
     }
 
-    public override string ToString() => $"({this.Key}, {this.Value})";
+    public override string ToString() => $"({Key}, {Value})";
 }

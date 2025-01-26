@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using ScrubJay.Collections;
 
 namespace ScrubJay.Buffers;
 

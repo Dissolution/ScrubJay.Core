@@ -1,11 +1,9 @@
 ﻿#pragma warning disable CA1305 // Specify IFormatProvider
 
-using System.ComponentModel;
 using System.Globalization;
 using System.Numerics;
-using ScrubJay.Collections;
-using ScrubJay.Extensions;
 using ScrubJay.Maths;
+using ScrubJay.Utilities;
 
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 
@@ -162,7 +160,7 @@ public sealed class RationalTests
 
     private static Rational FastFromDecimal(decimal dec)
     {
-#if NETFRAMEWORK
+#if NETFRAMEWORK || NETSTANDARD || NETCOREAPP
         int[] bits = decimal.GetBits(dec);
 #else
         Span<int> bits = stackalloc int[4];

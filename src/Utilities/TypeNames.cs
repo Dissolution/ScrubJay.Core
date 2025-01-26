@@ -1,6 +1,5 @@
 #pragma warning disable IDE0058
 
-using ScrubJay.Collections;
 using ScrubJay.Text;
 
 namespace ScrubJay.Utilities;

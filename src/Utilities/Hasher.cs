@@ -88,14 +88,13 @@ public ref struct Hasher
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint RotateLeft(uint value, int offset)
-    {
+    private static uint RotateLeft(uint value, int offset) =>
 #if NET6_0_OR_GREATER
-        return BitOperations.RotateLeft(value, offset);
+        BitOperations.RotateLeft(value, offset);
 #else
-        return (value << offset) | (value >> (32 - offset));
+        (value << offset) | (value >> (32 - offset));
 #endif
-    }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StartingHash()

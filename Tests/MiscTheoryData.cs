@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1710
+﻿#pragma warning disable CA1710, CA1512
 
 using System.Collections;
 using ScrubJay.Collections;

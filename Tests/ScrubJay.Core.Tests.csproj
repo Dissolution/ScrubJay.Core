@@ -1,61 +1,64 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <AssemblyName>ScrubJay.Core.Tests</AssemblyName>
-        <RootNamespace>ScrubJay.Tests</RootNamespace>
+  <PropertyGroup>
+    <AssemblyName>ScrubJay.Core.Tests</AssemblyName>
+    <RootNamespace>ScrubJay.Tests</RootNamespace>
 
-        <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;net481;</TargetFrameworks>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+    <TargetFrameworks>
+      net9.0;net8.0;net7.0;net6.0;net481;
+    </TargetFrameworks>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
 
-        <IsPackable>false</IsPackable>
-        <IsTestProject>true</IsTestProject>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
 
-        <NoWarn>xUnit1037; CS1718</NoWarn>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
 
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>xUnit1037; CS1718</NoWarn>
 
-        <Configurations>Debug;Release</Configurations>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-        <Platforms>AnyCPU</Platforms>
-    </PropertyGroup>
+    <Configurations>Debug;Release</Configurations>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-        <PackageReference Include="Xunit.Combinatorial" Version="2.0.24" />
-        <!--<PackageReference Include="Xunit.Combinatorial" Version="2.0.24" />-->
-        <PackageReference Include="xunit.runner.visualstudio" Version="3.0.1">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="coverlet.collector" Version="6.0.3">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="xunit.v3" Version="1.0.1" />
-    </ItemGroup>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
 
-    <!-- Project References -->
-    <ItemGroup>
-        <ProjectReference Include="..\src\ScrubJay.Core.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="Xunit.Combinatorial" Version="2.0.24" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.0.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.v3" Version="1.0.1" />
+  </ItemGroup>
 
-    <!-- NuGet Packages -->
-    <!-- Need System.Memory for older frameworks -->
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Memory" Version="4.6.0">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-    </ItemGroup>
+  <!-- Project References -->
+  <ItemGroup>
+    <ProjectReference Include="..\src\ScrubJay.Core.csproj" />
+  </ItemGroup>
 
-    <!-- Global Usings -->
-    <ItemGroup>
-        <Using Include="Xunit" />
-        <Using Include="System.Diagnostics" />
-        <Using Include="System.Diagnostics.CodeAnalysis" />
+  <!-- NuGet Packages -->
+  <!-- Need System.Memory for older frameworks -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="System.Memory" Version="4.6.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
 
-        <Using Include="Polyfills" />
-        <Using Include="ScrubJay.Tests.Helpers" />
-    </ItemGroup>
+  <!-- Global Usings -->
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+
+    <Using Include="Polyfills" />
+    <Using Include="ScrubJay.Tests.Helpers" />
+  </ItemGroup>
 </Project>

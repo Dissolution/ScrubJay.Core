@@ -34,7 +34,7 @@ public static class TestHelper
         // type
         typeof(TestHelper),
         // exception
-        new Exception("TheoryHelper.TheoryObjects"),
+        new InvalidOperationException("TheoryHelper.TheoryObjects"),
         // old net stuff
         DBNull.Value,
         // anonymous object

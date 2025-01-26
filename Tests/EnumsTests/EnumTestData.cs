@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1028, CA1069
+﻿#pragma warning disable CA1028, CA1069, CA1034, CA2263
 
 namespace ScrubJay.Tests.EnumsTests;
 
@@ -194,7 +194,7 @@ public static class EnumTestData
             throw new ArgumentOutOfRangeException(nameof(paramCount), paramCount, "Parameter count must be 1 or greater");
         }
 
-        var enumMembers = (TEnum[])Enum.GetValues(typeof(TEnum));
+        TEnum[] enumMembers = (TEnum[])Enum.GetValues(typeof(TEnum));
         int combinations = (int)Math.Pow(enumMembers.Length, paramCount);
         for (int i = 0; i < combinations; i++)
         {

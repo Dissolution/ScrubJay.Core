@@ -1,32 +1,31 @@
-﻿namespace ScrubJay.Maths;
+﻿// BigInt is nested on purpose
+#pragma warning disable CA1034
+
+namespace ScrubJay.Maths;
 
 public static class MathHelper
 {
-    public static BigInteger BigInteger_Ten { get; } = new BigInteger(10);
-    
-    public static BigInteger BigInteger_FloatMinValue { get; } = new BigInteger(float.MinValue);
-    public static BigInteger BigInteger_FloatMaxValue { get; } = new BigInteger(float.MaxValue);
-    
-    public static BigInteger BigInteger_DoubleMinValue { get; } = new BigInteger(double.MinValue);
-    public static BigInteger BigInteger_DoubleMaxValue { get; } = new BigInteger(double.MaxValue);
-    
-    public static BigInteger BigInteger_DecimalMinValue { get; } = new BigInteger(decimal.MinValue);
-    public static BigInteger BigInteger_DecimalMaxValue { get; } = new BigInteger(decimal.MaxValue);
-    
-    public static BigInteger BigInteger_LongMinValue { get; } = new BigInteger(long.MinValue);
-    public static BigInteger BigInteger_LongMaxValue { get; } = new BigInteger(long.MaxValue);
-
-
-    public static int NumberOfDigits(this BigInteger bigInt)
+    public static class BigInt
     {
-        return (int)Math.Ceiling(BigInteger.Log10(bigInt * bigInt.Sign));
+        public static BigInteger Ten { get; } = new BigInteger(10);
+
+        public static BigInteger FloatMinValue { get; } = new BigInteger(float.MinValue);
+        public static BigInteger FloatMaxValue { get; } = new BigInteger(float.MaxValue);
+
+        public static BigInteger DoubleMinValue { get; } = new BigInteger(double.MinValue);
+        public static BigInteger DoubleMaxValue { get; } = new BigInteger(double.MaxValue);
+
+        public static BigInteger DecimalMinValue { get; } = new BigInteger(decimal.MinValue);
+        public static BigInteger DecimalMaxValue { get; } = new BigInteger(decimal.MaxValue);
+
+        public static BigInteger LongMinValue { get; } = new BigInteger(long.MinValue);
+        public static BigInteger LongMaxValue { get; } = new BigInteger(long.MaxValue);
     }
+
+    public static int NumberOfDigits(this BigInteger bigInt) => (int)Math.Ceiling(BigInteger.Log10(bigInt * bigInt.Sign));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static BigInteger TenPow(int exponent)
-    {
-        return BigInteger.Pow(BigInteger_Ten, exponent);
-    }
+    public static BigInteger TenPow(int exponent) => BigInteger.Pow(BigInt.Ten, exponent);
 
 
     public static ulong GreatestCommonDivisor(ulong left, ulong right)

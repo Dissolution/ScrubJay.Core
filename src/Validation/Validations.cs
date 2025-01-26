@@ -1,8 +1,6 @@
 ﻿// CA1710: Identifiers should have correct suffix
 #pragma warning disable CA1710, IDE0028
 
-using ScrubJay.Collections;
-
 namespace ScrubJay.Validation;
 
 /// <summary>
