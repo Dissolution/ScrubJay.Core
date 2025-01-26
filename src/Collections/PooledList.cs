@@ -1045,7 +1045,7 @@ public sealed class PooledList<T> :
     public Span<T> Slice(int index)
     {
         Validate.Index(index, _position).ThrowIfError();
-        return _array.AsSpan(index, _position);
+        return _array.AsSpan(index.._position);
     }
 
     /// <summary>
@@ -1054,7 +1054,7 @@ public sealed class PooledList<T> :
     public Span<T> Slice(Index index)
     {
         int offset = Validate.Index(index, _position).OkOrThrow();
-        return _array.AsSpan(offset, _position);
+        return _array.AsSpan(offset.._position);
     }
 
     /// <summary>

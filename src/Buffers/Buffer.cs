@@ -1132,6 +1132,51 @@ public ref struct Buffer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan() => _span.Slice(0, _position);
 
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items starting at the given <paramref name="index"/>
+    /// </summary>
+    public Span<T> Slice(int index)
+    {
+        Validate.Index(index, _position).ThrowIfError();
+        return _array.AsSpan(index.._position);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items starting at the given <see cref="Index"/>
+    /// </summary>
+    public Span<T> Slice(Index index)
+    {
+        int offset = Validate.Index(index, _position).OkOrThrow();
+        return _array.AsSpan(offset.._position);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items from <paramref name="index"/> for <paramref name="count"/>
+    /// </summary>
+    public Span<T> Slice(int index, int count)
+    {
+        Validate.IndexLength(index, count, _position).ThrowIfError();
+        return _array.AsSpan(index, count);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items from <paramref name="index"/> for <paramref name="count"/>
+    /// </summary>
+    public Span<T> Slice(Index index, int count)
+    {
+        (int offset, int len) = Validate.IndexLength(index, count, _position).OkOrThrow();
+        return _array.AsSpan(offset, len);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="Span{T}"/> slice of written items for a <see cref="Range"/>
+    /// </summary>
+    public Span<T> Slice(Range range)
+    {
+        (int offset, int len) = Validate.Range(range, _position).OkOrThrow();
+        return _array.AsSpan(offset, len);
+    }
+
 #pragma warning disable CA1002
     /// <summary>
     /// Copy the items in this <see cref="Buffer{T}"/> to a new <c>T[]</c>

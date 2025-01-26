@@ -1,7 +1,8 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using ScrubJay.Buffers;
 using ScrubJay.Collections;
+using ScrubJay.Utilities;
 
 // ReSharper disable CollectionNeverUpdated.Local
 
@@ -405,5 +406,23 @@ public class PooledListTests
 
         var midItems = buffer.Skip(4).Take(4).ToList();
         Assert.Equal([4, 5, 6, 7], midItems);
+    }
+
+    [Fact]
+    public void SliceWorks()
+    {
+        int[] numbers = [1,2,3,4,5];
+
+        using PooledList<int> list = [];
+        list.AddMany(numbers);
+        Assert.Equal(5, list.Count);
+        Assert.Equal(numbers, list);
+
+        for (var i = 0; i < 5; i++)
+        {
+            var listSlice = list.Slice(i);
+            var arraySlice = numbers.AsSpan().Slice(i);
+            Assert.Equal(arraySlice, listSlice);
+        }
     }
 }
