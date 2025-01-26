@@ -20,7 +20,7 @@ public abstract class FluentRecordBuilder<TBuilder, TRecord> : FluentBuilder<TBu
     where TBuilder : FluentRecordBuilder<TBuilder, TRecord>
     where TRecord : class, new()
 {
-    protected readonly TRecord _record;
+    protected TRecord _record;
 
     protected virtual bool IsValid => _record is not null;
 
