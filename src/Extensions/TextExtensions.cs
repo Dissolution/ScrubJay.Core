@@ -9,11 +9,14 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class TextExtensions
 {
+    /// <summary>
+    /// Gets this <see cref="string"/> as a non-null <see cref="string"/>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string AsString(this string? str) => str ?? string.Empty;
 
     /// <summary>
-    /// Gets this <see cref="text"/> as a <see #pragma warning disable cref="string"/>
+    /// Gets this <see cref="Span{T}">Span&lt;char&gt;</see> as a <see cref="string"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string AsString(this scoped Span<char> text)
