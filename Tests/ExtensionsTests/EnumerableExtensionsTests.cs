@@ -23,7 +23,9 @@ public class EnumerableExtensionsTests
 
 
     [Theory]
+#pragma warning disable xUnit1037
     [MemberData(nameof(Enumerables))]
+#pragma warning restore xUnit1037
     public void WhereNotNull_Works<T>(IEnumerable<T>? enumerable)
     {
 #pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.

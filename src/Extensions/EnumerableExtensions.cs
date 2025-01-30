@@ -1,3 +1,5 @@
+using ScrubJay.Comparison;
+
 namespace ScrubJay.Extensions;
 
 /// <summary>
@@ -53,6 +55,13 @@ public static class EnumerableExtensions
     public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
         this IEnumerable<TIn> enumerable,
         Func<TIn, Option<TOut>> selectWhere)
+    {
+        return enumerable.SelectMany(i => selectWhere(i));
+    }
+    
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut, TError>(
+        this IEnumerable<TIn> enumerable,
+        Func<TIn, Result<TOut, TError>> selectWhere)
     {
         return enumerable.SelectMany(i => selectWhere(i));
     }
@@ -168,19 +177,19 @@ public static class EnumerableExtensions
         return enumerable.OrderBy(e => Array.IndexOf(itemOrder, e));
     }
 
-//    public static IEnumerable<T> OrderBy<T, TSub>(this IEnumerable<T> enumerable,
-//        Func<T, TSub> selectSub,
-//        TSub[] subItemOrder)
-//        where TSub : IEquatable<TSub>
-//    {
-//        return enumerable
-//            .OrderBy(selectSub, Relate.Compare.CreateComparer<TSub>((x, y) =>
-//            {
-//                var xIndex = subItemOrder.FirstIndexOf(x);
-//                var yIndex = subItemOrder.FirstIndexOf(y);
-//                return xIndex.CompareTo(yIndex);
-//            }));
-//    }
+    public static IEnumerable<T> OrderBy<T, TSub>(this IEnumerable<T> enumerable,
+        Func<T, TSub> selectSub,
+        TSub[] subItemOrder)
+        where TSub : IEquatable<TSub>
+    {
+        return enumerable
+            .OrderBy(selectSub, Relate.Compare.CreateComparer<TSub>((x, y) =>
+            {
+                var xIndex = subItemOrder.FirstIndexOf(x);
+                var yIndex = subItemOrder.FirstIndexOf(y);
+                return xIndex.CompareTo(yIndex);
+            }));
+    }
 
     public static void Consume<T>(this IEnumerable<T> enumerable, Action<T> perItem)
     {

@@ -5,19 +5,19 @@
 //using ScrubJay.Scratch.Gamma;
 
 
+using System.Diagnostics;
 using ScrubJay;
 
+bool? a = true;
+bool? b = null;
+bool? c = false;
 
 
+bool ab = (bool)a;
+bool bb = (bool)b;
+bool cb = (bool)c;
 
-
-Result<int, byte> result_ib_a = 147;
-Result<int, byte> result_ib_b = (byte)147;
-Result<byte, Exception> nope = new Exception();
-Result<byte, Exception> nope2 = new InvalidOperationException();
-Result<byte, Exception> nope3 = new InvalidOperationException();
-
-
+Debugger.Break();
 
 /*
 
