@@ -163,15 +163,15 @@ public static class FlagsEnumExtensions
         Emit.Call(MethodRef.Method(typeof(BitOperations), nameof(BitOperations.PopCount), typeof(ulong)));
         return Return<int>();
 #else
-        const ulong MASK_1 = 0b1010101010101010101010101010101_01010101010101010101010101010101UL;
-        const ulong MASK_2 = 0b0110011001100110011001100110011_00110011001100110011001100110011UL;
-        const ulong MASK_3 = 0b0001111000011110000111100001111_00001111000011110000111100001111UL;
-        const ulong MASK_4 = 0b0000001000000010000000100000001_00000001000000010000000100000001UL;
+        const ulong Mask1 = 0b1010101010101010101010101010101_01010101010101010101010101010101UL;
+        const ulong Mask2 = 0b0110011001100110011001100110011_00110011001100110011001100110011UL;
+        const ulong Mask3 = 0b0001111000011110000111100001111_00001111000011110000111100001111UL;
+        const ulong Mask4 = 0b0000001000000010000000100000001_00000001000000010000000100000001UL;
 
         ulong value = ToUInt64<TEnum>(@enum);
-        value -= (value >> 1) & MASK_1;
-        value = (value & MASK_2) + ((value >> 2) & MASK_2);
-        value = (((value + (value >> 4)) & MASK_3) * MASK_4) >> 56;
+        value -= (value >> 1) & Mask1;
+        value = (value & Mask2) + ((value >> 2) & Mask2);
+        value = (((value + (value >> 4)) & Mask3) * Mask4) >> 56;
         return (int)value;
 #endif
     }

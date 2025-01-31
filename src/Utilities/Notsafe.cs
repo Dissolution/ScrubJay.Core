@@ -44,7 +44,14 @@ public static unsafe class Notsafe
         return ref ReturnRef<T>();
     }
 
-  
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int SizeOf<T>()
+        where T : struct
+    {
+        Emit.Sizeof<T>();
+        return Return<int>();
+    }
+
 
     #region Referencing
     /************************************

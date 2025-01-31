@@ -36,6 +36,12 @@ public ref struct SpanReader<T>
 
     private int _position;
 
+    public readonly int Position
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _position;
+    }
+
     public readonly int RemainingCount
     {
         get
