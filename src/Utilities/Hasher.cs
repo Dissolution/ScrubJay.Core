@@ -440,8 +440,6 @@ public ref struct Hasher
         return hasher.ToHashCode();
     }
 
-
-
     private uint _state1;
     private uint _state2;
     private uint _state3;
