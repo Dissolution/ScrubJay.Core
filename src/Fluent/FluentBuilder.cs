@@ -10,17 +10,6 @@
 public abstract class FluentBuilder<TBuilder>
     where TBuilder : FluentBuilder<TBuilder>
 {
-    /// <summary>
-    /// An <see cref="Action{T}">Action&lt;TBuilder&gt;</see>
-    /// </summary>
-    public delegate void BuilderAction(TBuilder builder);
-
-    /// <summary>
-    /// A fluent <see cref="Func{T,T}">Func&lt;TBuilder, TBuilder&gt;</see>
-    /// </summary>
-    public delegate TBuilder FluentBuild(TBuilder builder);
-
-
     protected internal TBuilder _builder;
 
     protected FluentBuilder()
@@ -29,30 +18,30 @@ public abstract class FluentBuilder<TBuilder>
     }
 
     /// <summary>
-    /// Invoke an <see cref="BuilderAction"/> on this <typeparamref name="TBuilder"/>
+    /// Invoke an action on this <typeparamref name="TBuilder"/>
     /// </summary>
     /// <param name="build">
-    /// The <see cref="BuilderAction"/> to invoke on this <typeparamref name="TBuilder"/>
+    /// The <see cref="Action{T}"/> to invoke on this <typeparamref name="TBuilder"/>
     /// </param>
     /// <returns>
     /// This <typeparamref name="TBuilder"/> instance after invoking <paramref name="build"/>
     /// </returns>
-    public virtual TBuilder Invoke(BuilderAction? build)
+    public virtual TBuilder Invoke(Action<TBuilder>? build)
     {
         build?.Invoke(_builder);
         return _builder;
     }
 
     /// <summary>
-    /// Invoke an <see cref="FluentBuild"/> on this <typeparamref name="TBuilder"/>
+    /// Invoke a function on this <typeparamref name="TBuilder"/>
     /// </summary>
     /// <param name="build">
-    /// The <see cref="FluentBuild"/> to invoke on this <typeparamref name="TBuilder"/>
+    /// The <see cref="Func{T,T}"/> to invoke on this <typeparamref name="TBuilder"/>
     /// </param>
     /// <returns>
     /// This <typeparamref name="TBuilder"/> instance after invoking <paramref name="build"/>
     /// </returns>
-    public virtual TBuilder Invoke(FluentBuild? build)
+    public virtual TBuilder Invoke(Func<TBuilder, TBuilder>? build)
     {
         // Throwaway what build returns, we always return _builder
         _ = build?.Invoke(_builder);
