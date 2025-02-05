@@ -1,57 +1,102 @@
-﻿// ReSharper disable MethodOverloadWithOptionalParameter
-
-using ScrubJay.Constraints;
+﻿using ScrubJay.Constraints;
+using ScrubJay.Fluent;
 
 namespace ScrubJay.Buffers;
 
-public record class ObjectPoolPolicy
+[PublicAPI]
+public static class ObjectPoolPolicy
 {
-    public static ObjectPoolPolicy<T> Default<T>(T? _ = default)
-        where T : class
-        => new();
-
-    public static ObjectPoolPolicy<T> Default<T>(GenericTypeConstraint.IsNew<T> _ = default)
+    public static ObjectPoolPolicy<T> ForType<T>(GenericTypeConstraint.IsNew<T> _ = default)
         where T : class, new()
     {
-        return new()
+        return new ObjectPoolPolicy<T>
         {
-            CreateInstance = static () => new(),
+            CreateInstance = static () => new T(),
         };
     }
 
-    public static ObjectPoolPolicy<T> Default<T>(GenericTypeConstraint.IsDisposable<T> _ = default)
-        where T : class, IDisposable
-    {
-        return new()
-        {
-            DisposeInstance = static value => value.Dispose(),
-        };
-    }
-
-    public static ObjectPoolPolicy<T> Default<T>(GenericTypeConstraint.IsDisposableNew<T> _ = default)
+    public static ObjectPoolPolicy<T> ForType<T>(GenericTypeConstraint.IsDisposableNew<T> _ = default)
         where T : class, IDisposable, new()
     {
-        return new()
+        return new ObjectPoolPolicy<T>
         {
-            CreateInstance = static () => new(),
-            DisposeInstance = static value => value.Dispose(),
+            CreateInstance = static () => new T(),
+            DisposeInstance = static inst => inst.Dispose(),
+        };
+    }
+
+    public static ObjectPoolPolicy<T> ForType<T>(Func<T> createInstance,
+        GenericTypeConstraint.IsDisposable<T> _ = default)
+        where T : class, IDisposable
+    {
+        return new ObjectPoolPolicy<T>
+        {
+            CreateInstance = createInstance,
+            DisposeInstance = static inst => inst.Dispose(),
+        };
+    }
+
+    public static ObjectPoolPolicy<T> ForType<T>(
+        Func<T> createInstance,
+        Func<T, bool>? tryCleanInstance = null,
+        Action<T>? disposeInstance = null)
+        where T : class
+    {
+        return new ObjectPoolPolicy<T>
+        {
+            CreateInstance = createInstance,
+            TryCleanInstance = tryCleanInstance,
+            DisposeInstance = disposeInstance,
         };
     }
 }
 
-public sealed record class ObjectPoolPolicy<T> : ObjectPoolPolicy
+[PublicAPI]
+public record class ObjectPoolPolicy<T>
     where T : class
 {
-    public Func<T> CreateInstance { get; set; }
-    public Func<T, bool> TryCleanInstance { get; set; }
-    public Action<T> DisposeInstance { get; set; }
-    public int Capacity { get; set; }
+    public required Func<T> CreateInstance { get; init; }
 
-    public ObjectPoolPolicy()
+    public Func<T, bool>? TryCleanInstance { get; init; }
+
+    public Action<T>? DisposeInstance { get; init; }
+
+    public int MaxCapacity { get; init; } = Environment.ProcessorCount * 2;
+
+    public ObjectPoolPolicy() { }
+
+    [SetsRequiredMembers]
+    public ObjectPoolPolicy(Func<T> createInstance)
     {
-        CreateInstance = Activator.CreateInstance<T>;
-        TryCleanInstance = static _ => true;
-        DisposeInstance = static _ => { };
-        Capacity = ObjectPool.DefaultCapacity;
+        CreateInstance = createInstance;
+    }
+
+    [SetsRequiredMembers]
+    public ObjectPoolPolicy(
+        Func<T> createInstance,
+        Func<T, bool>? tryCleanInstance,
+        Action<T>? disposeInstance = null)
+    {
+        CreateInstance = createInstance;
+        TryCleanInstance = tryCleanInstance;
+        DisposeInstance = disposeInstance;
+    }
+
+    [SetsRequiredMembers]
+    public ObjectPoolPolicy(
+        Func<T> createInstance,
+        Action<T>? cleanInstance,
+        Action<T>? disposeInstance = null)
+    {
+        CreateInstance = createInstance;
+        DisposeInstance = disposeInstance;
+        if (cleanInstance is not null)
+        {
+            TryCleanInstance = inst =>
+            {
+                cleanInstance(inst);
+                return true;
+            };
+        }
     }
 }

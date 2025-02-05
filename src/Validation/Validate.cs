@@ -23,7 +23,6 @@ namespace ScrubJay.Validation;
 public static class Validate
 {
 #region Index
-
     /// <summary>
     /// Validates if an <paramref name="index"/> is valid for a sequence with <paramref name="length"/>
     /// </summary>
@@ -97,7 +96,6 @@ public static class Validate
             return offset;
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length}]");
     }
-
 #endregion
 
     /// <summary>
@@ -360,6 +358,22 @@ public static class Validate
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {range}");
     }
 
+    public static Result<T, Exception> InBounds<T>(T value,
+        T inclusiveMin, T exclusiveMax,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        int c = Comparer<T>.Default.Compare(value, inclusiveMin);
+        if (c < 0)
+            goto FAIL;
+        c = Comparer<T>.Default.Compare(value, exclusiveMax);
+        if (c >= 0)
+            goto FAIL;
+        return value;
+        FAIL:
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [{inclusiveMin}..{exclusiveMax})");
+    }
+
 
     public static Result<T, Exception> InBounds<T>(T value, Bounds<T> bounds, [CallerArgumentExpression(nameof(value))] string? valueName = null)
     {
@@ -389,7 +403,7 @@ public static class Validate
         if (c > 0)
             goto FAIL;
         return value;
-    FAIL:
+        FAIL:
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{inclusiveMaximum}]");
     }
 
@@ -409,7 +423,7 @@ public static class Validate
         if (c > 0)
             goto FAIL;
         return value;
-    FAIL:
+        FAIL:
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{inclusiveMaximum}]");
     }
 
@@ -426,7 +440,7 @@ public static class Validate
         if (c >= 0)
             goto FAIL;
         return value;
-    FAIL:
+        FAIL:
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{exclusiveMaximum})");
     }
 
@@ -446,7 +460,7 @@ public static class Validate
         if (c >= 0)
             goto FAIL;
         return value;
-    FAIL:
+        FAIL:
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{exclusiveMaximum})");
     }
 
@@ -487,12 +501,12 @@ public static class Validate
     }
 
     public static Result<Unit, Exception> CopyTo(
-       Array? array,
-       int arrayIndex,
-       int count,
-       [CallerArgumentExpression(nameof(array))]
+        Array? array,
+        int arrayIndex,
+        int count,
+        [CallerArgumentExpression(nameof(array))]
         string? arrayName = null,
-       [CallerArgumentExpression(nameof(arrayIndex))]
+        [CallerArgumentExpression(nameof(arrayIndex))]
         string? arrayIndexName = null)
     {
         return

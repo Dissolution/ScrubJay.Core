@@ -34,7 +34,7 @@ public static class TypeNames
         [typeof(nuint)] = "nuint",
     };
 
-    private static void WriteTypeName(
+    internal static void WriteTypeName(
         this ref Buffer<char> name,
         Type? type)
     {

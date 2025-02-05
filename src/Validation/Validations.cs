@@ -111,6 +111,12 @@ public sealed class Validations : IEnumerable<Unit>, IEnumerable
         return okValue;
     }
 
+    public void ThrowIfError()
+    {
+        if (_hasException.HasSome(out var ex))
+            throw ex;
+    }
+
     IEnumerator IEnumerable.GetEnumerator() => Enumerator.Empty<Unit>();
     IEnumerator<Unit> IEnumerable<Unit>.GetEnumerator() => Enumerator.Empty<Unit>();
 }

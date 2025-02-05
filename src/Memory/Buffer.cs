@@ -1,6 +1,4 @@
-﻿using System.Buffers;
-
-namespace ScrubJay.Buffers;
+﻿namespace ScrubJay.Memory;
 
 /// <summary>
 /// A Buffer is a stack-based <see cref="IList{T}"/>-like collection <i>(grows as required)</i>,
@@ -199,7 +197,7 @@ public ref struct Buffer<T>
         }
         else
         {
-            _span = _array = ArrayPool.Rent<T>(minCapacity);
+            _span = _array = ArrayPool<T>.Shared.Rent(minCapacity);
         }
 
         _position = 0;
@@ -218,12 +216,12 @@ public ref struct Buffer<T>
     private void GrowTo(int newCapacity)
     {
         Debug.Assert(newCapacity >= Capacity);
-        T[] newArray = ArrayPool.Rent<T>(newCapacity);
+        T[] newArray = ArrayPool<T>.Shared.Rent(newCapacity);
         Sequence.CopyTo(Written, newArray);
 
         T[]? toReturn = _array;
         _span = _array = newArray;
-        ArrayPool.Return(toReturn);
+        ArrayPool<T>.Shared.Return(toReturn);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1207,7 +1205,7 @@ public ref struct Buffer<T>
         // defensive clear
         _position = 0;
         _span = _array = null;
-        ArrayPool.Return(toReturn, true);
+        ArrayPool<T>.Shared.Return(toReturn);
     }
 
     /// <summary>

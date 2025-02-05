@@ -12,7 +12,7 @@ public class ObjectPoolTests
     [Fact]
     public void InstanceIsTheSame()
     {
-        var pool = ObjectPool.New<StrongBox<Guid>>(b => b.Create(() => new StrongBox<Guid>(Guid.NewGuid())));
+        using var pool = ObjectPool.Create(static () => new StrongBox<Guid>(Guid.NewGuid()));
 
         var firstInstance = pool.Rent();
         var firstGuid = firstInstance.Value;
@@ -27,10 +27,10 @@ public class ObjectPoolTests
     [Fact]
     public void TotalCapacityWorks()
     {
-        var pool = ObjectPool.New<StrongBox<Guid>>(
-            b => b
-                .Create(() => new StrongBox<Guid>(Guid.NewGuid()))
-                .MaxCapacity(2));
+        var pool = ObjectPool.FromPolicy<StrongBox<Guid>>(new()
+        {
+            CreateInstance = static () => new(Guid.NewGuid()), MaxCapacity = 2,
+        });
 
         var first = pool.Rent();
         var second = pool.Rent();
@@ -49,11 +49,11 @@ public class ObjectPoolTests
         var sixth = pool.Rent();
         Assert.NotEqual(third, sixth);
     }
-    
-        [Fact]
+
+    [Fact]
     public void CanCreateStringBuilder()
     {
-        using var pool = ObjectPool.New<StringBuilder>(b => b.Create(() => new StringBuilder()));
+        using var pool = ObjectPool.ForType<StringBuilder>();
         var builder = pool.Rent();
         Assert.NotNull(builder);
         Assert.Equal(0, builder.Length);
@@ -63,7 +63,7 @@ public class ObjectPoolTests
     [Fact]
     public void CanReuseStringBuilder()
     {
-        using var pool = ObjectPool.New<StringBuilder>(b => b.Create(() => new StringBuilder()));
+        using var pool = ObjectPool.ForType<StringBuilder>();
 
         var builder = pool.Rent();
         Assert.NotNull(builder);
@@ -91,10 +91,9 @@ public class ObjectPoolTests
     [Fact]
     public void CanCleanStringBuilder()
     {
-        using var pool = ObjectPool.New<StringBuilder>(
-            b => b
-                .Create(() => new StringBuilder())
-                .Clean(sb => sb.Clear()));
+        using var pool = ObjectPool.FromPolicy<StringBuilder>(new(
+            static () => new(),
+            static sb => sb.Clear()));
 
         var builder = pool.Rent();
         Assert.Equal(0, builder.Length);
@@ -121,10 +120,10 @@ public class ObjectPoolTests
     [Fact]
     public void CanCleanArray()
     {
-        using var pool = ObjectPool.New<int[]>(
-            b => b
-                .Create(() => new int[8])
-                .Clean((arr => arr.AsSpan().ForEach((ref int i) => i = 0))));
+        using var pool = ObjectPool.FromPolicy<int[]>(new(
+            static () => new int[8],
+            static arr => arr.AsSpan().ForEach((ref int i) => i = 0)
+        ));
 
         var array = pool.Rent();
         Assert.Equal(8, array.Length);
@@ -139,25 +138,27 @@ public class ObjectPoolTests
     public async Task TestIfObjectPoolIsAsyncSafeAsync()
     {
         var rand = new Random();
-        using var pool = ObjectPool.New<StringBuilder>(b => b.Create(() => new StringBuilder()).Clean(sb => sb.Clear()));
+        using var pool = ObjectPool.FromPolicy<StringBuilder>(new(
+            static () => new(),
+            static sb => sb.Clear()));
         const int Count = 100;
         var tasks = new Task<string>[Count];
         for (var i = 0; i < Count; i++)
         {
             tasks[i] = Task.Run<string>(async () =>
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(rand.Next(0, 100)));
-                    var sb = pool.Rent();
-                    Assert.NotNull(sb);
-                    Assert.Equal(0, sb.Length);
-                    Assert.Equal("", sb.ToString());
-                    sb.Append(Guid.NewGuid());
-                    Assert.True(sb.Length > 0);
-                    string str = sb.ToString();
-                    Assert.NotNull(str);
-                    pool.Return(sb);
-                    return str;
-                });
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(rand.Next(0, 100)));
+                var sb = pool.Rent();
+                Assert.NotNull(sb);
+                Assert.Equal(0, sb.Length);
+                Assert.Equal("", sb.ToString());
+                sb.Append(Guid.NewGuid());
+                Assert.True(sb.Length > 0);
+                string str = sb.ToString();
+                Assert.NotNull(str);
+                pool.Return(sb);
+                return str;
+            });
         }
         var results = await Task.WhenAll(tasks);
         Assert.True(Array.TrueForAll(results, str => !string.IsNullOrWhiteSpace(str)));

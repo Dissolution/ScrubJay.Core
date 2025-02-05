@@ -1,4 +1,6 @@
-﻿global using ByteSpanReader = ScrubJay.Memory.SpanReader<byte>;
+﻿#pragma warning disable CA1045
+
+global using ByteSpanReader = ScrubJay.Memory.SpanReader<byte>;
 
 namespace ScrubJay.Memory;
 

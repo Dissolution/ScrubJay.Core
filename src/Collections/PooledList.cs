@@ -2,13 +2,11 @@
 
 #pragma warning disable CA1710
 
-using System.Buffers;
-
 namespace ScrubJay.Collections;
 
 /// <summary>
 /// A PooledList is an <see cref="IList{T}"/> implementation that operates on
-/// <see cref="Array">T[]</see> instance and <see cref="ArrayPool"/> to minimize allocations<br/>
+/// <see cref="Array">T[]</see> instance and <see cref="ArrayPool{T}"/> to minimize allocations<br/>
 /// It must be <see cref="Dispose">Disposed</see> in order to be useful
 /// </summary>
 /// <typeparam name="T">
@@ -142,7 +140,7 @@ public sealed class PooledList<T> :
     /// </remarks>
     public PooledList(int minCapacity)
     {
-        _array = ArrayPool.Rent<T>(minCapacity);
+        _array = ArrayPool<T>.Shared.Rent(minCapacity);
         _position = 0;
     }
 
@@ -158,12 +156,12 @@ public sealed class PooledList<T> :
     private void GrowTo(int newCapacity)
     {
         Debug.Assert(newCapacity > Capacity);
-        T[] newArray = ArrayPool.Rent<T>(newCapacity);
+        T[] newArray = ArrayPool<T>.Shared.Rent(newCapacity);
         Sequence.CopyTo(Written, newArray);
 
         T[] toReturn = _array;
         _array = newArray;
-        ArrayPool.Return(toReturn);
+        ArrayPool<T>.Shared.Return(toReturn);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -1118,7 +1116,7 @@ public sealed class PooledList<T> :
         // defensive clear
         _position = 0;
         _array = [];
-        ArrayPool.Return(toReturn, true);
+        ArrayPool<T>.Shared.Return(toReturn);
     }
 
     public bool SequenceEqual(ReadOnlySpan<T> items) => Sequence.Equal(Written, items);
