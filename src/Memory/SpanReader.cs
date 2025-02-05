@@ -292,7 +292,7 @@ public ref struct SpanReader<T>
     }
 
 
-    public SpanReadResult<T> TryTakeUntil(Func<T, bool> itemPredicate) => TryTakeWhile((T item) => !itemPredicate(item));
+    public SpanReadResult<T> TryTakeUntil(Func<T, bool> itemPredicate) => TryTakeWhile(item => !itemPredicate(item));
     public SpanReadResult<T> TryTakeUntilNext(ReadNextPredicate nextItemsPredicate) => TryTakeWhileNext(items => !nextItemsPredicate(items));
     public SpanReadResult<T> TryTakeUntilPrevNext(ReadPrevNextPredicate prevNextItemsPredicate) => TryTakeWhilePrevNext((prev, next) => !prevNextItemsPredicate(prev, next));
     public SpanReadResult<T> TryTakeUntilMatches(T match, IEqualityComparer<T>? itemComparer = null)
@@ -340,7 +340,7 @@ public ref struct SpanReader<T>
     }
 
 
-    public ReadOnlySpan<T> TakeAll() => TryTakeWhile(static (T _) => true).Span;
+    public ReadOnlySpan<T> TakeAll() => TryTakeWhile(static _ => true).Span;
 
 
     #endregion
@@ -487,7 +487,7 @@ public ref struct SpanReader<T>
         return TrySkipWhile(item => matches.Contains(item, itemComparer));
     }
 
-    public StopReason TrySkipUntil(Func<T, bool> itemPredicate) => TrySkipWhile((T item) => !itemPredicate(item));
+    public StopReason TrySkipUntil(Func<T, bool> itemPredicate) => TrySkipWhile(item => !itemPredicate(item));
     public StopReason TrySkipUntilNext(ReadNextPredicate nextItemsPredicate) => TrySkipWhileNext(items => !nextItemsPredicate(items));
     public StopReason TrySkipUntilPrevNext(ReadPrevNextPredicate prevNextItemsPredicate) => TrySkipWhilePrevNext((prev, next) => !prevNextItemsPredicate(prev, next));
     public StopReason TrySkipUntilMatches(T match, IEqualityComparer<T>? itemComparer = null)

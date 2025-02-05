@@ -3,8 +3,7 @@
 namespace ScrubJay.Utilities;
 
 [PublicAPI]
-[MustDisposeResource(false)]
-public sealed class LapTimer : IDisposable
+public sealed class LapTimer
 {
     private readonly List<Lap> _laps = [];
 
@@ -22,12 +21,6 @@ public sealed class LapTimer : IDisposable
         lap.Start();
         _laps.Add(lap);
         return lap;
-    }
-
-    public void Dispose()
-    {
-        _laps.ForEach(lap => lap.Dispose());
-        _laps.Clear();
     }
 
     public override string ToString()

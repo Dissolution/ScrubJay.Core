@@ -6,6 +6,9 @@ public static class Enumerator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ArrayEnumerator<T> ForArray<T>(T[] array) => new(array);
 
+    /// <summary>
+    /// Gets an empty <see cref="IEnumerator{T}"/>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IEnumerator<T> Empty<T>() => new SingleValueEnumerator<T>();
 

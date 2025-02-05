@@ -70,7 +70,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
         void ICollection.CopyTo(Array array, int index)
         {
-            Validate.CopyTo(array, index, Count).ThrowIfError();
+            Validate.CanCopyTo(array, index, Count).ThrowIfError();
 
             var keys = UntypedKeys;
             foreach (var key in keys)
@@ -81,7 +81,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
         void ICollection<TKey>.CopyTo(TKey[] array, int arrayIndex)
         {
-            Validate.CopyTo(array, arrayIndex, Count).ThrowIfError();
+            Validate.CanCopyTo(array, arrayIndex, Count).ThrowIfError();
 
             var keys = UntypedKeys;
             foreach (var key in keys)
@@ -133,7 +133,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
         void ICollection.CopyTo(Array array, int index)
         {
-            Validate.CopyTo(array, index, Count).ThrowIfError();
+            Validate.CanCopyTo(array, index, Count).ThrowIfError();
 
             var values = UntypedValues;
             foreach (var value in values)
@@ -144,7 +144,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
         void ICollection<TValue>.CopyTo(TValue[] array, int arrayIndex)
         {
-            Validate.CopyTo(array, arrayIndex, Count).ThrowIfError();
+            Validate.CanCopyTo(array, arrayIndex, Count).ThrowIfError();
 
             var values = UntypedValues;
             foreach (var value in values)
@@ -304,7 +304,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
     void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
-        Validate.CopyTo(array, arrayIndex, _dictionary.Count).ThrowIfError();
+        Validate.CanCopyTo(array, arrayIndex, _dictionary.Count).ThrowIfError();
 
         foreach (DictionaryEntry entry in _dictionary.Cast<DictionaryEntry>())
         {

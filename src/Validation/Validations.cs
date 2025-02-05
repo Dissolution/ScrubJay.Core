@@ -1,122 +1,78 @@
-﻿// CA1710: Identifiers should have correct suffix
-#pragma warning disable CA1710, IDE0028
+﻿#pragma warning disable CA1710, IDE0028, CA1031, CA1010
 
 namespace ScrubJay.Validation;
 
 /// <summary>
-/// A collection of sequential validations
+/// A collection of validations
 /// </summary>
 /// <remarks>
-/// Every call to an <c>Add</c> method will invoke immediately
-/// If an <see cref="Exception"/> is caught or an Error returned,
-/// execution of further <c>Adds</c> will be skipped
-/// and the <see cref="Exception"/> will be the return from <see cref="GetResult"/>
+/// Supports <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers#collection-initializers">collection initialization</a>
+/// and <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions">collection expressions</a>
 /// </remarks>
-public sealed class Validations : IEnumerable<Unit>, IEnumerable
+public sealed class Validations : IEnumerable
 {
-    public static Validations New => new();
+    private readonly List<Exception> _exceptions = [];
 
-    private Option<Exception> _hasException;
-
-    public Validations()
+    public void Add(Result<Unit, Exception> result)
     {
-        _hasException = Option<Exception>.None();
+        if (result.HasError(out var exception))
+        {
+            _exceptions.Add(exception);
+        }
     }
 
-    public void Add(Action? action)
+    public void Add<T>(Result<T, Exception> result)
     {
-        if (_hasException || action is null)
-            return;
+        if (result.HasError(out var exception))
+        {
+            _exceptions.Add(exception);
+        }
+    }
 
+    public void Add(Action action)
+    {
         try
         {
             action();
         }
         catch (Exception ex)
         {
-            _hasException = Some(ex);
+            _exceptions.Add(ex);
         }
     }
 
-    public void Add<T>(Func<T>? func)
+    public void Add<T>(Func<T> func)
     {
-        if (_hasException || func is null)
-            return;
-
         try
         {
             _ = func();
         }
         catch (Exception ex)
         {
-            _hasException = Some(ex);
+            _exceptions.Add(ex);
         }
     }
 
-    public void Add(Result<Unit, Exception> result)
+    public void Add(Func<Result<Unit, Exception>> getResult)
+         => Add(getResult());
+
+    public void Add<T>(Func<Result<T, Exception>> getResult)
+        => Add(getResult());
+
+    /// <summary>
+    /// If any <see cref="Exception">Exceptions</see> were generated during any <c>Add</c> method,
+    /// throw a single exception or an <see cref="AggregateException"/>
+    /// </summary>
+    public void ThrowErrors()
     {
-        if (_hasException)
+        var exceptions = _exceptions;
+        int count = exceptions.Count;
+        if (count == 0)
             return;
-
-        if (result.HasError(out var exception))
-        {
-            _hasException = Some(exception);
-        }
-    }
-
-    public void Add<T>(Result<T, Exception> result)
-    {
-        if (_hasException)
-            return;
-
-        if (result.HasError(out var exception))
-        {
-            _hasException = Some(exception);
-        }
-    }
-
-    public void Add(Func<Result<Unit, Exception>>? getResult)
-    {
-        if (_hasException || getResult is null)
-            return;
-
-        if (getResult().HasError(out var exception))
-        {
-            _hasException = Some(exception);
-        }
-    }
-
-    public void Add<T>(Func<Result<T, Exception>>? getResult)
-    {
-        if (_hasException || getResult is null)
-            return;
-
-        if (getResult().HasError(out var exception))
-        {
-            _hasException = Some(exception);
-        }
-    }
-
-    public Result<Unit, Exception> GetResult()
-    {
-        if (_hasException.HasSome(out var ex))
-            return ex;
-        return Ok();
-    }
-
-    public Result<TOk, Exception> GetResult<TOk>(TOk okValue)
-    {
-        if (_hasException.HasSome(out var ex))
-            return ex;
-        return okValue;
-    }
-
-    public void ThrowIfError()
-    {
-        if (_hasException.HasSome(out var ex))
-            throw ex;
+        if (count == 1)
+            throw exceptions[0];
+        throw new AggregateException($"{count} Validations Failed", exceptions);
     }
 
     IEnumerator IEnumerable.GetEnumerator() => Enumerator.Empty<Unit>();
-    IEnumerator<Unit> IEnumerable<Unit>.GetEnumerator() => Enumerator.Empty<Unit>();
 }

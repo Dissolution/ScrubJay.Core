@@ -65,7 +65,7 @@ public static class ValidationExtensions
         {
             null => throw new ArgumentNullException(objName),
             TOut output => output,
-            _ => throw new ArgumentException($"The given {obj.GetType().NameOf()} value is not a valid {typeof(TOut).Name} instance", objName)
+            _ => throw new ArgumentException($"The given {obj.GetType().NameOf()} value is not a valid {typeof(TOut).NameOf()} instance", objName)
         };
     }
 
@@ -75,6 +75,6 @@ public static class ValidationExtensions
     {
         if (obj.CanBe<TOut>(out var output))
             return output;
-        throw new ArgumentException($"The given {obj?.GetType().NameOf()} value is not a valid {typeof(TOut).Name} instance", objName);
+        throw new ArgumentException($"The given {obj?.GetType().NameOf()} value is not a valid {typeof(TOut).NameOf()} instance", objName);
     }
 }

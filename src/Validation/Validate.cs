@@ -22,7 +22,6 @@ namespace ScrubJay.Validation;
 [StackTraceHidden]
 public static class Validate
 {
-#region Index
     /// <summary>
     /// Validates if an <paramref name="index"/> is valid for a sequence with <paramref name="length"/>
     /// </summary>
@@ -96,7 +95,6 @@ public static class Validate
             return offset;
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length}]");
     }
-#endregion
 
     /// <summary>
     /// Validates that a Range specified with an <paramref name="index"/> and <paramref name="length"/> fits within an <paramref name="available"/> count
@@ -199,12 +197,84 @@ public static class Validate
     }
 
 
+
+     public static Result<int, Exception> InRange(
+        int value,
+        Range range,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        if (!range.Start.IsFromEnd)
+        {
+            int lower = range.Start.Value;
+            if (value < lower)
+                goto FAIL;
+        }
+        else
+        {
+            Debugger.Break();
+            throw new NotImplementedException();
+        }
+
+        if (!range.End.IsFromEnd)
+        {
+            int upper = range.End.Value;
+            if (value >= upper)
+                goto FAIL;
+        }
+        else
+        {
+            Debugger.Break();
+            throw new NotImplementedException();
+        }
+
+        return value;
+
+        FAIL:
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {range}");
+    }
+
+    public static Result<T, Exception> InBounds<T>(T value,
+        T inclusiveMin,
+        T exclusiveMax,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        int c = Comparer<T>.Default.Compare(value, inclusiveMin);
+        if (c < 0)
+            goto FAIL;
+        c = Comparer<T>.Default.Compare(value, exclusiveMax);
+        if (c >= 0)
+            goto FAIL;
+        return value;
+        FAIL:
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [{inclusiveMin}..{exclusiveMax})");
+    }
+
+
+    public static Result<T, Exception> InBounds<T>(T value, Bounds<T> bounds, [CallerArgumentExpression(nameof(value))] string? valueName = null)
+    {
+        if (bounds.Contains(value))
+            return value;
+        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {bounds}");
+    }
+
+    public static Result<T, Exception> InBounds<T>(
+        T value,
+        Bound<T> lowerBound,
+        Bound<T> upperBound,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+        => InBounds<T>(value, Bounds.Create(lowerBound, upperBound), valueName);
+
+
+
     public static Result<T, Exception> IsNotNull<T>(
-        [NotNullWhen(true)] T? value,
+        [AllowNull, NotNullWhen(true)] T? value,
         string? message = null,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
-        where T : notnull
+        //where T : notnull
     {
         if (value is not null)
             return OkEx(value); // do not implicitly cast in case value is Exception
@@ -222,6 +292,36 @@ public static class Validate
         if (value.HasValue)
             return value.GetValueOrDefault();
         return new ArgumentNullException(valueName, message);
+    }
+
+    public static Result<T, Exception> Is<T>(
+        [NotNullWhen(true)] object? obj,
+        [CallerArgumentExpression(nameof(obj))]
+        string? objectName = null)
+    {
+        if (obj is null)
+            return new ArgumentNullException(objectName);
+        if (obj is T)
+            return OkEx((T)obj);
+        return new ArgumentException($"{objectName} '{obj}' is not a {typeof(T)}", objectName);
+    }
+
+    public static Result<T, Exception> CanBe<T>(
+        object? obj,
+        [CallerArgumentExpression(nameof(obj))]
+        string? objectName = null)
+    {
+        if (obj is T)
+        {
+            return OkEx((T)obj);
+        }
+
+        // the only value that can be null is Nullable<>
+        // but any non valueTypes (class, interface) can be null
+        if (obj is null && (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) is not null))
+            return OkEx(default(T)!);
+
+        return new ArgumentException($"{objectName} '{obj}' does not contain a {typeof(T)}", objectName);
     }
 
     public static Result<T[], Exception> IsNotEmpty<T>(
@@ -280,227 +380,152 @@ public static class Validate
         return str;
     }
 
-    public static Result<T, Exception> Is<T>(
-        [NotNullWhen(true)] object? obj,
-        [CallerArgumentExpression(nameof(obj))]
-        string? objectName = null)
+    public enum CompareType
     {
-        if (obj is null)
-            return new ArgumentNullException(objectName);
-        if (obj is T)
-            return OkEx((T)obj);
-        return new ArgumentException($"{objectName} '{obj}' is not a {typeof(T)}", objectName);
+        Equal,
+        NotEqual,
+        LessThan,
+        LessThanOrEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
     }
 
-    public static Result<T, Exception> CanBe<T>(
-        object? obj,
-        [CallerArgumentExpression(nameof(obj))]
-        string? objectName = null)
-    {
-        if (obj is T)
-        {
-            return OkEx((T)obj);
-        }
-
-        // the only value that can be null is Nullable<>
-        // but any non valueTypes (class, interface) can be null
-        if (obj is null && (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) is not null))
-            return OkEx(default(T)!);
-
-        return new ArgumentException($"{objectName} '{obj}' does not contain a {typeof(T)}", objectName);
-    }
-
-
-    public static Result<int, Exception> InLength(
-        int value,
-        int exclusiveLength,
+    public static Result<T, Exception> Compares<T>(
+        CompareType compareType,
+        T value,
+        T comparisonValue,
+        IComparer<T>? valueComparer = null,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
     {
-        if (value >= 0 && value < exclusiveLength)
-            return value;
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0, {exclusiveLength})");
-    }
+        int c;
 
-    public static Result<int, Exception> InRange(
-        int value,
-        Range range,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-    {
-        if (!range.Start.IsFromEnd)
+        if (valueComparer is null)
         {
-            int lower = range.Start.Value;
-            if (value < lower)
-                goto FAIL;
+            c = Comparer<T>.Default.Compare(value, comparisonValue);
         }
         else
         {
-            Debugger.Break();
-            throw new NotImplementedException();
+            c = valueComparer.Compare(value, comparisonValue);
         }
 
-        if (!range.End.IsFromEnd)
+        switch (compareType)
         {
-            int upper = range.End.Value;
-            if (value >= upper)
-                goto FAIL;
-        }
-        else
-        {
-            Debugger.Break();
-            throw new NotImplementedException();
-        }
-
-        return value;
-
-        FAIL:
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {range}");
-    }
-
-    public static Result<T, Exception> InBounds<T>(T value,
-        T inclusiveMin, T exclusiveMax,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-    {
-        int c = Comparer<T>.Default.Compare(value, inclusiveMin);
-        if (c < 0)
-            goto FAIL;
-        c = Comparer<T>.Default.Compare(value, exclusiveMax);
-        if (c >= 0)
-            goto FAIL;
-        return value;
-        FAIL:
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [{inclusiveMin}..{exclusiveMax})");
-    }
-
-
-    public static Result<T, Exception> InBounds<T>(T value, Bounds<T> bounds, [CallerArgumentExpression(nameof(value))] string? valueName = null)
-    {
-        if (bounds.Contains(value))
-            return value;
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {bounds}");
-    }
-
-    public static Result<T, Exception> InBounds<T>(
-        T value,
-        Bound<T> lowerBound,
-        Bound<T> upperBound,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-        => InBounds<T>(value, Bounds.Create(lowerBound, upperBound), valueName);
-
-    public static Result<T, Exception> InInclusiveLength<T>(
-        T value,
-        T inclusiveMaximum,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-    {
-        int c = Comparer<T>.Default.Compare(value, default!);
-        if (c < 0)
-            goto FAIL;
-        c = Comparer<T>.Default.Compare(value, inclusiveMaximum);
-        if (c > 0)
-            goto FAIL;
-        return value;
-        FAIL:
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{inclusiveMaximum}]");
-    }
-
-    public static Result<T, Exception> InInclusiveLength<T>(
-        T value,
-        T inclusiveMaximum,
-        IComparer<T>? valueComparer,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-    {
-        valueComparer ??= Comparer<T>.Default;
-
-        int c = valueComparer.Compare(value, default!);
-        if (c < 0)
-            goto FAIL;
-        c = valueComparer.Compare(value, inclusiveMaximum);
-        if (c > 0)
-            goto FAIL;
-        return value;
-        FAIL:
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{inclusiveMaximum}]");
-    }
-
-    public static Result<T, Exception> InExclusiveLength<T>(
-        T value,
-        T exclusiveMaximum,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-    {
-        int c = Comparer<T>.Default.Compare(value, default!);
-        if (c < 0)
-            goto FAIL;
-        c = Comparer<T>.Default.Compare(value, exclusiveMaximum);
-        if (c >= 0)
-            goto FAIL;
-        return value;
-        FAIL:
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{exclusiveMaximum})");
-    }
-
-    public static Result<T, Exception> InExclusiveLength<T>(
-        T value,
-        T exclusiveMaximum,
-        IComparer<T>? valueComparer,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-    {
-        valueComparer ??= Comparer<T>.Default;
-
-        int c = valueComparer.Compare(value, default!);
-        if (c < 0)
-            goto FAIL;
-        c = valueComparer.Compare(value, exclusiveMaximum);
-        if (c >= 0)
-            goto FAIL;
-        return value;
-        FAIL:
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [0..{exclusiveMaximum})");
-    }
-
-
-    public static Result<T, Exception> IsGreaterOrEqualThan<T>(T value, T minInclusive, IComparer<T>? valueComparer = null, [CallerArgumentExpression(nameof(value))] string? valueName = null)
-    {
-        int c = (valueComparer ?? Comparer<T>.Default).Compare(value, minInclusive);
-        if (c >= 0)
-            return value;
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be >= {minInclusive}");
-    }
-
-
-    [Obsolete("Old Validate Pattern", true)]
-    public static Result<Unit, Exception> CopyTo<T>(
-        int count,
-        T[]? array,
-        int arrayIndex = 0,
-        [CallerArgumentExpression(nameof(count))]
-        string? countName = null,
-        [CallerArgumentExpression(nameof(array))]
-        string? arrayName = null,
-        [CallerArgumentExpression(nameof(arrayIndex))]
-        string? arrayIndexName = null)
-    {
-        return new Validations
-        {
-            IsGreaterOrEqualThan(count, 0, null, countName),
-            IsNotNull(array, arrayName),
-            InBounds(arrayIndex, Bounds.ForLength(array!.Length), arrayIndexName),
-            () =>
+            case CompareType.Equal:
             {
-                if (count + arrayIndex <= array!.Length)
-                    return Unit();
-                return new ArgumentOutOfRangeException(arrayName, array, $"Cannot fit {count} items into [{array.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}");
-            },
-        }.GetResult();
+                if (c == 0)
+                    return value;
+                return new ArgumentException($"{value} does not equal {comparisonValue}", valueName);
+            }
+            case CompareType.NotEqual:
+            {
+                if (c != 0)
+                    return value;
+                return new ArgumentException($"{value} equals {comparisonValue}", valueName);
+            }
+            case CompareType.LessThan:
+            {
+                if (c < 0)
+                    return value;
+                return new ArgumentException($"{value} is greater or equals {comparisonValue}", valueName);
+            }
+            case CompareType.LessThanOrEqual:
+            {
+                if (c <= 0)
+                    return value;
+                return new ArgumentException($"{value} is greater than {comparisonValue}", valueName);
+            }
+            case CompareType.GreaterThan:
+            {
+                if (c > 0)
+                    return value;
+                return new ArgumentException($"{value} is less or equals {comparisonValue}", valueName);
+            }
+            case CompareType.GreaterThanOrEqual:
+            {
+                if (c >= 0)
+                    return value;
+                return new ArgumentException($"{value} is less than {comparisonValue}", valueName);
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(compareType), compareType, null);
+        }
     }
 
-    public static Result<Unit, Exception> CopyTo(
+    public static Result<T, Exception> IsEqual<T>(
+        T value,
+        T comparisonValue,
+        IEqualityComparer<T>? valueComparer = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        if (valueComparer is null)
+        {
+            if (EqualityComparer<T>.Default.Equals(value, comparisonValue))
+                return value;
+        }
+        else
+        {
+            if (valueComparer.Equals(value, comparisonValue))
+                return value;
+        }
+        return new ArgumentException($"{value} does not equal {comparisonValue}", valueName);
+    }
+
+    public static Result<T, Exception> IsNotEqual<T>(
+        T value,
+        T comparisonValue,
+        IEqualityComparer<T>? valueComparer = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+    {
+        if (valueComparer is null)
+        {
+            if (!EqualityComparer<T>.Default.Equals(value, comparisonValue))
+                return value;
+        }
+        else
+        {
+            if (!valueComparer.Equals(value, comparisonValue))
+                return value;
+        }
+        return new ArgumentException($"{value} equals {comparisonValue}", valueName);
+    }
+
+    public static Result<T, Exception> IsLessThan<T>(
+        T value,
+        T comparisonValue,
+        IComparer<T>? valueComparer = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+        => Compares<T>(CompareType.LessThan, value, comparisonValue, valueComparer, valueName);
+
+    public static Result<T, Exception> IsLessThanOrEqual<T>(
+        T value,
+        T comparisonValue,
+        IComparer<T>? valueComparer = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+        => Compares<T>(CompareType.LessThanOrEqual, value, comparisonValue, valueComparer, valueName);
+
+    public static Result<T, Exception> IsGreaterThan<T>(
+        T value,
+        T comparisonValue,
+        IComparer<T>? valueComparer = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+        => Compares<T>(CompareType.GreaterThan, value, comparisonValue, valueComparer, valueName);
+
+    public static Result<T, Exception> IsGreaterThanOrEqual<T>(
+        T value,
+        T comparisonValue,
+        IComparer<T>? valueComparer = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+        => Compares<T>(CompareType.GreaterThanOrEqual, value, comparisonValue, valueComparer, valueName);
+
+
+    public static Result<Unit, Exception> CanCopyTo(
         Array? array,
         int arrayIndex,
         int count,
@@ -512,7 +537,7 @@ public static class Validate
         return
             from arr in IsNotNull(array, arrayName)
             from arrIndex in InRange(arrayIndex, ..arr.Length, arrayIndexName)
-            from _ in ErrorIf(
+            from _ in IsErrorIf(
                 count + arrIndex > arr.Length,
                 () => new ArgumentOutOfRangeException(
                     arrayName, arr,
@@ -520,7 +545,7 @@ public static class Validate
             select Unit.Default;
     }
 
-    public static Result<Unit, Exception> CopyTo<T>(
+    public static Result<Unit, Exception> CanCopyTo<T>(
         T[]? array,
         int arrayIndex,
         int count,
@@ -532,7 +557,7 @@ public static class Validate
         return
             from arr in IsNotNull(array, arrayName)
             from arrIndex in InRange(arrayIndex, ..arr.Length, arrayIndexName)
-            from _ in ErrorIf(
+            from _ in IsErrorIf(
                 count + arrIndex > arr.Length,
                 () => new ArgumentOutOfRangeException(
                     arrayName, arr,
@@ -540,22 +565,22 @@ public static class Validate
             select Unit.Default;
     }
 
-    public static Result<Unit, Exception> ErrorIf(
+    public static Result<Unit, Exception> IsErrorIf(
         bool predicate,
-        Func<Exception> exception)
+        Func<Exception> createException)
     {
         if (predicate)
-            return exception();
+            return createException();
         return Unit();
     }
 
-    public static Result<T, Exception> ErrorIf<T>(
+    public static Result<T, Exception> IsErrorIf<T>(
         T value,
         Func<T, bool> predicate,
-        Func<Exception> exception)
+        Func<Exception> createException)
     {
         if (predicate(value))
-            return exception();
+            return createException();
         return OkEx(value);
     }
 }

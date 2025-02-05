@@ -1022,7 +1022,7 @@ public sealed class PooledList<T> :
     /// <inheritdoc cref="ICollection{T}.CopyTo"/>
     void ICollection<T>.CopyTo(T[] array, int arrayIndex)
     {
-        Validate.CopyTo(array, arrayIndex, _position).ThrowIfError();
+        Validate.CanCopyTo(array, arrayIndex, _position).ThrowIfError();
         Sequence.CopyTo(Written, array.AsSpan(arrayIndex));
     }
 

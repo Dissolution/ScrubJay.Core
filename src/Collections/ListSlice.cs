@@ -63,7 +63,7 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
 
     void ICollection<T>.CopyTo(T[] array, int arrayIndex)
     {
-        Validate.CopyTo(array, arrayIndex, _length).ThrowIfError();
+        Validate.CanCopyTo(array, arrayIndex, _length).ThrowIfError();
         for (int i = 0; i < _length; i++)
         {
             array[arrayIndex + i] = this[i];
