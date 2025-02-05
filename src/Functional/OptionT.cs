@@ -485,7 +485,7 @@ public readonly struct Option<T> :
     /// otherwise calls <paramref name="predicate"/> with the wrapped value and returns:<br/>
     /// <see cref="Some"/> if <paramref name="predicate"/> returns <c>true</c> (with the wrapped value),<br/>
     /// and <see cref="None"/> if <paramref name="predicate"/> returns <c>false</c><br/>
-    /// This function works similar to <see cref="Enumerable.Where"/><br/>
+    /// This function works similar to <c>Enumerable.Where</c><br/>
     /// You can imagine this <see cref="Option{T}"/> being an iterator over one or zero elements<br/>
     /// <see cref="Where"/> lets you decide which elements to keep<br/>
     /// </summary>

@@ -1,7 +1,5 @@
 ﻿#if NETFRAMEWORK
-using ScrubJay.Collections;
 using ScrubJay.Utilities;
-
 #endif
 using ScrubJay.Validation;
 

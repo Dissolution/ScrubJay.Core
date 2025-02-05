@@ -37,7 +37,7 @@ public readonly struct Rational :
     IParsable<Rational>,
 #endif
     IAlgebraic<Rational, Rational>,
-    IAlgebraic<Rational, BigDecimal>,
+    //IAlgebraic<Rational, BigDecimal>,
     IAlgebraic<Rational, decimal>,
     IAlgebraic<Rational, double>,
     IAlgebraic<Rational, BigInteger>,
@@ -49,14 +49,14 @@ public readonly struct Rational :
     // implicit operations cannot lose precision nor fail
     // explicit operations can lose precision and can throw
 
-    public static implicit operator Rational(BigDecimal bigDec) => FromBigDecimal(bigDec);
+    //public static implicit operator Rational(BigDecimal bigDec) => FromBigDecimal(bigDec);
     public static implicit operator Rational(decimal dec) => FromDecimal(dec);
     public static implicit operator Rational(double f64) => FromDouble(f64, double.Epsilon);
     public static implicit operator Rational(float f32) => FromDouble(f32, float.Epsilon);
     public static implicit operator Rational(BigInteger bigInt) => New(bigInt, BigInteger.One);
     public static implicit operator Rational(long i64) => New(new BigInteger(i64), BigInteger.One);
 
-    public static explicit operator BigDecimal(Rational rational) => rational.ToBigDecimal();
+    //public static explicit operator BigDecimal(Rational rational) => rational.ToBigDecimal();
     public static explicit operator decimal(Rational rational) => rational.ToDecimal();
     public static explicit operator double(Rational rational) => rational.ToDouble();
     public static explicit operator BigInteger(Rational rational) => rational.ToBigInteger();
@@ -69,77 +69,77 @@ public readonly struct Rational :
     public static Rational operator ++(Rational value) => value.Add(Rational.One);
 
     public static bool operator ==(Rational left, Rational right) => left.Equals(right);
-    public static bool operator ==(Rational left, BigDecimal right) => left.Equals(right);
+    //public static bool operator ==(Rational left, BigDecimal right) => left.Equals(right);
     public static bool operator ==(Rational left, decimal right) => left.Equals(right);
     public static bool operator ==(Rational left, double right) => left.Equals(right);
     public static bool operator ==(Rational left, BigInteger right) => left.Equals(right);
     public static bool operator ==(Rational left, long right) => left.Equals(right);
 
     public static bool operator !=(Rational left, Rational right) => !left.Equals(right);
-    public static bool operator !=(Rational left, BigDecimal right) => !left.Equals(right);
+    //public static bool operator !=(Rational left, BigDecimal right) => !left.Equals(right);
     public static bool operator !=(Rational left, decimal right) => !left.Equals(right);
     public static bool operator !=(Rational left, double right) => !left.Equals(right);
     public static bool operator !=(Rational left, BigInteger right) => !left.Equals(right);
     public static bool operator !=(Rational left, long right) => !left.Equals(right);
 
     public static bool operator >(Rational left, Rational right) => left.CompareTo(right) > 0;
-    public static bool operator >(Rational left, BigDecimal right) => left.CompareTo(right) > 0;
+    //public static bool operator >(Rational left, BigDecimal right) => left.CompareTo(right) > 0;
     public static bool operator >(Rational left, decimal right) => left.CompareTo(right) > 0;
     public static bool operator >(Rational left, double right) => left.CompareTo(right) > 0;
     public static bool operator >(Rational left, BigInteger right) => left.CompareTo(right) > 0;
     public static bool operator >(Rational left, long right) => left.CompareTo(right) > 0;
 
     public static bool operator >=(Rational left, Rational right) => left.CompareTo(right) >= 0;
-    public static bool operator >=(Rational left, BigDecimal right) => left.CompareTo(right) >= 0;
+    //public static bool operator >=(Rational left, BigDecimal right) => left.CompareTo(right) >= 0;
     public static bool operator >=(Rational left, decimal right) => left.CompareTo(right) >= 0;
     public static bool operator >=(Rational left, double right) => left.CompareTo(right) >= 0;
     public static bool operator >=(Rational left, BigInteger right) => left.CompareTo(right) >= 0;
     public static bool operator >=(Rational left, long right) => left.CompareTo(right) >= 0;
 
     public static bool operator <(Rational left, Rational right) => left.CompareTo(right) < 0;
-    public static bool operator <(Rational left, BigDecimal right) => left.CompareTo(right) < 0;
+    //public static bool operator <(Rational left, BigDecimal right) => left.CompareTo(right) < 0;
     public static bool operator <(Rational left, decimal right) => left.CompareTo(right) < 0;
     public static bool operator <(Rational left, double right) => left.CompareTo(right) < 0;
     public static bool operator <(Rational left, BigInteger right) => left.CompareTo(right) < 0;
     public static bool operator <(Rational left, long right) => left.CompareTo(right) < 0;
 
     public static bool operator <=(Rational left, Rational right) => left.CompareTo(right) <= 0;
-    public static bool operator <=(Rational left, BigDecimal right) => left.CompareTo(right) <= 0;
+    //public static bool operator <=(Rational left, BigDecimal right) => left.CompareTo(right) <= 0;
     public static bool operator <=(Rational left, decimal right) => left.CompareTo(right) <= 0;
     public static bool operator <=(Rational left, double right) => left.CompareTo(right) <= 0;
     public static bool operator <=(Rational left, BigInteger right) => left.CompareTo(right) <= 0;
     public static bool operator <=(Rational left, long right) => left.CompareTo(right) <= 0;
 
     public static Rational operator +(Rational left, Rational right) => left.Add(right);
-    public static Rational operator +(Rational left, BigDecimal right) => left.Add(FromBigDecimal(right));
+    //public static Rational operator +(Rational left, BigDecimal right) => left.Add(FromBigDecimal(right));
     public static Rational operator +(Rational left, decimal right) => left.Add(FromDecimal(right));
     public static Rational operator +(Rational left, double right) => left.Add(FromDouble(right));
     public static Rational operator +(Rational left, BigInteger right) => left.Add(right);
     public static Rational operator +(Rational left, long right) => left.Add(right);
 
     public static Rational operator -(Rational left, Rational right) => left.Subtract(right);
-    public static Rational operator -(Rational left, BigDecimal right) => left.Subtract(FromBigDecimal(right));
+    //public static Rational operator -(Rational left, BigDecimal right) => left.Subtract(FromBigDecimal(right));
     public static Rational operator -(Rational left, decimal right) => left.Subtract(FromDecimal(right));
     public static Rational operator -(Rational left, double right) => left.Subtract(FromDouble(right));
     public static Rational operator -(Rational left, BigInteger right) => left.Subtract(right);
     public static Rational operator -(Rational left, long right) => left.Subtract(right);
 
     public static Rational operator *(Rational left, Rational right) => left.Multiply(right);
-    public static Rational operator *(Rational left, BigDecimal right) => left.Multiply(FromBigDecimal(right));
+    //public static Rational operator *(Rational left, BigDecimal right) => left.Multiply(FromBigDecimal(right));
     public static Rational operator *(Rational left, decimal right) => left.Multiply(FromDecimal(right));
     public static Rational operator *(Rational left, double right) => left.Multiply(FromDouble(right));
     public static Rational operator *(Rational left, BigInteger right) => left.Multiply(right);
     public static Rational operator *(Rational left, long right) => left.Multiply(right);
 
     public static Rational operator /(Rational left, Rational right) => left.Divide(right);
-    public static Rational operator /(Rational left, BigDecimal right) => left.Divide(FromBigDecimal(right));
+    //public static Rational operator /(Rational left, BigDecimal right) => left.Divide(FromBigDecimal(right));
     public static Rational operator /(Rational left, decimal right) => left.Divide(FromDecimal(right));
     public static Rational operator /(Rational left, double right) => left.Divide(FromDouble(right));
     public static Rational operator /(Rational left, BigInteger right) => left.Divide(right);
     public static Rational operator /(Rational left, long right) => left.Divide(right);
 
     public static Rational operator %(Rational left, Rational right) => left.Mod(right);
-    public static Rational operator %(Rational left, BigDecimal right) => left.Mod(FromBigDecimal(right));
+    //public static Rational operator %(Rational left, BigDecimal right) => left.Mod(FromBigDecimal(right));
     public static Rational operator %(Rational left, decimal right) => left.Mod(FromDecimal(right));
     public static Rational operator %(Rational left, double right) => left.Mod(FromDouble(right));
     public static Rational operator %(Rational left, BigInteger right) => left.Mod(right);
@@ -392,7 +392,7 @@ public readonly struct Rational :
         return rational;
     }
 
-    public static Rational FromBigDecimal(BigDecimal bigDec) => throw new NotImplementedException();
+    //public static Rational FromBigDecimal(BigDecimal bigDec) => throw new NotImplementedException();
 
     public static Rational FromDecimal(decimal dec)
     {
@@ -769,13 +769,13 @@ public readonly struct Rational :
                 .Select(Notsafe.As<decimal, TOther>)
                 .HasOk(out other);
         }
-        else if (otherType == typeof(BigDecimal))
+        /*else if (otherType == typeof(BigDecimal))
         {
             return rational
                 .TryConvertToBigDecimal()
                 .Select(Notsafe.As<BigDecimal, TOther>)
                 .HasOk(out other);
-        }
+        }*/
         else if (otherType == typeof(string))
         {
             string str = rational.ToString();
@@ -1112,14 +1112,14 @@ public readonly struct Rational :
     /// <seealso href="https://en.wikipedia.org/wiki/Multiplicative_inverse"/>
     public Rational Reciprocal() => new(Denominator, Numerator);
 
-    public BigDecimal ToBigDecimal() => TryConvertToBigDecimal().OkOrThrow();
+    /*public BigDecimal ToBigDecimal() => TryConvertToBigDecimal().OkOrThrow();
 
     public Result<BigDecimal, Exception> TryConvertToBigDecimal()
     {
         if (Denominator == BigInteger.Zero)
             return new DivideByZeroException("The denominator of this Rational is Zero");
         return (BigDecimal)Numerator / (BigDecimal)Denominator;
-    }
+    }*/
 
     /// <summary>
     /// Convert this <see cref="Rational"/> to a <see cref="decimal"/>
@@ -1240,7 +1240,7 @@ public readonly struct Rational :
         return left.CompareTo(right);
     }
 
-    public int CompareTo(BigDecimal bigDec)
+    /*public int CompareTo(BigDecimal bigDec)
     {
         // Cannot be NaN or Infinity
         Rational other = FromBigDecimal(bigDec);
@@ -1248,7 +1248,7 @@ public readonly struct Rational :
         BigInteger left = Numerator * other.Denominator;
         BigInteger right = Denominator * other.Numerator;
         return left.CompareTo(right);
-    }
+    }*/
 
     public int CompareTo(decimal dec)
     {
@@ -1290,7 +1290,7 @@ public readonly struct Rational :
         return obj switch
         {
             Rational rational => CompareTo(rational),
-            BigDecimal bigDec => CompareTo(bigDec),
+            //BigDecimal bigDec => CompareTo(bigDec),
             decimal dec => CompareTo(dec),
             double f64 => CompareTo(f64),
             BigInteger bigInt => CompareTo(bigInt),
@@ -1308,7 +1308,7 @@ public readonly struct Rational :
         return left.Equals(right);
     }
 
-    public bool Equals(BigDecimal bigDec) => TryConvertToBigDecimal().Equals(bigDec);
+    //public bool Equals(BigDecimal bigDec) => TryConvertToBigDecimal().Equals(bigDec);
 
     public bool Equals(decimal m) => TryConvertToDecimal().Equals(m);
 
@@ -1361,7 +1361,7 @@ public readonly struct Rational :
         => obj switch
         {
             Rational rational => Equals(rational),
-            BigDecimal bigDec => Equals(bigDec),
+            //BigDecimal bigDec => Equals(bigDec),
             decimal m => Equals(m),
             double d => Equals(d),
             BigInteger iBig => Equals(iBig),

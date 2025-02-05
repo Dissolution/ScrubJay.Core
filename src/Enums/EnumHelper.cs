@@ -70,7 +70,7 @@ public class EnumInfo<TEnum> : EnumInfo
             var splitText = SpanSplitter<char>.SplitAny(text, [',', '|', ' '], SpanSplitterOptions.IgnoreEmpty);
             foreach (var segment in splitText)
             {
-                if (TryParseMember(splitText.Current).HasSome(out var flag))
+                if (TryParseMember(segment).HasSome(out var flag))
                 {
                     @enum.AddFlag(flag);
                     continue;

@@ -102,6 +102,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
                 TKey key = ObjectToKey(e.Current);
                 yield return key;
             }
+            Disposable.TryDispose(e);
         }
     }
 
@@ -229,7 +230,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
 
     public void Add(KeyValuePair<TKey, TValue> pair) => _dictionary.Add((object)pair.Key, (object?)pair.Value);
 
-   
+
     bool IDictionary.Contains(object key) => _dictionary.Contains(key);
 
     public bool ContainsKey(TKey key) => _dictionary.Contains((object)key);
@@ -324,5 +325,5 @@ public sealed class DictionaryAdapter<TKey, TValue> :
                 ObjectToKey(entry.Key),
                 ObjectToValue(entry.Value));
         }
-    }  
+    }
 }

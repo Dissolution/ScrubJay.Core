@@ -20,6 +20,17 @@ public abstract class Disposable : IDisposable
     }
 #endif
 
+    public static bool TryDispose<T>([HandlesResourceDisposal] T? value)
+        where T : class
+    {
+        if (value is IDisposable disposable)
+        {
+            disposable.Dispose();
+            return true;
+        }
+        return false;
+    }
+
     public static bool TryDispose([HandlesResourceDisposal] IDisposable? disposable)
     {
         if (disposable is not null)

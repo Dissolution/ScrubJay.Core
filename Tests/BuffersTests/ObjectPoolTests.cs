@@ -27,7 +27,7 @@ public class ObjectPoolTests
     [Fact]
     public void TotalCapacityWorks()
     {
-        var pool = ObjectPool.FromPolicy<StrongBox<Guid>>(new()
+        using var pool = ObjectPool.FromPolicy<StrongBox<Guid>>(new()
         {
             CreateInstance = static () => new(Guid.NewGuid()), MaxCapacity = 2,
         });
