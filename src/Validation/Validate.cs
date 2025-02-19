@@ -565,6 +565,22 @@ public static class Validate
             select Unit.Default;
     }
 
+    public static Result<Unit, Exception> CanCopyTo<T>(
+        Span<T> span,
+        int count,
+        [CallerArgumentExpression(nameof(span))]
+        string? spanName = null)
+    {
+        if (count > span.Length)
+        {
+            return new ArgumentOutOfRangeException(
+                spanName,
+                span.Length,
+                $"Cannot fit {count} items into a Span with capacity {span.Length}");
+        }
+        return Unit();
+    }
+
     public static Result<Unit, Exception> IsErrorIf(
         bool predicate,
         Func<Exception> createException)

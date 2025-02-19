@@ -27,39 +27,29 @@ public static class Throw
         }
     }
 
+#region Enumeration
+    /// <summary>
+    /// Throws an <see cref="InvalidOperationException"/> that indicates an <see cref="IEnumerator{T}"/> has deviated from its source
+    /// </summary>
+    /// <param name="hasChanged"></param>
+    /// <exception cref="InvalidOperationException"></exception>
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void IfEnumerationChanged([DoesNotReturnIf(true)] bool areDifferent)
+    public static void IfEnumerationSourceHasChanged([DoesNotReturnIf(true)] bool hasChanged)
     {
-        if (areDifferent)
+        if (hasChanged)
         {
-            throw new InvalidOperationException("Enumeration failed: Source has changed");
+            throw new InvalidOperationException("Enumeration Failed: Source has changed");
         }
     }
 
     [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void IfConcurrentOperation([DoesNotReturnIf(true)] bool isConcurrent)
+    public static void IfBadEnumerationState(
+        [DoesNotReturnIf(true)] bool badState)
     {
-        if (isConcurrent)
-        {
-            throw new InvalidOperationException("Concurrent operations are not supported");
-        }
+        if (badState)
+            throw new InvalidOperationException("Enumeration has not yet started or has finished");
     }
-
-
-    [StackTraceHidden]
-    public static void IfBadEnumerationState<T>(
-        T value,
-        Bounds<T> notStarted,
-        Bounds<T> finished)
-    {
-        if (notStarted.Contains(value))
-            throw new InvalidOperationException("Enumeration has not yet started");
-        if (finished.Contains(value))
-            throw new InvalidOperationException("Enumeration has already finished");
-    }
-
 
     [StackTraceHidden]
     public static void IfBadEnumerationState(
@@ -69,9 +59,9 @@ public static class Throw
         if (notYetStarted)
             throw new InvalidOperationException("Enumeration has not yet started");
         if (hasFinished)
-            throw new InvalidOperationException("Enumeration has already finished");
+            throw new InvalidOperationException("Enumeration has finished");
     }
-
+#endregion
 
     [StackTraceHidden]
     [DoesNotReturn]

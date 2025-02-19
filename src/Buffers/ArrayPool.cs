@@ -59,7 +59,16 @@ public sealed class ArrayPool<T> : IArrayPool<T>
 
     public T[] Rent() => _arrayPool.Rent(MinimumLength);
 
-    public T[] Rent(int minLength) => _arrayPool.Rent(minLength.Clamp(MinimumLength, MaximumArrayLength));
+    public T[] Rent(int minLength)
+    {
+        if (minLength <= 0)
+            return Array.Empty<T>();
+        if (minLength < MinimumLength)
+            return _arrayPool.Rent(MinimumLength);
+        if (minLength > MaximumArrayLength)
+            return _arrayPool.Rent(MaximumArrayLength);
+        return _arrayPool.Rent(minLength);
+    }
 
     public void Return(T[]? instance)
     {

@@ -2,7 +2,7 @@
 
 #pragma warning disable CA1710
 
-namespace ScrubJay.Collections;
+namespace ScrubJay.Collections.Pooled;
 
 /// <summary>
 /// A PooledList is an <see cref="IList{T}"/> implementation that operates on

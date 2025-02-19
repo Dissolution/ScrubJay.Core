@@ -1,4 +1,5 @@
 // extract assignment from expression
+
 #pragma warning disable S1121
 
 namespace ScrubJay.Extensions;
@@ -58,4 +59,34 @@ public static class ArrayExtensions
     /// </summary>
     public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this T[]? array)
         => array is null || array.Length == 0;
+
+#if NETFRAMEWORK || NETSTANDARD2_0
+    public static T[] Slice<T>(this T[] array, int start) => array.AsSpan(start).ToArray();
+    public static T[] Slice<T>(this T[] array, int start, int length) => array.AsSpan(start, length).ToArray();
+    public static T[] Slice<T>(this T[] array, Range range) => array.AsSpan(range).ToArray();
+
+    public static void Reverse<T>(this T[] array)
+    {
+        int end = array.Length - 1;
+
+        T temp1;
+        T temp2;
+        for (int i = 0; i < end; --end)
+        {
+            temp1 = array[i];
+            temp2 = array[end];
+            array[i] = temp2;
+            array[end] = temp1;
+            ++i;
+        }
+    }
+#else
+    public static T[] Slice<T>(this T[] array, int start) => array[start..];
+    public static T[] Slice<T>(this T[] array, int start, int length) => array[new Range(start, start + length)];
+    public static T[] Slice<T>(this T[] array, Range range) => array[range];
+
+    public static void Reverse<T>(this T[] array) => Array.Reverse<T>(array);
+#endif
+
+
 }

@@ -611,9 +611,18 @@ public readonly struct Result<TOk, TError> :
     public Result<TNewOk, TError> Select<TNewOk>(Func<TOk, TNewOk> selector)
     {
         if (_isOk)
-            return Result<TNewOk, TError>.Ok(selector(_ok!));
-        return Result<TNewOk, TError>.Error(_error!);
+            return Ok<TNewOk, TError>(selector(_ok!));
+        return Error<TNewOk, TError>(_error!);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Result<TNewOk, TError> Select<TState, TNewOk>(TState state, Func<TState, TOk, TNewOk> selector)
+    {
+        if (_isOk)
+            return Ok<TNewOk, TError>(selector(state, _ok!));
+        return Error<TNewOk, TError>(_error!);
+    }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Result<TNewOk, TError> SelectMany<TNewOk>(
@@ -623,7 +632,7 @@ public readonly struct Result<TOk, TError> :
         {
             return newSelector(_ok!);
         }
-        return Result<TNewOk, TError>.Error(_error!);
+        return Error<TNewOk, TError>(_error!);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -633,10 +642,10 @@ public readonly struct Result<TOk, TError> :
     {
         if (_isOk && keySelector(_ok!).HasOk(out var key))
         {
-            return Result<TNewOk, TError>.Ok(newSelector(_ok!, key));
+            return Ok<TNewOk, TError>(newSelector(_ok!, key));
         }
 
-        return Result<TNewOk, TError>.Error(_error!);
+        return Error<TNewOk, TError>(_error!);
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

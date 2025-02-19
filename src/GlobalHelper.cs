@@ -49,6 +49,9 @@ public static class GlobalHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Ok<T> Ok<T>(T value) => new Ok<T>(value);
 
+    public static Result<TOk, TError> Ok<TOk, TError>(TOk ok)
+        => Result<TOk, TError>.Ok(ok);
+
     public static Result<TOk, Exception> OkEx<TOk>(TOk ok)
         => Result<TOk, Exception>.Ok(ok);
 
@@ -73,6 +76,9 @@ public static class GlobalHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<Exception> Error(Exception exception)
         => new Error<Exception>(exception);
+
+    public static Result<TOk, TError> Error<TOk, TError>(TError error)
+        => Result<TOk, TError>.Error(error);
 
     public static Result<TOk, Exception> ErrorEx<TOk>(Exception error)
         => Result<TOk, Exception>.Error(error);

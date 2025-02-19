@@ -35,6 +35,29 @@ public static class Sequence
     public static void SelfCopy<T>(T[] array, Range source, Range destination) => array.AsSpan(source).CopyTo(array.AsSpan(destination));
 
     #region TryCopyTo
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryCopyTo<T>(Span<T> source, Span<T> destination) => source.TryCopyTo(destination);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryCopyTo<T>(Span<T> source, T[]? destination) => source.TryCopyTo(new Span<T>(destination));
+
+    public static bool TryCopyTo<T>(Span<T> source, IList<T>? destination)
+    {
+        int sourceCount = source.Length;
+        if (destination is null)
+            return sourceCount == 0;
+
+        if (sourceCount > destination.Count)
+            return false;
+
+        for (int i = 0; i < sourceCount; i++)
+        {
+            destination[i] = source[i];
+        }
+
+        return true;
+    }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryCopyTo<T>(ReadOnlySpan<T> source, Span<T> destination) => source.TryCopyTo(destination);
@@ -205,6 +228,12 @@ public static class Sequence
     #endregion
 
     #region CopyTo
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void CopyTo<T>(scoped Span<T> source, Span<T> destination) => source.CopyTo(destination);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void CopyTo<T>(scoped Span<T> source, T[]? destination) => source.CopyTo(new Span<T>(destination));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void CopyTo<T>(scoped ReadOnlySpan<T> source, Span<T> destination) => source.CopyTo(destination);
