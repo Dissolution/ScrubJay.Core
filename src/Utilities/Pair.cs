@@ -10,7 +10,7 @@ using ScrubJay.Text;
 namespace ScrubJay.Utilities;
 
 [PublicAPI]
-public static class Pair 
+public static class Pair
 {
 #if NET7_0_OR_GREATER
     public static Result<Pair<TKey, TValue>, ParseException> TryParse<TKey, TValue>(ReadOnlySpan<char> text, IFormatProvider? provider = default)
@@ -36,8 +36,7 @@ public static class Pair
         if (!TKey.TryParse(keySpan, provider, out var key))
             return getEx(text, ParseException.Create<TKey>(keySpan));
 
-        ch = reader.Take();
-        Debug.Assert(ch == ',');
+        reader.Take();
 
         var takeUntilRightParenthesis = reader.TryTakeUntilMatches(')');
         if (takeUntilRightParenthesis.StopReason == StopReason.EndOfSpan)
@@ -47,8 +46,7 @@ public static class Pair
         if (!TValue.TryParse(valueSpan, provider, out var value))
             return getEx(text, ParseException.Create<TValue>(valueSpan));
 
-        ch = reader.Take();
-        Debug.Assert(ch == ')');
+        reader.Take();
 
         reader.TrySkipWhile(char.IsWhiteSpace);
         if (reader.RemainingCount > 0)
@@ -64,7 +62,7 @@ public static class Pair
                 text,
                 $"Expected `({typeof(TKey).NameOf()}, {typeof(TValue).NameOf()})`",
                 innerEx);
-        }        
+        }
     }
 #endif
 

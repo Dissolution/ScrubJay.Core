@@ -534,7 +534,7 @@ public ref struct SpanReader<T>
     }
 
 
-    public void SkipAll() => TrySkipWhile(static (T _) => true);
+    public void SkipAll() => TrySkipWhile(static _ => true);
 
 
     #endregion
@@ -563,10 +563,10 @@ public ref struct SpanReader<T>
         int index = _position;
         ReadOnlySpan<char> chars = Notsafe.As<T, char>(_span);
 
-        const int CaptureCount = 32;
+        const int CAPTURE_COUNT = 32;
 
         // Previously read items
-        int startIndex = index - CaptureCount;
+        int startIndex = index - CAPTURE_COUNT;
         // If we have more before this, indicate with ellipsis
         if (startIndex > 0)
         {
@@ -583,7 +583,7 @@ public ref struct SpanReader<T>
         text.Write('×');
 
         // items yet to be read
-        int endIndex = index + CaptureCount;
+        int endIndex = index + CAPTURE_COUNT;
         // Indicate further characters with ellipsis
         if (endIndex < chars.Length)
         {
@@ -608,8 +608,8 @@ public ref struct SpanReader<T>
             return ToStringFromCharSpan();
 
 
-        const string Delimiter = ", ";
-        const int CaptureCount = 8;
+        const string DELIMITER = ", ";
+        const int CAPTURE_COUNT = 8;
 
         var text = new Buffer<char>();
 
@@ -617,12 +617,12 @@ public ref struct SpanReader<T>
         var span = _span;
 
         // Previously read items
-        int startIndex = index - CaptureCount;
+        int startIndex = index - CAPTURE_COUNT;
         // If we have more before this, indicate with ellipsis
         if (startIndex > 0)
         {
             text.Write('…');
-            text.Write(Delimiter);
+            text.Write(DELIMITER);
         }
         // Otherwise, cap at a min zero
         else
@@ -634,7 +634,7 @@ public ref struct SpanReader<T>
         {
             if (i > startIndex)
             {
-                text.Write(Delimiter);
+                text.Write(DELIMITER);
             }
 
             text.Write<T>(span[i]);
@@ -644,7 +644,7 @@ public ref struct SpanReader<T>
         text.Write('×');
 
         // items yet to be read
-        int nextIndex = index + CaptureCount;
+        int nextIndex = index + CAPTURE_COUNT;
 
         // if we have more after, we're going to end with an ellipsis
         bool postpendEllipsis;
@@ -663,7 +663,7 @@ public ref struct SpanReader<T>
         {
             if (i > index)
             {
-                text.Write(Delimiter);
+                text.Write(DELIMITER);
             }
 
             text.Write<T>(span[i]);
@@ -671,7 +671,7 @@ public ref struct SpanReader<T>
 
         if (postpendEllipsis)
         {
-            text.Write(Delimiter);
+            text.Write(DELIMITER);
             text.Write("…");
         }
 

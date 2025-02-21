@@ -5,8 +5,8 @@ public sealed class ArrayPool<T> : IArrayPool<T>
 {
     public static ArrayPool<T> Shared { get; } = new ArrayPool<T>(System.Buffers.ArrayPool<T>.Shared);
 
-    private const int MinimumArrayLength = 0x10;
-    private const int MaximumArrayLength = 0x40000000; // < string.MaxLength, < Array.MaxLength
+    private const int MINIMUM_ARRAY_LENGTH = 0x10;
+    private const int MAXIMUM_ARRAY_LENGTH = 0x40000000; // < string.MaxLength, < Array.MaxLength
 
     private readonly System.Buffers.ArrayPool<T> _arrayPool;
     private readonly bool _clearArray;
@@ -22,7 +22,7 @@ public sealed class ArrayPool<T> : IArrayPool<T>
         }
         else
         {
-            this.MinimumLength = MinimumArrayLength;
+            this.MinimumLength = MINIMUM_ARRAY_LENGTH;
             _clearArray = true;
         }
         _arrayPool = arrayPool;
@@ -37,7 +37,7 @@ public sealed class ArrayPool<T> : IArrayPool<T>
         }
         else
         {
-            this.MinimumLength = MinimumArrayLength;
+            this.MinimumLength = MINIMUM_ARRAY_LENGTH;
             _clearArray = true;
         }
         _arrayPool = System.Buffers.ArrayPool<T>.Create();
@@ -45,14 +45,14 @@ public sealed class ArrayPool<T> : IArrayPool<T>
 
     public ArrayPool(int minimumLength)
     {
-        MinimumLength = minimumLength.Clamp(MinimumArrayLength, MinimumArrayLength);
+        MinimumLength = minimumLength.Clamp(MINIMUM_ARRAY_LENGTH, MINIMUM_ARRAY_LENGTH);
         _clearArray = !typeof(T).IsValueType;
         _arrayPool = System.Buffers.ArrayPool<T>.Create();
     }
 
     public ArrayPool(int minimumLength, bool clearArray)
     {
-        MinimumLength = minimumLength.Clamp(MinimumArrayLength, MinimumArrayLength);
+        MinimumLength = minimumLength.Clamp(MINIMUM_ARRAY_LENGTH, MINIMUM_ARRAY_LENGTH);
         _clearArray = clearArray;
         _arrayPool = System.Buffers.ArrayPool<T>.Create();
     }
@@ -61,12 +61,10 @@ public sealed class ArrayPool<T> : IArrayPool<T>
 
     public T[] Rent(int minLength)
     {
-        if (minLength <= 0)
-            return [];
         if (minLength < MinimumLength)
             return _arrayPool.Rent(MinimumLength);
-        if (minLength > MaximumArrayLength)
-            return _arrayPool.Rent(MaximumArrayLength);
+        if (minLength > MAXIMUM_ARRAY_LENGTH)
+            return _arrayPool.Rent(MAXIMUM_ARRAY_LENGTH);
         return _arrayPool.Rent(minLength);
     }
 

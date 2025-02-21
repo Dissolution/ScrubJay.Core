@@ -2,6 +2,7 @@
 
 using static ScrubJay.Constraints.GenericTypeConstraint;
 // ReSharper disable InvokeAsExtensionMethod
+// ReSharper disable MethodOverloadWithOptionalParameter
 
 namespace ScrubJay.Utilities;
 
@@ -1313,12 +1314,8 @@ public static class Sequence
     }
 
     public static bool Contains<T>(Span<T> source, T item, IEqualityComparer<T>? comparer = null)
-    {
-        return SpanExtensions.Contains<T>(source, item, comparer);
-    }
+        => SpanExtensions.Contains<T>(source, item, comparer);
 
     public static bool Contains<T>(ReadOnlySpan<T> source, T item, IEqualityComparer<T>? comparer = null)
-    {
-        return SpanExtensions.Contains<T>(source, item, comparer);
-    }
+        => SpanExtensions.Contains<T>(source, item, comparer);
 }

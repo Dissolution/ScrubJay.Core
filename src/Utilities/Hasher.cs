@@ -51,11 +51,11 @@ namespace ScrubJay.Utilities;
 [StructLayout(LayoutKind.Auto)]
 public ref struct Hasher
 {
-    private const uint Prime1 = 0x9E3779B1U;
-    private const uint Prime2 = 0x85EBCA77U;
-    private const uint Prime3 = 0xC2B2AE3DU;
-    private const uint Prime4 = 0x27D4EB2FU;
-    private const uint Prime5 = 0x165667B1U;
+    private const uint PRIME1 = 0x9E3779B1U;
+    private const uint PRIME2 = 0x85EBCA77U;
+    private const uint PRIME3 = 0xC2B2AE3DU;
+    private const uint PRIME4 = 0x27D4EB2FU;
+    private const uint PRIME5 = 0x165667B1U;
 
     /// <summary>
     /// The seed for this Hasher
@@ -98,24 +98,24 @@ public ref struct Hasher
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StartingHash()
-        => _seed + Prime5;
+        => _seed + PRIME5;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void StartingStates(out uint state1, out uint state2, out uint state3, out uint state4)
     {
-        state1 = _seed + Prime1 + Prime2;
-        state2 = _seed + Prime2;
+        state1 = _seed + PRIME1 + PRIME2;
+        state2 = _seed + PRIME2;
         state3 = _seed;
-        state4 = _seed - Prime1;
+        state4 = _seed - PRIME1;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateAdd(uint hash, uint input)
-        => RotateLeft(hash + (input * Prime2), 13) * Prime1;
+        => RotateLeft(hash + (input * PRIME2), 13) * PRIME1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashAdd(uint hash, uint queuedValue)
-        => RotateLeft(hash + (queuedValue * Prime3), 17) * Prime4;
+        => RotateLeft(hash + (queuedValue * PRIME3), 17) * PRIME4;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateToHash(uint value1, uint value2, uint value3, uint value4)
@@ -125,9 +125,9 @@ public ref struct Hasher
     private static uint HashFinalize(uint hash)
     {
         hash ^= hash >> 15;
-        hash *= Prime2;
+        hash *= PRIME2;
         hash ^= hash >> 13;
-        hash *= Prime3;
+        hash *= PRIME3;
         hash ^= hash >> 16;
         return hash;
     }
