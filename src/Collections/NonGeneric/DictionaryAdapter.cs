@@ -62,11 +62,11 @@ public sealed class DictionaryAdapter<TKey, TValue> :
             _adapter = adapter;
         }
 
-        void ICollection<TKey>.Add(TKey item) => Throw.IsReadOnly(this);
+        void ICollection<TKey>.Add(TKey item) => Throw.IfReadOnly(this);
 
-        bool ICollection<TKey>.Remove(TKey item) => Throw.IsReadOnly<KeyCollection, bool>(this);
+        bool ICollection<TKey>.Remove(TKey item) => Throw.IfReadOnly<KeyCollection, bool>(this);
 
-        void ICollection<TKey>.Clear() => Throw.IsReadOnly(this);
+        void ICollection<TKey>.Clear() => Throw.IfReadOnly(this);
 
         void ICollection.CopyTo(Array array, int index)
         {
@@ -173,6 +173,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
                 TValue value = ObjectToValue(e.Current);
                 yield return value;
             }
+            Disposable.TryDispose(e);
         }
     }
 

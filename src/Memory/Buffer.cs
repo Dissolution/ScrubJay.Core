@@ -120,7 +120,7 @@ public ref struct Buffer<T>
     public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _position;
+        readonly get => _position;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal set
         {
@@ -132,7 +132,7 @@ public ref struct Buffer<T>
     /// <summary>
     /// Gets the current capacity for this <see cref="Buffer{T}"/>, which will be increased as needed
     /// </summary>
-    public int Capacity
+    public readonly int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _span.Length;
@@ -596,7 +596,7 @@ public ref struct Buffer<T>
     /// <c>true</c> if this buffer contains an instance of <paramref name="item"/><br/>
     /// <c>false</c> if it does not
     /// </returns>
-    public bool Contains(T item)
+    public readonly bool Contains(T item)
     {
         for (int i = 0; i < _position; i++)
         {
@@ -627,7 +627,7 @@ public ref struct Buffer<T>
     /// <returns>
     /// An <see cref="Option{T}"/> that might contain the index of the first matching instance
     /// </returns>
-    public Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = default, IEqualityComparer<T>? itemComparer = null)
+    public readonly Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = default, IEqualityComparer<T>? itemComparer = null)
     {
         int pos = _position;
         var span = _span;
@@ -713,7 +713,7 @@ public ref struct Buffer<T>
     /// <returns>
     /// An <see cref="Option{T}"/> that might contain the index of the first matching sequence
     /// </returns>
-    public Option<int> TryFindIndex(
+    public readonly Option<int> TryFindIndex(
         ReadOnlySpan<T> items,
         bool firstToLast = true,
         Index? offset = default,
@@ -815,7 +815,7 @@ public ref struct Buffer<T>
     /// <returns>
     /// An <see cref="Option{T}"/> that might contain the first matching Index + Item
     /// </returns>
-    public Option<(int Index, T Item)> TryFindItemIndex(
+    public readonly Option<(int Index, T Item)> TryFindItemIndex(
         Func<T, bool>? itemPredicate,
         bool firstToLast = true,
         Index? offset = default)
@@ -964,6 +964,7 @@ public ref struct Buffer<T>
     /// <returns>
     /// An <see cref="Option{T}"/> containing an <see cref="Array">T[]</see> of removed items
     /// </returns>
+    #pragma warning disable IDE0251
     public Option<T[]> TryRemoveAndGetMany(Range range)
     {
         if (!Validate.Range(range, _position).HasOk(out var ol))
@@ -976,6 +977,7 @@ public ref struct Buffer<T>
         Sequence.SelfCopy(_span, (offset + length).., offset..);
         return Some(items);
     }
+    #pragma warning restore IDE0251
 
     /// <summary>
     /// Remove all the items in this <see cref="Buffer{T}"/> that match an <paramref name="itemPredicate"/>

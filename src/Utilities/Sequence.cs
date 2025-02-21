@@ -1,6 +1,7 @@
 ﻿#pragma warning disable IDE0022, CA1045
 
 using static ScrubJay.Constraints.GenericTypeConstraint;
+// ReSharper disable InvokeAsExtensionMethod
 
 namespace ScrubJay.Utilities;
 
@@ -1294,4 +1295,30 @@ public static class Sequence
 
 
     #endregion
+
+    public static bool Contains<T>(T[] array, T item, IEqualityComparer<T>? comparer = null)
+    {
+        if (comparer is null)
+        {
+            return Array.IndexOf<T>(array, item) >= 0;
+        }
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            if (comparer.Equals(array[i], item))
+                return true;
+        }
+
+        return false;
+    }
+
+    public static bool Contains<T>(Span<T> source, T item, IEqualityComparer<T>? comparer = null)
+    {
+        return SpanExtensions.Contains<T>(source, item, comparer);
+    }
+
+    public static bool Contains<T>(ReadOnlySpan<T> source, T item, IEqualityComparer<T>? comparer = null)
+    {
+        return SpanExtensions.Contains<T>(source, item, comparer);
+    }
 }

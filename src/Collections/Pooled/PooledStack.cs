@@ -12,7 +12,6 @@ public class PooledStack<T> : PooledArray<T>,
     IDisposable
 {
     private int _size;
-    private int _version;
 
     bool ICollection<T>.IsReadOnly => false;
 
@@ -45,7 +44,7 @@ public class PooledStack<T> : PooledArray<T>,
     protected int AdjustOffset(int offset)
     {
         Debug.Assert(offset >= 0 && offset < _size);
-        return (_size - offset) - 1;
+        return ((_size - offset) - 1);
     }
 
 
@@ -227,20 +226,19 @@ public class PooledStack<T> : PooledArray<T>,
         return OkEx(peeked);
     }
 
-    public bool TryPeekManyTo(Span<T> buffer)
+    public Result<Unit, Exception> TryPeekManyTo(Span<T> buffer)
     {
         int count = buffer.Length;
-        if (count < 0 || count > _size)
-            return false;
-
         int size = _size;
         int start = size - count;
+        if (count < 0 || count > size)
+            return new InvalidOperationException($"Cannot Peek to a buffer of size {count}: there are only {size} items");
 
         var slice = _array.AsSpan(new Range(start, size));
         Debug.Assert(slice.Length == buffer.Length);
         Sequence.CopyTo(slice, buffer);
         buffer.Reverse();
-        return true;
+        return Unit();
     }
 
     /// <summary>
@@ -287,14 +285,13 @@ public class PooledStack<T> : PooledArray<T>,
         return OkEx(popped);
     }
 
-    public bool TryPopManyTo(Span<T> buffer)
+    public Result<Unit,Exception> TryPopManyTo(Span<T> buffer)
     {
         int count = buffer.Length;
-        if (count < 0 || count > _size)
-            return false;
-
         int size = _size;
         int start = size - count;
+        if (count < 0 || count > size)
+            return new InvalidOperationException($"Cannot Pop to a buffer of size {count}: there are only {size} items");
 
         var slice = _array.AsSpan(new Range(start, size));
         Debug.Assert(slice.Length == buffer.Length);
@@ -303,7 +300,7 @@ public class PooledStack<T> : PooledArray<T>,
         _size = start;
         Sequence.CopyTo(slice, buffer);
         buffer.Reverse();
-        return true;
+        return Unit();
     }
 
     bool ICollection<T>.Remove(T item)
@@ -311,7 +308,7 @@ public class PooledStack<T> : PooledArray<T>,
         int endIndex = _size - 1;
         if (endIndex >= 0)
         {
-            var itemIndex = Array.LastIndexOf<T>(_array, item, endIndex);
+            int itemIndex = Array.LastIndexOf<T>(_array, item, endIndex);
             if (itemIndex >= 0)
             {
                 _version++;
@@ -344,7 +341,7 @@ public class PooledStack<T> : PooledArray<T>,
         int endIndex = _size - 1;
         if (endIndex < 0)
             return -1;
-        int index =  Array.LastIndexOf<T>(_array, item, endIndex);
+        int index = Array.LastIndexOf<T>(_array, item, endIndex);
         if (index < 0)
             return -1;
         return AdjustOffset(_size - index);
@@ -390,9 +387,9 @@ public class PooledStack<T> : PooledArray<T>,
         if (Validate.CanCopyTo(span, count).HasError(out var ex))
             return ex;
 
-        int s = 0;  // index into span
-        int a;  // index into our array
-        int aStep;  // which order we're reading array
+        int s = 0; // index into span
+        int a; // index into our array
+        int aStep; // which order we're reading array
 
         if (popOrder)
         {
@@ -431,8 +428,25 @@ public class PooledStack<T> : PooledArray<T>,
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => Count == 0 ? Enumerator.Empty<T>() : GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator(true);
 
     [MustDisposeResource(false)]
-    public ArrayEnumerator<T> GetEnumerator(bool popOrder = true) => new(_array, 0, _size - 1, popOrder ? -1 : +1);
+    public IEnumerator<T> GetEnumerator(bool popOrder = true)
+    {
+        if (_size == 0)
+            return Enumerator.Empty<T>();
+
+        return new ArrayEnumerator<T>(
+            _array,
+            0, _size - 1,
+            popOrder ? -1 : +1,
+            () => _version);
+    }
+
+    public override void Dispose()
+    {
+        _version++;
+        _size = 0;
+        base.Dispose();
+    }
 }

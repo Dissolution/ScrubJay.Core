@@ -185,11 +185,11 @@ public delegate void RefItemAndIndex<T>(ref T item, int index);
 /// <summary>
 /// A delegate that represents access to an available, unwritten portion of a <see cref="Span{T}"/>
 /// </summary>
-/// <param name="emptyBuffer">
+/// <param name="buffer">
 /// The available <see cref="Span{T}"/>
 /// </param>
 /// <returns>
-/// The number of items added to <paramref name="emptyBuffer"/>
+/// The number of items added to <paramref name="buffer"/>
 /// </returns>
 [PublicAPI]
-public delegate int UseAvailable<T>(Span<T> emptyBuffer);
+public delegate int UseAvailable<T>(Span<T> buffer);

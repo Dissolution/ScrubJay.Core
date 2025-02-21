@@ -9,7 +9,7 @@ namespace ScrubJay.Parsing;
 /// with a default message that contains the <see cref="InputText"/> and <see cref="ParseType"/>
 /// </summary>
 /// <remarks>
-/// <see cref="ParseException"/> supports fluent instantiation of its <see cref="Data"/> with <see cref="Add"/>
+/// <see cref="ParseException"/> supports fluent instantiation of its <see cref="Exception.Data"/> with <see cref="Add"/>
 /// </remarks>
 [PublicAPI]
 public class ParseException : InvalidOperationException, IEnumerable
@@ -99,7 +99,7 @@ public class ParseException : InvalidOperationException, IEnumerable
     }
 
     /// <summary>
-    /// Adds a key/value pair into <see cref="Data"/>
+    /// Adds a key/value pair into <see cref="Exception.Data"/>
     /// </summary>
     /// <remarks>
     /// Support for fluent setting of Data during Exception creation

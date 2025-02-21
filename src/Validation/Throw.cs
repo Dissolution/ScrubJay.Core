@@ -1,9 +1,6 @@
 ﻿// CA1716: Identifiers should not match keywords
 #pragma warning disable CA1716
 
-
-using ScrubJay.Constraints;
-
 namespace ScrubJay.Validation;
 
 /// <summary>
@@ -171,7 +168,7 @@ public static class Throw
     [DoesNotReturn]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void IsReadOnly<T>(
+    public static void IfReadOnly<T>(
         T? instance,
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)
@@ -180,7 +177,7 @@ public static class Throw
     [DoesNotReturn]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TReturn IsReadOnly<T, TReturn>(
+    public static TReturn IfReadOnly<T, TReturn>(
         T? instance,
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)

@@ -1,90 +1,4 @@
-﻿// Identifiers should have correct suffix
-#pragma warning disable CA1710
-// Remove unnecessary cast (IDE0004)
-#pragma warning disable IDE0004
-
-namespace ScrubJay.Collections;
-
-[PublicAPI]
-public static class Values
-{
-    /// <summary>
-    /// Concatenates two specified instances of <see cref="Values{T}"/>.
-    /// </summary>
-    /// <param name="values1">The first <see cref="Values{T}"/> to concatenate.</param>
-    /// <param name="values2">The second <see cref="Values{T}"/> to concatenate.</param>
-    /// <returns>The concatenation of <paramref name="values1"/> and <paramref name="values2"/>.</returns>
-    public static Values<T> Concat<T>(Values<T> values1, Values<T> values2)
-    {
-        int count1 = values1.Count;
-        int count2 = values2.Count;
-
-        if (count1 == 0)
-        {
-            return values2;
-        }
-
-        if (count2 == 0)
-        {
-            return values1;
-        }
-
-        var combined = new T[count1 + count2];
-        values1.FastCopyTo(combined);
-        values2.FastCopyTo(combined.AsSpan(count1));
-        return new Values<T>(combined);
-    }
-
-    /// <summary>
-    /// Concatenates specified instance of <see cref="Values{T}"/> with specified <see cref="string"/>.
-    /// </summary>
-    /// <param name="values">The <see cref="Values{T}"/> to concatenate.</param>
-    /// <param name="value">The <see cref="string" /> to concatenate.</param>
-    /// <returns>The concatenation of <paramref name="values"/> and <paramref name="value"/>.</returns>
-    public static Values<T> Concat<T>(in Values<T> values, T? value)
-    {
-        if (value is null)
-        {
-            return values;
-        }
-
-        int count = values.Count;
-        if (count == 0)
-        {
-            return new Values<T>(value);
-        }
-
-        var combined = new T[count + 1];
-        values.FastCopyTo(combined);
-        combined[count] = value;
-        return new Values<T>(combined);
-    }
-
-    /// <summary>
-    /// Concatenates specified instance of <see cref="string"/> with specified <see cref="Values{T}"/>.
-    /// </summary>
-    /// <param name="value">The <see cref="string" /> to concatenate.</param>
-    /// <param name="values">The <see cref="Values{T}"/> to concatenate.</param>
-    /// <returns>The concatenation of <paramref name="values"/> and <paramref name="values"/>.</returns>
-    public static Values<T> Concat<T>(T? value, in Values<T> values)
-    {
-        if (value is null)
-        {
-            return values;
-        }
-
-        int count = values.Count;
-        if (count == 0)
-        {
-            return new Values<T>(value);
-        }
-
-        var combined = new T[count + 1];
-        combined[0] = value;
-        values.FastCopyTo(combined.AsSpan(1));
-        return new Values<T>(combined);
-    }
-}
+﻿namespace ScrubJay.Collections;
 
 /// <summary>
 /// A small, immutable collection of Values
@@ -123,20 +37,26 @@ public readonly struct Values<T> :
     /// </summary>
     public static readonly Values<T> Empty;
 
-
     /// <summary>
     /// Storage object
     /// </summary>
     private readonly object? _obj;
 
-    public T this[int index] => TryGet(index).OkOrThrow();
+    public T this[int index] => TryGetAt(index).OkOrThrow();
 
+    /// <summary>
+    /// Get the number of stored values
+    /// </summary>
     public int Count => Match(static () => 0, static _ => 1, static values => values.Length);
 
-    public bool IsNull => _obj is null;
+    public bool IsEmpty => _obj is null;
+    public bool IsValue => _obj is T;
+    public bool IsValues => _obj is T[];
 
-    public bool IsNullOrEmpty => Match(static () => true, static _ => false, static values => values.Length == 0);
-
+    private Values(T[] array, byte _)
+    {
+        _obj = array;
+    }
 
     public Values()
     {
@@ -145,61 +65,150 @@ public readonly struct Values<T> :
 
     public Values(T value)
     {
-        _obj = (object?)value;
+        _obj = value;
     }
 
     public Values(params T[]? values)
     {
-        _obj = (object?)values;
+        if (values is null)
+        {
+            _obj = null;
+        }
+        else
+        {
+            _obj = values.Length switch
+            {
+                0 => null,
+                1 => values[0],
+                _ => values,
+            };
+        }
     }
 
-
-    public Result<T, Exception> TryGet(Index index) => Match(index,
-        onEmpty: static _ => new InvalidOperationException("Values is empty"),
-        onValue: static (idx, value) => Validate.Index(idx, 1).OkSelect(i => value),
-        onValues: static (idx, values) => Validate.Index(idx, values.Length).OkSelect(i => values[i])
-        );
-
-
-
-    public bool IsValue([MaybeNullWhen(false)] out T value) => _obj.Is(out value);
-
-    public Option<T> HasValue()
+    public Values(IEnumerable<T>? values)
     {
-        if (_obj is T value)
-            return Some(value);
-        return None<T>();
+        if (values is null)
+        {
+            _obj = null;
+        }
+        else if (values is ICollection<T> collection)
+        {
+            var array = new T[collection.Count];
+            collection.CopyTo(array, 0);
+            _obj = array.Length switch
+            {
+                0 => null,
+                1 => array[0],
+                _ => array,
+            };
+        }
+        else
+        {
+            using var e = values.GetEnumerator();
+            if (!e.MoveNext())
+            {
+                _obj = null;
+            }
+            else
+            {
+                T value = e.Current;
+                if (!e.MoveNext())
+                {
+                    _obj = value;
+                }
+                else
+                {
+                    using var buffer = new Buffer<T>();
+                    buffer.Add(value);
+                    buffer.Add(e.Current);
+                    while (e.MoveNext())
+                        buffer.Add(e.Current);
+                    _obj = buffer.ToArray();
+                }
+            }
+        }
     }
 
-    public bool IsValues([MaybeNullWhen(false)] out T[] values) => _obj.Is(out values);
 
-    public Option<T[]> HasValues()
+    public bool HasValue([MaybeNullWhen(false)] out T value) => _obj.Is(out value);
+
+    public bool HasValues([MaybeNullWhen(false)] out T[] values) => _obj.Is(out values);
+
+    public bool Contains(T value) => Match(
+        static () => false,
+        val => Equate.Values(val, value),
+        vals => Array.IndexOf<T>(vals, value) >= 0);
+
+    public bool Contains(T value, IEqualityComparer<T>? itemComparer) => Match(
+        static () => false,
+        val => Equate.Values(value, val, itemComparer),
+        vals => Sequence.Contains(vals, value, itemComparer));
+
+
+    /// <summary>
+    /// Tries to get the value at the given <see cref="Index"/>
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// An <see cref="Empty"/> has no values at any index<br/>
+    /// A <typeparamref name="T"/> Value exists only at index 0<br/>
+    /// <c>T[]</c> Values are indexed as a standard <see cref="Array"/>
+    /// </remarks>
+    public Result<T, Exception> TryGetAt(Index index) => Match(
+        onEmpty: static () => new InvalidOperationException("Values is empty"),
+        onValue: val => Validate.Index(index, 1).Select(_ => val),
+        onValues: vals => Validate.Index(index, vals.Length).Select(i => vals[i])
+    );
+
+    public Values<T> With(Values<T> values)
     {
-        if (_obj is T[] values)
-            return Some(values);
-        return None<T[]>();
+        object? thisObj = _obj;
+        object? otherObj = values._obj;
+
+        if (thisObj is null)
+            return values;
+        if (otherObj is null)
+            return this;
+
+        if (thisObj is T thisVal)
+        {
+            if (otherObj is T otherVal)
+            {
+                return new Values<T>([thisVal, otherVal], default);
+            }
+            else
+            {
+                Debug.Assert(otherObj is T[]);
+                return new Values<T>([thisVal, ..(T[])otherObj!], default);
+            }
+        }
+        else
+        {
+            Debug.Assert(thisObj is T[]);
+            if (otherObj is T otherVal)
+            {
+                return new Values<T>([..(T[])thisObj, otherVal], default);
+            }
+            else
+            {
+                Debug.Assert(otherObj is T[]);
+                return new Values<T>([..(T[])thisObj, ..(T[])otherObj!], default);
+            }
+        }
     }
 
-    public bool Contains(T item) => Match(item,
-            static _ => false,
-            static (itm, value) => EqualityComparer<T>.Default.Equals(itm, value),
-            static (itm, values) => Array.IndexOf<T>(values, itm) != -1
-            );
+    public Values<T> With(T value) => With(new Values<T>(value));
 
-    public bool Contains(T item, IEqualityComparer<T>? itemComparer)
-    {
-        return Match(
-            static () => false,
-            value => Equate.With(itemComparer).Equals(value, item),
-            values => values.Contains(item, itemComparer));
-    }
+    public Values<T> WithMany(T[] values) => With(new Values<T>(values));
+    public Values<T> WithMany(IEnumerable<T> values) => With(new Values<T>(values));
 
     internal void FastCopyTo(Span<T> span)
     {
         object? obj = _obj;
         if (obj is null)
         {
-            return;
+
         }
         else if (obj is T value)
         {
@@ -270,25 +279,6 @@ public readonly struct Values<T> :
         }
     }
 
-    public void Match<TState>(TState state, Act<TState> onEmpty, Act<TState, T> onValue, Act<TState, T[]> onValues)
-    {
-        object? obj = _obj;
-        if (obj is null)
-        {
-            onEmpty(state);
-        }
-        else if (obj is T value)
-        {
-            onValue(state, value);
-        }
-        else
-        {
-            Debug.Assert(obj is T[]);
-            var values = Notsafe.As<T[]>(obj);
-            onValues(state, values);
-        }
-    }
-
     public TResult Match<TResult>(Fun<TResult> onEmpty, Fun<T, TResult> onValue, Fun<T[], TResult> onValues)
     {
         object? obj = _obj;
@@ -307,32 +297,13 @@ public readonly struct Values<T> :
         }
     }
 
-    public TResult Match<TState, TResult>(TState state, Fun<TState, TResult> onEmpty, Fun<TState, T, TResult> onValue, Fun<TState, T[], TResult> onValues)
-    {
-        object? obj = _obj;
-        switch (obj)
-        {
-            case null:
-                return onEmpty(state);
-            case T value:
-                return onValue(state, value);
-            default:
-            {
-                Debug.Assert(obj is T[]);
-                var values = Notsafe.As<T[]>(obj);
-                return onValues(state, values);
-            }
-        }
-    }
-
-
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public IEnumerator<T> GetEnumerator() => Match(
         static () => Enumerator.Empty<T>(),
         static value => Enumerator.Single<T>(value),
         static values => Enumerator.ForArray<T>(values));
-   
+
 
     public bool Equals(T? value)
         => _obj is T myValue && EqualityComparer<T>.Default.Equals(myValue, value!);
@@ -357,7 +328,7 @@ public readonly struct Values<T> :
         {
             Debug.Assert(obj is T[]);
             var myValues = Notsafe.As<T[]>(obj);
-            return values.IsValues(out var otherValues) &&
+            return values.HasValues(out var otherValues) &&
                 Sequence.Equal(myValues, otherValues);
         }
     }

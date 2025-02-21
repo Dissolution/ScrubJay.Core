@@ -20,7 +20,7 @@ public static class TextExtensions
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string AsString(this scoped Span<char> text)
-    { 
+    {
 #if NETFRAMEWORK || NETSTANDARD2_0
         unsafe
         {
@@ -35,11 +35,11 @@ public static class TextExtensions
     }
 
     /// <summary>
-    /// Gets this <see cref="text"/> as a <see cref="string"/>
+    /// Efficiently convert a <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see> to a <see cref="string"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string AsString(this scoped ReadOnlySpan<char> text)
-    { 
+    {
 #if NETFRAMEWORK || NETSTANDARD2_0
         unsafe
         {

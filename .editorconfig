@@ -395,7 +395,7 @@ csharp_style_deconstructed_variable_declaration = true:warning
 dotnet_style_readonly_field = true:warning
 
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0045
-dotnet_style_prefer_conditional_expression_over_assignment = true:warning
+dotnet_style_prefer_conditional_expression_over_assignment = false:suggestion
 
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0046
 dotnet_style_prefer_conditional_expression_over_return = false:none
@@ -498,7 +498,7 @@ csharp_style_prefer_utf8_string_literals = true:warning
 csharp_style_prefer_readonly_struct = true:error
 
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0251
-csharp_style_prefer_readonly_struct_member = true:warning
+csharp_style_prefer_readonly_struct_member = true:suggestion
 
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0290
 csharp_style_prefer_primary_constructors = false:warning
@@ -511,7 +511,7 @@ dotnet_style_prefer_collection_expression = when_types_loosely_match:warning
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0303
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0304
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0305
-dotnet_style_prefer_collection_expression = when_types_loosely_match:warning
+dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
 
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0320
 csharp_prefer_static_anonymous_function = true:suggestion

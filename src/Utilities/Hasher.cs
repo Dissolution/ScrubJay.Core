@@ -345,6 +345,31 @@ public ref struct Hasher
     /// <summary>
     /// Gets a hashcode generated from all the items in the given <paramref name="span"/>
     /// </summary>
+    public static int Combine<T>(Span<T> span)
+    {
+        switch (span.Length)
+        {
+            case 0: return EmptyHash;
+            case 1: return GetHashCode(span[0]);
+            case 2: return Combine(span[0], span[1]);
+            case 3: return Combine(span[0], span[1], span[2]);
+            case 4: return Combine(span[0], span[1], span[2], span[3]);
+            case 5: return Combine(span[0], span[1], span[2], span[3], span[4]);
+            case 6: return Combine(span[0], span[1], span[2], span[3], span[4], span[5]);
+            case 7: return Combine(span[0], span[1], span[2], span[3], span[4], span[5], span[6]);
+            case 8: return Combine(span[0], span[1], span[2], span[3], span[4], span[5], span[6], span[7]);
+            default:
+            {
+                var hasher = new Hasher();
+                hasher.AddMany<T>(span);
+                return hasher.ToHashCode();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets a hashcode generated from all the items in the given <paramref name="span"/>
+    /// </summary>
     public static int Combine<T>(ReadOnlySpan<T> span)
     {
         switch (span.Length)
@@ -513,6 +538,17 @@ public ref struct Hasher
         else
         {
             AddHash(value.GetHashCode());
+        }
+    }
+
+    /// <summary>
+    /// Adds the hashcodes generated for the given <paramref name="values"/> to this <see cref="Hasher"/>
+    /// </summary>
+    public void AddMany<T>(scoped Span<T> values)
+    {
+        for (int i = 0; i < values.Length; i++)
+        {
+            Add<T>(values[i]);
         }
     }
 

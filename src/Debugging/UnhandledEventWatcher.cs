@@ -31,6 +31,7 @@ public static class UnhandledEventWatcher
         var unhandledEventArgs = new UnhandledEventArgs
         {
             Source = UnhandledEventSource.AppDomain,
+            Sender = sender,
             Exception = args.ExceptionObject as Exception,
             Data = (args.ExceptionObject is not Exception) ? args.ExceptionObject : null,
             IsTerminating = args.IsTerminating,
@@ -43,6 +44,7 @@ public static class UnhandledEventWatcher
         var unhandledEventArgs = new UnhandledEventArgs
         {
             Source = UnhandledEventSource.TaskScheduler,
+            Sender = sender,
             Exception = args.Exception,
             IsObserved = args.Observed,
         };

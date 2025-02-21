@@ -1,5 +1,6 @@
 ﻿// Identifiers should have correct suffix
 
+using Unit = ScrubJay.Functional.Unit;
 #pragma warning disable CA1710
 
 namespace ScrubJay.Collections.Pooled;
@@ -14,7 +15,7 @@ namespace ScrubJay.Collections.Pooled;
 /// </typeparam>
 [PublicAPI]
 [MustDisposeResource]
-public sealed class PooledList<T> :
+public sealed class PooledList<T> : PooledArray<T>,
     IList<T>,
     IReadOnlyList<T>,
     ICollection<T>,
@@ -22,9 +23,6 @@ public sealed class PooledList<T> :
     IEnumerable<T>,
     IDisposable
 {
-    // _array borrowed from ArrayPool
-    private T[] _array;
-
     // the position in _array that we're writing to
     private int _position;
 
@@ -56,7 +54,11 @@ public sealed class PooledList<T> :
     T IList<T>.this[int index]
     {
         get => this[index];
-        set => this[index] = value;
+        set
+        {
+            _version++;
+            this[index] = value;
+        }
     }
 
     /// <summary>
@@ -67,8 +69,12 @@ public sealed class PooledList<T> :
     /// </exception>
     public ref T this[int index]
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref Written[index];
+        get
+        {
+            // Have to assume changes
+            _version++;
+            return ref Written[index];
+        }
     }
 
     /// <summary>
@@ -79,8 +85,12 @@ public sealed class PooledList<T> :
     /// </exception>
     public ref T this[Index index]
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref Written[index];
+        get
+        {
+            // Have to assume changes
+            _version++;
+            return ref Written[index];
+        }
     }
 
     /// <summary>
@@ -91,8 +101,12 @@ public sealed class PooledList<T> :
     /// </exception>
     public Span<T> this[Range range]
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => Written[range];
+        get
+        {
+            // Have to assume changes
+            _version++;
+            return Written[range];
+        }
     }
 
     /// <summary>
@@ -106,63 +120,34 @@ public sealed class PooledList<T> :
         internal set
         {
             Debug.Assert(value >= 0 && value < Capacity);
+            _version++;
             _position = value;
         }
     }
 
     /// <summary>
-    /// Gets the current capacity for this <see cref="PooledList{T}"/>, which will be increased as needed
-    /// </summary>
-    public int Capacity
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _array.Length;
-    }
-
-
-    /// <summary>
     /// Create an unallocated, empty <see cref="PooledList{T}"/>
     /// </summary>
-    public PooledList()
+    public PooledList() : base()
     {
-        _array = [];
         _position = 0;
     }
 
     /// <summary>
-    /// Create a new, empty <see cref="PooledList{T}"/> with at least a starting <see cref="Capacity"/> of <paramref name="minCapacity"/>
+    /// Create a new, empty <see cref="PooledList{T}"/> with at least a starting Capacity of <paramref name="minCapacity"/>
     /// </summary>
     /// <param name="minCapacity">
-    /// The minimum starting <see cref="Capacity"/> this <see cref="PooledList{T}"/> will have
+    /// The minimum starting Capacity this <see cref="PooledList{T}"/> will have
     /// </param>
     /// <remarks>
     /// If <paramref name="minCapacity"/> is greater than 0, an array will be rented from <see cref="ArrayPool{T}"/>
     /// </remarks>
-    public PooledList(int minCapacity)
+    public PooledList(int minCapacity) : base(minCapacity)
     {
-        _array = ArrayPool<T>.Shared.Rent(minCapacity);
         _position = 0;
     }
 
-
-    /// <summary>
-    /// Increases the size of the rented array by at least <paramref name="adding"/> items
-    /// </summary>
-    /// <param name="adding"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void GrowBy(int adding) => GrowTo((Capacity + adding) * 2);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void GrowTo(int newCapacity)
-    {
-        Debug.Assert(newCapacity > Capacity);
-        T[] newArray = ArrayPool<T>.Shared.Rent(newCapacity);
-        Sequence.CopyTo(Written, newArray);
-
-        T[] toReturn = _array;
-        _array = newArray;
-        ArrayPool<T>.Shared.Return(toReturn);
-    }
+    protected override void CopyToNewArray(T[] newArray) => Sequence.CopyTo(_array.AsSpan(0, _position), newArray);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void InsertManyEnumerable(int index, IEnumerable<T> items)
@@ -189,108 +174,48 @@ public sealed class PooledList<T> :
         return true;
     }
 
-
     /// <summary>
-    /// Grows the <see cref="Capacity"/> of this <see cref="PooledList{T}"/> to at least twice its current value
+    /// Add a new <paramref name="item"/> to this <see cref="PooledList{T}"/>
     /// </summary>
-    /// <remarks>
-    /// This method causes a rental from <see cref="ArrayPool{T}"/>
-    /// </remarks>
-    public void Grow() => GrowBy(1);
-
-    /// <summary>
-    /// Grows the <see cref="Capacity"/> of this <see cref="PooledList{T}"/> to at least <paramref name="minCapacity"/>
-    /// </summary>
-    public void GrowCapacity(int minCapacity)
-    {
-        if (minCapacity > Capacity)
-        {
-            GrowTo(minCapacity);
-        }
-    }
-
-    /// <summary>
-    /// Grows this PooledList and then add an item
-    /// </summary>
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AddGrow(T item)
+    public void Add(T item)
     {
         int pos = _position;
-        Debug.Assert(pos == Capacity);
-        GrowBy(1);
+        if (pos >= Capacity)
+        {
+            GrowBy(1);
+        }
+
+        _version++;
         _array[pos] = item;
         _position = pos + 1;
     }
 
     /// <summary>
-    /// Add a new <paramref name="item"/> to this <see cref="PooledList{T}"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(T item)
-    {
-        int pos = _position;
-        var array = _array;
-
-        if (pos < array.Length)
-        {
-            array[pos] = item;
-            _position = pos + 1;
-        }
-        else
-        {
-            AddGrow(item);
-        }
-    }
-
-    /// <summary>
-    /// Grow this buffer and then add <paramref name="count"/> items from <paramref name="source"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AddManyGrow(scoped ReadOnlySpan<T> source, int count)
-    {
-        Debug.Assert(count == source.Length);
-        Debug.Assert(count > 0);
-        GrowBy(count);
-        Sequence.CopyTo(source, Available);
-        _position += count;
-    }
-
-    /// <summary>
     /// Adds the given <paramref name="items"/> to this <see cref="PooledList{T}"/>
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddMany(ReadOnlySpan<T> items)
     {
-        int count = items.Length;
-
-        if (count == 0)
+        int pos = _position;
+        int newPos = pos + items.Length;
+        if (newPos >= Capacity)
         {
-            // do nothing
+            GrowBy(items.Length);
         }
-        else if (count == 1)
-        {
-            Add(items[0]);
-        }
-        else
-        {
-            int newPos = _position + count;
-            if (newPos <= Capacity)
-            {
-                Sequence.CopyTo(items, Available);
-                _position = newPos;
-            }
-            else
-            {
-                AddManyGrow(items, count);
-            }
-        }
+        _version++;
+        Sequence.CopyTo(items, _array.AsSpan(pos));
+        _position = newPos;
     }
 
     /// <summary>
     /// Adds the given <paramref name="items"/> to this <see cref="PooledList{T}"/>
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(params T[]? items) => AddMany(items.AsSpan());
+    public void AddMany(params T[]? items)
+    {
+        if (items is not null)
+        {
+            AddMany(new ReadOnlySpan<T>(items));
+        }
+    }
 
     /// <summary>
     /// Adds the given <paramref name="items"/> to this <see cref="PooledList{T}"/>
@@ -314,6 +239,7 @@ public sealed class PooledList<T> :
                 GrowBy(itemCount);
             }
 
+            _version++;
             collection.CopyTo(_array, pos);
             _position = newPos;
         }
@@ -357,6 +283,7 @@ public sealed class PooledList<T> :
             GrowBy(1);
         }
 
+        _version++;
         Sequence.SelfCopy(_array, offset..pos, (offset + 1)..);
         _array[offset] = item;
         _position = newPos;
@@ -397,6 +324,7 @@ public sealed class PooledList<T> :
             GrowBy(itemCount);
         }
 
+        _version++;
         Sequence.SelfCopy(_array, offset.._position, (offset + itemCount)..);
         Sequence.CopyTo(items, _array.AsSpan(offset, itemCount));
         _position = newPos;
@@ -452,6 +380,7 @@ public sealed class PooledList<T> :
                 GrowBy(itemCount);
             }
 
+            _version++;
             Sequence.SelfCopy(_array, offset.._position, (offset + itemCount)..);
             collection.CopyTo(_array, offset);
             _position = newPos;
@@ -469,7 +398,11 @@ public sealed class PooledList<T> :
     /// <param name="itemComparer">
     /// An optional <see cref="IComparer{T}"/> used to sort the items, defaults to <see cref="Comparer{T}"/>.<see cref="Comparer{T}.Default"/>
     /// </param>
-    public void Sort(IComparer<T>? itemComparer = null) => Array.Sort(_array, 0, _position, itemComparer);
+    public void Sort(IComparer<T>? itemComparer = null)
+    {
+        _version++;
+        Array.Sort(_array, 0, _position, itemComparer);
+    }
 
     /// <summary>
     /// Sorts the items in this <see cref="PooledList{T}"/> using a <see cref="Comparison{T}"/> delegate
@@ -477,12 +410,20 @@ public sealed class PooledList<T> :
     /// <param name="itemComparison">
     /// The <see cref="Comparison{T}"/> delegate used to sort the items
     /// </param>
-    public void Sort(Comparison<T> itemComparison) => Array.Sort(_array, 0, _position, Compare.CreateComparer<T>(itemComparison));
+    public void Sort(Comparison<T> itemComparison)
+    {
+        _version++;
+        Array.Sort(_array, 0, _position, Compare.CreateComparer<T>(itemComparison));
+    }
 
     /// <summary>
     /// Reverses the order of the items in this <see cref="PooledList{T}"/>
     /// </summary>
-    public void Reverse() => Array.Reverse(_array, 0, _position);
+    public void Reverse()
+    {
+        _version++;
+        _array.Reverse();
+    }
 
     /// <summary>
     /// Does this <see cref="PooledList{T}"/> contain any instances of the <paramref name="item"/>?
@@ -769,25 +710,43 @@ public sealed class PooledList<T> :
         return None();
     }
 
-    public Option<T> TryGet(Index index) => Validate.Index(index, _position).Select(i => _array[i]).AsOption();
 
-    public OptionReadOnlySpan<T> TryGet(Range range)
+    public Result<T, Exception> TryGetAt(Index index)
+        => Validate
+            .Index(index, _position)
+            .Select(i => _array[i]);
+
+    public Result<T[], Exception> TryGetMany(Range range)
+        => Validate
+            .Range(range, _position)
+            .Select(ol => _array.Slice(ol.Offset, ol.Length));
+
+    public Result<Unit, Exception> TryGetManyTo(Range range, Span<T> destination)
     {
-        if (Validate.Range(range, _position).HasOk(out var ol))
-            return OptionReadOnlySpan<T>.Some(_array.AsSpan(ol.Offset, ol.Length));
-        return None();
+        if (!Validate.Range(range, _position).HasOkOrError(out var ol, out var error))
+            return error;
+        if (ol.Length > destination.Length)
+            return new ArgumentException($"Destination span cannot hold {ol.Length} items", nameof(destination));
+        Sequence.CopyTo(_array.AsSpan(range), destination);
+        return Unit();
     }
 
-    public bool TrySet(Index index, T item) => Validate.Index(index, _position).Select(i => _array[i] = item).IsOk;
-
-    public bool TrySet(Range range, scoped ReadOnlySpan<T> items)
+    public Result<Unit, Exception> TrySetAt(Index index, T item) => Validate.Index(index, _position).Select(i =>
     {
-        if (!Validate.Range(range, _position).HasOk(out var ol))
-            return false;
-        if (items.Length != ol.Length)
-            return false;
+        _version++;
+        _array[i] = item;
+        return Unit();
+    });
+
+    public Result<Unit, Exception> TrySetMany(Range range, scoped ReadOnlySpan<T> items)
+    {
+        if (!Validate.Range(range, _position).HasOkOrError(out var ol, out var error))
+            return error;
+        if (ol.Length > items.Length)
+            return new ArgumentException($"{items.Length} items cannot fit in a Range Length of {ol.Length}");
+        _version++;
         Sequence.CopyTo(items, _array.AsSpan(ol.Offset, ol.Length));
-        return true;
+        return Unit();
     }
 
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
@@ -808,6 +767,7 @@ public sealed class PooledList<T> :
         var valid = Validate.Index(index, _position);
         if (!valid.HasOk(out int offset))
             return valid;
+        _version++;
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
         return offset;
     }
@@ -828,6 +788,7 @@ public sealed class PooledList<T> :
         if (!valid.HasOkOrError(out int offset, out var ex))
             return ex;
         T item = Written[offset];
+        _version++;
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
         return Ok(item);
     }
@@ -848,6 +809,7 @@ public sealed class PooledList<T> :
         if (!valid.HasOkOrError(out var ol, out var ex))
             return ex;
         (int offset, int length) = ol;
+        _version++;
         Sequence.SelfCopy(Written, (offset + length).., offset..);
         return length;
     }
@@ -868,6 +830,7 @@ public sealed class PooledList<T> :
             return ex;
         (int offset, int length) = ol;
         T[] items = _array.AsSpan(offset, length).ToArray();
+        _version++;
         Sequence.SelfCopy(_array, (offset + length).., offset..);
         return Ok(items);
     }
@@ -909,7 +872,8 @@ public sealed class PooledList<T> :
 
             if (current < pos)
             {
-                // copy item to the free slot.
+                // copy item to the free slot
+                _version++;
                 array[freeIndex++] = array[current++];
             }
         }
@@ -925,15 +889,10 @@ public sealed class PooledList<T> :
     /// <remarks>
     /// This does not release references to any items that had been added, use <see cref="Dispose"/> to ensure proper cleanup
     /// </remarks>
-    public void Clear() => _position = 0;
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private Span<T> AllocateGrow(int length)
+    public void Clear()
     {
-        int pos = _position;
-        GrowBy(length);
-        _position = pos + length;
-        return _array.AsSpan(pos, length);
+        _version++;
+        _position = 0;
     }
 
     /// <summary>
@@ -952,16 +911,14 @@ public sealed class PooledList<T> :
 
         int pos = _position;
         int newPos = pos + length;
-        var array = _array;
-        if (newPos <= array.Length)
+        if (newPos > Capacity)
         {
-            _position = newPos;
-            return array.AsSpan(pos, length);
+            GrowBy(length);
         }
-        else
-        {
-            return AllocateGrow(length);
-        }
+
+        _version++;
+        _position = newPos;
+        return _array.AsSpan(pos, length);
     }
 
     /// <summary>
@@ -979,6 +936,7 @@ public sealed class PooledList<T> :
         int used = useAvailable(Available);
         if (used < 0 || used > Available.Length)
             return false;
+        _version++;
         _position += used;
         return true;
     }
@@ -989,14 +947,13 @@ public sealed class PooledList<T> :
     /// <param name="perItem">
     /// The <see cref="RefItem{T}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(RefItem<T>? perItem)
+    public void ForEach(RefItem<T> perItem)
     {
-        if (perItem is null)
-            return;
         int pos = _position;
         var array = _array;
         for (int i = 0; i < pos; i++)
         {
+            _version++;
             perItem(ref array[i]);
         }
     }
@@ -1007,14 +964,13 @@ public sealed class PooledList<T> :
     /// <param name="perItem">
     /// The <see cref="RefItemAndIndex{T}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(RefItemAndIndex<T>? perItem)
+    public void ForEach(RefItemAndIndex<T> perItem)
     {
-        if (perItem is null)
-            return;
         int pos = _position;
         var array = _array;
         for (int i = 0; i < pos; i++)
         {
+            _version++;
             perItem(ref array[i], i);
         }
     }
@@ -1106,17 +1062,11 @@ public sealed class PooledList<T> :
     }
 #pragma warning restore CA1002
 
-    /// <summary>
-    /// Clears this <see cref="PooledList{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
-    /// </summary>
-    [HandlesResourceDisposal]
-    public void Dispose()
+    public override void Dispose()
     {
-        T[] toReturn = _array;
-        // defensive clear
+        _version++;
         _position = 0;
-        _array = [];
-        ArrayPool<T>.Shared.Return(toReturn);
+        base.Dispose();
     }
 
     public bool SequenceEqual(ReadOnlySpan<T> items) => Sequence.Equal(Written, items);
@@ -1166,23 +1116,17 @@ public sealed class PooledList<T> :
         return text.ToStringAndClear();
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        {
-            for (int i = 0; i < _position; i++)
-            {
-                yield return _array[i];
-            }
-        }
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    IEnumerator<T> IEnumerable<T>.GetEnumerator()
+    [MustDisposeResource(false)]
+    public IEnumerator<T> GetEnumerator()
     {
-        for (int i = 0; i < _position; i++)
-        {
-            yield return _array[i];
-        }
+        if (_position == 0)
+            return Enumerator.Empty<T>();
+        return new ArrayEnumerator<T>(
+            _array,
+            0, _position - 1,
+            +1,
+            () => _version);
     }
-
-    public Span<T>.Enumerator GetEnumerator() => Written.GetEnumerator();
 }

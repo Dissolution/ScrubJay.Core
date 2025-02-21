@@ -22,27 +22,36 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!-- Static Code Analysis -->
-    <!-- <AnalysisLevel>latest</AnalysisLevel> -->
-    <!-- <AnalysisMode>All</AnalysisMode> -->
-    <!-- <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild> -->
+    <!-- https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/errors-warnings -->
+    <WarningLevel>4</WarningLevel>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+    <NoWarn>$(NoWarn);CA1816;CS1591;CA1710;CA1720;</NoWarn>
+    <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <!-- https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#code-analysis-properties -->
+    <AnalysisMode>All</AnalysisMode>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <!-- Ensure that all Polyfilled types are public -->
     <PolyPublic>true</PolyPublic>
-    <Configurations>Debug;Release</Configurations>
-    <Platforms>AnyCPU</Platforms>
+
+    <!-- Generate XML documentation -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
 
   <!-- NuGet -->
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <EnablePackageValidation>false</EnablePackageValidation>
 
     <!-- Package Information -->
     <Title>ScrubJay Core Libraries</Title>
     <Authors>Timothy Jay</Authors>
     <Description>
-      A library full of helpful utilities
+      The core ScrubJay Library, common code used in all ScrubJay projects
     </Description>
     <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Core</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -50,15 +59,15 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>jay.png</PackageIcon>
     <PackageOutputPath>..\packages\</PackageOutputPath>
-    <PackageVersion>0.20.1-alpha</PackageVersion>
+    <PackageVersion>0.21.0-alpha</PackageVersion>
   </PropertyGroup>
 
   <!-- Special Release configurations -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <!-- Create NuGet Package -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <!-- Generate XML documentation -->
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Validate -->
+    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">

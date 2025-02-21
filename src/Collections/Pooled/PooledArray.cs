@@ -6,7 +6,8 @@ namespace ScrubJay.Collections.Pooled;
 [MustDisposeResource(true)]
 public abstract class PooledArray<T> : IDisposable
 {
-    protected T[] _array;
+    protected internal T[] _array;
+    protected internal int _version;
 
     /// <summary>
     /// Gets the current capacity to store items<br/>
@@ -20,7 +21,7 @@ public abstract class PooledArray<T> : IDisposable
 
     protected PooledArray()
     {
-        _array = Array.Empty<T>();
+        _array = [];
     }
 
     protected PooledArray(int minCapacity)
@@ -30,19 +31,13 @@ public abstract class PooledArray<T> : IDisposable
 
     protected virtual void CopyToNewArray(T[] newArray) => Sequence.CopyTo(_array, newArray);
 
-    public void Grow()
+    public void Grow() => GrowTo(Capacity * 2);
+
+    public void GrowBy(int adding)
     {
-        int capacity = _array.Length;
-        if (capacity == 0)
+        if (adding > 0)
         {
-            _array = ArrayPool<T>.Shared.Rent();
-        }
-        else
-        {
-            T[] newArray = ArrayPool<T>.Shared.Rent(capacity * 2);
-            CopyToNewArray(newArray);
-            T[] toReturn = Interlocked.Exchange<T[]>(ref _array, newArray);
-            ArrayPool<T>.Shared.Return(toReturn);
+            GrowTo((Capacity + adding) * 2);
         }
     }
 
@@ -51,10 +46,12 @@ public abstract class PooledArray<T> : IDisposable
         int capacity = _array.Length;
         if (capacity == 0)
         {
+            _version++;
             _array = ArrayPool<T>.Shared.Rent(minCapacity);
         }
         else if (minCapacity > capacity)
         {
+            _version++;
             T[] newArray = ArrayPool<T>.Shared.Rent(minCapacity);
             CopyToNewArray(newArray);
             T[] toReturn = Interlocked.Exchange<T[]>(ref _array, newArray);
@@ -65,7 +62,7 @@ public abstract class PooledArray<T> : IDisposable
     [HandlesResourceDisposal]
     public virtual void Dispose()
     {
-        T[] toReturn = Interlocked.Exchange<T[]>(ref _array, Array.Empty<T>());
+        T[] toReturn = Interlocked.Exchange<T[]>(ref _array, []);
         ArrayPool<T>.Shared.Return(toReturn);
     }
 }

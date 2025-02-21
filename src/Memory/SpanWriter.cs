@@ -1,16 +1,18 @@
-﻿namespace ScrubJay.Memory;
+﻿#pragma warning disable IDE0044
+
+namespace ScrubJay.Memory;
 
 [StructLayout(LayoutKind.Auto)]
 public ref struct SpanWriter<T>
 {
-    private readonly Span<T> _span;
+    private Span<T> _span;
     private int _position;
 
     public ref T this[Index index] => ref AsSpan()[index];
 
     public Span<T> this[Range range] => AsSpan()[range];
 
-    private int Capacity
+    private readonly int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _span.Length;
@@ -19,7 +21,7 @@ public ref struct SpanWriter<T>
     public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _position;
+        readonly get => _position;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal set => _position = value.Clamp(0, Capacity);
     }
@@ -198,7 +200,9 @@ public ref struct SpanWriter<T>
         // ReSharper restore PossibleMultipleEnumeration
     }
 
+    #pragma warning disable IDE0251
     public void Clear() => _span.Slice(0, _position).Clear();
+    #pragma warning restore IDE0251
 
 
     public bool TryCopyTo(Span<T> span) => AsSpan().TryCopyTo(span);

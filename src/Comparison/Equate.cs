@@ -42,20 +42,35 @@ public static class Equate
     public static IEqualityComparer<T> CreateEqualityComparer<T>(Func<T?, T?, bool> equals, Func<T?, int> getHashCode)
         => new FuncEqualityComparer<T>(equals, getHashCode);
 
-    public static IEqualityComparer<T> With<T>(IEqualityComparer<T>? equalityComparer) => equalityComparer ?? EqualityComparer<T>.Default;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Values<T>(T? left, T? right) => EqualityComparer<T>.Default.Equals(left!, right!);
 
-    public static bool Objects(object? left, object? right) => ObjectComparer.Equals(left, right);
+    public static bool Values<T>(T? left, T? right, IEqualityComparer<T>? comparer)
+    {
+        if (comparer is not null)
+        {
+            return comparer.Equals(left!, right!);
+        }
+        else
+        {
+            return EqualityComparer<T>.Default.Equals(left!, right!);
+        }
+    }
 
-    public static bool Values<TLeft, TRight>(TLeft? left, TRight? right)
+    public static bool EquatableValues<TLeft, TRight>(TLeft? left, TRight? right)
         where TLeft : IEquatable<TRight>
     {
         if (left is null)
             return right is null;
         return left.Equals(right!);
     }
+
+
+
+    public static bool Objects(object? left, object? right) => ObjectComparer.Equals(left, right);
+
+
 
 #region Text
     public static bool Text(string? left, string? right)

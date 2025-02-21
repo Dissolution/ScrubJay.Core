@@ -50,7 +50,7 @@ public static class Compare
 
     public static int Values<T>(T? left, T? right) => Comparer<T>.Default.Compare(left!, right!);
 
-    public static int Values<TLeft, TRight>(TLeft? left, TRight? right)
+    public static int ComparableValues<TLeft, TRight>(TLeft? left, TRight? right)
         where TLeft : IComparable<TRight>
     {
         if (left is null)

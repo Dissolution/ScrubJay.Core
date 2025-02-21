@@ -34,7 +34,7 @@ public ref struct BoundsStringHandler<T>
 
     public readonly Option<Bound<T>> Upper => !_hasUpper ? None<Bound<T>>() : Some<Bound<T>>(new(_upper!, _incUpper));
 
-    public Bounds<T> Bounds => new Bounds<T>(Lower, Upper);
+    public readonly Bounds<T> Bounds => new Bounds<T>(Lower, Upper);
 
 
     public BoundsStringHandler(int formattedLength, int argumentCount)

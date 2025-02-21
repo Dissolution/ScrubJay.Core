@@ -1,9 +1,7 @@
-﻿using ScrubJay.Collections.Pooled;
-
-namespace ScrubJay.Extensions;
+﻿namespace ScrubJay.Extensions;
 
 /// <summary>
-/// Extensions on <see cref="Collections.Pooled.Stack{T}"/>
+/// Extensions on <see cref="Stack{T}"/>
 /// </summary>
 [PublicAPI]
 public static class StackExtensions

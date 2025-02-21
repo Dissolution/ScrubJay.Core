@@ -1,8 +1,14 @@
 ﻿namespace ScrubJay.Collections;
 
+/// <summary>
+/// Helper utility for generating <see cref="IEnumerator{T}"/> instances
+/// </summary>
 [PublicAPI]
 public static class Enumerator
 {
+    /// <summary>
+    /// Gets an <see cref="ArrayEnumerator{T}"/> for the given <paramref name="array"/>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ArrayEnumerator<T> ForArray<T>(T[] array) => new(array);
 
@@ -10,9 +16,11 @@ public static class Enumerator
     /// Gets an empty <see cref="IEnumerator{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerator<T> Empty<T>() => new SingleValueEnumerator<T>();
+    public static IEnumerator<T> Empty<T>() => new EmptyEnumerator<T>();
 
+    /// <summary>
+    /// Gets an <see cref="IEnumerator{T}"/> that enumerates over a single <paramref name="value"/>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable CA1720 // Identifier contains type name
     public static IEnumerator<T> Single<T>(T value) => new SingleValueEnumerator<T>(value);
 }
