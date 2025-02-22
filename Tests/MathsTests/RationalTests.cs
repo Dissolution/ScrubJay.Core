@@ -129,8 +129,8 @@ public sealed class RationalTests
         decimal fractional = dec - integral;
         Span<char> text = stackalloc char[31]; // Maximum number of characters in G representation (-Decimal.Epsilon).ToString().Length == 31
         bool wrote = fractional.TryFormat(text, out int charsWritten, ['G'], CultureInfo.InvariantCulture);
-        Debug.Assert(wrote);
-        Debug.Assert(charsWritten >= 2);
+        if (!wrote || charsWritten < 2)
+            throw new InvalidOperationException();
 
         int numeratorLength;
         text = text[..charsWritten];
@@ -146,10 +146,10 @@ public sealed class RationalTests
             numeratorLength = text.Length;
         }
 
-        var lparsed = long.TryParse(
+        if (!long.TryParse(
             text.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture,
-            out long numerator);
-        Debug.Assert(lparsed);
+            out long numerator))
+            throw new InvalidOperationException();
         long denominator = (long)Math.Pow(10, numeratorLength);
 
         Rational rational = Rational.New(numerator, denominator);

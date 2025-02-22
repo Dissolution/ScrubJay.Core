@@ -141,9 +141,9 @@ public class ObjectPoolTests
         using var pool = ObjectPool.FromPolicy<StringBuilder>(new(
             static () => new(),
             static sb => sb.Clear()));
-        const int Count = 100;
-        var tasks = new Task<string>[Count];
-        for (var i = 0; i < Count; i++)
+        const int COUNT = 100;
+        var tasks = new Task<string>[COUNT];
+        for (var i = 0; i < COUNT; i++)
         {
             tasks[i] = Task.Run<string>(async () =>
             {
@@ -162,6 +162,6 @@ public class ObjectPoolTests
         }
         var results = await Task.WhenAll(tasks);
         Assert.True(Array.TrueForAll(results, str => !string.IsNullOrWhiteSpace(str)));
-        Assert.Equal(Count, results.Distinct().Count());
+        Assert.Equal(COUNT, results.Distinct().Count());
     }
 }
