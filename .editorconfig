@@ -761,7 +761,7 @@ dotnet_diagnostic.CA1515.severity = suggestion
 # CA1700: Do not name enum values 'Reserved'
 dotnet_diagnostic.CA1700.severity = error
 # CA1707: Identifiers should not contain underscores
-dotnet_diagnostic.CA1707.severity = error
+dotnet_diagnostic.CA1707.severity = none
 # CA1708: Identifiers should differ by more than case
 dotnet_diagnostic.CA1708.severity = error
 # CA1710: Identifiers should have correct suffix
