@@ -17,7 +17,7 @@
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
 
-    <NoWarn>xUnit1037; CS1718</NoWarn>
+    <NoWarn>xUnit1037;CS1718;CA1710;</NoWarn>
 
     <Configurations>Debug;Release</Configurations>
 
