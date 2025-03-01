@@ -43,7 +43,7 @@ public abstract class FluentBuilder<TBuilder>
     /// </returns>
     public virtual TBuilder Invoke(Func<TBuilder, TBuilder>? build)
     {
-        // Throwaway what build returns, we always return _builder
+        // Throwaway what build returns, we always return our _builder
         _ = build?.Invoke(_builder);
         return _builder;
     }

@@ -1,70 +1,16 @@
 ﻿using System.Collections.Concurrent;
-using ScrubJay.Constraints;
 
-#pragma warning disable S1066, MA0048
+namespace ScrubJay.Pooling;
 
-namespace ScrubJay.Buffers;
 
-[PublicAPI]
-public static class ObjectPool
-{
-    [MustDisposeResource]
-    public static ObjectPool<T> FromPolicy<T>(ObjectPoolPolicy<T> policy)
-        where T : class
-        => new(policy);
-
-    [MustDisposeResource]
-    public static ObjectPool<T> Create<T>(Func<T> createInstance)
-        where T : class
-        => new(new(createInstance));
-
-    [MustDisposeResource]
-    public static ObjectPool<T> Create<T>(
-        Func<T> createInstance,
-        Func<T, bool>? tryCleanInstance,
-        Action<T>? disposeInstance = null)
-        where T : class
-        => new(new(createInstance, tryCleanInstance, disposeInstance));
-
-    [MustDisposeResource]
-    public static ObjectPool<T> Create<T>(
-        Func<T> createInstance,
-        Action<T>? cleanInstance,
-        Action<T>? disposeInstance = null)
-        where T : class
-    {
-        Func<T, bool>? tryCleanInstance = null;
-        if (cleanInstance is not null)
-        {
-            tryCleanInstance = inst =>
-            {
-                cleanInstance(inst);
-                return true;
-            };
-        }
-        return new(new(createInstance, tryCleanInstance, disposeInstance));
-    }
-
-    [MustDisposeResource]
-    public static ObjectPool<T> ForType<T>(GenericTypeConstraint.IsNew<T> _ = default)
-        where T : class, new()
-        => new(ObjectPoolPolicy.ForType<T>(_));
-
-    [MustDisposeResource]
-    public static ObjectPool<T> ForType<T>(GenericTypeConstraint.IsDisposableNew<T> _ = default)
-        where T : class, IDisposable, new()
-        => new(ObjectPoolPolicy.ForType<T>(_));
-
-    [MustDisposeResource]
-    public static ObjectPool<T> ForType<T>(Func<T> createInstance,
-        GenericTypeConstraint.IsDisposable<T> _ = default)
-        where T : class, IDisposable
-        => new(ObjectPoolPolicy.ForType<T>(createInstance, _));
-}
-
+/// <summary>
+///
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <seealso href="https://github.dev/dotnet/aspnetcore/blob/main/src/ObjectPool/src/DefaultObjectPool.cs"/>
 [PublicAPI]
 [MustDisposeResource]
-public sealed class ObjectPool<T> : IObjectPool<T>, IDisposable
+public sealed class InstancePool<T> : IInstancePool<T>, IDisposable
     where T : class
 {
     /// <summary>
@@ -73,17 +19,20 @@ public sealed class ObjectPool<T> : IObjectPool<T>, IDisposable
     private readonly Func<T> _createInstance;
 
     /// <summary>
-    /// Whenever an instance is returned to the pool, this action will ready that instance for re-use
+    /// <i>Optional</i><br/>
+    /// Whenever an instance is returned to the pool, this function will try ready that instance for re-use<br/>
+    /// Failure of this function will cause the instance to be disposed instead
     /// </summary>
     private readonly Func<T, bool>? _tryCleanInstance;
 
     /// <summary>
+    /// <i>Optional</i><br/>
     /// Whenever an instance returned to the pool would be discarded, this action will dispose that instance
     /// </summary>
     private readonly Action<T>? _disposeInstance;
 
     /// <summary>
-    /// The first instance is stored in a dedicated field as we expect to be able to satisfy most requests from it
+    /// The first instance is stored in this dedicated field as we expect to be able to satisfy most rents from it
     /// </summary>
     private T? _firstInstance;
 
@@ -99,11 +48,14 @@ public sealed class ObjectPool<T> : IObjectPool<T>, IDisposable
     /// </summary>
     public int Count => _itemCount;
 
+    /// <summary>
+    /// Gets the maximum number of instances that can be stored in this pool
+    /// </summary>
     public int MaxCapacity { get; }
 
-    public ObjectPool(ObjectPoolPolicy<T> poolPolicy)
+    public InstancePool(InstancePoolPolicy<T> poolPolicy)
     {
-        this.MaxCapacity = poolPolicy.MaxCapacity.Clamp(0, 0x40000000);
+        MaxCapacity = poolPolicy.MaxCapacity.Clamp(0, 0x40000000);
 
         _createInstance = poolPolicy.CreateInstance;
         _tryCleanInstance = poolPolicy.TryCleanInstance;

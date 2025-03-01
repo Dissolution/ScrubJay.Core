@@ -168,7 +168,7 @@ public static class Throw
     [DoesNotReturn]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void IfReadOnly<T>(
+    public static void IsReadOnly<T>(
         T? instance,
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)
@@ -177,7 +177,7 @@ public static class Throw
     [DoesNotReturn]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TReturn IfReadOnly<T, TReturn>(
+    public static TReturn IsReadOnly<T, TReturn>(
         T? instance,
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)

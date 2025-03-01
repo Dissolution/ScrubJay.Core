@@ -368,6 +368,18 @@ public static class Validate
         return OkEx(collection);
     }
 
+    public static Result<IReadOnlyCollection<T>, Exception> IsNotEmpty<T>(
+        IReadOnlyCollection<T>? collection,
+        [CallerArgumentExpression(nameof(collection))]
+        string? collectionName = null)
+    {
+        if (collection is null)
+            return new ArgumentNullException(collectionName);
+        if (collection.Count == 0)
+            return new ArgumentException("Collection cannot be empty", collectionName);
+        return OkEx(collection);
+    }
+
     public static Result<string, Exception> IsNotEmpty(
         [NotNullWhen(true)] string? str,
         [CallerArgumentExpression(nameof(str))]

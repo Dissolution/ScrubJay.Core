@@ -1,34 +1,10 @@
-﻿#pragma warning disable CA1710, IDE0028, CA1031, CA1010
+﻿using ScrubJay.Pooling;
+using ScrubJay.Text;
 
 namespace ScrubJay.Validation;
 
-/// <summary>
-/// A collection of validations
-/// </summary>
-/// <remarks>
-/// Supports <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers#collection-initializers">collection initialization</a>
-/// and <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions">collection expressions</a>
-/// </remarks>
-public sealed class Validations : IEnumerable
+public class Validations : Validations<Exception>
 {
-    private readonly List<Exception> _exceptions = [];
-
-    public void Add(Result<Unit, Exception> result)
-    {
-        if (result.HasError(out var exception))
-        {
-            _exceptions.Add(exception);
-        }
-    }
-
-    public void Add<T>(Result<T, Exception> result)
-    {
-        if (result.HasError(out var exception))
-        {
-            _exceptions.Add(exception);
-        }
-    }
-
     public void Add(Action action)
     {
         try
@@ -37,7 +13,7 @@ public sealed class Validations : IEnumerable
         }
         catch (Exception ex)
         {
-            _exceptions.Add(ex);
+            Add(ex);
         }
     }
 
@@ -49,30 +25,110 @@ public sealed class Validations : IEnumerable
         }
         catch (Exception ex)
         {
-            _exceptions.Add(ex);
+            Add(ex);
         }
     }
 
-    public void Add(Func<Result<Unit, Exception>> getResult)
-         => Add(getResult());
-
-    public void Add<T>(Func<Result<T, Exception>> getResult)
-        => Add(getResult());
-
-    /// <summary>
-    /// If any <see cref="Exception">Exceptions</see> were generated during any <c>Add</c> method,
-    /// throw a single exception or an <see cref="AggregateException"/>
-    /// </summary>
-    public void ThrowErrors()
+    public Option<Exception> HasException()
     {
-        var exceptions = _exceptions;
-        int count = exceptions.Count;
-        if (count == 0)
-            return;
-        if (count == 1)
-            throw exceptions[0];
-        throw new AggregateException($"{count} Validations Failed", exceptions);
+        var exceptions = _errors;
+        return exceptions.Count switch
+        {
+            0 => None(),
+            1 => Some(exceptions[0]),
+            _ => Some<Exception>(new AggregateException($"{exceptions.Count} Validations Failed", exceptions)),
+        };
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => Enumerator.Empty<Unit>();
+    public bool HasException([NotNullWhen(true)] out Exception? exception)
+    {
+        var exceptions = _errors;
+        int count = exceptions.Count;
+        if (count == 0)
+        {
+            exception = null;
+            return false;
+        }
+        if (count == 1)
+        {
+            exception = exceptions[0];
+            return true;
+        }
+        exception = new AggregateException($"{exceptions.Count} Validations Failed", exceptions);
+        return true;
+    }
+
+    public override void ThrowIfErrors()
+    {
+        if (HasException(out var ex))
+            throw ex;
+    }
+
+    public Result<TOk, Exception> ToResult<TOk>(TOk okValue)
+    {
+        if (HasException(out var ex))
+            return ex;
+        return okValue;
+    }
+
+}
+
+/// <summary>
+/// A collection of validations
+/// </summary>
+/// <remarks>
+/// Supports <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers#collection-initializers">collection initialization</a>
+/// and <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions">collection expressions</a>
+/// </remarks>
+public class Validations<TError> : IReadOnlyCollection<TError>
+{
+    protected readonly List<TError> _errors = [];
+
+    public int Count => _errors.Count;
+
+    public void Add(TError? error)
+    {
+        if (error is not null)
+        {
+            _errors.Add(error);
+        }
+    }
+
+    public void Add(Result<Unit, TError> result)
+    {
+        if (result.HasError(out var error))
+            Add(error);
+    }
+
+    public void Add<T>(Result<T, TError> result)
+    {
+        if (result.HasError(out var error))
+            Add(error);
+    }
+
+    public void Add(Func<Result<Unit, TError>> getResult)
+         => Add(getResult());
+
+    public void Add<T>(Func<Result<T, TError>> getResult)
+        => Add(getResult());
+
+    public virtual void ThrowIfErrors()
+    {
+        if (_errors.Count > 0)
+        {
+            var msg = new Buffer<char>();
+            msg.Write(_errors.Count);
+            msg.Write(" Validations Failed:");
+            foreach (var error in _errors)
+            {
+                msg.Write(Environment.NewLine);
+                msg.Write(error);
+            }
+            string message = msg.ToStringAndDispose();
+            throw new InvalidOperationException(message);
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    public IEnumerator<TError> GetEnumerator() => _errors.GetEnumerator();
 }

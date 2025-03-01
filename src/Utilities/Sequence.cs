@@ -1,6 +1,4 @@
-﻿#pragma warning disable IDE0022, CA1045
-
-using static ScrubJay.Constraints.GenericTypeConstraint;
+﻿using static ScrubJay.Constraints.GenericTypeConstraint;
 // ReSharper disable InvokeAsExtensionMethod
 // ReSharper disable MethodOverloadWithOptionalParameter
 

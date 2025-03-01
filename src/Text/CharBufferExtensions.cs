@@ -1,4 +1,5 @@
-﻿#pragma warning disable CA1045
+﻿using ScrubJay.Pooling;
+#pragma warning disable CA1045
 
 // ReSharper disable MergeCastWithTypeCheck
 

@@ -1,4 +1,4 @@
-﻿using ScrubJay.Collections.Pooled;
+﻿using ScrubJay.Pooling;
 
 namespace ScrubJay.Tests.CollectionsTests.Pooled;
 
@@ -65,5 +65,33 @@ public class PooledStackTests
         Assert.Equal(4, peeked[1]);
 
         Assert.Equal(1, stack[^1]);
+    }
+
+    [Fact]
+    public void PushAtWorks()
+    {
+        using var stack = new PooledStack<int>();
+
+        stack.PushMany([1, 4, 7]);
+        Assert.Equal(3, stack.Count);
+
+        var pushResult = stack.TryPushAt(0, 13);
+        Assert.True(pushResult);
+        Assert.Equal(4, stack.Count);
+        Assert.Equal<int>([13,7,4,1], stack);
+
+        pushResult = stack.TryPushAt(^1, 13);
+        Assert.True(pushResult);
+        Assert.Equal(5, stack.Count);
+        Assert.Equal<int>([13,7,4,1,13], stack);
+
+        stack.Clear();
+        stack.PushMany([1, 4, 7]);
+        Assert.Equal(3, stack.Count);
+
+        pushResult = stack.TryPushAt(new(0,popOrder: false), 13);
+        Assert.True(pushResult);
+        Assert.Equal(4, stack.Count);
+        Assert.Equal<int>([7,4,1,13], stack);
     }
 }

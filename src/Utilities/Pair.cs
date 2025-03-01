@@ -4,6 +4,7 @@
 
 #if NET7_0_OR_GREATER
 using ScrubJay.Parsing;
+using ScrubJay.Memory;
 #endif
 using ScrubJay.Text;
 

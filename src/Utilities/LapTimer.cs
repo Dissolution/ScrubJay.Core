@@ -1,4 +1,5 @@
-﻿using ScrubJay.Text;
+﻿using ScrubJay.Pooling;
+using ScrubJay.Text;
 
 namespace ScrubJay.Utilities;
 
@@ -12,7 +13,7 @@ public sealed class LapTimer
     public LapTimer() : this(null) { }
     public LapTimer(string? name)
     {
-        this.Name = name ?? nameof(LapTimer);
+        Name = name ?? nameof(LapTimer);
     }
 
     public Lap StartLap(string? name = null)
@@ -55,12 +56,12 @@ public sealed class Lap : IDisposable
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            this.Name = $"Lap {Guid.NewGuid():D}";
+            Name = $"Lap {Guid.NewGuid():D}";
         }
         else
         {
 
-            this.Name = name!;
+            Name = name!;
         }
     }
 

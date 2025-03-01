@@ -38,20 +38,6 @@ public static class ObjectExtensions
     }
 
     /// <summary>
-    /// Tests if this <see cref="object"/> can be a valid <typeparamref name="T"/> value (similar to the <c>as</c> operator)
-    /// </summary>
-    /// <param name="input">The <see cref="object"/> to validate</param>
-    /// <typeparam name="T">
-    /// The <see cref="Type"/> of value that <paramref name="input"/> should be
-    /// </typeparam>
-    /// <returns>
-    /// <see cref="Option{T}.Some"/> if <paramref name="input"/> is a <typeparamref name="T"/><br/>
-    /// <see cref="Option{T}.None"/> otherwise
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> As<T>(this object? input) => input is T ? Some((T)input) : None<T>();
-
-    /// <summary>
     /// Tests if this <see cref="object"/> can be a <typeparamref name="T"/> value,<br/>
     /// which includes allowing <c>null</c> for <c>class</c> and <c>interface</c> types
     /// </summary>
@@ -70,4 +56,18 @@ public static class ObjectExtensions
         output = default;
         return typeof(T).CanContainNull();
     }
+
+    /// <summary>
+    /// Tests if this <see cref="object"/> can be a valid <typeparamref name="T"/> value (similar to the <c>as</c> operator)
+    /// </summary>
+    /// <param name="input">The <see cref="object"/> to validate</param>
+    /// <typeparam name="T">
+    /// The <see cref="Type"/> of value that <paramref name="input"/> should be
+    /// </typeparam>
+    /// <returns>
+    /// <see cref="Option{T}.Some"/> if <paramref name="input"/> is a <typeparamref name="T"/><br/>
+    /// <see cref="Option{T}.None"/> otherwise
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Option<T> As<T>(this object? input) => input is T ? Some((T)input) : None<T>();
 }

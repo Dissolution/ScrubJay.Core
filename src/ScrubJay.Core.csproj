@@ -86,19 +86,17 @@
     <Using Include="System.Numerics" />
     <Using Include="System.Runtime.CompilerServices" />
     <Using Include="System.Runtime.InteropServices" />
-
-    <!-- import ourself -->
-    <Using Include="ScrubJay.Collections" />
-    <Using Include="ScrubJay.Comparison" />
+    <Using Include="JetBrains.Annotations" />
+    
+    <!-- Recommendations for downstream too -->
     <Using Include="ScrubJay.GlobalHelper" Static="true" />
-    <Using Include="ScrubJay.Buffers" />
+    
+    <Using Include="ScrubJay.Comparison" />
+    <Using Include="ScrubJay.Enums" />
     <Using Include="ScrubJay.Extensions" />
     <Using Include="ScrubJay.Functional" />
-    <Using Include="ScrubJay.Memory" />
     <Using Include="ScrubJay.Utilities" />
     <Using Include="ScrubJay.Validation" />
-
-    <Using Include="JetBrains.Annotations" />
   </ItemGroup>
 
   <!-- NuGet Packages -->

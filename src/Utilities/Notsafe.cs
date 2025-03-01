@@ -46,7 +46,7 @@ public static unsafe class Notsafe
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int SizeOf<T>()
-        where T : struct
+        //where T : struct
     {
         Emit.Sizeof<T>();
         return Return<int>();
@@ -180,7 +180,7 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref TStruct UnboxRef<TStruct>(object obj)
-        where TStruct : struct
+        //where TStruct : struct
     {
         Emit.Ldarg_0();
         Emit.Unbox<TStruct>();
@@ -192,7 +192,7 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TClass CastClass<TClass>(object obj)
-        where TClass : class
+        //where TClass : class
     {
         Emit.Ldarg_0();
         Emit.Castclass<TClass>();
@@ -205,7 +205,7 @@ public static unsafe class Notsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: NotNullIfNotNull(nameof(obj))]
     public static T As<T>(object? obj)
-        where T : class?
+        //where T : class?
     {
         Emit.Ldarg(nameof(obj));
         Emit.Ret();

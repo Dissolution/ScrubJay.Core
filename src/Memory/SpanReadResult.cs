@@ -28,21 +28,21 @@ public readonly ref struct SpanReadResult<T>
 
     public SpanReadResult(StopReason stopReason, ReadOnlySpan<T> span)
     {
-        this.StopReason = stopReason;
-        this.Span = span;
+        StopReason = stopReason;
+        Span = span;
     }
 
     public void Deconstruct(out StopReason stopReason, out ReadOnlySpan<T> span)
     {
-        stopReason = this.StopReason;
-        span = this.Span;
+        stopReason = StopReason;
+        span = Span;
     }
 
     public bool HasReason(StopReason stopReason, out ReadOnlySpan<T> span)
     {
-        if (stopReason == this.StopReason)
+        if (stopReason == StopReason)
         {
-            span = this.Span;
+            span = Span;
             return true;
         }
         span = [];

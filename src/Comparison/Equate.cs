@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ScrubJay.Collections;
 
 // ReSharper disable InvokeAsExtensionMethod
 
@@ -48,14 +49,9 @@ public static class Equate
 
     public static bool Values<T>(T? left, T? right, IEqualityComparer<T>? comparer)
     {
-        if (comparer is not null)
-        {
-            return comparer.Equals(left!, right!);
-        }
-        else
-        {
-            return EqualityComparer<T>.Default.Equals(left!, right!);
-        }
+        if (comparer is null)
+            return Values<T>(left, right);
+        return comparer.Equals(left!, right!);
     }
 
     public static bool EquatableValues<TLeft, TRight>(TLeft? left, TRight? right)
@@ -68,7 +64,7 @@ public static class Equate
 
 
 
-    public static bool Objects(object? left, object? right) => ObjectComparer.Equals(left, right);
+    public static bool Objects(object? left, object? right) => ObjectComparer.Default.Equals(left, right);
 
 
 

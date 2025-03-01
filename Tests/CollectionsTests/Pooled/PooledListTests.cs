@@ -1,11 +1,10 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
-using ScrubJay.Buffers;
-using ScrubJay.Collections.Pooled;
+using ScrubJay.Pooling;
 
 // ReSharper disable CollectionNeverUpdated.Local
 
-namespace ScrubJay.Tests.BuffersTests;
+namespace ScrubJay.Tests.CollectionsTests.Pooled;
 
 public class PooledListTests
 {
@@ -43,13 +42,11 @@ public class PooledListTests
     {
         using var buffer = new PooledList<int>(1);
         Assert.Empty(buffer);
-        Assert.Equal(ArrayPool<int>.Shared.MinimumLength, buffer.Capacity);
 
         var numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
         buffer.AddMany(numbers);
 
         Assert.Equal(numbers.Length, buffer.Count);
-        Assert.True(buffer.Capacity > ArrayPool<int>.Shared.MinimumLength);
         Assert.True(buffer.Capacity >= buffer.Count);
 
         for (var i = 0; i < buffer.Count; i++)

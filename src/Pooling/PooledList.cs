@@ -1,14 +1,15 @@
 ﻿// Identifiers should have correct suffix
 
+using ScrubJay.Collections;
 using Unit = ScrubJay.Functional.Unit;
 #pragma warning disable CA1710
 
-namespace ScrubJay.Collections.Pooled;
+namespace ScrubJay.Pooling;
 
 /// <summary>
 /// A PooledList is an <see cref="IList{T}"/> implementation that operates on
-/// <see cref="Array">T[]</see> instance and <see cref="ArrayPool{T}"/> to minimize allocations<br/>
-/// It must be <see cref="Dispose">Disposed</see> in order to be useful
+/// <see cref="Array">T[]</see> instance and <see cref="ArrayInstancePool{T}"/> to minimize allocations<br/>
+/// It must be Disposed in order to be useful
 /// </summary>
 /// <typeparam name="T">
 /// The <see cref="Type"/> of items stored in this <see cref="PooledList{T}"/>
@@ -140,7 +141,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// The minimum starting Capacity this <see cref="PooledList{T}"/> will have
     /// </param>
     /// <remarks>
-    /// If <paramref name="minCapacity"/> is greater than 0, an array will be rented from <see cref="ArrayPool{T}"/>
+    /// If <paramref name="minCapacity"/> is greater than 0, an array will be rented from <see cref="ArrayInstancePool{T}"/>
     /// </remarks>
     public PooledList(int minCapacity) : base(minCapacity)
     {
@@ -887,7 +888,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// Removes all items in this <see cref="PooledList{T}"/>, setting its <see cref="Count"/> to zero
     /// </summary>
     /// <remarks>
-    /// This does not release references to any items that had been added, use <see cref="Dispose"/> to ensure proper cleanup
+    /// This does not release references to any items that had been added, use <see cref="PooledArray{T}.Dispose"/> to ensure proper cleanup
     /// </remarks>
     public void Clear()
     {
@@ -1043,7 +1044,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// Copy the items in this <see cref="PooledList{T}"/> to a new <c>T[]</c>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T[] ToArray() => Written.ToArray();
+    public T[] ToArray() => _array.Slice(0, _position);
 
     /// <summary>
     /// Convert this <see cref="PooledList{T}"/> to a <see cref="List{T}"/> containing the same items
@@ -1062,11 +1063,10 @@ public sealed class PooledList<T> : PooledArray<T>,
     }
 #pragma warning restore CA1002
 
-    public override void Dispose()
+    protected override void OnDisposing()
     {
         _version++;
         _position = 0;
-        base.Dispose();
     }
 
     public bool SequenceEqual(ReadOnlySpan<T> items) => Sequence.Equal(Written, items);

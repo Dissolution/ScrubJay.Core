@@ -3,6 +3,7 @@
 /// <summary>
 /// Extensions on <see cref="ICollection{T}"/> and <see cref="IReadOnlyCollection{T}"/>
 /// </summary>
+[PublicAPI]
 public static class CollectionExtensions
 {
     /// <summary>

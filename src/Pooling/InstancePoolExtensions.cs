@@ -1,10 +1,10 @@
-﻿namespace ScrubJay.Buffers;
+﻿namespace ScrubJay.Pooling;
 
 [PublicAPI]
-public static class ObjectPoolExtensions
+public static class InstancePoolExtensions
 {
     public static void Borrow<T>(
-        this IObjectPool<T> pool,
+        this IInstancePool<T> pool,
         Action<T> borrowedInstanceAction)
         where T : class
     {
@@ -14,7 +14,7 @@ public static class ObjectPoolExtensions
     }
 
     public static TReturn Borrow<T, TReturn>(
-        this IObjectPool<T> pool,
+        this IInstancePool<T> pool,
         Func<T, TReturn> borrowedInstanceAction)
         where T : class
     {

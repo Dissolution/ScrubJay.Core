@@ -1,26 +1,6 @@
 ﻿namespace ScrubJay.Comparison;
 
 /// <summary>
-/// An <see cref="IEqualityComparer"/> that works via passed in functions
-/// </summary>
-[PublicAPI]
-public sealed class FuncEqualityComparer : IEqualityComparer
-{
-    private readonly Func<object?, object?, bool> _equals;
-    private readonly Func<object?, int> _getHashCode;
-
-    public FuncEqualityComparer(Func<object?, object?, bool> equals, Func<object?, int> getHashCode)
-    {
-        _equals = equals;
-        _getHashCode = getHashCode;
-    }
-
-    bool IEqualityComparer.Equals(object? x, object? y) => _equals(x, y);
-    public new bool Equals(object? x, object? y) => _equals(x, y);
-    public int GetHashCode(object? obj) => _getHashCode(obj);
-}
-
-/// <summary>
 /// An <see cref="IEqualityComparer{T}"/> that works via passed in functions
 /// </summary>
 /// <typeparam name="T">

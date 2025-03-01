@@ -1,8 +1,8 @@
-﻿namespace ScrubJay.Memory;
+﻿namespace ScrubJay.Pooling;
 
 /// <summary>
 /// A Buffer is a stack-based <see cref="IList{T}"/>-like collection <i>(grows as required)</i>,
-/// that uses <see cref="ArrayPool{T}"/> to avoid allocation,
+/// that uses <see cref="ArrayInstancePool{T}"/> to avoid allocation,
 /// and thus must be <see cref="Dispose">Disposed</see> after use
 /// </summary>
 /// <typeparam name="T">
@@ -142,7 +142,7 @@ public ref struct Buffer<T>
     /// Creates a new <see cref="Buffer{T}"/> that starts with an <paramref name="initialArray"/> and <paramref name="initialPosition"/>
     /// </summary>
     /// <param name="initialArray">
-    /// The initial <c>T[]</c> that this <see cref="Buffer{T}"/> will own and return to <see cref="ArrayPool{T}"/> when growing and disposal
+    /// The initial <c>T[]</c> that this <see cref="Buffer{T}"/> will own and return to <see cref="ArrayInstancePool{T}"/> when growing and disposal
     /// </param>
     /// <param name="initialPosition">
     /// The initial position to begin writing
@@ -187,7 +187,7 @@ public ref struct Buffer<T>
     /// The minimum starting <see cref="Capacity"/> this <see cref="Buffer{T}"/> will have
     /// </param>
     /// <remarks>
-    /// If <paramref name="minCapacity"/> is greater than 0, an array will be rented from <see cref="ArrayPool{T}"/>
+    /// If <paramref name="minCapacity"/> is greater than 0, an array will be rented from <see cref="ArrayInstancePool{T}"/>
     /// </remarks>
     public Buffer(int minCapacity)
     {
@@ -197,7 +197,7 @@ public ref struct Buffer<T>
         }
         else
         {
-            _span = _array = ArrayPool<T>.Shared.Rent(minCapacity);
+            _span = _array = ArrayInstancePool<T>.Shared.Rent(minCapacity);
         }
 
         _position = 0;
@@ -216,12 +216,12 @@ public ref struct Buffer<T>
     private void GrowTo(int newCapacity)
     {
         Debug.Assert(newCapacity >= Capacity);
-        T[] newArray = ArrayPool<T>.Shared.Rent(newCapacity);
+        T[] newArray = ArrayInstancePool<T>.Shared.Rent(newCapacity);
         Sequence.CopyTo(Written, newArray);
 
         T[]? toReturn = _array;
         _span = _array = newArray;
-        ArrayPool<T>.Shared.Return(toReturn);
+        ArrayInstancePool<T>.Shared.Return(toReturn);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -259,7 +259,7 @@ public ref struct Buffer<T>
     /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least twice its current value
     /// </summary>
     /// <remarks>
-    /// This method causes a rental from <see cref="ArrayPool{T}"/>
+    /// This method causes a rental from <see cref="ArrayInstancePool{T}"/>
     /// </remarks>
     public void Grow() => GrowBy(1);
 
@@ -1197,7 +1197,7 @@ public ref struct Buffer<T>
 #pragma warning restore CA1002
 
     /// <summary>
-    /// Clears this <see cref="Buffer{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
+    /// Clears this <see cref="Buffer{T}"/> and returns any rented array back to <see cref="ArrayInstancePool{T}"/>
     /// </summary>
     [HandlesResourceDisposal]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1207,7 +1207,7 @@ public ref struct Buffer<T>
         // defensive clear
         _position = 0;
         _span = _array = null;
-        ArrayPool<T>.Shared.Return(toReturn);
+        ArrayInstancePool<T>.Shared.Return(toReturn);
     }
 
     /// <summary>

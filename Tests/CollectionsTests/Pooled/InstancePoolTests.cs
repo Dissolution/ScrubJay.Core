@@ -1,18 +1,18 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
-using ScrubJay.Buffers;
 using ScrubJay.Extensions;
+using ScrubJay.Pooling;
 
 // ReSharper disable AccessToDisposedClosure
 
-namespace ScrubJay.Tests.BuffersTests;
+namespace ScrubJay.Tests.CollectionsTests.Pooled;
 
-public class ObjectPoolTests
+public class InstancePoolTests
 {
     [Fact]
     public void InstanceIsTheSame()
     {
-        using var pool = ObjectPool.Create(static () => new StrongBox<Guid>(Guid.NewGuid()));
+        using var pool = Pool.Create(static () => new StrongBox<Guid>(Guid.NewGuid()));
 
         var firstInstance = pool.Rent();
         var firstGuid = firstInstance.Value;
@@ -27,7 +27,7 @@ public class ObjectPoolTests
     [Fact]
     public void TotalCapacityWorks()
     {
-        using var pool = ObjectPool.FromPolicy<StrongBox<Guid>>(new()
+        using var pool = Pool.FromPolicy<StrongBox<Guid>>(new()
         {
             CreateInstance = static () => new(Guid.NewGuid()), MaxCapacity = 2,
         });
@@ -53,7 +53,7 @@ public class ObjectPoolTests
     [Fact]
     public void CanCreateStringBuilder()
     {
-        using var pool = ObjectPool.ForType<StringBuilder>();
+        using var pool = Pool.Default<StringBuilder>();
         var builder = pool.Rent();
         Assert.NotNull(builder);
         Assert.Equal(0, builder.Length);
@@ -63,7 +63,7 @@ public class ObjectPoolTests
     [Fact]
     public void CanReuseStringBuilder()
     {
-        using var pool = ObjectPool.ForType<StringBuilder>();
+        using var pool = Pool.Default<StringBuilder>();
 
         var builder = pool.Rent();
         Assert.NotNull(builder);
@@ -91,9 +91,9 @@ public class ObjectPoolTests
     [Fact]
     public void CanCleanStringBuilder()
     {
-        using var pool = ObjectPool.FromPolicy<StringBuilder>(new(
+        using var pool = Pool.Create<StringBuilder>(
             static () => new(),
-            static sb => sb.Clear()));
+            static sb => sb.Clear());
 
         var builder = pool.Rent();
         Assert.Equal(0, builder.Length);
@@ -120,10 +120,10 @@ public class ObjectPoolTests
     [Fact]
     public void CanCleanArray()
     {
-        using var pool = ObjectPool.FromPolicy<int[]>(new(
+        using var pool = Pool.Create<int[]>(
             static () => new int[8],
             static arr => arr.AsSpan().ForEach((ref int i) => i = 0)
-        ));
+        );
 
         var array = pool.Rent();
         Assert.Equal(8, array.Length);
@@ -135,12 +135,12 @@ public class ObjectPoolTests
     }
 
     [Fact]
-    public async Task TestIfObjectPoolIsAsyncSafeAsync()
+    public async Task TestIfInstancePoolIsAsyncSafeAsync()
     {
         var rand = new Random();
-        using var pool = ObjectPool.FromPolicy<StringBuilder>(new(
+        using var pool = Pool.Create<StringBuilder>(
             static () => new(),
-            static sb => sb.Clear()));
+            static sb => sb.Clear());
         const int COUNT = 100;
         var tasks = new Task<string>[COUNT];
         for (var i = 0; i < COUNT; i++)

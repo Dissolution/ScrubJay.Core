@@ -1,6 +1,7 @@
 ﻿#pragma warning disable IDE0004, CA2225, IDE0002, IDE0090, IDE0018, IDE0047
 
 using System.Globalization;
+using ScrubJay.Pooling;
 using ScrubJay.Text;
 
 // ReSharper disable RedundantOverflowCheckingContext
@@ -65,8 +66,8 @@ public readonly struct Rational :
     public static Rational operator -(Rational value) => new Rational(-value.Numerator, value.Denominator);
     public static Rational operator +(Rational value) => value; // no-op
 
-    public static Rational operator --(Rational value) => value.Subtract(Rational.One);
-    public static Rational operator ++(Rational value) => value.Add(Rational.One);
+    public static Rational operator --(Rational value) => value.Subtract(One);
+    public static Rational operator ++(Rational value) => value.Add(One);
 
     public static bool operator ==(Rational left, Rational right) => left.Equals(right);
     //public static bool operator ==(Rational left, BigDecimal right) => left.Equals(right);
@@ -315,11 +316,11 @@ public readonly struct Rational :
     public static Rational FromDouble(double value, double accuracy = double.Epsilon)
     {
         if (double.IsNaN(value))
-            return Rational.NaN;
+            return NaN;
         if (double.IsPositiveInfinity(value))
-            return Rational.PositiveInfinity;
+            return PositiveInfinity;
         if (double.IsNegativeInfinity(value))
-            return Rational.NegativeInfinity;
+            return NegativeInfinity;
 
         int sign = value < 0d ? -1 : 1;
         value = value < 0d ? -value : value;
@@ -1444,7 +1445,7 @@ public readonly struct Rational :
             BigInteger integralPart = numerator / denominator;
             var remainder = this - integralPart;
             buffer.Write(integralPart, fmt, provider);
-            if (remainder != Rational.Zero)
+            if (remainder != Zero)
             {
                 buffer.Write(' ');
                 remainder.WriteGeneral(ref buffer);

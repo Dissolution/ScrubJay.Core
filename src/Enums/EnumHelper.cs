@@ -1,7 +1,9 @@
 ﻿#pragma warning disable S2743, CA1000
 
 using System.Reflection;
+using ScrubJay.Memory;
 using ScrubJay.Parsing;
+using ScrubJay.Pooling;
 using ScrubJay.Text;
 
 namespace ScrubJay.Enums;
@@ -156,8 +158,8 @@ public abstract class EnumMemberInfo
                 parseNames.Add(display);
             }
         }
-        this.DisplayName = display ?? Name;
-        this.ParseNames = parseNames.ToArray();
+        DisplayName = display ?? Name;
+        ParseNames = parseNames.ToArray();
     }
 }
 

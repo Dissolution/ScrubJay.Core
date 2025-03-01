@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Collections;
+﻿using ScrubJay.Pooling;
+
+namespace ScrubJay.Collections;
 
 /// <summary>
 /// A small, immutable collection of Values

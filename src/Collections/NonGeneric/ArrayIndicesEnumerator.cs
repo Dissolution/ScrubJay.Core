@@ -1,12 +1,13 @@
-#pragma warning disable S2933
+﻿// ReSharper disable FieldCanBeMadeReadOnly.Local
+#pragma warning disable IDE0044
 
-namespace ScrubJay.Collections;
+namespace ScrubJay.Collections.NonGeneric;
 
 [PublicAPI]
 [MustDisposeResource(false)]
-public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisposable
+public sealed class ArrayIndicesEnumerator : ITryEnumerator<int[]>
 {
-    public static BoundedArrayIndices For(Array? array)
+    public static ArrayIndicesEnumerator For(Array array)
     {
         Throw.IfNull(array);
 
@@ -29,7 +30,7 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
     }
 
     /// <summary>
-    /// Create <see cref="BoundedArrayIndices"/> that iterate over all valid indices in a range of bounds
+    /// Create <see cref="ArrayIndicesEnumerator"/> that iterate over all valid indices in a range of bounds
     /// </summary>
     /// <param name="lowerBounds">
     /// The lower inclusive bounds of each Dimension
@@ -38,12 +39,12 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
     /// The upper <b>inclusive</b> bounds of each Dimension
     /// </param>
     /// <returns>
-    /// <see cref="BoundedArrayIndices"/> that iterate over all valid indices in the bounds
+    /// <see cref="ArrayIndicesEnumerator"/> that iterate over all valid indices in the bounds
     /// </returns>
     /// <exception cref="ArgumentException">
     /// Thrown if <paramref name="lowerBounds"/> or <paramref name="upperBounds"/> is invalid
     /// </exception>
-    public static BoundedArrayIndices Range(int[] lowerBounds, int[] upperBounds)
+    public static ArrayIndicesEnumerator Range(int[] lowerBounds, int[] upperBounds)
     {
         Throw.IfNull(lowerBounds);
         Throw.IfNull(upperBounds);
@@ -65,7 +66,7 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
         return new(lowerBounds, upperBounds);
     }
 
-    public static BoundedArrayIndices Lengths(params int[] dimensionLengths)
+    public static ArrayIndicesEnumerator FromLengths(params int[] dimensionLengths)
     {
         Throw.IfNull(dimensionLengths);
         int dimensions = dimensionLengths.Length;
@@ -86,17 +87,13 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
         return new(lowerBounds, upperBounds);
     }
 
+
     private readonly int[] _lowerBounds;
     private readonly int[] _upperBounds;
-
-    // Only used in Span<int>, but needs to be writable
-    // ReSharper disable once FieldCanBeMadeReadOnly.Local
-#pragma warning disable IDE0044
     private int[] _indices;
-#pragma warning restore IDE0044
 
     object IEnumerator.Current => _indices;
-    int[] IEnumerator<int[]>.Current => _indices;
+    public int[] Current => _indices;
 
     public int Dimensions
     {
@@ -104,7 +101,7 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
         get => _indices.Length;
     }
 
-    private BoundedArrayIndices(int[] lowerBounds, int[] upperBounds)
+    internal ArrayIndicesEnumerator(int[] lowerBounds, int[] upperBounds)
     {
         _lowerBounds = lowerBounds;
         _upperBounds = upperBounds;
@@ -112,7 +109,7 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
         Reset();
     }
 
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         /* Do nothing */
     }
@@ -138,21 +135,24 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
     /// </remarks>
     private bool TryIncrement()
     {
-        Span<int> indices = _indices;
-        Span<int> lowerBounds = _lowerBounds;
-        Span<int> upperBounds = _upperBounds;
+        int[] indices = _indices;
+        int[] lowerBounds = _lowerBounds;
+        int[] upperBounds = _upperBounds;
 
-        // Always start with the rightmost index
+        // rightmost index to leftmost
         int endDimension = Dimensions - 1;
 
         for (int d = endDimension; d >= 0; d--)
         {
             int index = indices[d];
+
             // Can we increment this index?
             if (index < upperBounds[d])
             {
+                // Increment
                 indices[d] = index + 1;
-                // if we're not the rightmost index, reset the index to the right to its lower
+
+                // if we can, reset the index to the right to its lowest setting
                 if (d < endDimension)
                 {
                     indices[d + 1] = lowerBounds[d + 1];
@@ -160,26 +160,15 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
 
                 return true;
             }
+
             // Try to increment the next dimension
         }
 
-        // Could not increment anywhere
+        // Could not increment any dimension, we're at the end
         return false;
     }
 
-    bool IEnumerator.MoveNext() => TryIncrement();
-
-    public bool TryMoveNext([NotNullWhen(true)] out int[]? indices)
-    {
-        if (TryIncrement())
-        {
-            indices = _indices;
-            return true;
-        }
-
-        indices = null;
-        return false;
-    }
+    public bool MoveNext() => TryIncrement();
 
     public Result<int[], Exception> TryMoveNext()
     {
@@ -195,13 +184,13 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
 
     public void Reset()
     {
-        Span<int> indices = _indices.AsSpan();
-        Span<int> lowerBounds = _lowerBounds.AsSpan();
+        int[] indices = _indices;
+        int[] lowerBounds = _lowerBounds;
         int d = Dimensions - 1;
 
         // rightmost / last index is one lower than minimum (un-moved, as per IEnumerator)
         indices[d] = lowerBounds[d] - 1;
-        // the remaining are at their lowest
+        // the remaining are at their lowest bound
         d--;
         while (d >= 0)
         {
@@ -209,4 +198,6 @@ public sealed class BoundedArrayIndices : IEnumerator<int[]>, IEnumerator, IDisp
             d--;
         }
     }
+
+    public ArrayIndicesEnumerator GetEnumerator() => this;
 }

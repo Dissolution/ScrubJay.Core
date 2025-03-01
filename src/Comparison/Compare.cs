@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ScrubJay.Collections;
 
 // ReSharper disable InvokeAsExtensionMethod
 
@@ -48,7 +49,15 @@ public static class Compare
         => Comparer<T>.Create((x, y) => comparison(x, y));
 
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Values<T>(T? left, T? right) => Comparer<T>.Default.Compare(left!, right!);
+
+    public static int Values<T>(T? left, T? right, IComparer<T>? valueComparer)
+    {
+        if (valueComparer is null)
+            return Values<T>(left, right);
+        return valueComparer.Compare(left!, right!);
+    }
 
     public static int ComparableValues<TLeft, TRight>(TLeft? left, TRight? right)
         where TLeft : IComparable<TRight>
@@ -61,7 +70,7 @@ public static class Compare
         return left.CompareTo(right!);
     }
 
-    public static int Objects(object? left, object? right) => ObjectComparer.Compare(left, right);
+    public static int Objects(object? left, object? right) => ObjectComparer.Default.Compare(left, right);
 
 #region Text
     public static int Text(string? left, string? right) => string.CompareOrdinal(left, right);

@@ -1,4 +1,5 @@
-﻿#pragma warning disable IDE0022
+﻿using ScrubJay.Pooling;
+#pragma warning disable IDE0022
 
 namespace ScrubJay.Extensions;
 
@@ -58,6 +59,7 @@ public static class TextExtensions
     {
         if (characters is null)
             return string.Empty;
+
         if (characters is ICollection<char> collection)
         {
             char[] chars = new char[collection.Count];

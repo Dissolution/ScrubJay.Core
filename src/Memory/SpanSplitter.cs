@@ -1,7 +1,5 @@
 ﻿#pragma warning disable CA1000 // Do not declare static members on generic types
 
-using ScrubJay.Enums;
-
 namespace ScrubJay.Memory;
 
 [PublicAPI]

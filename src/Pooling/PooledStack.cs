@@ -1,6 +1,7 @@
-﻿#pragma warning disable CA1711
+﻿using ScrubJay.Collections;
+#pragma warning disable CA1711, CA1815
 
-namespace ScrubJay.Collections.Pooled;
+namespace ScrubJay.Pooling;
 
 [PublicAPI]
 [MustDisposeResource(true)]
@@ -23,7 +24,7 @@ public class PooledStack<T> : PooledArray<T>,
 
     T IReadOnlyList<T>.this[int index] => this[index];
 
-    public T this[Index index]
+    public T this[StackIndex index]
     {
         get => TryGetItemAt(index).OkOrThrow();
         set => TrySetItemAt(index, value).ThrowIfError();
@@ -40,13 +41,6 @@ public class PooledStack<T> : PooledArray<T>,
     public PooledStack(int minCapacity) : base(minCapacity) { }
 
     protected override void CopyToNewArray(T[] newArray) => Sequence.CopyTo(_array.AsSpan(0, _size), newArray);
-
-    protected int AdjustOffset(int offset)
-    {
-        Debug.Assert(offset >= 0 && offset < _size);
-        return ((_size - offset) - 1);
-    }
-
 
     void ICollection<T>.Add(T item) => Push(item);
 
@@ -124,64 +118,63 @@ public class PooledStack<T> : PooledArray<T>,
 
     void IList<T>.Insert(int index, T item) => TryPushAt(index, item).ThrowIfError();
 
-    public Result<Unit, Exception> TryPushAt(Index index, T item)
+    public Result<Unit, Exception> TryPushAt(StackIndex index, T item)
     {
-        int pos = _size;
-        var vr = Validate.InsertIndex(index, pos);
-        if (!vr.HasOkOrError(out int offset, out var ex))
-            return ex;
+        int end = _size;
+        int offset = index.GetOffset(end);
 
-        // offset is from the top of the stack
-        if (offset == 0)
+        if (offset < 0 || offset >= end)
+            return new ArgumentOutOfRangeException(nameof(index));
+
+        // If we indicated the front, push
+        if (offset == (end - 1))
         {
             Push(item);
             return Unit();
         }
-        offset = AdjustOffset(offset);
 
-        int newPos = pos + 1;
-        if (newPos >= Capacity)
+        int newSize = end + 1;
+        if (newSize >= Capacity)
         {
-            GrowTo(newPos);
+            GrowTo(newSize);
         }
 
-        Sequence.SelfCopy(_array, offset..pos, (offset + 1)..);
+        _version++;
+        Sequence.SelfCopy(_array, offset..end, (offset + 1)..);
         _array[offset] = item;
-        _size = newPos;
+        _size = newSize;
         return Unit();
     }
 
-    public Result<Unit, Exception> TryPushManyAt(Index index, ReadOnlySpan<T> items)
+    public Result<Unit, Exception> TryPushManyAt(StackIndex index, ReadOnlySpan<T> items)
     {
+        int end = _size;
+        int offset = index.GetOffset(end);
+
+        if (offset < 0 || offset >= end)
+            return new ArgumentOutOfRangeException(nameof(index));
+
         int itemCount = items.Length;
-
         if (itemCount == 0)
-            return Validate.InsertIndex(index, _size).OkSelect(_ => Unit());
+            return Unit();
 
-        if (itemCount == 1)
-            return TryPushAt(index, items[0]);
-
-        var vr = Validate.InsertIndex(index, _size);
-        if (!vr.HasOkOrError(out int offset, out var ex))
-            return ex;
-
-        // offset is from the top
-        if (offset == 0)
+        // If we indicated the front, push
+        if (offset == (end - 1))
         {
             PushMany(items);
             return Unit();
         }
-        offset = AdjustOffset(offset);
 
-        int newPos = _size + itemCount;
-        if (newPos >= Capacity)
+        int newSize = end + itemCount;
+        if (newSize >= Capacity)
         {
-            GrowTo(newPos);
+            GrowTo(newSize);
         }
 
-        Sequence.SelfCopy(_array, offset.._size, (offset + itemCount)..);
+        _version++;
+        Sequence.SelfCopy(_array, offset..end, (offset + itemCount)..);
         Sequence.CopyTo(items, _array.AsSpan(offset, itemCount));
-        _size = newPos;
+        _size = newSize;
         return Unit();
     }
 
@@ -285,7 +278,7 @@ public class PooledStack<T> : PooledArray<T>,
         return OkEx(popped);
     }
 
-    public Result<Unit,Exception> TryPopManyTo(Span<T> buffer)
+    public Result<Unit, Exception> TryPopManyTo(Span<T> buffer)
     {
         int count = buffer.Length;
         int size = _size;
@@ -312,21 +305,34 @@ public class PooledStack<T> : PooledArray<T>,
             if (itemIndex >= 0)
             {
                 _version++;
-                Sequence.SelfCopy(_array, (itemIndex + 1).., itemIndex..);
                 _size = endIndex;
+                Sequence.SelfCopy(_array, (itemIndex + 1).., itemIndex..);
                 return true;
             }
         }
         return false;
     }
 
-    void IList<T>.RemoveAt(int index)
+    void IList<T>.RemoveAt(int index) => TryPopAt(index).OkOrThrow();
+
+    public Result<T, Exception> TryPopAt(StackIndex index)
     {
-        int offset = Validate.Index(index, _size).OkOrThrow();
-        offset = AdjustOffset(offset);
+        int end = _size;
+        int offset = index.GetOffset(end);
+
+        if (offset < 0 || offset >= end)
+            return new ArgumentOutOfRangeException(nameof(index));
+
+        int newSize = end - 1;
+
         _version++;
-        Sequence.SelfCopy(_array, (offset + 1).., offset..);
-        _size--;
+        _size = newSize;
+        T item = _array[offset];
+        if (offset != newSize)
+        {
+            Sequence.SelfCopy(_array, (offset + 1)..end, offset..);
+        }
+        return item;
     }
 
     public void Clear()
@@ -344,7 +350,7 @@ public class PooledStack<T> : PooledArray<T>,
         int index = Array.LastIndexOf<T>(_array, item, endIndex);
         if (index < 0)
             return -1;
-        return AdjustOffset(_size - index);
+        return (endIndex - index);
     }
 
     public bool Contains(T item)
@@ -365,16 +371,25 @@ public class PooledStack<T> : PooledArray<T>,
         return false;
     }
 
-    public Result<T, Exception> TryGetItemAt(Index index)
+#pragma warning disable IDE0060
+
+    public Result<T, Exception> TryGetItemAt(StackIndex index)
     {
-        int size = _size;
-        return Validate.Index(index, size).Select(offset => _array[AdjustOffset(offset)]);
+        int end = _size;
+        int offset = index.GetOffset(end);
+        if (offset < 0 || offset >= end)
+            return new ArgumentOutOfRangeException(nameof(index));
+        return _array[offset];
     }
 
-    public Result<T, Exception> TrySetItemAt(Index index, T item)
+    public Result<T, Exception> TrySetItemAt(StackIndex index, T item)
     {
-        int size = _size;
-        return Validate.Index(index, size).Select(offset => _array[AdjustOffset(offset)] = item);
+        int end = _size;
+        int offset = index.GetOffset(end);
+        if (offset < 0 || offset >= end)
+            return new ArgumentOutOfRangeException(nameof(index));
+        _array[offset] = item;
+        return item;
     }
 
     void ICollection<T>.CopyTo(T[] array, int arrayIndex) => TryCopyTo(array.AsSpan(arrayIndex)).ThrowIfError();
@@ -443,10 +458,9 @@ public class PooledStack<T> : PooledArray<T>,
             () => _version);
     }
 
-    public override void Dispose()
+    protected override void OnDisposing()
     {
         _version++;
         _size = 0;
-        base.Dispose();
     }
 }

@@ -1,5 +1,6 @@
 ﻿namespace ScrubJay.Extensions;
 
+[PublicAPI]
 public static class EqualityComparerExtensions
 {
     [Pure]

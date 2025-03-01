@@ -1,9 +1,8 @@
 ﻿#pragma warning disable CA1816
 
-namespace ScrubJay.Collections.Pooled;
+namespace ScrubJay.Pooling;
 
 [PublicAPI]
-[MustDisposeResource(true)]
 public abstract class PooledArray<T> : IDisposable
 {
     protected internal T[] _array;
@@ -26,7 +25,13 @@ public abstract class PooledArray<T> : IDisposable
 
     protected PooledArray(int minCapacity)
     {
-        _array = ArrayPool<T>.Shared.Rent(minCapacity);
+        _array = ArrayInstancePool<T>.Shared.Rent(minCapacity);
+    }
+
+    [HandlesResourceDisposal]
+    ~PooledArray()
+    {
+        this.Dispose();
     }
 
     protected virtual void CopyToNewArray(T[] newArray) => Sequence.CopyTo(_array, newArray);
@@ -47,22 +52,29 @@ public abstract class PooledArray<T> : IDisposable
         if (capacity == 0)
         {
             _version++;
-            _array = ArrayPool<T>.Shared.Rent(minCapacity);
+            _array = ArrayInstancePool<T>.Shared.Rent(minCapacity);
         }
         else if (minCapacity > capacity)
         {
             _version++;
-            T[] newArray = ArrayPool<T>.Shared.Rent(minCapacity);
+            T[] newArray = ArrayInstancePool<T>.Shared.Rent(minCapacity);
             CopyToNewArray(newArray);
             T[] toReturn = Interlocked.Exchange<T[]>(ref _array, newArray);
-            ArrayPool<T>.Shared.Return(toReturn);
+            ArrayInstancePool<T>.Shared.Return(toReturn);
         }
     }
 
-    [HandlesResourceDisposal]
-    public virtual void Dispose()
+    protected virtual void OnDisposing()
     {
+        // default do nothing
+    }
+
+    [HandlesResourceDisposal]
+    public void Dispose()
+    {
+        OnDisposing();
         T[] toReturn = Interlocked.Exchange<T[]>(ref _array, []);
-        ArrayPool<T>.Shared.Return(toReturn);
+        ArrayInstancePool<T>.Shared.Return(toReturn);
+        GC.SuppressFinalize(this);
     }
 }

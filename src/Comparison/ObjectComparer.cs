@@ -1,17 +1,16 @@
 ﻿namespace ScrubJay.Comparison;
 
 /// <summary>
-/// The default comparer for two objects so they can be compared by any containing value
+/// A combination <see cref="IEqualityComparer{T}"/> and <see cref="IComparer{T}"/> for <see cref="object"/>
+/// that uses underlying type equality
 /// </summary>
-internal sealed class ObjectComparer :
+public sealed class ObjectComparer :
     IEqualityComparer<object>, IEqualityComparer,
     IComparer<object>, IComparer
 {
     public static readonly ObjectComparer Default = new();
 
-    bool IEqualityComparer.Equals(object? x, object? y) => Equals(x, y);
-    bool IEqualityComparer<object>.Equals(object? x, object? y) => Equals(x, y);
-    public static new bool Equals(object? x, object? y)
+    public new bool Equals(object? x, object? y)
     {
         if (ReferenceEquals(x, y))
             return true;
@@ -31,13 +30,9 @@ internal sealed class ObjectComparer :
         return Equate.GetEqualityComparer(yType).Equals(x, y);
     }
 
-    int IEqualityComparer.GetHashCode(object? obj) => GetHashCode(obj);
-    int IEqualityComparer<object>.GetHashCode(object? obj) => GetHashCode(obj);
-    public static int GetHashCode(object? obj) => Hasher.GetHashCode(obj);
+    public int GetHashCode(object? obj) => Hasher.GetHashCode(obj);
 
-    int IComparer<object>.Compare(object? x, object? y) => Compare(x, y);
-    int IComparer.Compare(object? x, object? y) => Compare(x, y);
-    public static int Compare(object? x, object? y)
+    public int Compare(object? x, object? y)
     {
         if (ReferenceEquals(x, y))
             return 0;

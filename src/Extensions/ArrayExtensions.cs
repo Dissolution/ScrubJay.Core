@@ -4,6 +4,9 @@
 
 namespace ScrubJay.Extensions;
 
+/// <summary>
+/// Extensions on 2D Arrays
+/// </summary>
 [PublicAPI]
 public static class ArrayExtensions
 {
@@ -17,7 +20,6 @@ public static class ArrayExtensions
         return new Span<T>(array, start, length);
     }
 #endif
-
 
     /// <inheritdoc cref="Array.ConvertAll{TInput,TOutput}"/>
     public static TOutput[] ConvertAll<TInput, TOutput>(
@@ -61,8 +63,13 @@ public static class ArrayExtensions
         => array is null || array.Length == 0;
 
 #if NETFRAMEWORK || NETSTANDARD2_0
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Slice<T>(this T[] array, int start) => array.AsSpan(start).ToArray();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Slice<T>(this T[] array, int start, int length) => array.AsSpan(start, length).ToArray();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Slice<T>(this T[] array, Range range) => array.AsSpan(range).ToArray();
 
     public static void Reverse<T>(this T[] array)
@@ -81,10 +88,16 @@ public static class ArrayExtensions
         }
     }
 #else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Slice<T>(this T[] array, int start) => array[start..];
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Slice<T>(this T[] array, int start, int length) => array[new Range(start, start + length)];
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Slice<T>(this T[] array, Range range) => array[range];
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Reverse<T>(this T[] array) => Array.Reverse<T>(array);
 #endif
 

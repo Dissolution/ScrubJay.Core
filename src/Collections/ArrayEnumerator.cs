@@ -1,6 +1,4 @@
-﻿using InvalidOperationException = System.InvalidOperationException;
-
-namespace ScrubJay.Collections;
+﻿namespace ScrubJay.Collections;
 
 /// <summary>
 /// A typed <see cref="IEnumerator{T}"/> over an <see cref="Array"/>
@@ -8,7 +6,7 @@ namespace ScrubJay.Collections;
 /// <typeparam name="T"></typeparam>
 [PublicAPI]
 [MustDisposeResource(false)]
-public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposable
+public sealed class ArrayEnumerator<T> : ITryEnumerator<T>
 {
     private readonly T[] _array;
     private readonly int _version;
@@ -132,16 +130,16 @@ public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposabl
         return true;
     }
 
-    public Option<T> TryMoveNext()
+    public Result<T, Exception> TryMoveNext()
     {
         if (_getCurrentVersion is not null && _getCurrentVersion() != _version)
-            return None<T>();
+            return new InvalidOperationException("Version has changed");
 
         int newIndex = _index + 1;
         if (newIndex < _minIndex || newIndex > _maxIndex)
-            return None<T>();
+            return new InvalidOperationException("Enumeration has completed");
         _index = newIndex;
-        return Some(_array[newIndex]);
+        return OkEx(_array[newIndex]);
     }
 
     public void Reset()

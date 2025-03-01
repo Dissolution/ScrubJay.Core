@@ -604,7 +604,7 @@ dotnet_diagnostic.CA1040.severity = warning
 dotnet_diagnostic.CA1041.severity = error
 
 # CA1043: Use integral or string argument for indexers
-dotnet_diagnostic.CA1043.severity = warning
+dotnet_diagnostic.CA1043.severity = none
 
 # CA1044: Properties should not be write only
 dotnet_diagnostic.CA1044.severity = none

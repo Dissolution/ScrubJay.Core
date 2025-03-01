@@ -149,4 +149,11 @@ public static class TypeExtensions
             return Nullable.GetUnderlyingType(type) is not null;
         return true; // non-value types can always contain null
     }
+
+    public static bool CanContainNull<T>()
+    {
+        if (typeof(T).IsValueType)
+            return Nullable.GetUnderlyingType(typeof(T)) is not null;
+        return true; // non-value types can always contain null
+    }
 }

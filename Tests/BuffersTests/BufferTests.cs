@@ -1,8 +1,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using ScrubJay.Buffers;
 using ScrubJay.Comparison;
-using ScrubJay.Memory;
+using ScrubJay.Pooling;
 
 namespace ScrubJay.Tests.BuffersTests;
 
@@ -72,13 +71,11 @@ public class BufferTests
     {
         using var buffer = new Buffer<int>(1);
         Assert.Equal(0, buffer.Count);
-        Assert.Equal(ArrayPool<int>.Shared.MinimumLength, buffer.Capacity);
 
         int[] numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
         buffer.AddMany(numbers);
 
         Assert.Equal(numbers.Length, buffer.Count);
-        Assert.True(buffer.Capacity > ArrayPool<int>.Shared.MinimumLength);
         Assert.True(buffer.Capacity >= buffer.Count);
 
         for (int i = 0; i < buffer.Count; i++)

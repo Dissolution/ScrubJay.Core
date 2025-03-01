@@ -1,7 +1,7 @@
 ﻿#pragma warning disable CA1710, CA1512
 
 using System.Collections;
-using ScrubJay.Collections;
+using ScrubJay.Collections.NonGeneric;
 
 namespace ScrubJay.Tests;
 
@@ -37,16 +37,16 @@ public sealed class MiscTheoryData : IReadOnlyCollection<object?[]>
 
         var lengths = new int[columns];
         lengths.AsSpan().Fill(rows.Count);
-        BoundedArrayIndices boundedIndices = BoundedArrayIndices.Lengths(lengths);
+        ArrayIndicesEnumerator indices = ArrayIndicesEnumerator.FromLengths(lengths);
 
         var data = new MiscTheoryData();
 
-        while (boundedIndices.TryMoveNext(out var indices))
+        while (indices.TryMoveNext().HasOk(out var index))
         {
             var row = new object?[columns];
             for (var c = 0; c < columns; c++)
             {
-                row[c] = rows[indices[c]][0];
+                row[c] = rows[index[c]][0];
             }
             data.AddRow(row);
         }
