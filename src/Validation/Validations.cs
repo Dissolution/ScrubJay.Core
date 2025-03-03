@@ -71,6 +71,12 @@ public class Validations : Validations<Exception>
         return okValue;
     }
 
+    public Result<TOk, Exception> ToResult<TOk>(Func<TOk> getOk)
+    {
+        if (HasException(out var ex))
+            return ex;
+        return getOk();
+    }
 }
 
 /// <summary>

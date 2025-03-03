@@ -100,16 +100,10 @@ public readonly struct EnumWrapper<TEnum> :
         ReadOnlySpan<char> format = default,
         IFormatProvider? provider = default)
     {
-        var writer = new FormatWriter(destination);
-        if (!writer.TryWrite(Enum, format, provider))
+        return new FormatWriter(destination)
         {
-            destination.Clear();
-            charsWritten = 0;
-            return false;
-        }
-
-        charsWritten = writer.Count;
-        return true;
+            Enum,
+        }.GetResult(out charsWritten);
     }
 
     public string ToString(

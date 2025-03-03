@@ -54,6 +54,39 @@ public static class TextExtensions
 #endif
     }
 
+    /// <summary>
+    /// Efficiently convert a <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see> to a <see cref="string"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string AsString(this char[]? characters)
+    {
+        if (characters is null)
+            return string.Empty;
+        return new(characters);
+    }
+
+    public static string AsString(this IList<char>? list)
+    {
+        if (list is null)
+            return string.Empty;
+
+#if NETFRAMEWORK || NETSTANDARD2_0
+        Span<char> span = stackalloc char[list.Count];
+        for (int i = list.Count - 1; i >= 0; i--)
+        {
+            span[i] = list[i];
+        }
+        return span.AsString();
+#else
+        return string.Create(list.Count, list, static (span, chars) =>
+        {
+            for (int i = chars.Count - 1; i >= 0; i--)
+            {
+                span[i] = chars[i];
+            }
+        });
+#endif
+    }
 
     public static string AsString(this IEnumerable<char>? characters)
     {

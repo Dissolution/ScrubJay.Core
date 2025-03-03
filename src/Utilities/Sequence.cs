@@ -270,6 +270,8 @@ public static class Sequence
     public static void CopyTo<T>(T[]? source, IList<T>? destination) => CopyTo(new ReadOnlySpan<T>(source), destination);
 
 
+
+
     public static void CopyTo<T>(IEnumerable<T>? source, Span<T> destination, bool clearOnFailure = true)
     {
         if (source is null)

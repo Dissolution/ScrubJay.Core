@@ -1,7 +1,6 @@
 ﻿#pragma warning disable CA1711
 
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
-global using FormatWriter = ScrubJay.Memory.SpanWriter<char>;
 
 namespace ScrubJay;
 

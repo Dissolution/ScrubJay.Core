@@ -29,6 +29,8 @@ public ref struct SpanWriter<T>
     internal Span<T> Written => _span.Slice(0, _position);
     internal Span<T> Available => _span.Slice(_position);
 
+    public int RemainingCount => Capacity - _position;
+
     public SpanWriter(Span<T> span)
     {
         _span = span;
@@ -49,7 +51,7 @@ public ref struct SpanWriter<T>
         _position += used;
     }
 
-    public bool TryWrite(T item)
+    public Result<Unit, Exception> TryWrite(T item)
     {
         int pos = _position;
         int newPos = pos + 1;
@@ -57,13 +59,13 @@ public ref struct SpanWriter<T>
         {
             _span[pos] = item;
             _position = newPos;
-            return true;
+            return OkEx(Unit());
         }
 
-        return false;
+        return new InvalidOperationException($"Could not write item '{item}': No capacity remaining");
     }
 
-    public bool TryWriteMany(scoped ReadOnlySpan<T> items)
+    public Result<Unit, Exception> TryWriteMany(scoped ReadOnlySpan<T> items)
     {
         int pos = _position;
         int newPos = pos + items.Length;
@@ -71,139 +73,88 @@ public ref struct SpanWriter<T>
         {
             items.CopyTo(_span[pos..]);
             _position = newPos;
-            return true;
+            return OkEx(Unit());
         }
 
-        return false;
+        return new InvalidOperationException($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
     }
 
-    public bool TryWriteMany(params T[]? items)
+    public Result<Unit, Exception> TryWriteMany(params T[]? items)
     {
         if (items is null)
-            return true;
+            return OkEx(Unit());
         int pos = _position;
         int newPos = pos + items.Length;
         if (newPos <= Capacity)
         {
             items.CopyTo(_span[pos..]);
             _position = newPos;
-            return true;
+            return OkEx(Unit());
         }
 
-        return false;
+        return new InvalidOperationException($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
     }
 
-    public bool TryWriteMany(ICollection<T>? items)
+    public Result<Unit, Exception> TryWriteMany(IEnumerable<T>? items)
     {
         if (items is null)
-            return true;
+            return OkEx(Unit());
+
         int pos = _position;
-        int newPos = pos + items.Count;
-        if (newPos <= Capacity)
+
+        if (items is IList<T> list)
         {
-            foreach (T item in items)
+            int count = list.Count;
+            int newPos = pos + count;
+            if (newPos <= Capacity)
             {
-                _span[pos] = item;
-                pos += 1;
+                for (int i = 0; i < count; i++)
+                {
+                    _span[pos++] = list[i];
+                }
+                Debug.Assert(pos == newPos);
+                _position = newPos;
+                return Unit();
             }
-            Debug.Assert(pos == newPos);
-            _position = newPos;
-            return true;
+
+            return new InvalidOperationException($"Could not write {list.Count} items: Only {RemainingCount} capacity remaining");
         }
-
-        return false;
-    }
-
-    public bool TryWriteMany(IReadOnlyCollection<T>? items)
-    {
-        if (items is null)
-            return true;
-        int pos = _position;
-        int newPos = pos + items.Count;
-        if (newPos <= Capacity)
+        else if (items is ICollection<T> collection)
         {
-            foreach (T item in items)
-            {
-                _span[pos] = item;
-                pos += 1;
-            }
-            Debug.Assert(pos == newPos);
-            _position = newPos;
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool TryWriteMany(IList<T>? items)
-    {
-        if (items is null)
-            return true;
-        int pos = _position;
-        int newPos = pos + items.Count;
-        if (newPos <= Capacity)
-        {
-            for (int i = 0; i < items.Count; i++)
-            {
-                _span[pos + i] = items[i];
-            }
-            _position = newPos;
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool TryWriteMany(IReadOnlyList<T>? items)
-    {
-        if (items is null)
-            return true;
-        int pos = _position;
-        int newPos = pos + items.Count;
-        if (newPos <= Capacity)
-        {
-            for (int i = 0; i < items.Count; i++)
-            {
-                _span[pos + i] = items[i];
-            }
-            _position = newPos;
-            return true;
-        }
-
-        return false;
-    }
-
-    public Result<int, Exception> TryWriteMany(IEnumerable<T>? items)
-    {
-        if (items is null)
-            return 0;
-
-        // ReSharper disable PossibleMultipleEnumeration
-        if (items.TryGetNonEnumeratedCount(out int count))
-        {
-            int pos = _position;
+            int count = collection.Count;
             int newPos = pos + count;
             if (newPos <= Capacity)
             {
                 foreach (T item in items)
                 {
-                    _span[pos] = item;
-                    pos += 1;
+                    _span[pos++] = item;
                 }
                 Debug.Assert(pos == newPos);
                 _position = newPos;
-                return count;
+                return Unit();
             }
-            return new ArgumentException($"Cannot write {count} items", nameof(items));
+
+            return new InvalidOperationException($"Could not write {collection.Count} items: Only {RemainingCount} capacity remaining");
         }
-        return new ArgumentException("Cannot write an uncountable collection", nameof(items));
-        // ReSharper restore PossibleMultipleEnumeration
+        else
+        {
+            int start = pos;
+            foreach (var item in items)
+            {
+                if (pos >= Capacity)
+                {
+                    _span[start..].Clear();
+                    return new InvalidOperationException($"Could not write {pos} or more items: Only {RemainingCount} capacity remaining");
+                }
+                _span[pos++] = item;
+            }
+
+            _position = pos;
+            return Unit();
+        }
     }
 
-    #pragma warning disable IDE0251
     public void Clear() => _span.Slice(0, _position).Clear();
-    #pragma warning restore IDE0251
-
 
     public bool TryCopyTo(Span<T> span) => AsSpan().TryCopyTo(span);
 

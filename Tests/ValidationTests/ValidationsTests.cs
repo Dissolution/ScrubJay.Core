@@ -7,7 +7,7 @@ public class ValidationsTests
     [Fact]
     public void EmptyValidationsDoNotThrow()
     {
-        new Validations().ThrowErrors();
+        new Validations().ThrowIfErrors();
     }
 
     [Fact]
@@ -20,7 +20,7 @@ public class ValidationsTests
                 Validate.IsNotNull(147),
                 Validate.Is<int>(Guid.NewGuid()),
                 Validate.IsGreaterThan(4, 3),
-            }.ThrowErrors();
+            }.ThrowIfErrors();
         });
     }
 }

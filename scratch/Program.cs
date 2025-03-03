@@ -1,11 +1,34 @@
-﻿// ReSharper disable UnusedVariable
+﻿// ReSharper disable RedundantUsingDirective
+// ReSharper disable UnusedVariable
 
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
+using ScrubJay.Extensions;
+using ScrubJay.Memory;
+using ScrubJay.Validation;
+using ScrubJay.Text;
 
-string str = "eat at joes";
+
+
+char[] chars = new char[128];
+var writer = new FormatWriter(chars)
+{
+    '(',
+    (""),
+    (147),
+    {147, "F1"},
+    (147, "F2", (IFormatProvider)CultureInfo.CurrentCulture),
+    (ref FormatWriter w) => w.Add("^_^"),
+};
+string str = writer.GetString();
+var result = writer.GetResult();
+
+Debugger.Break();
+
+
 
 Console.WriteLine(str);
 

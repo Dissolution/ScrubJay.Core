@@ -165,25 +165,14 @@ public readonly struct Pair<TKey, TValue> :
         ReadOnlySpan<char> format = default,
         IFormatProvider? provider = null)
     {
-        var writer = new FormatWriter(destination);
-        if (!writer.TryWrite('('))
-            goto FAIL;
-        if (!writer.TryWrite<TKey>(Key, format, provider))
-            goto FAIL;
-        if (!writer.TryWrite(", "))
-            goto FAIL;
-        if (!writer.TryWrite<TValue>(Value, format, provider))
-            goto FAIL;
-        if (!writer.TryWrite(')'))
-            goto FAIL;
-
-        charsWritten = writer.Count;
-        return true;
-
-FAIL:
-        destination.Clear();
-        charsWritten = 0;
-        return false;
+        return new FormatWriter(destination)
+        {
+            '(',
+            { Key, format, provider },
+            ", ",
+            { Value, format, provider },
+            ')',
+        }.GetResult(out charsWritten);
     }
 
     public string ToString(string? format, IFormatProvider? formatProvider = null)
