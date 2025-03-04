@@ -1,6 +1,5 @@
 ﻿namespace ScrubJay.Enums;
 
-
 [PublicAPI]
 public readonly struct EnumWrapper<TEnum> :
 #if NET7_0_OR_GREATER

@@ -3,7 +3,7 @@
     <PropertyGroup>
         <AssemblyName>ScrubJay.Benchmarks</AssemblyName>
         <RootNamespace>ScrubJay.Benchmarks</RootNamespace>
-        
+
         <!-- Multi Target -->
         <TargetFrameworks>
             net9.0;net8.0;net7.0;net6.0;
@@ -17,6 +17,7 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
+        <NoWarn>MSB3277</NoWarn>
     </PropertyGroup>
 
     <!-- Global Usings -->

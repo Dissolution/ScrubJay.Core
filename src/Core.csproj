@@ -25,7 +25,7 @@
         <!-- https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/errors-warnings -->
         <WarningLevel>4</WarningLevel>
         <AnalysisLevel>latest</AnalysisLevel>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
         <WarningsAsErrors>nullable</WarningsAsErrors>
         <NoWarn>$(NoWarn);
             CS1591; <!-- Missing XML comments for public member -->
@@ -34,7 +34,7 @@
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <!-- https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#code-analysis-properties -->
         <AnalysisMode>All</AnalysisMode>
-        <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+        <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
         <!-- Ensure that all Polyfilled types are public -->

@@ -73,7 +73,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
             Validate.CanCopyTo(array, index, Count).ThrowIfError();
 
             var keys = UntypedKeys;
-            foreach (var key in keys)
+            foreach (object? key in keys)
             {
                 array.SetValue(key, index++);
             }
@@ -84,7 +84,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
             Validate.CanCopyTo(array, arrayIndex, Count).ThrowIfError();
 
             var keys = UntypedKeys;
-            foreach (var key in keys)
+            foreach (object? key in keys)
             {
                 array[arrayIndex++] = ObjectToKey(key);
             }
@@ -136,7 +136,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
             Validate.CanCopyTo(array, index, Count).ThrowIfError();
 
             var values = UntypedValues;
-            foreach (var value in values)
+            foreach (object? value in values)
             {
                 array.SetValue(value, index++);
             }
@@ -147,7 +147,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
             Validate.CanCopyTo(array, arrayIndex, Count).ThrowIfError();
 
             var values = UntypedValues;
-            foreach (var value in values)
+            foreach (object? value in values)
             {
                 array[arrayIndex++] = ObjectToValue(value);
             }
