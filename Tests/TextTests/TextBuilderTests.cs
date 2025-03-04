@@ -1,7 +1,4 @@
-﻿#if NETFRAMEWORK || NETSTANDARD2_0
-using ScrubJay.Extensions;
-#endif
-using ScrubJay.Text;
+﻿using ScrubJay.Text;
 using ScrubJay.Text.Builders;
 using ScrubJay.Utilities;
 // ReSharper disable CollectionNeverUpdated.Local
