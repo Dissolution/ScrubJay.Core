@@ -68,7 +68,7 @@ public ref struct PairBuilder<TKey, TValue>
 
     public void AppendLiteral(string str)
     {
-        ReadOnlySpan<char> text = str.AsSpan().Trim();
+        text text = str.AsSpan().Trim();
         if (text.Length == 1)
         {
             char ch = text[0];

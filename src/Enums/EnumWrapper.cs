@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text;
-
-namespace ScrubJay.Enums;
+﻿namespace ScrubJay.Enums;
 
 
 [PublicAPI]
@@ -40,7 +38,7 @@ public readonly struct EnumWrapper<TEnum> :
 
     public static EnumWrapper<TEnum> Parse(string str, IFormatProvider? _ = default) => EnumInfo<TEnum>.TryParse(str).OkOrThrow();
 
-    public static EnumWrapper<TEnum> Parse(ReadOnlySpan<char> text, IFormatProvider? _ = default) => Parse(text.ToString());
+    public static EnumWrapper<TEnum> Parse(text text, IFormatProvider? _ = default) => Parse(text.ToString());
 
     public static bool TryParse([NotNullWhen(true)] string? str, IFormatProvider? _, out EnumWrapper<TEnum> result)
     {
@@ -55,7 +53,7 @@ public readonly struct EnumWrapper<TEnum> :
         return true;
     }
 
-    public static bool TryParse(ReadOnlySpan<char> text, IFormatProvider? _, out EnumWrapper<TEnum> result)
+    public static bool TryParse(text text, IFormatProvider? _, out EnumWrapper<TEnum> result)
         => TryParse(text.ToString(), _, out result);
 
     #endregion
@@ -97,7 +95,7 @@ public readonly struct EnumWrapper<TEnum> :
     public override int GetHashCode() => Enum.GetHashCode();
 
     public bool TryFormat(Span<char> destination, out int charsWritten,
-        ReadOnlySpan<char> format = default,
+        text format = default,
         IFormatProvider? provider = default)
     {
         return new FormatWriter(destination)

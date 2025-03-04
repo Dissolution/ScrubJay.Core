@@ -1,15 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <AssemblyName>ScrubJay.Scratch</AssemblyName>
+        <RootNamespace>ScrubJay.Scratch</RootNamespace>
+        
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\ScrubJay.Core.csproj" />
+        <Using Include="ScrubJay.GlobalHelper" Static="true"/>
+
+        <Using Include="ScrubJay.Comparison"/>
+        <Using Include="ScrubJay.Enums"/>
+        <Using Include="ScrubJay.Extensions"/>
+        <Using Include="ScrubJay.Functional"/>
+        <Using Include="ScrubJay.Memory"/>
+        <Using Include="ScrubJay.Text"/>
+        <Using Include="ScrubJay.Utilities"/>
+        <Using Include="ScrubJay.Validation"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\src\Core.csproj" />
     </ItemGroup>
 
 </Project>

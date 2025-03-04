@@ -1,5 +1,4 @@
-﻿using ScrubJay.Memory;
-#pragma warning disable S3776, MA0051
+﻿#pragma warning disable S3776, MA0051
 
 namespace ScrubJay.Extensions;
 

@@ -7,7 +7,7 @@ public static class Parsable
     public static TParsable Parse<TParsable>(string str, IFormatProvider? provider = default)
         where TParsable : IParsable<TParsable> => TParsable.Parse(str, provider);
 
-    public static TSpanParsable Parse<TSpanParsable>(ReadOnlySpan<char> text, IFormatProvider? provider = default)
+    public static TSpanParsable Parse<TSpanParsable>(text text, IFormatProvider? provider = default)
         where TSpanParsable : ISpanParsable<TSpanParsable> => TSpanParsable.Parse(text, provider);
 
     public static bool TryParse<TParsable>(
@@ -16,7 +16,7 @@ public static class Parsable
         where TParsable : IParsable<TParsable> => TParsable.TryParse(str, default, out result);
 
     public static bool TryParse<TSpanParsable>(
-        ReadOnlySpan<char> text,
+        text text,
         [MaybeNullWhen(false)] out TSpanParsable result)
         where TSpanParsable : ISpanParsable<TSpanParsable> => TSpanParsable.TryParse(text, default, out result);
 #endif

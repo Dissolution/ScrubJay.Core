@@ -1,5 +1,4 @@
 ﻿using ScrubJay.Pooling;
-using ScrubJay.Text;
 using static ScrubJay.Memory.SpanReadResult;
 
 namespace ScrubJay.Memory;
@@ -562,7 +561,7 @@ public ref struct SpanReader<T>
         var text = new Buffer<char>();
 
         int index = _position;
-        ReadOnlySpan<char> chars = Notsafe.As<T, char>(_span);
+        text chars = Notsafe.As<T, char>(_span);
 
         const int CAPTURE_COUNT = 32;
 

@@ -4,9 +4,7 @@
 
 #if NET7_0_OR_GREATER
 using ScrubJay.Parsing;
-using ScrubJay.Memory;
 #endif
-using ScrubJay.Text;
 
 namespace ScrubJay.Utilities;
 
@@ -14,7 +12,7 @@ namespace ScrubJay.Utilities;
 public static class Pair
 {
 #if NET7_0_OR_GREATER
-    public static Result<Pair<TKey, TValue>, ParseException> TryParse<TKey, TValue>(ReadOnlySpan<char> text, IFormatProvider? provider = default)
+    public static Result<Pair<TKey, TValue>, ParseException> TryParse<TKey, TValue>(text text, IFormatProvider? provider = default)
         where TKey : ISpanParsable<TKey>
         where TValue : ISpanParsable<TValue>
     {
@@ -57,7 +55,7 @@ public static class Pair
         return pair;
 
 
-        static ParseException getEx(ReadOnlySpan<char> text, Exception? innerEx = null)
+        static ParseException getEx(text text, Exception? innerEx = null)
         {
             return ParseException.Create<Pair<TKey, TValue>>(
                 text,
@@ -162,7 +160,7 @@ public readonly struct Pair<TKey, TValue> :
     public bool TryFormat(
         Span<char> destination,
         out int charsWritten,
-        ReadOnlySpan<char> format = default,
+        text format = default,
         IFormatProvider? provider = null)
     {
         return new FormatWriter(destination)

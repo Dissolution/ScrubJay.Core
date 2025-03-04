@@ -2,7 +2,6 @@
 
 using ScrubJay.Collections;
 using ScrubJay.Pooling;
-using ScrubJay.Text;
 
 namespace ScrubJay.Utilities;
 

@@ -1,7 +1,6 @@
 ﻿#pragma warning disable CA1032, CA1710, CA1010
 
 using ScrubJay.Pooling;
-using ScrubJay.Text;
 
 namespace ScrubJay.Parsing;
 
@@ -15,18 +14,18 @@ namespace ScrubJay.Parsing;
 [PublicAPI]
 public class ParseException : InvalidOperationException, IEnumerable
 {
-    public static ParseException Create(ReadOnlySpan<char> input, Type? destType, string? additionalInfo = null, Exception? innerException = null) => new ParseException(input, destType, additionalInfo, innerException);
+    public static ParseException Create(text input, Type? destType, string? additionalInfo = null, Exception? innerException = null) => new ParseException(input, destType, additionalInfo, innerException);
 
     public static ParseException Create(string? input, Type? destType, string? additionalInfo = null, Exception? innerException = null) => new ParseException(input, destType, additionalInfo, innerException);
 
-    public static ParseException<T> Create<T>(ReadOnlySpan<char> input, string? additionalInfo = null, Exception? innerException = null)
+    public static ParseException<T> Create<T>(text input, string? additionalInfo = null, Exception? innerException = null)
         => ParseException<T>.Create(input, additionalInfo, innerException);
 
     public static ParseException<T> Create<T>(string? input, string? additionalInfo = null, Exception? innerException = null)
         => ParseException<T>.Create(input, additionalInfo, innerException);
 
 
-    private static string GetMessage(ReadOnlySpan<char> input, Type? destType, string? info)
+    private static string GetMessage(text input, Type? destType, string? info)
     {
         var text = new Buffer<char>();
         text.Write("Could not parse ");
@@ -79,7 +78,7 @@ public class ParseException : InvalidOperationException, IEnumerable
     /// </summary>
     public Type? ParseType { get; }
 
-    public ParseException(ReadOnlySpan<char> input,
+    public ParseException(text input,
         Type? destType = null,
         string? additionalInfo = null,
         Exception? innerException = null)
@@ -125,12 +124,12 @@ public class ParseException : InvalidOperationException, IEnumerable
 [PublicAPI]
 public class ParseException<T> : ParseException
 {
-    public static ParseException<T> Create(ReadOnlySpan<char> input, string? additionalInfo = null, Exception? innerException = null) => new ParseException<T>(input, additionalInfo, innerException);
+    public static ParseException<T> Create(text input, string? additionalInfo = null, Exception? innerException = null) => new ParseException<T>(input, additionalInfo, innerException);
 
     public static ParseException<T> Create(string? input, string? additionalInfo = null, Exception? innerException = null) => new ParseException<T>(input, additionalInfo, innerException);
 
     public ParseException(
-        ReadOnlySpan<char> input,
+        text input,
         string? additionalInfo = null,
         Exception? innerException = null)
         : base(input, typeof(T), additionalInfo, innerException)

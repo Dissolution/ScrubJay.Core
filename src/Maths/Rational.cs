@@ -2,7 +2,6 @@
 
 using System.Globalization;
 using ScrubJay.Pooling;
-using ScrubJay.Text;
 
 // ReSharper disable RedundantOverflowCheckingContext
 
@@ -473,14 +472,14 @@ public readonly struct Rational :
         },
     };
 
-    public static Rational Parse(ReadOnlySpan<char> text, IFormatProvider? provider = default)
+    public static Rational Parse(text text, IFormatProvider? provider = default)
     {
         if (TryParse(text, provider, out var fraction))
             return fraction;
         throw new ArgumentException($"Could not parse \"{text}\" into a Rational", nameof(text));
     }
 
-    public static Rational Parse(ReadOnlySpan<char> text, NumberStyles style, IFormatProvider? provider = default)
+    public static Rational Parse(text text, NumberStyles style, IFormatProvider? provider = default)
     {
         if (TryParse(text, style, provider, out var fraction))
             return fraction;
@@ -501,10 +500,10 @@ public readonly struct Rational :
         throw new ArgumentException($"Could not parse \"{str}\" into a Rational", nameof(str));
     }
 
-    public static bool TryParse(ReadOnlySpan<char> text, IFormatProvider? provider, out Rational rational) =>
+    public static bool TryParse(text text, IFormatProvider? provider, out Rational rational) =>
         TryParse(text, NumberStyles.Integer, provider, out rational);
 
-    public static bool TryParse(ReadOnlySpan<char> text, NumberStyles style, IFormatProvider? provider,
+    public static bool TryParse(text text, NumberStyles style, IFormatProvider? provider,
         out Rational rational)
     {
         if (text.Length == 1 && _fastUnicodeRationals.TryGetValue(text[0], out rational))
@@ -1375,7 +1374,7 @@ public readonly struct Rational :
     public bool TryFormat(
         Span<char> destination,
         out int charsWritten,
-        ReadOnlySpan<char> format = default,
+        text format = default,
         IFormatProvider? provider = default)
     {
         var buffer = new Buffer<char>(initialSpan: destination, 0);
@@ -1425,7 +1424,7 @@ public readonly struct Rational :
         }
 
         int firstChar = format![0];
-        ReadOnlySpan<char> fmt = format.AsSpan(1);
+        text fmt = format.AsSpan(1);
         if (firstChar is ('g' or 'G'))
         {
             buffer.Write(Numerator, fmt, provider);

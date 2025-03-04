@@ -1,4 +1,7 @@
-﻿using ScrubJay.Pooling;
+﻿// Exception to Identifiers Require Correct Suffix
+#pragma warning disable CA1710
+
+using ScrubJay.Pooling;
 
 namespace ScrubJay.Collections;
 

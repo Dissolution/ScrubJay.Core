@@ -68,56 +68,7 @@ public static class Equate
 
 
 
-#region Text
-    public static bool Text(string? left, string? right)
-        => string.Equals(left, right, StringComparison.Ordinal);
 
-    public static bool Text(string? left, ReadOnlySpan<char> right)
-        => MemoryExtensions.SequenceEqual<char>(left.AsSpan(), right);
-
-    public static bool Text(string? left, char[]? right)
-        => MemoryExtensions.SequenceEqual<char>(left.AsSpan(), right);
-
-    public static bool Text(ReadOnlySpan<char> left, string? right)
-        => MemoryExtensions.SequenceEqual<char>(left, right.AsSpan());
-
-    public static bool Text(ReadOnlySpan<char> left, ReadOnlySpan<char> right)
-        => MemoryExtensions.SequenceEqual<char>(left, right);
-
-    public static bool Text(ReadOnlySpan<char> left, char[]? right)
-        => MemoryExtensions.SequenceEqual<char>(left, right);
-
-    public static bool Text(char[]? left, string? right)
-        => MemoryExtensions.SequenceEqual<char>(left, right.AsSpan());
-
-    public static bool Text(char[]? left, ReadOnlySpan<char> right)
-        => MemoryExtensions.SequenceEqual<char>(left, right);
-
-    public static bool Text(char[]? left, char[]? right)
-        => MemoryExtensions.SequenceEqual<char>(left, right);
-
-#endregion
-
-#region Text w/StringComparison
-    public static bool Text(string? left, string? right, StringComparison comparison) => string.Equals(left, right, comparison);
-
-    public static bool Text(string? left, ReadOnlySpan<char> right, StringComparison comparison) => MemoryExtensions.Equals(left.AsSpan(), right, comparison);
-
-    public static bool Text(string? left, char[]? right, StringComparison comparison) => MemoryExtensions.Equals(left.AsSpan(), right, comparison);
-
-    public static bool Text(ReadOnlySpan<char> left, string? right, StringComparison comparison) => MemoryExtensions.Equals(left, right.AsSpan(), comparison);
-
-    public static bool Text(ReadOnlySpan<char> left, ReadOnlySpan<char> right, StringComparison comparison) => MemoryExtensions.Equals(left, right, comparison);
-
-    public static bool Text(ReadOnlySpan<char> left, char[]? right, StringComparison comparison) => MemoryExtensions.Equals(left, right, comparison);
-
-    public static bool Text(char[]? left, string? right, StringComparison comparison) => MemoryExtensions.Equals(left, right.AsSpan(), comparison);
-
-    public static bool Text(char[]? left, ReadOnlySpan<char> right, StringComparison comparison) => MemoryExtensions.Equals(left, right, comparison);
-
-    public static bool Text(char[]? left, char[]? right, StringComparison comparison) => MemoryExtensions.Equals(left, right, comparison);
-
-#endregion
 
 #region Type
     /// <summary>

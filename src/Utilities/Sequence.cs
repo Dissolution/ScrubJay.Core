@@ -216,14 +216,7 @@ public static class Sequence
         return true;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryCopyTo(string? source, Span<char> destination) => TryCopyTo(source.AsSpan(), destination);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryCopyTo(string? source, char[]? destination) => TryCopyTo(source.AsSpan(), new Span<char>(destination));
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryCopyTo(string? source, IList<char>? destination) => TryCopyTo(source.AsSpan(), destination);
 
     #endregion
 
@@ -397,14 +390,6 @@ public static class Sequence
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void CopyTo(string? source, Span<char> destination) => CopyTo(source.AsSpan(), destination);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void CopyTo(string? source, char[]? destination) => CopyTo(source.AsSpan(), new Span<char>(destination));
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void CopyTo(string? source, IList<char>? destination) => CopyTo(source.AsSpan(), destination);
 
     #endregion
 

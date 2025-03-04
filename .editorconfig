@@ -41,27 +41,6 @@ insert_final_newline = true
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 tab_width = 4
 indent_size = 4
-dotnet_style_coalesce_expression = true:warning
-dotnet_style_null_propagation = true:warning
-dotnet_style_prefer_is_null_check_over_reference_equality_method = true:warning
-dotnet_style_prefer_auto_properties = true:warning
-dotnet_style_object_initializer = true:suggestion
-dotnet_style_collection_initializer = true:suggestion
-dotnet_style_prefer_simplified_boolean_expressions = true:warning
-dotnet_style_prefer_conditional_expression_over_assignment = true:warning
-dotnet_style_prefer_conditional_expression_over_return = false:none
-dotnet_style_explicit_tuple_names = true:error
-dotnet_style_prefer_inferred_tuple_names = true:suggestion
-dotnet_style_prefer_inferred_anonymous_type_member_names = false:suggestion
-dotnet_style_prefer_compound_assignment = true:warning
-dotnet_style_prefer_simplified_interpolation = true:warning
-dotnet_style_prefer_collection_expression = when_types_loosely_match:warning
-dotnet_style_namespace_match_folder = true:warning
-
-
-# For other file types, use 2 spaces instead of 4
-[*.{csproj,sln,json,xml}]
-indent_size = 2
 
 # All C# Code Files
 [*.cs]
@@ -72,117 +51,6 @@ charset = utf-8-bom
 dotnet_sort_system_directives_first = true
 # But do not separate System.* and other imports
 dotnet_separate_import_directive_groups = false
-
-
-
-###### NAMING
-
-## Styles - Define naming styles to apply to members
-
-# ALL UPPER CASE
-dotnet_naming_style.upper_casing.capitalization = all_upper
-
-# all lower case
-dotnet_naming_style.lower_casing.capitalization = all_lower
-
-# PascalCase
-dotnet_naming_style.pascal_casing.capitalization = pascal_case
-
-# camelCase
-dotnet_naming_style.camel_casing.capitalization = camel_case
-
-# _camelCase
-dotnet_naming_style.underscore_camel_casing.capitalization = camel_case
-dotnet_naming_style.underscore_camel_casing.required_prefix = _
-
-# IPascalCase
-dotnet_naming_style.i_pascal_casing.capitalization = pascal_case
-dotnet_naming_style.i_pascal_casing.required_prefix = I
-
-# TPascalCase
-dotnet_naming_style.t_pascal_casing.capitalization = pascal_case
-dotnet_naming_style.t_pascal_casing.required_prefix = T
-
-# PascalCaseAsync
-dotnet_naming_style.pascal_casing_async.capitalization = pascal_case
-dotnet_naming_style.pascal_casing_async.required_suffix = Async
-
-
-## Symbols
-# Define which symbols the naming rules apply to
-
-# All Non-Public Fields
-dotnet_naming_symbols.non_public_fields.applicable_kinds = field
-dotnet_naming_symbols.non_public_fields.applicable_accessibilities = internal, private, protected, proected_internal, private_protected, local
-# Public Fields
-dotnet_naming_symbols.public_fields.applicable_kinds = field
-dotnet_naming_symbols.public_fields.applicable_accessibilities = public
-
-# Public Members except Interfaces
-dotnet_naming_symbols.public_members.applicable_kinds = class, struct, enum, property, method, event, delegate
-
-# Interfaces
-dotnet_naming_symbols.interfaces.applicable_kinds = interface
-
-# Localized Members
-dotnet_naming_symbols.local_members.applicable_kinds = parameter, local, local_function
-
-# Generic Type Parameters
-dotnet_naming_symbols.generic_types.applicable_kinds = type_parameter
-
-# Constants
-dotnet_naming_symbols.constants.applicable_kinds = field, local
-dotnet_naming_symbols.constants.required_modifiers = const
-
-# Async Methods
-dotnet_naming_symbols.async_methods.applicable_kinds = method
-dotnet_naming_symbols.async_methods.required_modifiers = async
-
-
-
-## Rules
-# Determine the scope and severity
-
-# Non-Public Fields should be _camelCase, always
-dotnet_naming_rule.non_public_fields_should_be_underscore_camel_case.style = underscore_camel_casing
-dotnet_naming_rule.non_public_fields_should_be_underscore_camel_case.symbols = non_public_fields
-dotnet_naming_rule.non_public_fields_should_be_underscore_camel_case.severity = error
-
-# Public Fields should be PascalCase, always
-dotnet_naming_rule.public_fields_should_be_pascal_case.style = pascal_casing
-dotnet_naming_rule.public_fields_should_be_pascal_case.symbols = public_fields
-dotnet_naming_rule.public_fields_should_be_pascal_case.severity = error
-
-# Public Members (except for interfaces) should be PascalCase, always
-dotnet_naming_rule.public_members_should_be_pascal_case.style = pascal_casing
-dotnet_naming_rule.public_members_should_be_pascal_case.symbols = public_members
-dotnet_naming_rule.public_members_should_be_pascal_case.severity = error
-
-# Interfaces should be IPascalCase, always
-dotnet_naming_rule.interfaces_should_be_i_pascal_case.style = i_pascal_casing
-dotnet_naming_rule.interfaces_should_be_i_pascal_case.symbols = interfaces
-dotnet_naming_rule.interfaces_should_be_i_pascal_case.severity = error
-
-# Localized Members should be camelCase, always
-dotnet_naming_rule.local_members_should_be_camel_case.style = camel_casing
-dotnet_naming_rule.local_members_should_be_camel_case.symbols = local_members
-dotnet_naming_rule.local_members_should_be_camel_case.severity = error
-
-# Generic Type Parameters should be TPascalCase, usually
-dotnet_naming_rule.generic_types_should_be_t_pascal_case.style = t_pascal_casing
-dotnet_naming_rule.generic_types_should_be_t_pascal_case.symbols = generic_types
-dotnet_naming_rule.generic_types_should_be_t_pascal_case.severity = error
-
-# Constants should be PascalCase, usually
-dotnet_naming_rule.constants_should_be_all_upper.style = pascal_casing
-dotnet_naming_rule.constants_should_be_all_upper.symbols = constants
-dotnet_naming_rule.constants_should_be_all_upper.severity = error
-
-# Async Methods should end with *Async, always
-dotnet_naming_rule.async_methods_should_end_with_async.style = pascal_casing_async
-dotnet_naming_rule.async_methods_should_end_with_async.symbols = async_methods
-dotnet_naming_rule.async_methods_should_end_with_async.severity = error
-
 
 
 ###### Code Styles
@@ -243,6 +111,24 @@ dotnet_style_allow_statement_immediately_after_block_experimental = false
 csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = true
 csharp_style_allow_blank_line_after_token_in_conditional_expression_experimental = false
 csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental = false
+
+dotnet_style_coalesce_expression = true:warning
+dotnet_style_null_propagation = true:warning
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:warning
+dotnet_style_prefer_auto_properties = true:warning
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:warning
+dotnet_style_prefer_conditional_expression_over_assignment = true:warning
+dotnet_style_prefer_conditional_expression_over_return = false:none
+dotnet_style_explicit_tuple_names = true:error
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = false:suggestion
+dotnet_style_prefer_compound_assignment = true:warning
+dotnet_style_prefer_simplified_interpolation = true:warning
+dotnet_style_prefer_collection_expression = when_types_loosely_match:warning
+dotnet_style_namespace_match_folder = true:warning
+
 
 ### Additional Code Style Rules
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/
@@ -785,7 +671,7 @@ dotnet_diagnostic.CA1716.severity = error
 # !!! This may need to be a warning
 dotnet_diagnostic.CA1717.severity = error
 # CA1720: Identifiers should not contain type names
-dotnet_diagnostic.CA1720.severity = error
+dotnet_diagnostic.CA1720.severity = none
 # CA1721: Property names should not match get methods
 dotnet_diagnostic.CA1721.severity = error
 # CA1724: Type names should not match namespaces
@@ -1183,7 +1069,7 @@ dotnet_diagnostic.CA5405.severity = error
 # CA1801: Review unused parameters
 dotnet_diagnostic.CA1801.severity = error
 # CA1816: Call GC.SuppressFinalize correctly
-dotnet_diagnostic.CA1816.severity = error
+dotnet_diagnostic.CA1816.severity = none
 # CA2200: Rethrow to preserve stack details
 dotnet_diagnostic.CA2200.severity = error
 # CA2201: Do not raise reserved exception types

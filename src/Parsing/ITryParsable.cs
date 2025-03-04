@@ -11,16 +11,16 @@ public interface ITrySpanParsable<TSelf> : ITryParsable<TSelf>
     where TSelf : ITrySpanParsable<TSelf>
 {
 #if NET7_0_OR_GREATER
-    static abstract Result<TSelf, ParseException> TryParse(ReadOnlySpan<char> text, IFormatProvider? provider = null);
+    static abstract Result<TSelf, ParseException> TryParse(text text, IFormatProvider? provider = null);
 
 
     static Result<TSelf, ParseException> ITryParsable<TSelf>.TryParse(string? str, IFormatProvider? provider)
         => TSelf.TryParse(str.AsSpan(), provider);
 
-    static TSelf ISpanParsable<TSelf>.Parse(ReadOnlySpan<char> text, IFormatProvider? provider)
+    static TSelf ISpanParsable<TSelf>.Parse(text text, IFormatProvider? provider)
         => TSelf.TryParse(text, provider).OkOrThrow();
 
-    static bool ISpanParsable<TSelf>.TryParse(ReadOnlySpan<char> text, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
+    static bool ISpanParsable<TSelf>.TryParse(text text, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
         => TSelf.TryParse(text, provider).HasOk(out result);
 
     static TSelf IParsable<TSelf>.Parse(string? str, IFormatProvider? provider)

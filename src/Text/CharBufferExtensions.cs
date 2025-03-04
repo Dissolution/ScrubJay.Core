@@ -12,7 +12,7 @@ public static class CharBufferExtensions
 {
     public static void Write(this ref Buffer<char> buffer, char ch) => buffer.Add(ch);
     
-    public static void Write(this ref Buffer<char> buffer, scoped ReadOnlySpan<char> text) => buffer.AddMany(text);
+    public static void Write(this ref Buffer<char> buffer, scoped text text) => buffer.AddMany(text);
 
     public static void Write(this ref Buffer<char> buffer, string? str)
     {
@@ -53,7 +53,7 @@ public static class CharBufferExtensions
         buffer.AddMany(str.AsSpan());
     }
 
-    public static void Write<T>(this ref Buffer<char> buffer, T? value, ReadOnlySpan<char> format, IFormatProvider? provider = null)
+    public static void Write<T>(this ref Buffer<char> buffer, T? value, text format, IFormatProvider? provider = null)
     {
         string? str;
         // ReSharper disable once MergeCastWithTypeCheck

@@ -1,15 +1,63 @@
-﻿using ScrubJay.Pooling;
-#pragma warning disable IDE0022
+﻿#pragma warning disable IDE0022
 
-namespace ScrubJay.Extensions;
+using ScrubJay.Pooling;
+
+namespace ScrubJay.Text;
 
 /// <summary>
-/// Extensions on <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see> and
-/// <see cref="IEnumerable{T}">IEnumerable&lt;char&gt;</see>
+/// Extensions on <see cref="char"/>, <see cref="string"/>, <see cref="text">ReadOnlySpan&lt;char&gt;</see>, and other textual types
 /// </summary>
 [PublicAPI]
 public static class TextExtensions
 {
+#if NETFRAMEWORK || NETSTANDARD
+    /// <summary>
+    /// Gets a pinned <c>ref readonly</c> to this <see cref="string"/>
+    /// </summary>
+    public static ref readonly char GetPinnableReference(this string str)
+    {
+        unsafe
+        {
+            fixed (char* strPtr = str)
+            {
+                return ref Unsafe.AsRef<char>(strPtr);
+            }
+        }
+    }
+#endif
+
+    /// <summary>
+    /// Converts this <see cref="char"/> into a <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see> containing it
+    /// </summary>
+    /// <param name="ch">
+    /// The input character
+    /// </param>
+    /// <returns>
+    /// A <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see> containing the <see cref="char"/>
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<char> AsSpan(this in char ch)
+    {
+#if NET7_0_OR_GREATER
+        return new ReadOnlySpan<char>(in ch);
+#else
+        unsafe
+        {
+            fixed (char* pointer = &ch)
+            {
+                return new ReadOnlySpan<char>(pointer, 1);
+            }
+        }
+#endif
+    }
+
+#region AsString()
+    /// <summary>
+    /// Gets this <see cref="char"/> as a <see cref="string"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string AsString(this char ch) => new string(ch, 1);
+
     /// <summary>
     /// Gets this <see cref="string"/> as a non-null <see cref="string"/>
     /// </summary>
@@ -39,7 +87,7 @@ public static class TextExtensions
     /// Efficiently convert a <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see> to a <see cref="string"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string AsString(this scoped ReadOnlySpan<char> text)
+    public static string AsString(this scoped text text)
     {
 #if NETFRAMEWORK || NETSTANDARD2_0
         unsafe
@@ -108,4 +156,38 @@ public static class TextExtensions
 
         return buffer.Written.AsString();
     }
+    #endregion
+
+    #region Matches
+    public static bool Matches(this char ch, char other, StringMatch match)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool Matches(this string? str, string? value, StringMatch match)
+        => Matches(str.AsSpan(), value.AsSpan(), match);
+
+    public static bool Matches(this text text, string? value, StringMatch match)
+        => Matches(text, value.AsSpan(), match);
+
+    public static bool Matches(this text text, text value, StringMatch match)
+    {
+        var comparison = match.StringComparison;
+
+        // Always match on exact
+        if (MemoryExtensions.Equals(text, value, comparison))
+            return true;
+        if (match.Contains && TextHelper.Contains(text, value, comparison))
+            return true;
+        if (match.StartsWith && TextHelper.StartsWith(text, value, comparison))
+            return true;
+        if (match.EndsWith && TextHelper.EndsWith(text, value, comparison))
+            return true;
+
+        // does not meet specifications
+        return false;
+    }
+
+
+    #endregion
 }

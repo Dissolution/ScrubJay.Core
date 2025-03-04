@@ -1,17 +1,15 @@
 ﻿#pragma warning disable S2743, CA1000
 
 using System.Reflection;
-using ScrubJay.Memory;
 using ScrubJay.Parsing;
 using ScrubJay.Pooling;
-using ScrubJay.Text;
 
 namespace ScrubJay.Enums;
 
 [PublicAPI]
 public abstract class EnumInfo
 {
-    public static Result<TEnum, ParseException> TryParse<TEnum>(ReadOnlySpan<char> text)
+    public static Result<TEnum, ParseException> TryParse<TEnum>(text text)
         where TEnum : struct, Enum
         => EnumInfo<TEnum>.TryParse(text);
 
@@ -46,7 +44,7 @@ public class EnumInfo<TEnum> : EnumInfo
 
     public static EnumInfo<TEnum> Instance { get; } = new();
 
-    private static Option<TEnum> TryParseMember(ReadOnlySpan<char> text)
+    private static Option<TEnum> TryParseMember(text text)
     {
         foreach (var pair in _memberInfos)
         {
@@ -56,7 +54,7 @@ public class EnumInfo<TEnum> : EnumInfo
         return None();
     }
 
-    public static Result<TEnum, ParseException> TryParse(ReadOnlySpan<char> text)
+    public static Result<TEnum, ParseException> TryParse(text text)
     {
         text = text.Trim();
         if (text.Length == 0)
@@ -172,11 +170,11 @@ public class EnumMemberInfo<TEnum> : EnumMemberInfo
     {
     }
 
-    internal bool TryParse(ReadOnlySpan<char> text)
+    internal bool TryParse(text text)
     {
         foreach (var parseName in ParseNames)
         {
-            if (Equate.Text(parseName, text, StringComparison.Ordinal))
+            if (TextHelper.Equal(parseName, text, StringComparison.Ordinal))
                 return true;
         }
         return false;

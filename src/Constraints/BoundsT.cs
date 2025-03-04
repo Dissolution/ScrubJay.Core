@@ -1,5 +1,4 @@
 ﻿using ScrubJay.Pooling;
-using ScrubJay.Text;
 
 #pragma warning disable MA0048
 

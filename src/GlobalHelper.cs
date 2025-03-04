@@ -1,6 +1,8 @@
 ﻿#pragma warning disable CA1711
 
-global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+// Alias `text` to `ReadOnlySpan<char>` to simplify usage
+global using text = System.ReadOnlySpan<char>;
+global using NotNull = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 namespace ScrubJay;
 

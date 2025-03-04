@@ -1,8 +1,9 @@
-﻿// ReSharper disable MergeCastWithTypeCheck
-
-#pragma warning disable IDE0044
-#pragma warning disable IDE0251
+﻿// Exception to Identifiers Require Correct Suffix
+#pragma warning disable CA1710
+// Only implements IEnumerable for fluent collection initialization support
 #pragma warning disable CA1010
+
+// ReSharper disable MergeCastWithTypeCheck
 
 namespace ScrubJay.Text;
 
@@ -85,7 +86,7 @@ public ref struct FormatWriter : IEnumerable
     }
 
 
-    public bool Add(scoped ReadOnlySpan<char> text)
+    public bool Add(scoped text text)
     {
         if (_hasFailed) return false;
 
@@ -277,7 +278,7 @@ public ref struct FormatWriter : IEnumerable
     }
 
     public bool Add<T>(T? value,
-        ReadOnlySpan<char> format,
+        text format,
         IFormatProvider? provider = null)
     {
         if (_hasFailed) return false;

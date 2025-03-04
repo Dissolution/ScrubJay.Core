@@ -1,10 +1,16 @@
 ﻿// BigInt is nested on purpose
-#pragma warning disable CA1034
+#pragma warning disable CA1034, IDE0060
+
+using static InlineIL.IL;
 
 namespace ScrubJay.Maths;
 
+[PublicAPI]
 public static class MathHelper
 {
+    /// <summary>
+    /// <see cref="BigInt"/> constants
+    /// </summary>
     public static class BigInt
     {
         public static BigInteger Ten { get; } = new BigInteger(10);
@@ -67,4 +73,24 @@ Commented Aug 27, 2017 at 10:08
     // public static T LeastCommonMultiple<T>(T left, T right)
     //     where T : INumber<T>
     //     => (left / GreatestCommonDivisor(left, right)) * right;
+
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int HalfRoundDown(int value)
+    {
+        Emit.Ldarg(nameof(value));
+        Emit.Ldc_I4_1();
+        Emit.Shr();
+        return Return<int>();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Twice(int value)
+    {
+        Emit.Ldarg(nameof(value));
+        Emit.Ldc_I4_1();
+        Emit.Shl();
+        return Return<int>();
+    }
 }

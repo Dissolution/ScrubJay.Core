@@ -1,4 +1,5 @@
-﻿#pragma warning disable CA2213
+﻿// Exception to Identifiers Require Correct Suffix
+#pragma warning disable CA1710
 
 namespace ScrubJay.Collections.NonGeneric;
 
@@ -130,7 +131,10 @@ public sealed class ArrayWrapper<T> :
     public sealed class ArrayWrapperEnumerator : IEnumerator<T?>, IEnumerator, IDisposable
     {
         private readonly Array _array;
+
+#pragma warning disable CA2213
         private readonly ArrayIndicesEnumerator _arrayIndicesEnumerator;
+#pragma warning restore CA2213
 
         object? IEnumerator.Current => Current;
 
