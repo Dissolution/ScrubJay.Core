@@ -1,7 +1,5 @@
 ﻿#pragma warning disable CA1032, CA1710, CA1010
 
-using ScrubJay.Pooling;
-
 namespace ScrubJay.Parsing;
 
 /// <summary>

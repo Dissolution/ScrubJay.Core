@@ -1,6 +1,4 @@
-﻿using ScrubJay.Pooling;
-
-namespace ScrubJay.Maths;
+﻿namespace ScrubJay.Maths;
 
 [PublicAPI]
 #if NET7_0_OR_GREATER

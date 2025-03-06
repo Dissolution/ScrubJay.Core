@@ -1,7 +1,6 @@
 ﻿#pragma warning disable IDE0004, CA2225, IDE0002, IDE0090, IDE0018, IDE0047
 
 using System.Globalization;
-using ScrubJay.Pooling;
 
 // ReSharper disable RedundantOverflowCheckingContext
 

@@ -1,5 +1,4 @@
-﻿using ScrubJay.Pooling;
-using static ScrubJay.Memory.SpanReadResult;
+﻿using static ScrubJay.Memory.SpanReadResult;
 
 namespace ScrubJay.Memory;
 

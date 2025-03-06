@@ -1,5 +1,4 @@
-﻿using ScrubJay.Pooling;
-#pragma warning disable CA1002
+﻿#pragma warning disable CA1002
 
 namespace ScrubJay.Text.Builders;
 

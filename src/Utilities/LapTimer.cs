@@ -1,6 +1,4 @@
-﻿using ScrubJay.Pooling;
-
-namespace ScrubJay.Utilities;
+﻿namespace ScrubJay.Utilities;
 
 [PublicAPI]
 public sealed class LapTimer

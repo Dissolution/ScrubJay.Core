@@ -361,6 +361,30 @@ public static class TextHelper
         return false;
     }
 
+    public static bool TryCopy(Span<char> source, Span<char> destination)
+    {
+        int count = source.Length;
+        if (count <= destination.Length)
+        {
+            Notsafe.CopyBlock(source, destination, count);
+            return true;
+        }
+        return false;
+    }
+
+    public static bool TryCopy(Span<char> source, char[]? destination)
+    {
+        if (destination is null)
+            return false;
+        int count = source.Length;
+        if (count <= destination.Length)
+        {
+            Notsafe.CopyBlock(source, destination, count);
+            return true;
+        }
+        return false;
+    }
+
     public static bool TryCopy(char[]? source, Span<char> destination)
     {
         if (source is null)

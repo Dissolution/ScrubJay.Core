@@ -1,7 +1,5 @@
 ﻿#pragma warning disable IDE0022
 
-using ScrubJay.Pooling;
-
 namespace ScrubJay.Text;
 
 /// <summary>

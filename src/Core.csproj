@@ -90,6 +90,7 @@
         <Using Include="System.Runtime.CompilerServices"/>
         <Using Include="System.Runtime.InteropServices"/>
         <Using Include="JetBrains.Annotations"/>
+        <Using Include="ScrubJay.Pooling"/>
 
         <!-- Recommendations for downstream too -->
         <Using Include="ScrubJay.GlobalHelper" Static="true"/>

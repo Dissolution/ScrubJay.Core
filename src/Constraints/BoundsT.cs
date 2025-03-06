@@ -1,6 +1,4 @@
-﻿using ScrubJay.Pooling;
-
-#pragma warning disable MA0048
+﻿#pragma warning disable MA0048
 
 namespace ScrubJay.Constraints;
 

@@ -1,4 +1,6 @@
 ﻿// Exception to Identifiers Require Correct Suffix
+
+using ScrubJay.Collections;
 #pragma warning disable CA1710
 // Only implements IEnumerable for fluent collection initialization support
 #pragma warning disable CA1010
@@ -7,16 +9,20 @@
 
 namespace ScrubJay.Text;
 
+/// <summary>
+///
+/// </summary>
+/// <remarks>
+/// Supports <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers#collection-initializers">
+/// fluent collection initialization</a>
+/// </remarks>
+[PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public ref struct FormatWriter : IEnumerable
 {
     private Span<char> _destination;
     private int _position;
     private Option<Exception> _hasFailed;
-
-    public ref char this[Index index] => ref AsSpan()[index];
-
-    public Span<char> this[Range range] => AsSpan()[range];
 
     private readonly int End
     {
@@ -66,6 +72,13 @@ public ref struct FormatWriter : IEnumerable
         _hasFailed = None<Exception>();
     }
 
+    private bool AddError(Exception error)
+    {
+        Debug.Assert(_hasFailed.IsNone);
+        _hasFailed = Some<Exception>(error);
+        return false;
+    }
+
     public bool Add(char ch)
     {
         if (_hasFailed) return false;
@@ -79,10 +92,7 @@ public ref struct FormatWriter : IEnumerable
             return true;
         }
 
-        _hasFailed = Some<Exception>(
-            new ArgumentException($"Cannot add '{ch}': 1 character is greater than remaining capacity {AvailableCount}",
-                nameof(ch)));
-        return false;
+        return AddError(new ArgumentException($"Cannot add '{ch}': 1 character is greater than remaining capacity {AvailableCount}", nameof(ch)));
     }
 
 
@@ -99,10 +109,8 @@ public ref struct FormatWriter : IEnumerable
             return true;
         }
 
-        _hasFailed = Some<Exception>(
-            new ArgumentException($"Cannot add \"{text}\": {text.Length} characters is greater than remaining capacity {AvailableCount}",
+        return AddError(new ArgumentException($"Cannot add \"{text}\": {text.Length} characters is greater than remaining capacity {AvailableCount}",
                 nameof(text)));
-        return false;
     }
 
     public bool Add(char[]? chars)
@@ -119,10 +127,8 @@ public ref struct FormatWriter : IEnumerable
             return true;
         }
 
-        _hasFailed = Some<Exception>(
-            new ArgumentException($"Cannot add [{chars.AsString()}]: {chars.Length} characters is greater than remaining capacity {AvailableCount}",
+        return AddError(new ArgumentException($"Cannot add [{chars.AsString()}]: {chars.Length} characters is greater than remaining capacity {AvailableCount}",
                 nameof(chars)));
-        return false;
     }
 
     public bool Add(IEnumerable<char>? characters)
@@ -147,10 +153,8 @@ public ref struct FormatWriter : IEnumerable
                 return true;
             }
 
-            _hasFailed = Some<Exception>(
-                new ArgumentException($"Cannot add [{list.AsString()}]: {list.Count} characters is greater than remaining capacity {AvailableCount}",
+            return AddError(new ArgumentException($"Cannot add [{list.AsString()}]: {list.Count} characters is greater than remaining capacity {AvailableCount}",
                     nameof(characters)));
-            return false;
         }
 
         if (characters is ICollection<char> collection)
@@ -168,10 +172,8 @@ public ref struct FormatWriter : IEnumerable
                 return true;
             }
 
-            _hasFailed = Some<Exception>(
-                new ArgumentException($"Cannot add ({collection.AsString()}): {collection.Count} characters is greater than remaining capacity {AvailableCount}",
+            return AddError(new ArgumentException($"Cannot add ({collection.AsString()}): {collection.Count} characters is greater than remaining capacity {AvailableCount}",
                     nameof(characters)));
-            return false;
         }
 
         int start = pos;
@@ -179,10 +181,8 @@ public ref struct FormatWriter : IEnumerable
         {
             if (pos >= End)
             {
-                _hasFailed = Some<Exception>(
-                    new ArgumentException($"Cannot add another character from IEnumerable<char>: wrote \"{_destination[start..]}\" before remaining capacity became 0",
+                return AddError(new ArgumentException($"Cannot add another character from IEnumerable<char>: wrote \"{_destination[start..]}\" before remaining capacity became 0",
                         nameof(characters)));
-                return false;
             }
             _destination[pos++] = ch;
         }
@@ -205,10 +205,8 @@ public ref struct FormatWriter : IEnumerable
             return true;
         }
 
-        _hasFailed = Some<Exception>(
-            new ArgumentException($"Cannot add \"{str}\": {str.Length} characters is greater than remaining capacity {AvailableCount}",
+        return AddError(new ArgumentException($"Cannot add \"{str}\": {str.Length} characters is greater than remaining capacity {AvailableCount}",
                 nameof(str)));
-        return false;
     }
 
     public bool Add<T>(T? value)
@@ -223,10 +221,8 @@ public ref struct FormatWriter : IEnumerable
             {
                 if (!((ISpanFormattable)value).TryFormat(AvailableSpan, out int charsWritten, default, default))
                 {
-                    _hasFailed = Some<Exception>(
-                        new ArgumentException($"Cannot format({value}): Will not fit in remaining capacity {AvailableCount}",
+                    return AddError(new ArgumentException($"Cannot format({value}): Will not fit in remaining capacity {AvailableCount}",
                             nameof(value)));
-                    return false;
                 }
 
                 _position += charsWritten;
@@ -257,10 +253,8 @@ public ref struct FormatWriter : IEnumerable
             {
                 if (!((ISpanFormattable)value).TryFormat(AvailableSpan, out int charsWritten, format.AsSpan(), provider))
                 {
-                    _hasFailed = Some<Exception>(
-                        new ArgumentException($"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
+                    return AddError(new ArgumentException($"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
                             nameof(value)));
-                    return false;
                 }
 
                 _position += charsWritten;
@@ -291,10 +285,8 @@ public ref struct FormatWriter : IEnumerable
             {
                 if (!((ISpanFormattable)value).TryFormat(AvailableSpan, out int charsWritten, format, provider))
                 {
-                    _hasFailed = Some<Exception>(
-                        new ArgumentException($"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
+                    return AddError(new ArgumentException($"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
                             nameof(value)));
-                    return false;
                 }
 
                 _position += charsWritten;
@@ -331,10 +323,13 @@ public ref struct FormatWriter : IEnumerable
         return del(ref this);
     }
 
+    public void Clear()
+    {
+        WrittenSpan.Clear();
+        _position = 0;
+    }
 
-    public void Clear() => WrittenSpan.Clear();
-
-    public bool TryCopyTo(Span<char> span) => Sequence.TryCopyTo(WrittenSpan, span);
+    public bool TryCopyTo(Span<char> span) => TextHelper.TryCopy(WrittenSpan, span);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<char> AsSpan() => WrittenSpan;
@@ -367,5 +362,10 @@ public ref struct FormatWriter : IEnumerable
 
     public override string ToString() => WrittenSpan.AsString();
 
-    IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        if (_hasFailed.HasSome(out var error))
+            return Enumerator.Single(error);
+        return Enumerator.Empty<Exception>();
+    }
 }
