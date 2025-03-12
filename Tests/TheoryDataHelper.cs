@@ -10,8 +10,8 @@ public static class TheoryDataHelper
         int count = values.Length;
         if (count == 0)
             return data;
-        for (var i = 0; i < count; i++)
-        for (var j = 0; j < count; j++)
+        for (int i = 0; i < count; i++)
+        for (int j = 0; j < count; j++)
         {
             data.Add(values[i], values[j]);
         }
@@ -25,9 +25,9 @@ public static class TheoryDataHelper
         int count = values.Length;
         if (count == 0)
             return data;
-        for (var i = 0; i < count; i++)
-        for (var j = 0; j < count; j++)
-        for (var k = 0; k < count; k++)
+        for (int i = 0; i < count; i++)
+        for (int j = 0; j < count; j++)
+        for (int k = 0; k < count; k++)
         {
             data.Add(values[i], values[j], values[k]);
         }

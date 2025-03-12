@@ -199,7 +199,7 @@ public class ResultTests
     public void ImplicitOkWorks()
     {
         Result<int, Exception> r1 = 147;
-        Assert.True(r1.HasOk(out var r1Ok));
+        Assert.True(r1.HasOk(out int r1Ok));
         Assert.Equal(147, r1Ok);
 
         var nl = new List<int>();
@@ -264,7 +264,7 @@ public class ResultTests
         }
         else
         {
-            var isError = result.HasError(out var error);
+            bool isError = result.HasError(out var error);
             Assert.True(isError);
             Assert.True(result == error!);
             Assert.True(error! == result);
@@ -292,7 +292,7 @@ public class ResultTests
         }
         else
         {
-            var isError = result.HasError(out var error);
+            bool isError = result.HasError(out var error);
             Assert.True(isError);
             Assert.False(result != error!);
             Assert.False(error! != result);
@@ -308,12 +308,12 @@ public class ResultTests
     public void OkWorks()
     {
         Result<int, Exception> r1 = Result<int, Exception>.Ok(147);
-        Assert.True(r1.HasOk(out var r1Ok));
+        Assert.True(r1.HasOk(out int r1Ok));
         Assert.Equal(147, r1Ok);
         Assert.False(r1.IsError);
 
         Result<byte, byte> r2 = Result<byte, byte>.Ok(147);
-        Assert.True(r2.HasOk(out var r2Ok));
+        Assert.True(r2.HasOk(out byte r2Ok));
         Assert.Equal(147, r2Ok);
         Assert.False(r2.IsError);
 
@@ -334,7 +334,7 @@ public class ResultTests
         Assert.False(r1.IsOk);
 
         Result<byte, byte> r2 = Result<byte, byte>.Error(147);
-        Assert.True(r2.HasError(out var r2Error));
+        Assert.True(r2.HasError(out byte r2Error));
         Assert.Equal(147, r2Error);
         Assert.False(r2.IsOk);
 

@@ -25,7 +25,7 @@ public class PooledListTests
         ungrownPooledList.Dispose();
 
         PooledList<object> grownPooledList = new(32);
-        for (var i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
             grownPooledList.AddMany(
                 "Eat", BindingFlags.Static, DateTime.Now, Guid.NewGuid(), typeof(void), 1, 2, 3,
@@ -43,13 +43,13 @@ public class PooledListTests
         using var buffer = new PooledList<int>(1);
         Assert.Empty(buffer);
 
-        var numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
+        int[]? numbers = Enumerable.Range(0, buffer.Capacity * 10).ToArray();
         buffer.AddMany(numbers);
 
         Assert.Equal(numbers.Length, buffer.Count);
         Assert.True(buffer.Capacity >= buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(numbers[i], buffer[i]);
         }
@@ -61,7 +61,7 @@ public class PooledListTests
         using PooledList<int> buffer = new();
         buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             ref int refItem = ref buffer[i];
             Assert.Equal(i, refItem);
@@ -80,7 +80,7 @@ public class PooledListTests
         buffer.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
         int bufferCount = buffer.Count;
 
-        for (var i = 1; i <= bufferCount; i++)
+        for (int i = 1; i <= bufferCount; i++)
         {
             Index index = ^i;
             ref int refItem = ref buffer[index];
@@ -126,7 +126,7 @@ public class PooledListTests
         Assert.Equal(objects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(objects[i], buffer[i]);
         }
@@ -145,7 +145,7 @@ public class PooledListTests
         Assert.Equal(TestHelper.TestObjects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(objects[i], buffer[i]);
         }
@@ -164,7 +164,7 @@ public class PooledListTests
         Assert.Equal(objects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(objects[i], buffer[i]);
         }
@@ -183,7 +183,7 @@ public class PooledListTests
         Assert.Equal(objects.Count, buffer.Count);
         Assert.Equal(list.Count, buffer.Count);
 
-        for (var i = 0; i < buffer.Count; i++)
+        for (int i = 0; i < buffer.Count; i++)
         {
             Assert.Equal(objects[i], buffer[i]);
         }
@@ -200,7 +200,7 @@ public class PooledListTests
 
         Index index = 0;
         buffer.TryInsert(index, 147);
-        var bufferArray = buffer.ToArray();
+        byte[]? bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -216,7 +216,7 @@ public class PooledListTests
 
         Index index = 8;
         buffer.TryInsert(index, 147);
-        var bufferArray = buffer.ToArray();
+        byte[]? bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -232,7 +232,7 @@ public class PooledListTests
 
         Index index = ^0;
         buffer.TryInsert(index, 147);
-        var bufferArray = buffer.ToArray();
+        byte[]? bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -248,7 +248,7 @@ public class PooledListTests
 
         Index index = 0;
         buffer.TryInsertMany(index, [255, 250, 245, 240]);
-        var bufferArray = buffer.ToArray();
+        byte[]? bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -264,7 +264,7 @@ public class PooledListTests
 
         Index index = 8;
         buffer.TryInsertMany(index, [255, 250, 245, 240]);
-        var bufferArray = buffer.ToArray();
+        byte[]? bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -280,7 +280,7 @@ public class PooledListTests
 
         Index index = ^0;
         buffer.TryInsertMany(index, [255, 250, 245, 240]);
-        var bufferArray = buffer.ToArray();
+        byte[]? bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -305,7 +305,7 @@ public class PooledListTests
 
         Index index = 0;
         buffer.TryInsertMany(index, EnumerateInsertBytes());
-        var bufferArray = buffer.ToArray();
+        byte[]? bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -321,7 +321,7 @@ public class PooledListTests
 
         Index index = 8;
         buffer.TryInsertMany(index, EnumerateInsertBytes());
-        var bufferArray = buffer.ToArray();
+        byte[]? bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -337,7 +337,7 @@ public class PooledListTests
 
         Index index = ^0;
         buffer.TryInsertMany(index, EnumerateInsertBytes());
-        var bufferArray = buffer.ToArray();
+        byte[]? bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
     }
@@ -348,7 +348,7 @@ public class PooledListTests
         using PooledList<int> intPooledList = new();
         intPooledList.AddMany(0, 1, 2, 3, 4, 5, 6, 7);
 
-        for (var i = -10; i <= 20; i++)
+        for (int i = -10; i <= 20; i++)
         {
             if (i is >= 0 and <= 7)
             {
@@ -364,7 +364,7 @@ public class PooledListTests
         using var guidPooledList = new PooledList<Guid>();
         guidPooledList.AddMany(guids);
 
-        for (var i = 0; i < 100; i++)
+        for (int i = 0; i < 100; i++)
         {
             Assert.DoesNotContain(Guid.NewGuid(), guidPooledList);
         }
@@ -377,7 +377,7 @@ public class PooledListTests
 
         using var recordPooledList = new PooledList<TestClassRecord>();
         List<TestClassRecord> records = new List<TestClassRecord>();
-        for (var i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
             var obj = new TestClassRecord(i, "Record #{i}", i % 2 == 0);
             recordPooledList.Add(obj);
@@ -414,7 +414,7 @@ public class PooledListTests
         Assert.Equal(5, list.Count);
         Assert.Equal(numbers, list);
 
-        for (var i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             var listSlice = list.Slice(i);
             var arraySlice = numbers.AsSpan().Slice(i);

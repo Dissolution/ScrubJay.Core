@@ -10,7 +10,7 @@ namespace ScrubJay.Text;
 public static class CharBufferExtensions
 {
     public static void Write(this ref Buffer<char> buffer, char ch) => buffer.Add(ch);
-    
+
     public static void Write(this ref Buffer<char> buffer, scoped text text) => buffer.AddMany(text);
 
     public static void Write(this ref Buffer<char> buffer, string? str)
@@ -114,11 +114,14 @@ public static class CharBufferExtensions
         buffer.AddMany(str.AsSpan());
     }
 
+    /// <summary>
+    /// Returns the written <see cref="string"/> in this <see cref="Buffer{T}">Buffer&lt;char&gt;</see> and Disposes it
+    /// </summary>
     public static string ToStringAndDispose(
         [HandlesResourceDisposal]
         this ref Buffer<char> buffer)
     {
-        string str = buffer.Written.ToString();
+        string str = buffer.Written.AsString();
         buffer.Dispose();
         return str;
     }

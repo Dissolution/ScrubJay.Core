@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CA1307, CA1715
 
-namespace ScrubJay.Text.Builders;
+namespace ScrubJay.Text;
 
 public sealed class FluentIndentTextBuilder : FluentIndentTextBuilder<FluentIndentTextBuilder>
 {
@@ -14,7 +14,7 @@ public sealed class FluentIndentTextBuilder : FluentIndentTextBuilder<FluentInde
     }
 }
 
-public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
+public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
     where B : FluentIndentTextBuilder<B>
 {
     private Whitespace _whitespace = new();
@@ -35,11 +35,11 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
             return;
         }
 
-        text newLine = _whitespace.NewLineSpan;
+        text newLine = _whitespace.NewLine.AsSpan();
 
         var lastNewLineIndex = _text.TryFindIndex(newLine, firstToLast: false);
         // If we don't have one, nothing to capture
-        if (!lastNewLineIndex.HasSome(out var i))
+        if (!lastNewLineIndex.HasSome(out int i))
         {
             build.Invoke(_builder);
             return;
@@ -58,7 +58,7 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
         Interlocked.Exchange(ref _whitespace, newWhiteSpace);
 #if DEBUG
         var removed = newWhiteSpace.TryRemoveIndent();
-        Debug.Assert(removed.HasSome(out var removedIndent));
+        Debug.Assert(removed.HasOk(out string? removedIndent));
         Debug.Assert(TextHelper.Equal(indent, removedIndent));
 #else
         // no need to remove indent, will be discarded
@@ -68,14 +68,14 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
 
     public override B NewLine()
     {
-        _text.AddMany(_whitespace.NewLineAndIndents);
+        _whitespace.WriteNewLineAndIndentsTo(_text);
         return _builder;
     }
 
     public override B Append(char ch)
     {
         // special behavior only if we're indented
-        if (_whitespace.HasIndent && _whitespace.NewLineChar.IsSomeAnd(nl => nl == ch))
+        if (_whitespace.HasIndent && _whitespace.NewLineIsOneChar(out char nl) && nl == ch)
             return NewLine();
         _text.Add(ch);
         return _builder;
@@ -86,11 +86,11 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
         // special behavior only if we're indented
         if (_whitespace.HasIndent)
         {
-            if (TextHelper.Equal(text, _whitespace.NewLineSpan))
+            if (TextHelper.Equal(text, _whitespace.NewLine))
                 return NewLine();
             return _builder.Delimit<B, char>(
                 static b => b.NewLine(),
-                text.Splitter(_whitespace.NewLineSpan, SpanSplitterOptions.IgnoreEmpty),
+                text.Splitter(_whitespace.NewLine.AsSpan(), SpanSplitterOptions.IgnoreEmpty),
                 (b, seg) => b._text.AddMany(seg));
         }
 
@@ -103,7 +103,7 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
     /// </summary>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsOnStartOfNewLine() => _text.Count == 0 || _text.Written.EndsWith(_whitespace.NewLineAndIndents);
+    public bool IsOnStartOfNewLine() => _text.Count == 0 || _text.Written.EndsWith(_whitespace.NewLineAndIndents());
 
     /// <summary>
     /// Ensures that this Code is at the start of a new line (accounting for indents)
@@ -141,7 +141,7 @@ public class FluentIndentTextBuilder<B> : FluentTextBuilder<B>
 
     public B RemoveIndent(out string indent)
     {
-        indent = _whitespace.TryRemoveIndent().SomeOrThrow();
+        indent = _whitespace.TryRemoveIndent().OkOrThrow();
         return _builder;
     }
 

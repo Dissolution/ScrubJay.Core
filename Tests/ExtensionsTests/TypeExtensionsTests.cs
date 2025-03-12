@@ -77,7 +77,7 @@ public class TypeExtensionsTests
     [MemberData(nameof(MemberDataTypes))]
     public void ImplementsSelfAllShould(Type? type)
     {
-        var impl = TypeExtensions.Implements(type, type);
+        bool impl = TypeExtensions.Implements(type, type);
         if (type is null)
         {
             Assert.False(impl);

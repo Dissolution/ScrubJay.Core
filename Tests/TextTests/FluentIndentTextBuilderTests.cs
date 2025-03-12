@@ -1,4 +1,4 @@
-﻿using ScrubJay.Text.Builders;
+﻿using ScrubJay.Text;
 
 namespace ScrubJay.Tests.TextTests;
 
@@ -16,7 +16,7 @@ public class FluentIndentTextBuilderTests
         L8
         """;
 
-        var text = FluentIndentTextBuilder.New
+        string? text = FluentIndentTextBuilder.New
             .Append("L1")
             .NewLine()
             .Append("L2")
@@ -26,7 +26,7 @@ public class FluentIndentTextBuilderTests
             .Append("L4")
             .NewLine()
             .Append("L5")
-            .RemoveIndent(out var indent)
+            .RemoveIndent(out string? indent)
             .Append("L6")
             .NewLine()
             .Append("L7")
@@ -88,7 +88,7 @@ public class FluentIndentTextBuilderTests
             "    ", b => b
                 .Append(SAMPLE));
 
-        var output = builder.ToString();
+        string? output = builder.ToString();
 
         Assert.Equal(SAMPLE_INDENTED, output);
     }

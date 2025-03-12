@@ -198,7 +198,7 @@ public static class EnumTestData
         int combinations = (int)Math.Pow(enumMembers.Length, paramCount);
         for (int i = 0; i < combinations; i++)
         {
-            var values = new object[paramCount];
+            object[]? values = new object[paramCount];
             int index = i;
             for (int j = 0; j < paramCount; j++)
             {
@@ -227,7 +227,7 @@ public static class EnumTestData
         var testData = new List<object[]>(combinations);
         for (int i = 0; i < combinations; i++)
         {
-            var values = new object[paramCount];
+            object[]? values = new object[paramCount];
             int index = i;
             for (int j = 0; j < paramCount; j++)
             {

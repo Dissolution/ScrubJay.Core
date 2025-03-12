@@ -14,14 +14,14 @@ using ScrubJay.Text;
 
 
 char[] chars = new char[128];
-var writer = new FormatWriter(chars)
+var writer = new TryFormatWriter(chars)
 {
     '(',
     (""),
     (147),
     {147, "F1"},
     (147, "F2", (IFormatProvider)CultureInfo.CurrentCulture),
-    (ref FormatWriter w) => w.Add("^_^"),
+    (ref TryFormatWriter w) => w.Add("^_^"),
 };
 string str = writer.GetString();
 var result = writer.GetResult();

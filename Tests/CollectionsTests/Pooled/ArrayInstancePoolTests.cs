@@ -32,8 +32,8 @@ public class ArrayInstancePoolTests
                 nameof(ArrayInstancePool<char>.Rent),
                 BindingFlags.Public | BindingFlags.Instance,
                 null, CallingConventions.Any, [typeof(int)], null);
-        var sharedInstance = sharedProperty.GetValue(null);
-        var sharedArray = rentMethod!.Invoke(sharedInstance, new object[1] { 1 });
+        object? sharedInstance = sharedProperty.GetValue(null);
+        object? sharedArray = rentMethod!.Invoke(sharedInstance, new object[1] { 1 });
         Array? array = sharedArray as Array;
         Assert.NotNull(array);
         int length = array.GetLength(0);

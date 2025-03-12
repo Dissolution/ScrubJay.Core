@@ -112,7 +112,7 @@ public class EnumInfo<TEnum> : EnumInfo
             TEnum flag = flags[0];
             string flagString = _memberInfos.TryGetValue(flag, out memberInfo) ? memberInfo.DisplayName : flag.ToString();
             buffer.Write(flagString);
-            for (var i = 1; i < flags.Length; i++)
+            for (int i = 1; i < flags.Length; i++)
             {
                 buffer.Write(" | ");
                 flag = flags[i];
@@ -171,7 +171,7 @@ public class EnumMemberInfo<TEnum> : EnumMemberInfo
 
     internal bool TryParse(text text)
     {
-        foreach (var parseName in ParseNames)
+        foreach (string? parseName in ParseNames)
         {
             if (TextHelper.Equal(parseName, text, StringComparison.Ordinal))
                 return true;

@@ -18,7 +18,7 @@ namespace ScrubJay.Text;
 /// </remarks>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public ref struct FormatWriter : IEnumerable
+public ref struct TryFormatWriter : IEnumerable
 {
     private Span<char> _destination;
     private int _position;
@@ -50,20 +50,20 @@ public ref struct FormatWriter : IEnumerable
         get => _destination[_position..];
     }
 
-    public int AvailableCount
+    public readonly int AvailableCount
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _destination.Length - _position;
     }
 
-    public FormatWriter(Span<char> destination)
+    public TryFormatWriter(Span<char> destination)
     {
         _destination = destination;
         _position = 0;
         _hasFailed = None<Exception>();
     }
 
-    public FormatWriter(Span<char> destination, int position)
+    public TryFormatWriter(Span<char> destination, int position)
     {
         if (position < 0 || position >= destination.Length)
             throw new ArgumentOutOfRangeException(nameof(position), position, "Position must be inside of span");
@@ -316,12 +316,9 @@ public ref struct FormatWriter : IEnumerable
         => Add<T>(tuple.Item1, tuple.Item2, tuple.Item3);
 
 
-    public delegate bool FormatWriterAdd(ref FormatWriter writer);
+    public delegate bool FormatWriterAdd(ref TryFormatWriter writer);
 
-    public bool Add(FormatWriterAdd del)
-    {
-        return del(ref this);
-    }
+    public bool Add(FormatWriterAdd del) => del(ref this);
 
     public void Clear()
     {
@@ -337,9 +334,9 @@ public ref struct FormatWriter : IEnumerable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public char[] ToArray() => WrittenSpan.ToArray();
 
-    public Result<int, Exception> GetResult() => _hasFailed.HasSome(out var error) ? error : _position;
+    public readonly Result<int, Exception> GetResult() => _hasFailed.HasSome(out var error) ? error : _position;
 
-    public bool GetResult(out int charsWritten)
+    public readonly bool GetResult(out int charsWritten)
     {
         if (!_hasFailed)
         {
@@ -353,7 +350,7 @@ public ref struct FormatWriter : IEnumerable
         return false;
     }
 
-    public string GetString()
+    public readonly string GetString()
     {
         if (_hasFailed)
             return string.Empty;
@@ -362,10 +359,10 @@ public ref struct FormatWriter : IEnumerable
 
     public override string ToString() => WrittenSpan.AsString();
 
-    IEnumerator IEnumerable.GetEnumerator()
+    readonly IEnumerator IEnumerable.GetEnumerator()
     {
         if (_hasFailed.HasSome(out var error))
-            return Enumerator.Single(error);
+            return Enumerator.Single<Exception>(error);
         return Enumerator.Empty<Exception>();
     }
 }

@@ -1,30 +1,29 @@
 ﻿using ScrubJay.Fluent;
 using ScrubJay.Maths;
-
 #pragma warning disable S3247, S4136, RCS1220
 #pragma warning disable IDE1006, IDE0060
 #pragma warning disable CA1033, CA1045, CA1710, CA1715
 
 // ReSharper disable MergeCastWithTypeCheck
 // ReSharper disable ConvertIfStatementToConditionalTernaryExpression
-namespace ScrubJay.Text.Builders;
+namespace ScrubJay.Text;
 
 /// <summary>
 /// A FluentTextBuilder uses fluent operations to build up complex <see cref="string">strings</see>
 /// </summary>
 /// <typeparam name="B">
-/// The <see cref="Type"/> of <see cref="FluentTextBuilder{B}"/> that will be returned from all fluent operations
+/// The <see cref="Type"/> of <see cref="TextBuilderBase{B}"/> that will be returned from all fluent operations
 /// </typeparam>
 [PublicAPI]
 [MustDisposeResource]
-public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
+public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     IList<char>,
     IReadOnlyList<char>,
     ICollection<char>,
     IReadOnlyCollection<char>,
     IEnumerable<char>,
     IDisposable
-    where B : FluentTextBuilder<B>
+    where B : TextBuilderBase<B>
 {
     // This manages all the actual writing
     protected readonly PooledList<char> _text;
@@ -64,16 +63,22 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// </summary>
     public int Length => _text.Count;
 
-    protected FluentTextBuilder() : base()
+    protected TextBuilderBase() : base()
     {
         _text = new();
     }
 
-    protected FluentTextBuilder(int minCapacity) : base()
+    protected TextBuilderBase(int minCapacity) : base()
     {
         _text = new(minCapacity);
     }
 
+    void ICollection<char>.Add(char item) => Append(item);
+
+    protected internal virtual void InterpolatedExecute(Action<B> build) => build(_builder);
+
+
+    #region Append
     /// <summary>
     /// Append a <see cref="char">character</see>
     /// </summary>
@@ -86,7 +91,6 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         _text.Add(ch);
         return _builder;
     }
-    void ICollection<char>.Add(char item) => Append(item);
 
     /// <summary>
     /// Append a <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see>
@@ -101,6 +105,12 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         return _builder;
     }
 
+    public virtual B Append(char[]? chars)
+    {
+        _text.AddMany(new text(chars));
+        return _builder;
+    }
+
     /// <summary>
     /// Append a <see cref="string"/>
     /// </summary>
@@ -108,23 +118,27 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// <returns>
     /// This builder instance after operation has completed
     /// </returns>
-    public B Append(string? str) => Append(str.AsSpan());
+    public virtual B Append(string? str)
+    {
+        _text.AddMany(str.AsSpan());
+        return _builder;
+    }
 
     /// <summary>
-    /// Appends an <see cref="InterpolatedTextBuilder{B}"/>
+    /// Appends text using an <see cref="InterpolatedTextBuilder{B}"/>
     /// </summary>
     /// <param name="interpolatedTextBuilder"></param>
-    /// <returns></returns>
-    public virtual B Append([InterpolatedStringHandlerArgument("")] ref InterpolatedTextBuilder<B> interpolatedTextBuilder)
+    /// <returns>
+    /// This builder instance after operation has completed
+    /// </returns>
+    public virtual B Append(
+        [InterpolatedStringHandlerArgument("")]
+        ref InterpolatedTextBuilder<B> interpolatedTextBuilder)
     {
         // As soon as we've gotten here, the interpolation has occurred
         return _builder;
     }
 
-    protected internal virtual void InterpolatedExecute(Action<B> build)
-    {
-        build(_builder);
-    }
 
     /// <summary>
     /// Append a <typeparamref name="T"/> <paramref name="value"/> with no formatting
@@ -144,34 +158,28 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         if (value is IWriteable)
         {
             ((IWriteable)value).WriteTo(_builder);
-            return _builder;
         }
-
-#if NET6_0_OR_GREATER
-        if (value is ISpanFormattable)
+        else if (value is IFormattable)
         {
-            int charsWritten;
-            while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, default, default))
+            if (value is ISpanFormattable)
             {
-                _text.Grow();
+                int charsWritten;
+                while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, default, default))
+                {
+                    _text.Grow();
+                }
+                _text.Count += charsWritten;
             }
-
-            _text.Count += charsWritten;
-            return _builder;
-        }
-#endif
-
-        text str;
-        if (value is IFormattable)
-        {
-            str = ((IFormattable)value).ToString(default, default).AsSpan();
+            else
+            {
+                _text.AddMany(((IFormattable)value).ToString(default, default).AsSpan());
+            }
         }
         else
         {
-            str = value.ToString().AsSpan();
+            _text.AddMany(value.ToString().AsSpan());
         }
 
-        _text.AddMany(str);
         return _builder;
     }
 
@@ -185,7 +193,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// <returns>
     /// This builder instance after operation has completed
     /// </returns>
-    public virtual B Format<T>(T? value, string? format, IFormatProvider? provider = null)
+    public virtual B Append<T>(T? value, string? format, IFormatProvider? provider = null)
     {
         if (value is null)
         {
@@ -195,34 +203,28 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         if (value is IWriteable)
         {
             ((IWriteable)value).WriteTo(_builder);
-            return _builder;
         }
-
-#if NET6_0_OR_GREATER
-        if (value is ISpanFormattable)
+        else if (value is IFormattable)
         {
-            int charsWritten;
-            while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, format, provider))
+            if (value is ISpanFormattable)
             {
-                _text.Grow();
+                int charsWritten;
+                while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, format.AsSpan(), provider))
+                {
+                    _text.Grow();
+                }
+                _text.Count += charsWritten;
             }
-
-            _text.Count += charsWritten;
-            return _builder;
-        }
-#endif
-
-        text str;
-        if (value is IFormattable)
-        {
-            str = ((IFormattable)value).ToString(format, provider).AsSpan();
+            else
+            {
+                _text.AddMany(((IFormattable)value).ToString(format, provider).AsSpan());
+            }
         }
         else
         {
-            str = value.ToString().AsSpan();
+            _text.AddMany(value.ToString().AsSpan());
         }
 
-        _text.AddMany(str);
         return _builder;
     }
 
@@ -236,7 +238,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// <returns>
     /// This builder instance after operation has completed
     /// </returns>
-    public virtual B Format<T>(T? value, scoped text format, IFormatProvider? provider = null)
+    public virtual B Append<T>(T? value, scoped text format, IFormatProvider? provider = null)
     {
         if (value is null)
         {
@@ -246,34 +248,28 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         if (value is IWriteable)
         {
             ((IWriteable)value).WriteTo(_builder);
-            return _builder;
         }
-
-#if NET6_0_OR_GREATER
-        if (value is ISpanFormattable)
+        else if (value is IFormattable)
         {
-            int charsWritten;
-            while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, format, provider))
+            if (value is ISpanFormattable)
             {
-                _text.Grow();
+                int charsWritten;
+                while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, format, provider))
+                {
+                    _text.Grow();
+                }
+                _text.Count += charsWritten;
             }
-
-            _text.Count += charsWritten;
-            return _builder;
-        }
-#endif
-
-        text str;
-        if (value is IFormattable)
-        {
-            str = ((IFormattable)value).ToString(format.AsString(), provider).AsSpan();
+            else
+            {
+                _text.AddMany(((IFormattable)value).ToString(format.AsString(), provider).AsSpan());
+            }
         }
         else
         {
-            str = value.ToString().AsSpan();
+            _text.AddMany(value.ToString().AsSpan());
         }
 
-        _text.AddMany(str);
         return _builder;
     }
 
@@ -283,15 +279,27 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     /// <returns></returns>
     public virtual B NewLine() => Append(Environment.NewLine);
 
+    #region AppendLine
     public B AppendLine(char ch) => Append(ch).NewLine();
     public B AppendLine(scoped text text) => Append(text).NewLine();
+    public B AppendLine(char[]? chars) => Append(chars).NewLine();
     public B AppendLine(string? str) => Append(str).NewLine();
-    public B AppendLine<T>(T? value) => Append(value).NewLine();
-    public B AppendLine([InterpolatedStringHandlerArgument("")] ref InterpolatedTextBuilder<B> interpolatedTextBuilder)
-        => NewLine();
+    public B AppendLine<T>(T? value) => Append<T>(value).NewLine();
+    public B AppendLine<T>(T? value, scoped text format, IFormatProvider? provider) => Append<T>(value, format, provider).NewLine();
+    public B AppendLine<T>(T? value, string? format, IFormatProvider? provider) => Append<T>(value, format, provider).NewLine();
+    public B AppendLine(
+        [InterpolatedStringHandlerArgument("")]
+        ref InterpolatedTextBuilder<B> interpolatedTextBuilder) => NewLine();
+#endregion
+#endregion
+
+    #region Format
+    // https://doc.rust-lang.org/std/fmt/
+
+
+    #endregion
+
 #region Align
-
-
     public B Align(
         char ch,
         int width,
@@ -320,7 +328,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         }
 
         // calculate the amount of padding we have to add
-        var padding = width - text.Length;
+        int padding = width - text.Length;
 
         // as per string.Format, if width < text, we just write value
         if (padding <= 0)
@@ -395,7 +403,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         Alignment alignment = Alignment.None)
     {
         if (width == 0)
-            return Format(value, format);
+            return Append(value, format);
 
         // if no alignment is specified, we use -width as Left, +width as Right (same as string.Format)
         if (alignment == Alignment.None)
@@ -415,14 +423,14 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         int start = _text.Count;
 
         // Format the value onto us
-        Format<T>(value, format);
+        Append<T>(value, format);
 
         // get end and length
         int end = _text.Count;
         int length = end - start;
 
         // calculate the amount of padding we have to add
-        var padding = width - length;
+        int padding = width - length;
 
         // as per string.Format, if width < text, we just write the value, which we've done
         if (padding <= 0)
@@ -521,7 +529,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
 
     public B Iterate<T>(ReadOnlySpan<T> values, Action<B, T, int> onBuilderValueIndex)
     {
-        for (var i = 0; i < values.Length; i++)
+        for (int i = 0; i < values.Length; i++)
         {
             onBuilderValueIndex(_builder, values[i], i);
         }
@@ -549,7 +557,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         if (len == 0)
             return _builder;
         onBuilderValue(_builder, values[0]);
-        for (var i = 1; i < len; i++)
+        for (int i = 1; i < len; i++)
         {
             Append(delimiter);
             onBuilderValue(_builder, values[i]);
@@ -569,7 +577,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         if (len == 0)
             return _builder;
         onBuilderValue(_builder, values[0]);
-        for (var i = 1; i < len; i++)
+        for (int i = 1; i < len; i++)
         {
             Append(delimiter);
             onBuilderValue(_builder, values[i]);
@@ -584,7 +592,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         if (len == 0)
             return _builder;
         onBuilderValue(_builder, values[0]);
-        for (var i = 1; i < len; i++)
+        for (int i = 1; i < len; i++)
         {
             onDelimit(_builder);
             onBuilderValue(_builder, values[i]);
@@ -660,10 +668,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
 #endregion
 
 #region Insertion
-    void IList<char>.Insert(int index, char item)
-    {
-        _text.TryInsert(index, item).ThrowIfError();
-    }
+    void IList<char>.Insert(int index, char item) => _text.TryInsert(index, item).ThrowIfError();
 
     public B Insert(Index index, char ch)
     {
@@ -718,8 +723,8 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     {
         if (count <= 0)
             return _builder;
-        var start = _text.Count;
-        Format<T>(value, format);
+        int start = _text.Count;
+        Append<T>(value, format);
         int length = _text.Count - start;
         var formattedSpan = _text.Written[^length..];
         Debugger.Break();
@@ -750,7 +755,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
 
     bool ICollection<char>.Remove(char item)
     {
-        if (TryFindIndex(item).HasSome(out var index))
+        if (TryFindIndex(item).HasSome(out int index))
         {
             return _text.TryRemoveAt(index);
         }
@@ -797,10 +802,7 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
     IEnumerator<char> IEnumerable<char>.GetEnumerator() => _text.GetEnumerator();
 
     [HandlesResourceDisposal]
-    public virtual void Dispose()
-    {
-        _text.Dispose();
-    }
+    public virtual void Dispose() => _text.Dispose();
 
     [HandlesResourceDisposal]
     public string ToStringAndDispose()
@@ -810,8 +812,5 @@ public abstract class FluentTextBuilder<B> : FluentBuilder<B>,
         return str;
     }
 
-    public override string ToString()
-    {
-        return _text.ToString();
-    }
+    public override string ToString() => _text.ToString();
 }

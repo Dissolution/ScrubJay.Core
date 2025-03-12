@@ -35,16 +35,16 @@ public sealed class MiscTheoryData : IReadOnlyCollection<object?[]>
             return new MiscTheoryData();
         }
 
-        var lengths = new int[columns];
+        int[]? lengths = new int[columns];
         lengths.AsSpan().Fill(rows.Count);
         ArrayIndicesEnumerator indices = ArrayIndicesEnumerator.FromLengths(lengths);
 
         var data = new MiscTheoryData();
 
-        while (indices.TryMoveNext().HasOk(out var index))
+        while (indices.TryMoveNext().HasOk(out int[]? index))
         {
-            var row = new object?[columns];
-            for (var c = 0; c < columns; c++)
+            object?[] row = new object?[columns];
+            for (int c = 0; c < columns; c++)
             {
                 row[c] = rows[index[c]][0];
             }

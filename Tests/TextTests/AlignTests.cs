@@ -1,7 +1,6 @@
 ﻿using ScrubJay.Text;
-using ScrubJay.Text.Builders;
 
-namespace ScrubJay.Tests.TextTests.FluentTextBuilderTests;
+namespace ScrubJay.Tests.TextTests;
 
 public class AlignTests
 {

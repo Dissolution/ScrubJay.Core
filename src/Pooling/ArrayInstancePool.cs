@@ -27,7 +27,7 @@ public sealed class ArrayInstancePool<T> : IArrayInstancePool<T>
         if (typeof(T).IsValueType)
         {
             // Set a higher min as these cost less memory to store (usually)
-            if (minLength.TryGetValue(out var minLen))
+            if (minLength.TryGetValue(out int minLen))
             {
                 _minimumLength = minLen.Clamp(0, MAXIMUM_ARRAY_LENGTH);
             }
@@ -38,7 +38,7 @@ public sealed class ArrayInstancePool<T> : IArrayInstancePool<T>
         }
         else
         {
-            if (minLength.TryGetValue(out var minLen))
+            if (minLength.TryGetValue(out int minLen))
             {
                 _minimumLength = minLen.Clamp(0, MAXIMUM_ARRAY_LENGTH);
             }
@@ -54,7 +54,7 @@ public sealed class ArrayInstancePool<T> : IArrayInstancePool<T>
 #else
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
-            if (minLength.TryGetValue(out var minLen))
+            if (minLength.TryGetValue(out int minLen))
             {
                 _minimumLength = minLen.Clamp(0, MAXIMUM_ARRAY_LENGTH);
             }
@@ -70,7 +70,7 @@ public sealed class ArrayInstancePool<T> : IArrayInstancePool<T>
         else
         {
             // Set a higher min as these cost less memory to store (usually)
-            if (minLength.TryGetValue(out var minLen))
+            if (minLength.TryGetValue(out int minLen))
             {
                 _minimumLength = minLen.Clamp(0, MAXIMUM_ARRAY_LENGTH);
             }

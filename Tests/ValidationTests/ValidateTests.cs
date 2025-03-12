@@ -15,8 +15,8 @@ public class ValidateTests
 
     static ValidateTests()
     {
-        for (var index = -1; index <= 5; index++)
-        for (var length = -1; length <= 5; length++)
+        for (int index = -1; index <= 5; index++)
+        for (int length = -1; length <= 5; length++)
         {
             IntIndexLengths.Add(index, length);
             if (index >= 0)

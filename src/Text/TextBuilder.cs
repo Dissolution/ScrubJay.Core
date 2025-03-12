@@ -1,11 +1,11 @@
-﻿namespace ScrubJay.Text.Builders;
+﻿namespace ScrubJay.Text;
 
 /// <summary>
-/// An instance of a <see cref="FluentTextBuilder{B}"/>
+/// An instance of a <see cref="TextBuilderBase{B}"/>
 /// </summary>
 [PublicAPI]
 [MustDisposeResource]
-public sealed class TextBuilder : FluentTextBuilder<TextBuilder>, IDisposable
+public sealed class TextBuilder : TextBuilderBase<TextBuilder>, IDisposable
 {
     /// <summary>
     /// Gets a <c>new</c> <see cref="TextBuilder"/> instance

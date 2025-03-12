@@ -125,7 +125,7 @@ public class InstancePoolTests
             static arr => arr.AsSpan().ForEach((ref int i) => i = 0)
         );
 
-        var array = pool.Rent();
+        int[]? array = pool.Rent();
         Assert.Equal(8, array.Length);
         // ReSharper disable once RedundantAssignment
         array.AsSpan().ForEach((ref int item) => item = 3);
@@ -143,7 +143,7 @@ public class InstancePoolTests
             static sb => sb.Clear());
         const int COUNT = 100;
         var tasks = new Task<string>[COUNT];
-        for (var i = 0; i < COUNT; i++)
+        for (int i = 0; i < COUNT; i++)
         {
             tasks[i] = Task.Run<string>(async () =>
             {
@@ -160,7 +160,7 @@ public class InstancePoolTests
                 return str;
             });
         }
-        var results = await Task.WhenAll(tasks);
+        string[]? results = await Task.WhenAll(tasks);
         Assert.True(Array.TrueForAll(results, str => !string.IsNullOrWhiteSpace(str)));
         Assert.Equal(COUNT, results.Distinct().Count());
     }

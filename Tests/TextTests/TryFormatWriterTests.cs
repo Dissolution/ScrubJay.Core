@@ -3,12 +3,12 @@ using ScrubJay.Text;
 
 namespace ScrubJay.Tests.TextTests;
 
-public class FormatWriterTests
+public class TryFormatWriterTests
 {
     [Fact]
     public void TryWriteFormattedWorks()
     {
-        FormatWriter writer = new(stackalloc char[64]);
+        TryFormatWriter writer = new(stackalloc char[64]);
 
         bool wrote = writer.Add<long>(147L, "N0");
         Assert.True(wrote);

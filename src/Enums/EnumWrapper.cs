@@ -97,7 +97,7 @@ public readonly struct EnumWrapper<TEnum> :
         text format = default,
         IFormatProvider? provider = default)
     {
-        return new FormatWriter(destination)
+        return new TryFormatWriter(destination)
         {
             Enum,
         }.GetResult(out charsWritten);

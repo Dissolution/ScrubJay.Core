@@ -27,7 +27,7 @@ public class FlaggedEnumExtensionsTests
 
         foreach (var enumType in enumTypes)
         {
-            foreach (var data in GetEnumTestData(enumType, paramCount))
+            foreach (object[]? data in GetEnumTestData(enumType, paramCount))
             {
                 yield return data;
             }
@@ -40,7 +40,7 @@ public class FlaggedEnumExtensionsTests
         where TEnum : struct, Enum
     {
         ulong convertValue = Convert.ToUInt64(@enum);
-        var extValue = FlagsEnumExtensions.ToUInt64<TEnum>(@enum);
+        ulong extValue = FlagsEnumExtensions.ToUInt64<TEnum>(@enum);
         Assert.Equal(convertValue, extValue);
     }
     
@@ -178,7 +178,7 @@ public class FlaggedEnumExtensionsTests
             countResult = GetULongBitCount(Convert.ToUInt64(e));
         }
 
-        var extResult = FlagsEnumExtensions.FlagCount<TEnum>(e);
+        int extResult = FlagsEnumExtensions.FlagCount<TEnum>(e);
         Assert.Equal(countResult, extResult);
     }
     
@@ -199,7 +199,7 @@ public class FlaggedEnumExtensionsTests
             countResult = GetULongBitCount(Convert.ToUInt64(e));
         }
 
-        var extResult = FlagsEnumExtensions.FlagCount<TEnum>(e);
+        int extResult = FlagsEnumExtensions.FlagCount<TEnum>(e);
         Assert.Equal(countResult, extResult);
     }
     
@@ -213,13 +213,13 @@ public class FlaggedEnumExtensionsTests
             .ThrowIfNot<TEnum[]>()
             .Where(flag =>
             {
-                var value = FlagsEnumExtensions.ToUInt64(flag);
+                ulong value = FlagsEnumExtensions.ToUInt64(flag);
                 return (value & (value - 1)) == 0 && value != 0;
             })
             .Where(flag => e.HasFlag(flag))
             .ToArray();
 
-        var hasMultipleFlags = FlagsEnumExtensions.HasMultipleFlags(e);
+        bool hasMultipleFlags = FlagsEnumExtensions.HasMultipleFlags(e);
 
         if (flags.Length > 1)
         {
@@ -241,7 +241,7 @@ public class FlaggedEnumExtensionsTests
             .ThrowIfNot<TEnum[]>()
             .Where(flag =>
             {
-                var value = FlagsEnumExtensions.ToUInt64(flag);
+                ulong value = FlagsEnumExtensions.ToUInt64(flag);
                 return (value & (value - 1)) == 0 && value != 0;
             })
             .Where(flag => e.HasFlag(flag))
@@ -264,7 +264,7 @@ public class FlaggedEnumExtensionsTests
             .ThrowIfNot<TEnum[]>()
             .Where(flag => 
             {
-                var value = FlagsEnumExtensions.ToUInt64(flag);
+                ulong value = FlagsEnumExtensions.ToUInt64(flag);
                 return (value & (value - 1)) == 0 && value != 0;
             })
             .Where(flag => e.HasFlag(flag))

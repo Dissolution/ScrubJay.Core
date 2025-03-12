@@ -32,7 +32,7 @@ public class EnumExtensionsTests
 
         foreach (var enumType in enumTypes)
         {
-            foreach (var data in GetEnumTestData(enumType, paramCount))
+            foreach (object[]? data in GetEnumTestData(enumType, paramCount))
             {
                 yield return data;
             }
@@ -44,8 +44,8 @@ public class EnumExtensionsTests
     public void IsDefaultWorks<TEnum>(TEnum e)
         where TEnum : struct, Enum
     {
-        var isDefault = EqualityComparer<TEnum>.Default.Equals(e, default(TEnum));
-        var extIsDefault = EnumExtensions.IsDefault(e);
+        bool isDefault = EqualityComparer<TEnum>.Default.Equals(e, default(TEnum));
+        bool extIsDefault = EnumExtensions.IsDefault(e);
         Assert.Equal(isDefault, extIsDefault);
     }
 
@@ -55,8 +55,8 @@ public class EnumExtensionsTests
     public void EqualWorks<TEnum>(TEnum left, TEnum right)
         where TEnum : struct, Enum
     {
-        var equal = EqualityComparer<TEnum>.Default.Equals(left, right);
-        var extEqual = EnumExtensions.IsEqual(left, right);
+        bool equal = EqualityComparer<TEnum>.Default.Equals(left, right);
+        bool extEqual = EnumExtensions.IsEqual(left, right);
         Assert.Equal(equal, extEqual);
     }
 
@@ -65,8 +65,8 @@ public class EnumExtensionsTests
     public void LessThanWorks<TEnum>(TEnum left, TEnum right)
         where TEnum : struct, Enum
     {
-        var lessThan = Comparer<TEnum>.Default.Compare(left, right) < 0;
-        var extLessThan = EnumExtensions.LessThan(left, right);
+        bool lessThan = Comparer<TEnum>.Default.Compare(left, right) < 0;
+        bool extLessThan = EnumExtensions.LessThan(left, right);
         Assert.Equal(lessThan, extLessThan);
     }
 
@@ -76,8 +76,8 @@ public class EnumExtensionsTests
     public void LessThanOrEqualWorks<TEnum>(TEnum left, TEnum right)
         where TEnum : struct, Enum
     {
-        var lessThanOrEqual = Comparer<TEnum>.Default.Compare(left, right) <= 0;
-        var extLessThanOrEqual = EnumExtensions.LessThanOrEqual(left, right);
+        bool lessThanOrEqual = Comparer<TEnum>.Default.Compare(left, right) <= 0;
+        bool extLessThanOrEqual = EnumExtensions.LessThanOrEqual(left, right);
         Assert.Equal(lessThanOrEqual, extLessThanOrEqual);
     }
 
@@ -86,8 +86,8 @@ public class EnumExtensionsTests
     public void GreaterThanWorks<TEnum>(TEnum left, TEnum right)
         where TEnum : struct, Enum
     {
-        var greaterThan = Comparer<TEnum>.Default.Compare(left, right) > 0;
-        var extGreaterThan = EnumExtensions.GreaterThan(left, right);
+        bool greaterThan = Comparer<TEnum>.Default.Compare(left, right) > 0;
+        bool extGreaterThan = EnumExtensions.GreaterThan(left, right);
         Assert.Equal(greaterThan, extGreaterThan);
     }
 
@@ -97,8 +97,8 @@ public class EnumExtensionsTests
     public void GreaterThanOrEqualWorks<TEnum>(TEnum left, TEnum right)
         where TEnum : struct, Enum
     {
-        var greaterThanOrEqual = Comparer<TEnum>.Default.Compare(left, right) >= 0;
-        var extGreaterThanOrEqual = EnumExtensions.GreaterThanOrEqual(left, right);
+        bool greaterThanOrEqual = Comparer<TEnum>.Default.Compare(left, right) >= 0;
+        bool extGreaterThanOrEqual = EnumExtensions.GreaterThanOrEqual(left, right);
         Assert.Equal(greaterThanOrEqual, extGreaterThanOrEqual);
     }
 
@@ -108,7 +108,7 @@ public class EnumExtensionsTests
         where TEnum : struct, Enum
     {
         int compare = Comparer<TEnum>.Default.Compare(left, right);
-        var extCompare = EnumExtensions.CompareTo(left, right);
+        int extCompare = EnumExtensions.CompareTo(left, right);
         Assert.Equal(compare, extCompare);
     }
 }

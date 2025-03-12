@@ -1,5 +1,4 @@
 ﻿using ScrubJay.Text;
-using ScrubJay.Text.Builders;
 using ScrubJay.Utilities;
 // ReSharper disable CollectionNeverUpdated.Local
 
@@ -165,13 +164,13 @@ public class TextBuilderTests
     {
         using var text = new TextBuilder();
 
-        text.Format(147.13, "F1");
+        text.Append(147.13, "F1");
         Assert.Equal(5, text.Length);
         Assert.Equal("147.1", text.ToString());
         text.Clear();
 
         DateTime xmas = new DateTime(2000, 12, 25, 8,0,0,0, DateTimeKind.Local);
-        text.Format(xmas, "yyyy-MM-dd HH:mm:ss");
+        text.Append(xmas, "yyyy-MM-dd HH:mm:ss");
         Assert.Equal("2000-12-25 08:00:00", text.ToString());
     }
 

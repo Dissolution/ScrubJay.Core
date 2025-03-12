@@ -422,7 +422,7 @@ public void ToStringGPassthroughWorks()
     [MemberData(nameof(PrimesTheoryData))]
     public void NewSimplifies(ushort prime)
     {
-        for (var i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             var create = CreateRationals[i];
             var expected = ExpectedRationals[i];

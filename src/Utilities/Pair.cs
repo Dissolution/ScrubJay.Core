@@ -163,7 +163,7 @@ public readonly struct Pair<TKey, TValue> :
         text format = default,
         IFormatProvider? provider = null)
     {
-        return new FormatWriter(destination)
+        return new TryFormatWriter(destination)
         {
             '(',
             { Key, format, provider },
