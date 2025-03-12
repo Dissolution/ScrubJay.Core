@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1031
+﻿/*#pragma warning disable CA1031
 
 namespace ScrubJay.Functional;
 
@@ -114,4 +114,4 @@ public static class Result
             throw ex;
         }
     }
-}
+}*/

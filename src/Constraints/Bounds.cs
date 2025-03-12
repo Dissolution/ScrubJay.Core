@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Constraints;
+﻿using ScrubJay.Functional;
+
+namespace ScrubJay.Constraints;
 
 [PublicAPI]
 public static class Bounds

@@ -1,4 +1,6 @@
 ﻿// ReSharper disable FieldCanBeMadeReadOnly.Local
+
+using ScrubJay.Functional;
 #pragma warning disable IDE0044
 
 namespace ScrubJay.Collections.NonGeneric;

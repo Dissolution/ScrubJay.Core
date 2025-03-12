@@ -1,4 +1,5 @@
-﻿#pragma warning disable CA1710, MA0048, CA1000
+﻿/*
+#pragma warning disable CA1710, MA0048, CA1000
 
 namespace ScrubJay.Functional;
 
@@ -18,7 +19,7 @@ namespace ScrubJay.Functional;
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public readonly struct Result<TOk, TError> :
-/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */
+/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions #1#
 #if NET7_0_OR_GREATER
     IEqualityOperators<Result<TOk, TError>, Result<TOk, TError>, bool>,
     // IEqualityOperators<Result<TOk, TError>, TOk, bool>,
@@ -711,3 +712,4 @@ public readonly struct Result<TOk, TError> :
         return $"Error({_error})";
     }
 }
+*/

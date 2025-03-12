@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Functional;
+﻿namespace ScrubJay.Rustlike;
 
 /// <summary>
 /// The unit type is a type that indicates the absence of a specific value; the unit type has only a single value, which acts as a placeholder when no other value exists or is needed.

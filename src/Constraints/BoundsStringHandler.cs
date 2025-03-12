@@ -1,3 +1,5 @@
+using ScrubJay.Functional;
+
 namespace ScrubJay.Constraints;
 
 [PublicAPI]

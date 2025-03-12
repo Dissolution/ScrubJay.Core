@@ -2,12 +2,9 @@
 
     <PropertyGroup>
         <RootNamespace>ScrubJay.Tests</RootNamespace>
-        <AssemblyName>ScrubJay.Tests</AssemblyName>
+        <AssemblyName>ScrubJay.Rustlike.Tests</AssemblyName>
 
-        <TargetFrameworks>
-            net9.0;net8.0;net7.0;net481;
-        </TargetFrameworks>
-        <CheckEolTargetFramework>false</CheckEolTargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -35,15 +32,7 @@
     <ItemGroup>
         <ProjectReference Include="..\src\Core.csproj" />
     </ItemGroup>
-
-    <!-- NuGet Packages -->
-    <!-- Need System.Memory for older frameworks -->
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Memory" Version="4.6.0">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-    </ItemGroup>
-
+    
     <!-- Global Usings -->
     <ItemGroup>
         <Using Include="Xunit"/>

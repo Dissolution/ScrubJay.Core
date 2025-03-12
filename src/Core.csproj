@@ -2,16 +2,14 @@
 
     <PropertyGroup>
         <RootNamespace>ScrubJay</RootNamespace>
-        <AssemblyName>ScrubJay</AssemblyName>
+        <AssemblyName>ScrubJay.Rustlike</AssemblyName>
 
         <!-- Intended to support all Lastest Versions -->
         <!-- https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-version -->
         <!-- and .NET Standard 2.0 (so this library may be referenced by Source Generators) -->
         <!-- and some out of support frameworks caught in the middle of features -->
         <TargetFrameworks>
-            net9.0;net8.0;netstandard2.1;netcoreapp3.1;net481;
-            netstandard2.0;
-            net7.0;net6.0;net5.0;
+            net9.0;
         </TargetFrameworks>
         <CheckEolTargetFramework>false</CheckEolTargetFramework>
 
@@ -29,6 +27,7 @@
         <WarningsAsErrors>nullable</WarningsAsErrors>
         <NoWarn>$(NoWarn);
             CS1591; <!-- Missing XML comments for public member -->
+            CA1806;
         </NoWarn>
         <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options -->
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -93,12 +92,12 @@
         <Using Include="ScrubJay.Pooling"/>
 
         <!-- Recommendations for downstream too -->
-        <Using Include="ScrubJay.GlobalHelper" Static="true"/>
+        <Using Include="ScrubJay.Rustlike.Prelude" Static="true"/>
 
         <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.Enums"/>
         <Using Include="ScrubJay.Extensions"/>
-        <Using Include="ScrubJay.Functional"/>
+        <Using Include="ScrubJay.Rustlike"/>
         <Using Include="ScrubJay.Memory"/>
         <Using Include="ScrubJay.Text"/>
         <Using Include="ScrubJay.Utilities"/>
@@ -121,11 +120,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-    </ItemGroup>
-
-    <!-- Need System.Memory for older frameworks -->
-    <ItemGroup Condition="'$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Memory" Version="4.6.0"/>
     </ItemGroup>
 
     <!-- Expose our internals to our tests and other trusted ScrubJay libraries -->

@@ -1,4 +1,5 @@
-﻿namespace ScrubJay.Functional.Linq;
+﻿/*
+namespace ScrubJay.Functional.Linq;
 
 [PublicAPI]
 public static class FunctionalLinq
@@ -35,7 +36,7 @@ public static class FunctionalLinq
      * but instead the default is only returned if there are no values, and an exception is thrown if there is more than one.
      * One corrects this by returning the fallback if there is zero or more than one value.
      * Technically only OneOrDefault is required, but One is included for completeness.
-     */
+     #1#
 
     public static Result<T, Exception> TryGetOne<T>(
         [AllowNull, NotNullWhen(true)]
@@ -306,3 +307,4 @@ public static class FunctionalLinq
 
 #endregion
 }
+*/

@@ -1,8 +1,10 @@
-﻿#pragma warning disable CA1711
+﻿/*
+#pragma warning disable CA1711
 
 // Alias `text` to `ReadOnlySpan<char>` to simplify usage
 global using text = System.ReadOnlySpan<char>;
 global using NotNull = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+using ScrubJay.Functional;
 
 namespace ScrubJay;
 
@@ -86,3 +88,4 @@ public static class GlobalHelper
 
 
 }
+*/

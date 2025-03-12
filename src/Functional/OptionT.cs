@@ -1,4 +1,5 @@
-﻿// CA1716: Identifiers should not match keywords
+﻿/*
+// CA1716: Identifiers should not match keywords
 #pragma warning disable CA1716
 
 // CA1710: Identifiers should have correct suffix
@@ -21,7 +22,7 @@ namespace ScrubJay.Functional;
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public readonly struct Option<T> :
-/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */
+/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions #1#
 #if NET7_0_OR_GREATER
     IEqualityOperators<Option<T>, Option<T>, bool>,
     IEqualityOperators<Option<T>, None, bool>,
@@ -357,7 +358,7 @@ public readonly struct Option<T> :
 
 #region Compare
 
-    /* None always compares as less than any Some */
+    /* None always compares as less than any Some #1#
 
     public int CompareTo(Option<T> other)
     {
@@ -572,3 +573,4 @@ public readonly struct Option<T> :
 
     public override string ToString() => _isSome ? $"Some({_value})" : nameof(None);
 }
+*/

@@ -1,4 +1,5 @@
 ﻿using ScrubJay.Fluent;
+using ScrubJay.Functional;
 using ScrubJay.Maths;
 #pragma warning disable S3247, S4136, RCS1220
 #pragma warning disable IDE1006, IDE0060
@@ -138,7 +139,6 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
         // As soon as we've gotten here, the interpolation has occurred
         return _builder;
     }
-
 
     /// <summary>
     /// Append a <typeparamref name="T"/> <paramref name="value"/> with no formatting

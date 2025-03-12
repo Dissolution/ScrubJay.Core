@@ -1,4 +1,5 @@
-﻿#pragma warning disable MA0048
+﻿using ScrubJay.Functional;
+#pragma warning disable MA0048
 
 namespace ScrubJay.Constraints;
 

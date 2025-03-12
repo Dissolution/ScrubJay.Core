@@ -1,4 +1,5 @@
-﻿#if NET7_0_OR_GREATER
+﻿/*
+#if NET7_0_OR_GREATER
 
 #pragma warning disable CA1000
 #pragma warning disable CA1034
@@ -345,3 +346,4 @@ public readonly ref struct OptionRef<T>
     }
 }
 #endif
+*/

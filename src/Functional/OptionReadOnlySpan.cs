@@ -1,4 +1,5 @@
-﻿// I do want these static members on this generic type
+﻿/*
+// I do want these static members on this generic type
 #pragma warning disable CA1000
 // Enumerator is nested
 #pragma warning disable CA1034
@@ -10,7 +11,7 @@ namespace ScrubJay.Functional;
 [StructLayout(LayoutKind.Auto)]
 [PublicAPI]
 public readonly ref struct OptionReadOnlySpan<T> //:
-/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */
+/* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions #1#
 #if NET7_0_OR_GREATER
     //IEqualityOperators<OptionReadOnlySpan<T>, OptionReadOnlySpan<T>, bool>,
     //IEqualityOperators<OptionReadOnlySpan<T>, None, bool>,
@@ -627,3 +628,4 @@ public readonly ref struct OptionReadOnlySpan<T> //:
         }
     }
 }
+*/

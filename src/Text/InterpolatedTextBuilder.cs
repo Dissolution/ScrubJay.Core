@@ -67,7 +67,7 @@ public ref struct InterpolatedTextBuilder<B>
     public void AppendFormatted(string? str, int alignment) => _builder.Align(str.AsSpan(), width: alignment);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted<T>(T value) => _builder.Append(value);
+    public void AppendFormatted<T>(T value) => _builder.Append<T>(value);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AppendFormatted<T>(T value, string? format) => _builder.Append(value, format);
 

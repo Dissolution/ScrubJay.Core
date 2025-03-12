@@ -632,4 +632,9 @@ public static class TextHelper
         return buffer.AsString();
     }
 #endregion
+
+    public static string Render(ref InterpolatedTextBuilder<TextBuilder> interpolatedText)
+    {
+        return interpolatedText.ToStringAndDispose();
+    }
 }

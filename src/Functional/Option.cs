@@ -1,4 +1,5 @@
-﻿// CA1716: Identifiers should not match keywords
+﻿/*
+// CA1716: Identifiers should not match keywords
 #pragma warning disable CA1716
 
 namespace ScrubJay.Functional;
@@ -57,3 +58,4 @@ public static class Option
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
 
 }
+*/

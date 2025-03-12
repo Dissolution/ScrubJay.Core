@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Collections;
+﻿using ScrubJay.Functional;
+
+namespace ScrubJay.Collections;
 
 /// <summary>
 /// A typed <see cref="IEnumerator{T}"/> over an <see cref="Array"/>
