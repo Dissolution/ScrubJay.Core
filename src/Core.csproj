@@ -93,12 +93,12 @@
         <Using Include="ScrubJay.Pooling"/>
 
         <!-- Recommendations for downstream too -->
-        <Using Include="ScrubJay.GlobalHelper" Static="true"/>
+        <Using Include="ScrubJay.Functional"/>
+        <Using Include="ScrubJay.Functional.Prelude" Static="true"/>
 
         <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.Enums"/>
         <Using Include="ScrubJay.Extensions"/>
-        <Using Include="ScrubJay.Functional"/>
         <Using Include="ScrubJay.Memory"/>
         <Using Include="ScrubJay.Text"/>
         <Using Include="ScrubJay.Utilities"/>

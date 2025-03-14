@@ -277,7 +277,7 @@ public static class Validate
         //where T : notnull
     {
         if (value is not null)
-            return OkEx(value); // do not implicitly cast in case value is Exception
+            return Ok(value); // do not implicitly cast in case value is Exception
         return new ArgumentNullException(valueName, message);
     }
 
@@ -302,7 +302,7 @@ public static class Validate
         if (obj is null)
             return new ArgumentNullException(objectName);
         if (obj is T)
-            return OkEx((T)obj);
+            return Ok((T)obj);
         return new ArgumentException($"{objectName} '{obj}' is not a {typeof(T)}", objectName);
     }
 
@@ -313,13 +313,13 @@ public static class Validate
     {
         if (obj is T)
         {
-            return OkEx((T)obj);
+            return Ok((T)obj);
         }
 
         // the only value that can be null is Nullable<>
         // but any non valueTypes (class, interface) can be null
         if (obj is null && (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) is not null))
-            return OkEx(default(T)!);
+            return Ok(default(T)!);
 
         return new ArgumentException($"{objectName} '{obj}' does not contain a {typeof(T)}", objectName);
     }
@@ -365,7 +365,7 @@ public static class Validate
             return new ArgumentNullException(collectionName);
         if (collection.Count == 0)
             return new ArgumentException("Collection cannot be empty", collectionName);
-        return OkEx(collection);
+        return Ok(collection);
     }
 
     public static Result<IReadOnlyCollection<T>, Exception> IsNotEmpty<T>(
@@ -377,7 +377,7 @@ public static class Validate
             return new ArgumentNullException(collectionName);
         if (collection.Count == 0)
             return new ArgumentException("Collection cannot be empty", collectionName);
-        return OkEx(collection);
+        return Ok(collection);
     }
 
     public static Result<string, Exception> IsNotEmpty(
@@ -609,6 +609,6 @@ public static class Validate
     {
         if (predicate(value))
             return createException();
-        return OkEx(value);
+        return Ok(value);
     }
 }

@@ -26,15 +26,13 @@ public readonly struct Option<T> :
     IEqualityOperators<Option<T>, Option<T>, bool>,
     IEqualityOperators<Option<T>, None, bool>,
     //IEqualityOperators<Option<T>, T, bool>,
-#endif
-    IEquatable<Option<T>>,
-    IEquatable<None>,
-    //IEquatable<T>,
-#if NET7_0_OR_GREATER
     IComparisonOperators<Option<T>, Option<T>, bool>,
     IComparisonOperators<Option<T>, None, bool>,
     //IComparisonOperators<Option<T>, T, bool>,
 #endif
+    IEquatable<Option<T>>,
+    IEquatable<None>,
+    //IEquatable<T>,
     IComparable<Option<T>>,
     IComparable<None>,
     //IComparable<T>,
@@ -43,7 +41,6 @@ public readonly struct Option<T> :
     IFormattable
 {
 #region Operators
-
     /// <summary>
     /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
     /// </summary>
@@ -71,17 +68,10 @@ public readonly struct Option<T> :
     public static implicit operator Option<T>(T value) => Some(value);
 
     /// <summary>
-    /// Implicitly convert a standalone <see cref="Functional.None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
+    /// Implicitly convert a standalone <see cref="Assist.None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Option<T>(None _) => None();
-
-    /// <summary>
-    /// Implicitly convert a standalone <see cref="Some{TSome}"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.Some"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Option<T>(Some<T> some) => Some(some.Value);
-
 
     // We pass equality and comparison down to T values
 
@@ -105,7 +95,6 @@ public readonly struct Option<T> :
     public static bool operator >=(Option<T> option, T some) => option.CompareTo(some) >= 0;
     public static bool operator <(Option<T> option, T some) => option.CompareTo(some) < 0;
     public static bool operator <=(Option<T> option, T some) => option.CompareTo(some) <= 0;
-
 #endregion
 
     /// <summary>
@@ -179,7 +168,7 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSomeAnd(Fun<T, bool> predicate) => _isSome && predicate(_value!);
+    public bool IsSomeAnd(Fn<T, bool> predicate) => _isSome && predicate(_value!);
 
 
     /// <summary>
@@ -243,7 +232,7 @@ public readonly struct Option<T> :
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T SomeOrElse(Fun<T> getValue)
+    public T SomeOrElse(Fn<T> getValue)
     {
         if (_isSome)
             return _value!;
@@ -258,7 +247,7 @@ public readonly struct Option<T> :
     /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
-    public TNew SelectOr<TNew>(Fun<T, TNew> map, TNew defaultValue)
+    public TNew SelectOr<TNew>(Fn<T, TNew> map, TNew defaultValue)
     {
         if (HasSome(out var value))
         {
@@ -268,7 +257,7 @@ public readonly struct Option<T> :
         return defaultValue;
     }
 
-    public TNew? SelectOrDefault<TNew>(Fun<T, TNew> map)
+    public TNew? SelectOrDefault<TNew>(Fn<T, TNew> map)
     {
         if (HasSome(out var value))
         {
@@ -286,7 +275,7 @@ public readonly struct Option<T> :
     /// <typeparam name="TNew"></typeparam>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
-    public TNew SelectOrElse<TNew>(Fun<T, TNew> map, Fun<TNew> getDefaultValue)
+    public TNew SelectOrElse<TNew>(Fn<T, TNew> map, Fn<TNew> getDefaultValue)
     {
         if (HasSome(out var value))
         {
@@ -297,7 +286,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(Act<T> onSome, Act onNone)
+    public void Match(Action<T> onSome, Action onNone)
     {
         if (_isSome)
         {
@@ -310,7 +299,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(Act<T> onSome, Act<None> onNone)
+    public void Match(Action<T> onSome, Action<None> onNone)
     {
         if (_isSome)
         {
@@ -323,7 +312,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(Fun<T, TResult> some, Fun<TResult> none)
+    public TResult Match<TResult>(Fn<T, TResult> some, Fn<TResult> none)
     {
         if (_isSome)
         {
@@ -336,7 +325,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(Fun<T, TResult> some, Fun<None, TResult> none)
+    public TResult Match<TResult>(Fn<T, TResult> some, Fn<None, TResult> none)
     {
         if (_isSome)
         {
@@ -356,7 +345,6 @@ public readonly struct Option<T> :
     }
 
 #region Compare
-
     /* None always compares as less than any Some */
 
     public int CompareTo(Option<T> other)
@@ -405,16 +393,16 @@ public readonly struct Option<T> :
     public int CompareTo(object? obj)
         => obj switch
         {
+#if !NET9_0_OR_GREATER
             Option<T> option => CompareTo(option),
+#endif
             T some => CompareTo(some),
             None none => CompareTo(none),
             _ => 1, // Unknown | Null | None values sort before
         };
-
 #endregion
 
 #region Equals
-
     public bool Equals(Option<T> other)
     {
         // If I am Some
@@ -436,20 +424,20 @@ public readonly struct Option<T> :
     {
         return obj switch
         {
+#if !NET9_0_OR_GREATER
             Option<T> option => Equals(option),
+#endif
             T value => Equals(value),
             None none => Equals(none),
             bool isSome => _isSome == isSome,
             _ => false,
         };
     }
-
 #endregion
 
 #region LINQ + IEnumerable
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Option<TNew> Select<TNew>(Fun<T, TNew> selector)
+    public Option<TNew> Select<TNew>(Fn<T, TNew> selector)
     {
         if (_isSome)
             return Some<TNew>(selector(_value!));
@@ -457,7 +445,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Option<TNew> SelectMany<TNew>(Fun<T, Option<TNew>> newSelector)
+    public Option<TNew> SelectMany<TNew>(Fn<T, Option<TNew>> newSelector)
     {
         if (_isSome)
         {
@@ -469,8 +457,8 @@ public readonly struct Option<T> :
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Option<TNew> SelectMany<TKey, TNew>(
-        Fun<T, Option<TKey>> keySelector,
-        Fun<T, TKey, TNew> newSelector)
+        Fn<T, Option<TKey>> keySelector,
+        Fn<T, TKey, TNew> newSelector)
     {
         if (_isSome && keySelector(_value!).HasSome(out var key))
         {
@@ -492,7 +480,7 @@ public readonly struct Option<T> :
     /// <param name="predicate"></param>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
-    public Option<T> Where(Fun<T, bool> predicate)
+    public Option<T> Where(Fn<T, bool> predicate)
     {
         if (HasSome(out var value) && predicate(value))
             return Some<T>(_value!);
@@ -546,7 +534,6 @@ public readonly struct Option<T> :
             // Do nothing
         }
     }
-
 #endregion
 
     public override int GetHashCode()

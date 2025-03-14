@@ -1,26 +1,27 @@
-﻿#pragma warning disable CA1715
+﻿// Prefix generic type parameter with T
+#pragma warning disable CA1715
 
 namespace ScrubJay.Text;
 
 [PublicAPI]
 public static class TextBuilderExtensions
 {
+    /// <summary>
+    /// Appends the name of a <see cref="Type"/> to this <typeparamref name="B"/>
+    /// </summary>
     public static B AppendType<B>(this B builder, Type? type)
         where B : TextBuilderBase<B>
         => builder.Append(type.NameOf());
 
-#region AppendIf
+
     public static B AppendIf<B, T>(this B builder, bool condition, T trueValue)
         where B : TextBuilderBase<B>
     {
         if (condition)
         {
-            return builder.Append<T>(trueValue);
+            builder.Append<T>(trueValue);
         }
-        else
-        {
-            return builder;
-        }
+        return builder;
     }
 
     public static B AppendIf<B, T>(this B builder, bool condition,
@@ -30,134 +31,137 @@ public static class TextBuilderExtensions
     {
         if (condition)
         {
-            return builder.Append<T>(trueValue);
+            builder.Append<T>(trueValue);
         }
         else
         {
-            return builder.Append<T>(falseValue);
+            builder.Append<T>(falseValue);
         }
+        return builder;
     }
 
-    public static B AppendIf<B>(this B builder, bool condition,
-        Action<B>? trueBuild,
-        Action<B>? falseBuild = null)
+    public static B AppendIf<B, T, F>(this B builder, bool condition,
+        T trueValue,
+        F falseValue)
         where B : TextBuilderBase<B>
     {
         if (condition)
         {
-            return builder.Invoke(trueBuild);
+            builder.Append<T>(trueValue);
         }
         else
         {
-            return builder.Invoke(falseBuild);
+            builder.Append<F>(falseValue);
         }
+        return builder;
     }
 
-    public static B AppendOk<B, O, E>(this B builder, Result<O, E> result)
+    public static B AppendIf<B, T>(this B builder, Option<T> option)
+        where B : TextBuilderBase<B>
+    {
+        if (option.HasSome(out var some))
+        {
+            builder.Append<T>(some);
+        }
+        return builder;
+    }
+
+    public static B AppendIf<B, T, E>(this B builder, Result<T, E> result)
         where B : TextBuilderBase<B>
     {
         if (result.HasOk(out var ok))
         {
-            return builder.Append<O>(ok);
+            builder.Append<T>(ok);
         }
         return builder;
     }
 
-    public static B AppendError<B, O, E>(this B builder, Result<O, E> result)
+    public static B AppendOk<B, T, E>(this B builder, Result<T, E> result)
+        where B : TextBuilderBase<B>
+    {
+        if (result.HasOk(out var ok))
+        {
+            builder.Append<T>(ok);
+        }
+        return builder;
+    }
+
+    public static B AppendError<B, T, E>(this B builder, Result<T, E> result)
         where B : TextBuilderBase<B>
     {
         if (result.HasError(out var error))
         {
-            return builder.Append<E>(error);
+            builder.Append<E>(error);
         }
         return builder;
     }
 
-    public static B AppendIf<B, O, E>(this B builder, Result<O, E> result,
-        Action<B, O>? okBuild,
-        Action<B, E>? errorBuild = null)
-        where B : TextBuilderBase<B>
-    {
-        result.Match(
-            ok => okBuild?.Invoke(builder, ok),
-            error => errorBuild?.Invoke(builder, error));
-        return builder;
-    }
-
-    public static B AppendSome<B, T>(this B builder, Option<T> option)
-        where B : TextBuilderBase<B>
-    {
-        if (option.HasSome(out var some))
-        {
-            return builder.Append<T>(some);
-        }
-        return builder;
-    }
-
-    public static B AppendIf<B, T>(this B builder, Option<T> option,
-        Action<B, T>? someBuild,
-        Action<B, None>? noneBuild = null)
-        where B : TextBuilderBase<B>
-    {
-        if (option.HasSome(out var some))
-        {
-            someBuild?.Invoke(builder, some);
-        }
-        else
-        {
-            noneBuild?.Invoke(builder, default);
-        }
-        return builder;
-    }
-#endregion
 
     public static B InvokeIf<B>(this B builder, bool condition,
-        Action<B>? trueBuild,
-        Action<B>? falseBuild = null)
+        Action<B>? onTrue,
+        Action<B>? onFalse = null)
         where B : TextBuilderBase<B>
     {
         if (condition)
         {
-            trueBuild?.Invoke(builder);
+            onTrue?.Invoke(builder);
         }
         else
         {
-            falseBuild?.Invoke(builder);
+            onFalse?.Invoke(builder);
         }
         return builder;
     }
 
     public static B InvokeIf<B, T>(this B builder, Option<T> option,
-        Action<B, T>? someBuild,
-        Action<B>? noneBuild = null)
+        Action<B, T>? onSome,
+        Action<B>? onNone = null)
         where B : TextBuilderBase<B>
     {
         if (option.HasSome(out var some))
         {
-            someBuild?.Invoke(builder, some);
+            onSome?.Invoke(builder, some);
         }
         else
         {
-            noneBuild?.Invoke(builder);
+            onNone?.Invoke(builder);
         }
         return builder;
     }
 
-    public static B InvokeIf<B, O, E>(this B builder, Result<O,E> result,
-        Action<B, O>? okBuild,
-        Action<B, E>? errorBuild = null)
+    public static B InvokeIf<B, T>(this B builder, Option<T> option,
+        Action<B, T>? onSome,
+        Action<B, None>? onNone = null)
+        where B : TextBuilderBase<B>
+    {
+        if (option.HasSome(out var some))
+        {
+            onSome?.Invoke(builder, some);
+        }
+        else
+        {
+            onNone?.Invoke(builder, None());
+        }
+        return builder;
+    }
+
+    public static B InvokeIf<B, T, E>(this B builder, Result<T,E> result,
+        Action<B, T>? onOk,
+        Action<B, E>? onError = null)
         where B : TextBuilderBase<B>
     {
         if (result.HasOkOrError(out var ok, out var error))
         {
-            okBuild?.Invoke(builder, ok);
+            onOk?.Invoke(builder, ok);
         }
         else
         {
-            errorBuild?.Invoke(builder, error);
+            onError?.Invoke(builder, error);
         }
         return builder;
     }
+
+
 
     public delegate void BuildEnumeratedSplitValue<B, T>(B builder, ReadOnlySpan<T> segment)
         where B : TextBuilderBase<B>

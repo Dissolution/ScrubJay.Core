@@ -1,4 +1,5 @@
 ﻿// CA1716: Identifiers should not match keywords
+
 #pragma warning disable CA1716
 
 namespace ScrubJay.Functional;
@@ -48,12 +49,19 @@ public static class Option
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static None None() => Functional.None.Default;
+    public static None None() => default(None);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None<T>() => Option<T>.None();
+    public static Option<T> None<T>() => default(Option<T>);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
 
+
+    public static Option<T> Flatten<T>(this Option<Option<T>> nestedOption)
+    {
+        if (nestedOption.HasSome(out var option) && option.HasSome(out var value))
+            return Some<T>(value);
+        return None<T>();
+    }
 }

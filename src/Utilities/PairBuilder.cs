@@ -33,7 +33,7 @@ public ref struct PairBuilder<TKey, TValue>
             return new InvalidOperationException("No key has been specified");
         if (!_value.HasSome(out var value))
             return new InvalidOperationException("No value has been specified");
-        return OkEx(Pair.New(key, value));
+        return Ok(Pair.New(key, value));
     }
 
     private void AddError(Exception error)

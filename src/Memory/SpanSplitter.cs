@@ -39,10 +39,10 @@ public ref struct SpanSplitter<T> // : IEnumerable<ReadOnlySpan<T>>
     // The span being split
     private readonly ReadOnlySpan<T> _span;
     /// The single-item separator for <see cref="SpanSplitterSeparatorKind.Item"/>
-    private readonly T _separator = default!;
+    private readonly T _separator;
     /// <see cref="SpanSplitterSeparatorKind.Span"/>: A multi-item separator<br/>
     /// <see cref="SpanSplitterSeparatorKind.AnySpan"/>: Multiple single-item separators
-    private readonly ReadOnlySpan<T> _separators = default!;
+    private readonly ReadOnlySpan<T> _separators;
     /// How are we storing the separator(s)?
     private readonly SpanSplitterSeparatorKind _separatorKind;
     /// Options for Splitting
@@ -80,6 +80,7 @@ public ref struct SpanSplitter<T> // : IEnumerable<ReadOnlySpan<T>>
     {
         _span = span;
         _separator = separator;
+        _separators = default!;
         _separatorKind = SpanSplitterSeparatorKind.Item;
         _options = options;
     }
@@ -87,6 +88,7 @@ public ref struct SpanSplitter<T> // : IEnumerable<ReadOnlySpan<T>>
     private SpanSplitter(ReadOnlySpan<T> span, ReadOnlySpan<T> separators, SpanSplitterSeparatorKind separatorKind, SpanSplitterOptions options)
     {
         _span = span;
+        _separator = default!;
         _separators = separators;
         _separatorKind = separators.Length == 0 ? SpanSplitterSeparatorKind.Empty : separatorKind;
         _options = options;

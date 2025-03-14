@@ -70,4 +70,11 @@ public static class ObjectExtensions
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> As<T>(this object? input) => input is T ? Some((T)input) : None<T>();
+
+    public static Option<T> NotNull<T>(this T? input)
+    {
+        if (input is null)
+            return None<T>();
+        return Some<T>(input);
+    }
 }

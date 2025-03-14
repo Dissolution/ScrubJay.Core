@@ -9,7 +9,7 @@ namespace ScrubJay.Comparison;
 /// A helper for all Equality Comparison
 /// </summary>
 [PublicAPI]
-public static class Equate
+public partial class Equate
 {
     private static readonly ConcurrentTypeMap<IEqualityComparer> _equalityComparers = new()
     {
@@ -40,8 +40,8 @@ public static class Equate
 
     public static IEqualityComparer<T> GetEqualityComparerFor<T>(T? _) => EqualityComparer<T>.Default;
 
-    public static IEqualityComparer<T> CreateEqualityComparer<T>(Func<T?, T?, bool> equals, Func<T?, int> getHashCode)
-        => new FuncEqualityComparer<T>(equals, getHashCode);
+    public static IEqualityComparer<T> CreateEqualityComparer<T>(Fn<T?, T?, bool> equals, Fn<T, int> getHashCode)
+        => new DelegatedEqualityComparer<T>(equals, getHashCode);
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

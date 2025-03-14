@@ -139,7 +139,7 @@ public sealed class ArrayEnumerator<T> : ITryEnumerator<T>
         if (newIndex < _minIndex || newIndex > _maxIndex)
             return new InvalidOperationException("Enumeration has completed");
         _index = newIndex;
-        return OkEx(_array[newIndex]);
+        return Ok(_array[newIndex]);
     }
 
     public void Reset()

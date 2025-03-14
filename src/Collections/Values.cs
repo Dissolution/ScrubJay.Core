@@ -263,7 +263,7 @@ public readonly struct Values<T> :
     public T[] ToArray() => Match(static () => [], static value => [value], static values => values);
 
 
-    public void Match(Act onEmpty, Act<T> onValue, Act<T[]> onValues)
+    public void Match(Action onEmpty, Action<T> onValue, Action<T[]> onValues)
     {
         object? obj = _obj;
         if (obj is null)
@@ -282,7 +282,7 @@ public readonly struct Values<T> :
         }
     }
 
-    public TResult Match<TResult>(Fun<TResult> onEmpty, Fun<T, TResult> onValue, Fun<T[], TResult> onValues)
+    public TResult Match<TResult>(Fn<TResult> onEmpty, Fn<T, TResult> onValue, Fn<T[], TResult> onValues)
     {
         object? obj = _obj;
         switch (obj)

@@ -216,7 +216,7 @@ public class PooledStack<T> : PooledArray<T>,
 
         var peeked = _array.Slice(new Range(start, size));
         peeked.Reverse();
-        return OkEx(peeked);
+        return Ok(peeked);
     }
 
     public Result<Unit, Exception> TryPeekManyTo(Span<T> buffer)
@@ -275,7 +275,7 @@ public class PooledStack<T> : PooledArray<T>,
         _size = start;
         var popped = _array.Slice(new Range(start, size));
         popped.Reverse();
-        return OkEx(popped);
+        return Ok(popped);
     }
 
     public Result<Unit, Exception> TryPopManyTo(Span<T> buffer)

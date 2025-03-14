@@ -74,7 +74,7 @@ public static class TestHelper
     public static IReadOnlyCollection<Type> AllKnownTypes { get; }
 
     public static IReadOnlyCollection<TestClassRecord?> TestClassRecords { get; }
-    
+
     static TestHelper()
     {
         AllKnownTypes = AppDomain
@@ -92,7 +92,7 @@ public static class TestHelper
             .Append(null)
             .ToList();
     }
-    
+
 
 }
 

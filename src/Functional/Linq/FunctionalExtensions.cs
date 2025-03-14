@@ -1,7 +1,7 @@
 ﻿namespace ScrubJay.Functional.Linq;
 
 [PublicAPI]
-public static class FunctionalLinq
+public static class FunctionalExtensions
 {
     public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
         this IEnumerable<TIn> enumerable,
@@ -47,7 +47,7 @@ public static class FunctionalLinq
         if (source is IList<T> list)
         {
             if (list.Count == 1)
-                return OkEx(list[0]);
+                return Ok(list[0]);
 
             return new ArgumentException($"Source list has {list.Count} value(s)", nameof(source));
         }
@@ -57,7 +57,7 @@ public static class FunctionalLinq
             {
                 using var e = collection.GetEnumerator();
                 e.MoveNext();
-                return OkEx(e.Current);
+                return Ok(e.Current);
             }
 
             return new ArgumentException($"Source collection has {collection.Count} value(s)", nameof(source));
@@ -71,10 +71,10 @@ public static class FunctionalLinq
 
             T value = e.Current;
 
-            if (!e.MoveNext())
+            if (e.MoveNext())
                 return new ArgumentException("Source has more than one value");
 
-            return OkEx(value);
+            return Ok(value);
         }
     }
 
@@ -106,7 +106,7 @@ public static class FunctionalLinq
                     }
 
                     // exactly one matching value
-                    return OkEx(value);
+                    return Ok(value);
                 }
             }
 
@@ -130,7 +130,7 @@ public static class FunctionalLinq
                 }
 
                 // exactly one matching value
-                return OkEx(value);
+                return Ok(value);
             }
         }
 
@@ -169,7 +169,7 @@ public static class FunctionalLinq
         if (source is IList<T> list)
         {
             if (list.Count > 0)
-                return OkEx(list[0]);
+                return Ok(list[0]);
 
             return new ArgumentException("Source list has 0 values", nameof(source));
         }
@@ -179,7 +179,7 @@ public static class FunctionalLinq
             {
                 using var e = collection.GetEnumerator();
                 e.MoveNext();
-                return OkEx(e.Current);
+                return Ok(e.Current);
             }
 
             return new ArgumentException("Source collection has 0 values", nameof(source));
@@ -192,7 +192,7 @@ public static class FunctionalLinq
                 return new ArgumentException("Source has 0 values");
 
             T value = e.Current;
-            return OkEx(value);
+            return Ok(value);
         }
     }
 
@@ -216,7 +216,7 @@ public static class FunctionalLinq
             {
                 value = list[i];
                 if (predicate(value))
-                    return OkEx(value);
+                    return Ok(value);
             }
 
             return new ArgumentException("Source list has no matching values");
@@ -228,7 +228,7 @@ public static class FunctionalLinq
         {
             value = e.Current;
             if (predicate(value))
-                return OkEx(value);
+                return Ok(value);
         }
 
         return new ArgumentException("Source has no matching values");
@@ -285,7 +285,7 @@ public static class FunctionalLinq
                     minimum = value;
             }
 
-            return OkEx(minimum);
+            return Ok(minimum);
         }
 
         using IEnumerator<T> e = source.GetEnumerator();

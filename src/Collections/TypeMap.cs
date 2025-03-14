@@ -37,7 +37,7 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
         return value;
     }
 
-    public TValue GetOrAdd<TKey>(Fun<TValue> addValue)
+    public TValue GetOrAdd<TKey>(Fn<TValue> addValue)
     {
         var keyType = typeof(TKey);
         if (!base.TryGetValue(keyType, out var value))
@@ -48,7 +48,7 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
         return value;
     }
 
-    public TValue GetOrAdd<TKey>(Fun<Type, TValue> addValue)
+    public TValue GetOrAdd<TKey>(Fn<Type, TValue> addValue)
     {
         var keyType = typeof(TKey);
         if (!base.TryGetValue(keyType, out var value))

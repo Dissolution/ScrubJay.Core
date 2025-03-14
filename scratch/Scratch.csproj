@@ -3,7 +3,7 @@
     <PropertyGroup>
         <AssemblyName>ScrubJay.Scratch</AssemblyName>
         <RootNamespace>ScrubJay.Scratch</RootNamespace>
-        
+
         <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <LangVersion>latest</LangVersion>
@@ -12,7 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="ScrubJay.GlobalHelper" Static="true"/>
+        <Using Include="ScrubJay.Functional.Prelude" Static="true"/>
 
         <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.Enums"/>
@@ -23,7 +23,7 @@
         <Using Include="ScrubJay.Utilities"/>
         <Using Include="ScrubJay.Validation"/>
     </ItemGroup>
-    
+
     <ItemGroup>
       <ProjectReference Include="..\src\Core.csproj" />
     </ItemGroup>

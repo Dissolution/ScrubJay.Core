@@ -59,7 +59,7 @@ public ref struct SpanWriter<T>
         {
             _span[pos] = item;
             _position = newPos;
-            return OkEx(Unit());
+            return Ok(Unit());
         }
 
         return new InvalidOperationException($"Could not write item '{item}': No capacity remaining");
@@ -73,7 +73,7 @@ public ref struct SpanWriter<T>
         {
             items.CopyTo(_span[pos..]);
             _position = newPos;
-            return OkEx(Unit());
+            return Ok(Unit());
         }
 
         return new InvalidOperationException($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
@@ -82,14 +82,14 @@ public ref struct SpanWriter<T>
     public Result<Unit, Exception> TryWriteMany(params T[]? items)
     {
         if (items is null)
-            return OkEx(Unit());
+            return Ok(Unit());
         int pos = _position;
         int newPos = pos + items.Length;
         if (newPos <= Capacity)
         {
             items.CopyTo(_span[pos..]);
             _position = newPos;
-            return OkEx(Unit());
+            return Ok(Unit());
         }
 
         return new InvalidOperationException($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
@@ -98,7 +98,7 @@ public ref struct SpanWriter<T>
     public Result<Unit, Exception> TryWriteMany(IEnumerable<T>? items)
     {
         if (items is null)
-            return OkEx(Unit());
+            return Ok(Unit());
 
         int pos = _position;
 

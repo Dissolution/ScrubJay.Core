@@ -11,6 +11,11 @@ using ScrubJay.Memory;
 using ScrubJay.Validation;
 using ScrubJay.Text;
 
+ReadOnlySpan<char> left = ['a', 'b', 'c'];
+ReadOnlySpan<char> right = "abc".ToCharArray().AsSpan();
+
+var eq = Equate<ReadOnlySpan<char>>.Values(left, right);
+Debugger.Break();
 
 
 char[] chars = new char[128];

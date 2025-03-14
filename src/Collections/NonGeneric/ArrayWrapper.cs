@@ -14,7 +14,7 @@ public sealed class ArrayWrapper<T> :
         string? objName = null)
     {
         if (obj.CanBe<T>(out var value))
-            return OkEx(value);
+            return Ok(value);
         return new ArgumentException($"Object `{obj}` is not a {typeof(T).NameOf()}", objName);
     }
 
