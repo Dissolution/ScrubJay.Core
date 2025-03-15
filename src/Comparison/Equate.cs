@@ -1,7 +1,9 @@
-﻿using System.Reflection;
-using ScrubJay.Collections;
+﻿// ReSharper disable InvokeAsExtensionMethod
 
-// ReSharper disable InvokeAsExtensionMethod
+using System.Reflection;
+using ScrubJay.Collections;
+using ScrubJay.Expressions;
+using ScrubJay.Functional.Linq;
 
 namespace ScrubJay.Comparison;
 
@@ -9,43 +11,165 @@ namespace ScrubJay.Comparison;
 /// A helper for all Equality Comparison
 /// </summary>
 [PublicAPI]
-public partial class Equate
+public static class Equate
 {
-    private static readonly ConcurrentTypeMap<IEqualityComparer> _equalityComparers = new()
+    private static readonly ConcurrentTypeMap<object?> _equalityComparers = new()
     {
         [typeof(object)] = ObjectComparer.Default,
     };
 
-    private static IEqualityComparer FindEqualityComparer(Type type)
-    {
-        return typeof(EqualityComparer<>)
-            .MakeGenericType(type)
-            .GetProperty("Default", BindingFlags.Public | BindingFlags.Static)
-            .ThrowIfNull()
-            .GetValue(null)
-            .ThrowIfNot<IEqualityComparer>();
-    }
 
-    public static IEqualityComparer GetEqualityComparer(Type? type)
+    private static Result<object, Exception> TryFindEqualityComparer(Type? type)
     {
         if (type is null)
-            return ObjectComparer.Default;
-        return _equalityComparers.GetOrAdd(type, static t => FindEqualityComparer(t));
+            return new ArgumentNullException(nameof(type));
+
+        if (type.IsByRef)
+        {
+            var elementType = type.GetElementType();
+            Debug.Assert(elementType is not null);
+            return TryFindEqualityComparer(elementType);
+        }
+
+#if !NETFRAMEWORK && !NETSTANDARD2_0
+        if (type.IsByRefLike)
+        {
+            // allows ref struct
+            return TryCreateDelegateEqualityComparer(type);
+        }
+#endif
+
+        var defaultEqualityComparer = typeof(EqualityComparer<>)
+            .MakeGenericType(type)
+            .GetMethod("get_Default", BindingFlags.NonPublic | BindingFlags.Static)
+            .ThrowIfNull($"Could not find 'get_Default' method on EqualityComparer<{type.NameOf()}>")
+            .Invoke(null, null)
+            .ThrowIfNot<IEqualityComparer>();
+        return Ok<object>(defaultEqualityComparer);
     }
 
-    public static IEqualityComparer<T> GetEqualityComparer<T>() => EqualityComparer<T>.Default;
+    private static Result<IEqualityComparer<T>, Exception> TryFindEqualityComparer<T>()
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        var result = TryFindEqualityComparer(typeof(T));
+        if (result.HasOkOrError(out var ok, out var error))
+        {
+            if (ok is IEqualityComparer<T> equalityComparer)
+                return Ok(equalityComparer);
+            return new InvalidOperationException("Could not get Generic Equality Comparer");
+        }
+        return error;
+    }
+
+    private static Result<object, Exception> TryCreateDelegateEqualityComparer(Type type)
+    {
+        //Debug.Assert(type.IsByRefLike);
+
+        // Special handling for Span<T>, ReadOnlySpan<T>
+        if (type.IsGenericType)
+        {
+            var typeDef = type.GetGenericTypeDefinition();
+            Debug.Assert(typeDef is not null);
+            if (typeDef == typeof(ReadOnlySpan<>))
+            {
+                var method = typeof(MemoryExtensions)
+                    .GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Where(method => method.Name == nameof(MemoryExtensions.SequenceEqual))
+                    .Where(method =>
+                    {
+                        var mParams = method.GetParameters();
+                        if (mParams.Length != 2)
+                            return false;
+                        var xType = mParams[0].ParameterType;
+                        var yType = mParams[1].ParameterType;
+
+                        var xis = xType.GetGenericTypeDefinition() == typeDef;
+                        var yis = yType.GetGenericTypeDefinition() == typeDef;
+                        if (!xis || !yis)
+                            return false;
+
+                        return true;
+                    })
+                    .OneOrDefault();
+                Debug.Assert(method is not null);
+                method = method!.MakeGenericMethod(type.GenericTypeArguments);
+
+                var fn = new LambdaBuilder(typeof(Fn<,,>), type, type, typeof(bool))
+                    .ParamNames("x", "y")
+                    .Body(b => b.Call(method, b.Parameters))
+                    .TryCompile()
+                    .OkOrThrow();
+                //
+                //
+                //
+                // var xParam = Expression.Parameter(type, "x");
+                // var yParam = Expression.Parameter(type, "y");
+                // var call = Expression.Call(null, method, xParam, yParam);
+                // var fnType = typeof(Fn<,,>).MakeGenericType(type, type, typeof(bool));
+                // var lambda = Expression.Lambda(fnType, call, xParam, yParam);
+                // var fn = lambda.Compile();
+
+                var comparer =
+                    typeof(DelegatedEqualityComparer<>)
+                        .MakeGenericType(type)
+                        .GetConstructor([fn.GetType(),])
+                        .ThrowIfNull()
+                        .Invoke([fn,])
+                        .ThrowIfNull();
+                return Ok(comparer);
+            }
+            else
+            {
+                Debugger.Break();
+                throw new NotImplementedException();
+            }
+        }
+        else
+        {
+            Debugger.Break();
+            throw new NotImplementedException();
+        }
+    }
 
 
-    public static IEqualityComparer GetEqualityComparerFor(object? obj) => GetEqualityComparer(obj?.GetType());
+    public static IEqualityComparer GetEqualityComparer(Type type)
+    {
+        var comparer = _equalityComparers
+            .GetOrAdd(type, static t => TryFindEqualityComparer(t).OkOr(null!))
+            .As<IEqualityComparer>();
+        return comparer.SomeOrThrow();
+    }
 
-    public static IEqualityComparer<T> GetEqualityComparerFor<T>(T? _) => EqualityComparer<T>.Default;
+    public static IEqualityComparer<T> GetEqualityComparer<T>()
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        var comparer = _equalityComparers
+            .GetOrAdd(typeof(T), static _ => TryFindEqualityComparer<T>().OkOr(null!))
+            .As<IEqualityComparer<T>>();
+        return comparer.SomeOrThrow();
+    }
+
+    public static IEqualityComparer<T> GetEqualityComparerFor<T>(T? _)
+        => GetEqualityComparer<T>();
+
 
     public static IEqualityComparer<T> CreateEqualityComparer<T>(Fn<T?, T?, bool> equals, Fn<T, int> getHashCode)
         => new DelegatedEqualityComparer<T>(equals, getHashCode);
 
 
+#if NET9_0_OR_GREATER
+    public static bool Values<T>(T? left, T? right)
+        where T : allows ref struct
+        => GetEqualityComparer<T>().Equals(left!, right!);
+
+#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Values<T>(T? left, T? right) => EqualityComparer<T>.Default.Equals(left!, right!);
+#endif
 
     public static bool Values<T>(T? left, T? right, IEqualityComparer<T>? comparer)
     {
@@ -63,14 +187,11 @@ public partial class Equate
     }
 
 
-
     public static bool Objects(object? left, object? right) => ObjectComparer.Default.Equals(left, right);
 
 
-
-
-
 #region Type
+
     /// <summary>
     /// Are the <see cref="System.Type"/> parameters <paramref name="left"/> and <paramref name="right"/> equal?
     /// </summary>
@@ -85,5 +206,6 @@ public partial class Equate
     /// Are the <see cref="System.Type"/>s of <paramref name="left"/> and <paramref name="right"/> equal?
     /// </summary>
     public static bool TypesOf(object? left, object? right) => left?.GetType() == right?.GetType();
+
 #endregion
 }

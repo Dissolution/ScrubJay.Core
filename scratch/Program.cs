@@ -6,15 +6,48 @@ using System.Drawing;
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using ScrubJay.Extensions;
 using ScrubJay.Memory;
 using ScrubJay.Validation;
 using ScrubJay.Text;
+using ScrubJay.Scratch.Playground;
 
+object obj = (decimal)147.13m;
+// if (obj is char)
+// {
+//     char ch = (char)obj;
+//     Console.WriteLine(ch);
+// }
+// else
+// {
+//     Console.WriteLine("IS NOT");
+// }
+
+ref char ch = ref Notsafe.TryUnboxRef<char>(obj);
+if (Notsafe.IsNullRef(ref ch))
+{
+    Console.WriteLine("Null ref");
+}
+else
+{
+    Console.WriteLine(ch);
+}
+
+ReadOnlySpan<char> text = new ReadOnlySpan<char>(in ch);
+var str = text.AsString();
+Console.WriteLine(str);
+
+
+
+
+/*
 ReadOnlySpan<char> left = ['a', 'b', 'c'];
 ReadOnlySpan<char> right = "abc".ToCharArray().AsSpan();
 
-var eq = Equate<ReadOnlySpan<char>>.Values(left, right);
+var eq = Equate
+    .GetEqualityComparer<ReadOnlySpan<char>>()
+    .Equals(left, right);
 Debugger.Break();
 
 
@@ -58,4 +91,5 @@ var getter = dyn.CreateDelegate<Func<Point, int>>();
 
 int x3 = getter(pt);
 
+*/
 Debugger.Break();

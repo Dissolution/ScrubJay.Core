@@ -1,6 +1,7 @@
 ﻿#pragma warning disable S907, S3236, S3247
 
 using ScrubJay.Constraints;
+using ArgumentNullException = System.ArgumentNullException;
 using Unit = ScrubJay.Functional.Unit;
 
 namespace ScrubJay.Validation;
@@ -610,5 +611,19 @@ public static class Validate
         if (predicate(value))
             return createException();
         return Ok(value);
+    }
+
+
+    public static Result<Type, Exception> Implements(
+        Type? type,
+        Type subType,
+        [CallerArgumentExpression(nameof(type))]
+        string? typeName = null)
+    {
+        if (type is null)
+            return new ArgumentNullException(typeName);
+        if (!type.Implements(subType))
+            return new ArgumentException($"Type `{type.NameOf()}` does not implement `{subType.NameOf()}`", typeName);
+        return type;
     }
 }

@@ -62,7 +62,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.22.0-alpha</PackageVersion>
+        <PackageVersion>0.30.0-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->

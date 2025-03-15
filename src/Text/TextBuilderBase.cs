@@ -29,7 +29,9 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     protected readonly PooledList<char> _text;
 
     int ICollection<char>.Count => Length;
+
     bool ICollection<char>.IsReadOnly => false;
+
     int IReadOnlyCollection<char>.Count => Length;
 
     char IReadOnlyList<char>.this[int index] => this[index];
@@ -78,7 +80,8 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     protected internal virtual void InterpolatedExecute(Action<B> build) => build(_builder);
 
 
-    #region Append
+#region Append
+
     /// <summary>
     /// Append a <see cref="char">character</see>
     /// </summary>
@@ -107,7 +110,10 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
 
     public virtual B Append(char[]? chars)
     {
-        _text.AddMany(new text(chars));
+        if (chars is not null)
+        {
+            _text.AddMany(new text(chars));
+        }
         return _builder;
     }
 
@@ -120,7 +126,10 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     /// </returns>
     public virtual B Append(string? str)
     {
-        _text.AddMany(str.AsSpan());
+        if (str is not null)
+        {
+            _text.AddMany(str.AsSpan());
+        }
         return _builder;
     }
 
@@ -279,27 +288,38 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     /// <returns></returns>
     public virtual B NewLine() => Append(Environment.NewLine);
 
-    #region AppendLine
+#region AppendLine
+
     public B AppendLine(char ch) => Append(ch).NewLine();
+
     public B AppendLine(scoped text text) => Append(text).NewLine();
+
     public B AppendLine(char[]? chars) => Append(chars).NewLine();
+
     public B AppendLine(string? str) => Append(str).NewLine();
+
     public B AppendLine<T>(T? value) => Append<T>(value).NewLine();
+
     public B AppendLine<T>(T? value, scoped text format, IFormatProvider? provider) => Append<T>(value, format, provider).NewLine();
+
     public B AppendLine<T>(T? value, string? format, IFormatProvider? provider) => Append<T>(value, format, provider).NewLine();
+
     public B AppendLine(
         [InterpolatedStringHandlerArgument("")]
         ref InterpolatedTextBuilder<B> interpolatedTextBuilder) => NewLine();
-#endregion
+
 #endregion
 
-    #region Format
+#endregion
+
+#region Format
+
     // https://doc.rust-lang.org/std/fmt/
 
-
-    #endregion
+#endregion
 
 #region Align
+
     public B Align(
         char ch,
         int width,
@@ -396,7 +416,8 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
             .Repeat(post, paddingChar);
     }
 
-    public B AlignFormat<T>(T? value,
+    public B AlignFormat<T>(
+        T? value,
         int width,
         string? format = null,
         char paddingChar = ' ',
@@ -495,11 +516,11 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
             .Repeat(post, paddingChar);
     }
 
-
 #endregion
 
 
 #region Enumeration
+
     public B Enumerate<T>(ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
     {
         foreach (var t in values)
@@ -550,7 +571,9 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     }
 
 #region Delimit
+
 #region ReadOnlySpan
+
     public B Delimit<T>(char delimiter, ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
     {
         int len = values.Length;
@@ -602,12 +625,17 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     }
 
     public B DelimitAppend<T>(char delimiter, ReadOnlySpan<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+
     public B DelimitAppend<T>(string delimiter, ReadOnlySpan<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+
     public B DelimitAppend<T>(scoped text delimiter, ReadOnlySpan<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+
     public B DelimitAppend<T>(Action<B> onDelimit, ReadOnlySpan<T> values) => Delimit(onDelimit, values, static (tb, value) => tb.Append(value));
+
 #endregion
 
 #region IEnumerable
+
     public B Delimit<T>(char delimiter, IEnumerable<T> values, Action<B, T> onBuilderValue)
     {
         using var e = values.GetEnumerator();
@@ -660,14 +688,21 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     }
 
     public B DelimitAppend<T>(char delimiter, IEnumerable<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+
     public B DelimitAppend<T>(string delimiter, IEnumerable<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+
     public B DelimitAppend<T>(scoped text delimiter, IEnumerable<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+
     public B DelimitAppend<T>(Action<B> onDelimit, IEnumerable<T> values) => Delimit(onDelimit, values, static (tb, value) => tb.Append(value));
+
 #endregion
+
 #endregion
+
 #endregion
 
 #region Insertion
+
     void IList<char>.Insert(int index, char item) => _text.TryInsert(index, item).ThrowIfError();
 
     public B Insert(Index index, char ch)
@@ -683,6 +718,7 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     }
 
     public B Insert(Index index, string? str) => Insert(index, str.AsSpan());
+
 #endregion
 
     public B Allocate(int count, WSAct<char> write)
@@ -794,11 +830,11 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     }
 
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public text AsText() => _text.Written;
 
     IEnumerator IEnumerable.GetEnumerator() => _text.GetEnumerator();
+
     IEnumerator<char> IEnumerable<char>.GetEnumerator() => _text.GetEnumerator();
 
     [HandlesResourceDisposal]

@@ -37,6 +37,18 @@ public static class ObjectExtensions
         return false;
     }
 
+    public static Result<T, Exception> Is<T>(
+        this object? obj,
+        [CallerArgumentExpression(nameof(obj))]
+        string? objName = null)
+        => obj switch
+        {
+            null => new ArgumentNullException(objName),
+            T value => Ok(value),
+            _ => new ArgumentException($"Object `{obj}` is not a `{typeof(T).NameOf()}`", objName),
+        };
+
+
     /// <summary>
     /// Tests if this <see cref="object"/> can be a <typeparamref name="T"/> value,<br/>
     /// which includes allowing <c>null</c> for <c>class</c> and <c>interface</c> types

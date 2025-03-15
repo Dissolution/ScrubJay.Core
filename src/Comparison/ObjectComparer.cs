@@ -30,7 +30,7 @@ public sealed class ObjectComparer :
         return Equate.GetEqualityComparer(yType).Equals(x, y);
     }
 
-    public int GetHashCode(object? obj) => Hasher.GetHashCode(obj);
+    public int GetHashCode(object? obj) => Hasher.GetHashCode<object>(obj);
 
     public int Compare(object? x, object? y)
     {

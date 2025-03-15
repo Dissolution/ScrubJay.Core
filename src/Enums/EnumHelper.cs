@@ -173,7 +173,7 @@ public class EnumMemberInfo<TEnum> : EnumMemberInfo
     {
         foreach (string? parseName in ParseNames)
         {
-            if (TextHelper.Equal(parseName, text, StringComparison.Ordinal))
+            if (TextHelper.Equate(parseName, text, StringComparison.Ordinal))
                 return true;
         }
         return false;

@@ -59,7 +59,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
 #if DEBUG
         var removed = newWhiteSpace.TryRemoveIndent();
         Debug.Assert(removed.HasOk(out string? removedIndent));
-        Debug.Assert(TextHelper.Equal(indent, removedIndent));
+        Debug.Assert(TextHelper.Equate(indent, removedIndent));
 #else
         // no need to remove indent, will be discarded
 #endif
@@ -75,7 +75,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
     public override B Append(char ch)
     {
         // special behavior only if we're indented
-        if (_whitespace.HasIndent && _whitespace.NewLineIsOneChar(out char nl) && nl == ch)
+        if (_whitespace.HasIndent && _whitespace.NewLineIsOneChar(out char nl) && (nl == ch))
             return NewLine();
         _text.Add(ch);
         return _builder;
@@ -86,7 +86,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
         // special behavior only if we're indented
         if (_whitespace.HasIndent)
         {
-            if (TextHelper.Equal(text, _whitespace.NewLine))
+            if (TextHelper.Equate(text, _whitespace.NewLine))
                 return NewLine();
             return _builder.Delimit<B, char>(
                 static b => b.NewLine(),
@@ -98,12 +98,14 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
         return _builder;
     }
 
+    public override B Append(string? str) => Append(str.AsSpan());
+
     /// <summary>
     /// Is this Code at the start of a new line? (accounting for indents)
     /// </summary>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsOnStartOfNewLine() => _text.Count == 0 || _text.Written.EndsWith(_whitespace.NewLineAndIndents());
+    public bool IsOnStartOfNewLine() => (_text.Count == 0) || _text.Written.EndsWith(_whitespace.NewLineAndIndents());
 
     /// <summary>
     /// Ensures that this Code is at the start of a new line (accounting for indents)

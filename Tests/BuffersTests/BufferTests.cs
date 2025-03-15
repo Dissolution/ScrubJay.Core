@@ -408,7 +408,7 @@ public class BufferTests
         List<TestClassRecord> records = new List<TestClassRecord>();
         for (int i = 0; i < 10; i++)
         {
-            var obj = new TestClassRecord(i, "Record #{i}", i % 2 == 0);
+            var obj = new TestClassRecord(i, "Record #{i}", (i % 2) == 0);
             recordBuffer.Add(obj);
             records.Add(obj);
         }
@@ -455,7 +455,7 @@ public class BufferTests
 
         // with equality comparer
         {
-            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
+            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => ((a % 2) == 0) == ((b % 2) == 0), static i => i % 2);
             var found = buffer.TryFindIndex(3, itemComparer: oddnessEqualityComparer);
             Assert.True(found.HasSome(out int index));
             Assert.Equal(1, index); // first odd item is item #1
@@ -526,7 +526,7 @@ public class BufferTests
 
         // with equality comparer
         {
-            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => (a % 2 == 0) == (b % 2 == 0), static i => i % 2);
+            IEqualityComparer<int> oddnessEqualityComparer = Equate.CreateEqualityComparer<int>(static (a, b) => ((a % 2) == 0) == ((b % 2) == 0), static i => i % 2);
             var found = buffer.TryFindIndex([33, 22, 33], itemComparer: oddnessEqualityComparer);
             Assert.True(found.HasSome(out int index));
             Assert.Equal(1, index); // first odd/even/odd is 1,2,3

@@ -187,6 +187,22 @@ public static unsafe class Notsafe
         return ref ReturnRef<TStruct>();
     }
 
+    public static ref T TryUnboxRef<T>(object obj)
+    {
+        Debug.Assert(obj is not null);
+        Emit.Ldarg(nameof(obj));
+        Emit.Isinst<T>();
+        Emit.Brtrue("is_inst");
+        // return a null ref
+        Emit.Ldc_I4_0();
+        Emit.Conv_U();
+        Emit.Ret();
+        MarkLabel("is_inst");
+        Emit.Ldarg(nameof(obj));
+        Emit.Unbox<T>();
+        return ref ReturnRef<T>();
+    }
+
     /// <summary>
     /// Casts an <see cref="object"/> to a <c>class</c>
     /// </summary>

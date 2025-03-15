@@ -57,12 +57,6 @@ public static class TextExtensions
     public static string AsString(this char ch) => new string(ch, 1);
 
     /// <summary>
-    /// Gets this <see cref="string"/> as a non-null <see cref="string"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string AsString(this string? str) => str ?? string.Empty;
-
-    /// <summary>
     /// Gets this <see cref="Span{T}">Span&lt;char&gt;</see> as a <see cref="string"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,17 +98,19 @@ public static class TextExtensions
     /// Efficiently convert a <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see> to a <see cref="string"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string AsString(this char[]? characters)
+    [return: NotNullIfNotNull(nameof(characters))]
+    public static string? AsString(this char[]? characters)
     {
         if (characters is null)
-            return string.Empty;
+            return null;
         return new(characters);
     }
 
-    public static string AsString(this IList<char>? list)
+    [return: NotNullIfNotNull(nameof(list))]
+    public static string? AsString(this IList<char>? list)
     {
         if (list is null)
-            return string.Empty;
+            return null;
 
 #if NETFRAMEWORK || NETSTANDARD2_0
         Span<char> span = stackalloc char[list.Count];
@@ -134,10 +130,11 @@ public static class TextExtensions
 #endif
     }
 
-    public static string AsString(this IEnumerable<char>? characters)
+    [return: NotNullIfNotNull(nameof(characters))]
+    public static string? AsString(this IEnumerable<char>? characters)
     {
         if (characters is null)
-            return string.Empty;
+            return null;
 
         if (characters is ICollection<char> collection)
         {

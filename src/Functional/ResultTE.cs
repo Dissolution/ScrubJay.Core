@@ -137,8 +137,6 @@ public readonly struct Result<T, E> :
     /// </summary>
     private Result(bool isOk, T? value, E? error)
     {
-        Debug.Assert(isOk ? error is null : value is null);
-
         _isOk = isOk;
         _value = value;
         _error = error;
@@ -614,6 +612,26 @@ public readonly struct Result<T, E> :
         if (_isOk)
             return Ok<TNewOk, E>(selector(_value!));
         return Error<TNewOk, E>(_error!);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Result<N, E> Select<N>(Func<T, Option<N>> selector)
+    {
+        if (_isOk && selector(_value!).HasSome(out var value))
+        {
+            return Result<N, E>.Ok(value);
+        }
+        return Error<N, E>(_error!);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Result<N, E> Select<N>(Func<T, Result<N, E>> selector)
+    {
+        if (_isOk)
+        {
+            return selector(_value!);
+        }
+        return Error<N, E>(_error!);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -15,6 +15,7 @@ namespace ScrubJay.Text;
 public static class TextHelper
 {
 #region Unsafe
+
     /// <summary>
     /// <c>unsafe</c> methods on textual types
     /// </summary>
@@ -24,43 +25,43 @@ public static class TextHelper
     public static class Notsafe
     {
         /// <summary>
-        /// Efficiently copy <see cref="char">characters</see> from a
-        /// <c>in char</c> <paramref name="source"/> pointer
-        /// to a <c>ref char</c> <paramref name="destination"/> pointer
-        /// <br/>
-        /// <b>Warning:</b> behavior is undefined if <paramref name="source"/> and <paramref name="destination"/> overlap
+        /// Copies a specified <paramref name="count"/> of <see cref="char">chars</see>
+        /// from a <paramref name="source"/> to a <paramref name="destination"/>
         /// </summary>
         /// <param name="source">
-        /// A readonly reference to the starting <see cref="char"/> in the source text
+        /// The readonly reference (<c>in</c>) to the first character in the block to copy from
         /// </param>
         /// <param name="destination">
-        /// A reference to the starting <see cref="char"/> in the destination buffer
+        /// The reference (<c>ref</c>) to the first character in the block to copy to
         /// </param>
         /// <param name="count">
-        /// The number of <see cref="char"/>s to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// The total number of characters to copy from <paramref name="source"/> to <paramref name="destination"/>
         /// </param>
-        /// <remarks>
-        /// <see cref="M:System.Runtime.CompilerServices.Unsafe.CopyBlock"/> has limitations:<br/>
-        /// - It requires either <c>ref byte</c><br/>
-        /// --- which requires a conversion from <see cref="char"/> to <see cref="byte"/><br/>
-        /// --- and a conversion from <c>in byte</c> to <c>ref byte</c> (as a source <see cref="string"/> will only return <c>readonly</c> references)<br/>
-        /// - Or <c>void*</c><br/>
-        /// --- which requires <c>unsafe</c> and <c>fixed</c> to manipulate the pointers<br/>
-        /// <br/>
-        /// This version of CopyBlock restricts <paramref name="source"/> and <paramref name="destination"/> to <see cref="char"/><br/>
-        /// and uses the <c>Cpblk</c> instruction directly<br/>
-        /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void CpBlk(in char source, ref char destination, int count)
+        private static void CopyCharBlock(in char source, ref char destination, int count)
         {
-            Emit.Ldarg(nameof(destination)); // dest ptr
-            Emit.Ldarg(nameof(source)); // src ptr
-            // Total byte count == (sizeof(char) * count) == 2*count
-            Emit.Ldarg(nameof(count));
-            Emit.Ldc_I4_2();
-            Emit.Mul();
-            // Cpblk -> takes dest*, source*, uint byteCount
-            Emit.Cpblk();
+            /* Instruction                         Stack
+             * -----------------------------       -----------*/
+            Emit.Ldarg(nameof(destination)); // char*                        // destination pointer
+            Emit.Ldarg(nameof(source)); // char* | char*                // source pointer
+            Emit.Ldarg(nameof(count)); // char* | char* | i32          // count
+            /* We need to convert the count of chars to the count of bytes
+             * sizeof(char) == 2 // bytes
+             * bytes = count * 2 // count * sizeof(char)
+             *
+             * There are two easy ways to do this
+             *  Ldc_I4_2()                      // char* | char* | i32 | i32    // 2
+             *  Mul()                           // char* | char* | i32          // count * 2
+             * and the below, which is usually faster                           */
+            Emit.Ldc_I4_1(); // char* | char* | i32 | i32    // 1
+            Emit.Shl(); // char* | char* | i32          // count << 1
+            Emit.Cpblk(); //                              // stack is empty
+
+            /* OpCodes:
+             * Ldc_I4_1     - https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.ldc_i4_1
+             * Shl          - https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.shl
+             * Cpblk        - https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.cpblk
+             */
         }
 
         /* All the public methods for CopyBlock allow for the most efficient conversion of
@@ -85,7 +86,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(in char source, ref char destination, int count)
         {
-            CpBlk(in source, ref destination, count);
+            CopyCharBlock(in source, ref destination, count);
         }
 
         /// <summary>
@@ -103,7 +104,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(in char source, char[] destination, int count)
         {
-            CpBlk(in source, ref destination.GetPinnableReference(), count);
+            CopyCharBlock(in source, ref destination.GetPinnableReference(), count);
         }
 
         /// <summary>
@@ -121,7 +122,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(in char source, Span<char> destination, int count)
         {
-            CpBlk(in source, ref destination.GetPinnableReference(), count);
+            CopyCharBlock(in source, ref destination.GetPinnableReference(), count);
         }
 
         /// <summary>
@@ -139,7 +140,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(char[] source, ref char destination, int count)
         {
-            CpBlk(in source.GetPinnableReference(), ref destination, count);
+            CopyCharBlock(in source.GetPinnableReference(), ref destination, count);
         }
 
         /// <summary>
@@ -157,7 +158,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(char[] source, char[] destination, int count)
         {
-            CpBlk(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
+            CopyCharBlock(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
         }
 
         /// <summary>
@@ -175,7 +176,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(char[] source, Span<char> destination, int count)
         {
-            CpBlk(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
+            CopyCharBlock(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
         }
 
         /// <summary>
@@ -192,7 +193,7 @@ public static class TextHelper
         /// </param>
         public static void CopyBlock(text source, ref char destination, int count)
         {
-            CpBlk(in source.GetPinnableReference(), ref destination, count);
+            CopyCharBlock(in source.GetPinnableReference(), ref destination, count);
         }
 
         /// <summary>
@@ -210,7 +211,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(text source, char[] destination, int count)
         {
-            CpBlk(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
+            CopyCharBlock(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
         }
 
         /// <summary>
@@ -228,7 +229,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(text source, Span<char> destination, int count)
         {
-            CpBlk(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
+            CopyCharBlock(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
         }
 
         /// <summary>
@@ -246,7 +247,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(string source, ref char destination, int count)
         {
-            CpBlk(in source.GetPinnableReference(), ref destination, count);
+            CopyCharBlock(in source.GetPinnableReference(), ref destination, count);
         }
 
         /// <summary>
@@ -264,7 +265,7 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(string source, char[] destination, int count)
         {
-            CpBlk(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
+            CopyCharBlock(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
         }
 
         /// <summary>
@@ -282,12 +283,14 @@ public static class TextHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(string source, Span<char> destination, int count)
         {
-            CpBlk(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
+            CopyCharBlock(in source.GetPinnableReference(), ref destination.GetPinnableReference(), count);
         }
     }
+
 #endregion
 
 #region Copy + TryCopy
+
     /* All *Copy methods validate inputs before calling Notsafe.CopyBlock
      * Source Types: char, string?, ReadOnlySpan<char>, char[]?
      * Dest.  Types: Span<char>, char[]?
@@ -412,102 +415,234 @@ public static class TextHelper
         }
         return false;
     }
+
 #endregion
 
+    /* Compare + Equate get the same rotation of types:
+     * char, string?, char[]?, text
+     */
 
 #region Compare
-#region
-    public static int Compare(string? left, string? right) => string.CompareOrdinal(left, right);
 
-    public static int Compare(string? left, text right) => MemoryExtensions.SequenceCompareTo<char>(left.AsSpan(), right);
+#region Ordinal
 
-    public static int Compare(string? left, char[]? right) => MemoryExtensions.SequenceCompareTo<char>(left.AsSpan(), right);
+    public static int Compare(char left, char right)
+        => left.CompareTo(right);
 
-    public static int Compare(text left, string? right) => MemoryExtensions.SequenceCompareTo<char>(left, right.AsSpan());
+    public static int Compare(char left, string? right)
+        => Compare(left.AsSpan(), right.AsSpan());
 
-    public static int Compare(text left, text right) => MemoryExtensions.SequenceCompareTo<char>(left, right);
+    public static int Compare(char left, char[]? right)
+        => Compare(left.AsSpan(), right.AsSpan());
 
-    public static int Compare(text left, char[]? right) => MemoryExtensions.SequenceCompareTo<char>(left, right);
+    public static int Compare(char left, text right)
+        => Compare(left.AsSpan(), right);
 
-    public static int Compare(char[]? left, string? right) => MemoryExtensions.SequenceCompareTo<char>(left, right.AsSpan());
+    public static int Compare(string? left, char right)
+        => Compare(left.AsSpan(), right.AsSpan());
 
-    public static int Compare(char[]? left, text right) => MemoryExtensions.SequenceCompareTo<char>(left, right);
+    public static int Compare(string? left, string? right)
+        => string.CompareOrdinal(left, right);
 
-    public static int Compare(char[]? left, char[]? right) => MemoryExtensions.SequenceCompareTo<char>(left, right);
+    public static int Compare(string? left, char[]? right)
+        => Compare(left.AsSpan(), right.AsSpan());
+
+    public static int Compare(string? left, text right)
+        => Compare(left.AsSpan(), right);
+
+    public static int Compare(char[]? left, char right)
+        => Compare(left.AsSpan(), right.AsSpan());
+
+    public static int Compare(char[]? left, string? right)
+        => Compare(left.AsSpan(), right.AsSpan());
+
+    public static int Compare(char[]? left, char[]? right)
+        => Compare(left.AsSpan(), right.AsSpan());
+
+    public static int Compare(char[]? left, text right)
+        => Compare(left.AsSpan(), right);
+
+    public static int Compare(text left, char right)
+        => Compare(left, right.AsSpan());
+
+    public static int Compare(text left, string? right)
+        => Compare(left, right.AsSpan());
+
+    public static int Compare(text left, char[]? right)
+        => Compare(left, right.AsSpan());
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Compare(text left, text right)
+        => MemoryExtensions.SequenceCompareTo<char>(left, right);
+
 #endregion
 
-#region w/StringComparison
-    public static int Compare(string? left, string? right, StringComparison comparison) => string.Compare(left, right, comparison);
+#region with StringComparison
 
-    public static int Compare(string? left, text right, StringComparison comparison) => MemoryExtensions.CompareTo(left.AsSpan(), right, comparison);
+    public static int Compare(char left, char right, StringComparison comparison)
+        => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static int Compare(string? left, char[]? right, StringComparison comparison) => MemoryExtensions.CompareTo(left.AsSpan(), right, comparison);
+    public static int Compare(char left, string? right, StringComparison comparison)
+        => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static int Compare(text left, string? right, StringComparison comparison) => MemoryExtensions.CompareTo(left, right.AsSpan(), comparison);
+    public static int Compare(char left, char[]? right, StringComparison comparison)
+        => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static int Compare(text left, text right, StringComparison comparison) => MemoryExtensions.CompareTo(left, right, comparison);
+    public static int Compare(char left, text right, StringComparison comparison)
+        => Compare(left.AsSpan(), right, comparison);
 
-    public static int Compare(text left, char[]? right, StringComparison comparison) => MemoryExtensions.CompareTo(left, right, comparison);
+    public static int Compare(string? left, char right, StringComparison comparison)
+        => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static int Compare(char[]? left, string? right, StringComparison comparison) => MemoryExtensions.CompareTo(left, right.AsSpan(), comparison);
+    public static int Compare(string? left, string? right, StringComparison comparison)
+        => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static int Compare(char[]? left, text right, StringComparison comparison) => MemoryExtensions.CompareTo(left, right, comparison);
+    public static int Compare(string? left, char[]? right, StringComparison comparison)
+        => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static int Compare(char[]? left, char[]? right, StringComparison comparison) => MemoryExtensions.CompareTo(left, right, comparison);
+    public static int Compare(string? left, text right, StringComparison comparison)
+        => Compare(left.AsSpan(), right, comparison);
+
+    public static int Compare(char[]? left, char right, StringComparison comparison)
+        => Compare(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static int Compare(char[]? left, string? right, StringComparison comparison)
+        => Compare(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static int Compare(char[]? left, char[]? right, StringComparison comparison)
+        => Compare(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static int Compare(char[]? left, text right, StringComparison comparison)
+        => Compare(left.AsSpan(), right, comparison);
+
+    public static int Compare(text left, char right, StringComparison comparison)
+        => Compare(left, right.AsSpan(), comparison);
+
+    public static int Compare(text left, string? right, StringComparison comparison)
+        => Compare(left, right.AsSpan(), comparison);
+
+    public static int Compare(text left, char[]? right, StringComparison comparison)
+        => Compare(left, right.AsSpan(), comparison);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Compare(text left, text right, StringComparison comparison)
+        => MemoryExtensions.CompareTo(left, right, comparison);
+
 #endregion
+
 #endregion
 
-#region Equals
-#region
-    public static bool Equal(string? left, string? right)
-        => string.Equals(left, right, StringComparison.Ordinal);
+#region Equate
 
-    public static bool Equal(string? left, text right)
-        => MemoryExtensions.SequenceEqual<char>(left.AsSpan(), right);
+#region Ordinal
 
-    public static bool Equal(string? left, char[]? right)
-        => MemoryExtensions.SequenceEqual<char>(left.AsSpan(), right);
+    public static bool Equate(char left, char right)
+        => left.Equals(right);
 
-    public static bool Equal(text left, string? right)
-        => MemoryExtensions.SequenceEqual<char>(left, right.AsSpan());
+    public static bool Equate(char left, string? right)
+        => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equal(text left, text right)
+    public static bool Equate(char left, char[]? right)
+        => Equate(left.AsSpan(), right.AsSpan());
+
+    public static bool Equate(char left, text right)
+        => Equate(left.AsSpan(), right);
+
+    public static bool Equate(string? left, char right)
+        => Equate(left.AsSpan(), right.AsSpan());
+
+    public static bool Equate(string? left, string? right)
+        => string.Equals(left, right);
+
+    public static bool Equate(string? left, char[]? right)
+        => Equate(left.AsSpan(), right.AsSpan());
+
+    public static bool Equate(string? left, text right)
+        => Equate(left.AsSpan(), right);
+
+    public static bool Equate(char[]? left, char right)
+        => Equate(left.AsSpan(), right.AsSpan());
+
+    public static bool Equate(char[]? left, string? right)
+        => Equate(left.AsSpan(), right.AsSpan());
+
+    public static bool Equate(char[]? left, char[]? right)
+        => Equate(left.AsSpan(), right.AsSpan());
+
+    public static bool Equate(char[]? left, text right)
+        => Equate(left.AsSpan(), right);
+
+    public static bool Equate(text left, char right)
+        => Equate(left, right.AsSpan());
+
+    public static bool Equate(text left, string? right)
+        => Equate(left, right.AsSpan());
+
+    public static bool Equate(text left, char[]? right)
+        => Equate(left, right.AsSpan());
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Equate(text left, text right)
         => MemoryExtensions.SequenceEqual<char>(left, right);
 
-    public static bool Equal(text left, char[]? right)
-        => MemoryExtensions.SequenceEqual<char>(left, right);
-
-    public static bool Equal(char[]? left, string? right)
-        => MemoryExtensions.SequenceEqual<char>(left, right.AsSpan());
-
-    public static bool Equal(char[]? left, text right)
-        => MemoryExtensions.SequenceEqual<char>(left, right);
-
-    public static bool Equal(char[]? left, char[]? right)
-        => MemoryExtensions.SequenceEqual<char>(left, right);
-#endregion
-#region w/StringComparison
-    public static bool Equal(string? left, string? right, StringComparison comparison) => string.Equals(left, right, comparison);
-
-    public static bool Equal(string? left, text right, StringComparison comparison) => MemoryExtensions.Equals(left.AsSpan(), right, comparison);
-
-    public static bool Equal(string? left, char[]? right, StringComparison comparison) => MemoryExtensions.Equals(left.AsSpan(), right, comparison);
-
-    public static bool Equal(text left, string? right, StringComparison comparison) => MemoryExtensions.Equals(left, right.AsSpan(), comparison);
-
-    public static bool Equal(text left, text right, StringComparison comparison) => MemoryExtensions.Equals(left, right, comparison);
-
-    public static bool Equal(text left, char[]? right, StringComparison comparison) => MemoryExtensions.Equals(left, right, comparison);
-
-    public static bool Equal(char[]? left, string? right, StringComparison comparison) => MemoryExtensions.Equals(left, right.AsSpan(), comparison);
-
-    public static bool Equal(char[]? left, text right, StringComparison comparison) => MemoryExtensions.Equals(left, right, comparison);
-
-    public static bool Equal(char[]? left, char[]? right, StringComparison comparison) => MemoryExtensions.Equals(left, right, comparison);
-#endregion
 #endregion
 
-    #region Contains
+#region with StringComparison
+
+    public static bool Equate(char left, char right, StringComparison comparison)
+        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static bool Equate(char left, string? right, StringComparison comparison)
+        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static bool Equate(char left, char[]? right, StringComparison comparison)
+        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static bool Equate(char left, text right, StringComparison comparison)
+        => Equate(left.AsSpan(), right, comparison);
+
+    public static bool Equate(string? left, char right, StringComparison comparison)
+        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static bool Equate(string? left, string? right, StringComparison comparison)
+        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static bool Equate(string? left, char[]? right, StringComparison comparison)
+        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static bool Equate(string? left, text right, StringComparison comparison)
+        => Equate(left.AsSpan(), right, comparison);
+
+    public static bool Equate(char[]? left, char right, StringComparison comparison)
+        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static bool Equate(char[]? left, string? right, StringComparison comparison)
+        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static bool Equate(char[]? left, char[]? right, StringComparison comparison)
+        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+
+    public static bool Equate(char[]? left, text right, StringComparison comparison)
+        => Equate(left.AsSpan(), right, comparison);
+
+    public static bool Equate(text left, char right, StringComparison comparison)
+        => Equate(left, right.AsSpan(), comparison);
+
+    public static bool Equate(text left, string? right, StringComparison comparison)
+        => Equate(left, right.AsSpan(), comparison);
+
+    public static bool Equate(text left, char[]? right, StringComparison comparison)
+        => Equate(left, right.AsSpan(), comparison);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Equate(text left, text right, StringComparison comparison)
+        => MemoryExtensions.Equals(left, right, comparison);
+
+#endregion
+
+#endregion
+
+#region Contains
 
     public static bool Contains(string? str, char match, StringComparison comparison = StringComparison.Ordinal)
     {
@@ -546,9 +681,11 @@ public static class TextHelper
     {
         return MemoryExtensions.Contains(text, match, comparison);
     }
-    #endregion
 
-    #region StartsWith
+#endregion
+
+#region StartsWith
+
     public static bool StartsWith(string? str, string? match, StringComparison comparison = StringComparison.Ordinal)
     {
         if (str is null || match is null)
@@ -575,9 +712,10 @@ public static class TextHelper
         return MemoryExtensions.StartsWith(text, match, comparison);
     }
 
-    #endregion
+#endregion
 
 #region EndsWith
+
     public static bool EndsWith(string? str, string? match, StringComparison comparison = StringComparison.Ordinal)
     {
         if (str is null || match is null)
@@ -607,8 +745,8 @@ public static class TextHelper
 #endregion
 
 
-
 #region Misc.
+
     public static string Repeat(int count, char ch)
     {
         if (count < 0)
@@ -631,5 +769,30 @@ public static class TextHelper
         } while (i < totalLength);
         return buffer.AsString();
     }
+
 #endregion
+
+
+    public static bool TryUnboxText(object? obj, out text text)
+    {
+        if (obj is char)
+        {
+            ref char ch = ref Utilities.Notsafe.UnboxRef<char>(obj);
+            text = ch.AsSpan();
+            return true;
+        }
+        if (obj is string)
+        {
+            text = ((string)obj).AsSpan();
+            return true;
+        }
+        if (obj is char[])
+        {
+            text = ((char[])obj).AsSpan();
+            return true;
+        }
+
+        text = default;
+        return false;
+    }
 }

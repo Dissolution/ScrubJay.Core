@@ -77,10 +77,10 @@ public static class TextCaseExtensions
                 case UnicodeCategory.UppercaseLetter:
                 case UnicodeCategory.TitlecaseLetter:
                 {
-                    if (previousCategory == UnicodeCategory.SpaceSeparator ||
-                        previousCategory == UnicodeCategory.LowercaseLetter ||
-                        (previousCategory != UnicodeCategory.DecimalDigitNumber &&
-                        previousCategory.IsSome && i > 0 && i + 1 < len && char.IsLower(str[i + 1])))
+                    if ((previousCategory == UnicodeCategory.SpaceSeparator) ||
+                        (previousCategory == UnicodeCategory.LowercaseLetter) ||
+                        ((previousCategory != UnicodeCategory.DecimalDigitNumber) &&
+                        previousCategory.IsSome && (i > 0) && ((i + 1) < len) && char.IsLower(str[i + 1])))
                     {
                         text.Append('_');
                         if (casing == Casing.Title)
