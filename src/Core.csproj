@@ -52,10 +52,10 @@
         <IsPackable>true</IsPackable>
 
         <!-- Package Information -->
-        <Title>ScrubJay Core Libraries</Title>
-        <Authors>Timothy Jay</Authors>
+        <Title>ScrubJay - Core</Title>
+        <Authors>T. R. Jay</Authors>
         <Description>
-            The core ScrubJay Library, common code used in all ScrubJay projects
+            The core ScrubJay library: common code used in all ScrubJay projects
         </Description>
         <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
