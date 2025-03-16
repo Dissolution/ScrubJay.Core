@@ -50,20 +50,22 @@
     <!-- NuGet -->
     <PropertyGroup>
         <IsPackable>true</IsPackable>
-
-        <!-- Package Information -->
+        <PackageId>ScrubJay.Core</PackageId>
         <Title>ScrubJay - Core</Title>
-        <Authors>T. R. Jay</Authors>
+        <Version>0.30.0-alpha</Version>
+        <Authors>Dissolution</Authors>
+
         <Description>
             The core ScrubJay library: common code used in all ScrubJay projects
         </Description>
+
         <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>jay.png</PackageIcon>
         <PackageOutputPath>..\packages\</PackageOutputPath>
-        <PackageVersion>0.30.0-alpha</PackageVersion>
     </PropertyGroup>
 
     <!-- Special Release configurations -->
