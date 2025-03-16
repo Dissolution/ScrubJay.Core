@@ -102,7 +102,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
                 TKey key = ObjectToKey(e.Current);
                 yield return key;
             }
-            Disposable.TryDispose(e);
+            e.Dispose();
         }
     }
 
@@ -173,7 +173,7 @@ public sealed class DictionaryAdapter<TKey, TValue> :
                 TValue value = ObjectToValue(e.Current);
                 yield return value;
             }
-            Disposable.TryDispose(e);
+            e.Dispose();
         }
     }
 

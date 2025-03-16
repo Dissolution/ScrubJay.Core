@@ -344,8 +344,8 @@ public readonly struct Either<TLeft, TRight> :
     public override int GetHashCode()
     {
         if (_isLeft)
-            return Hasher.GetHashCode<TLeft>(_left);
-        return Hasher.GetHashCode<TRight>(_right);
+            return Hasher.Hash<TLeft>(_left);
+        return Hasher.Hash<TRight>(_right);
     }
 
     public override string ToString()

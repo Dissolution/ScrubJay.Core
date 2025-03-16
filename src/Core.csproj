@@ -29,6 +29,7 @@
         <WarningsAsErrors>nullable</WarningsAsErrors>
         <NoWarn>$(NoWarn);
             CS1591; <!-- Missing XML comments for public member -->
+            CA1810; <!-- Use static field init instead of ctor -->
         </NoWarn>
         <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options -->
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -117,7 +118,7 @@
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Polyfill" Version="7.20.0">
+        <PackageReference Include="Polyfill" Version="7.21.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

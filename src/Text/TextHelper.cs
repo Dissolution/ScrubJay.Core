@@ -306,7 +306,7 @@ public static class TextHelper
 
     public static bool TryCopy(char source, char[]? destination)
     {
-        if (destination is null || destination.Length == 0)
+        if (destination is null || (destination.Length == 0))
             return false;
         destination[0] = source;
         return true;

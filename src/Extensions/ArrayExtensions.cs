@@ -60,7 +60,7 @@ public static class ArrayExtensions
     /// Returns <c>true</c> if <paramref name="array"/> is <c>null</c> or has a Length of 0
     /// </summary>
     public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this T[]? array)
-        => array is null || array.Length == 0;
+        => array is null || (array.Length == 0);
 
 #if NETFRAMEWORK || NETSTANDARD2_0
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

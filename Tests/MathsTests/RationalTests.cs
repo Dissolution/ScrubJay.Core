@@ -129,7 +129,7 @@ public sealed class RationalTests
         decimal fractional = dec - integral;
         Span<char> text = stackalloc char[31]; // Maximum number of characters in G representation (-Decimal.Epsilon).ToString().Length == 31
         bool wrote = fractional.TryFormat(text, out int charsWritten, ['G'], CultureInfo.InvariantCulture);
-        if (!wrote || charsWritten < 2)
+        if (!wrote || (charsWritten < 2))
             throw new InvalidOperationException();
 
         int numeratorLength;

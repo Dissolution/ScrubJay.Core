@@ -10,11 +10,11 @@ public static class CollectionExtensions
     /// Returns <c>true</c> if <paramref name="collection"/> is <c>null</c> or has a Count of 0
     /// </summary>
     public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this ICollection<T>? collection)
-        => collection is null || collection.Count == 0;
+        => collection is null || (collection.Count == 0);
 
     /// <summary>
     /// Returns <c>true</c> if <paramref name="collection"/> is <c>null</c> or has a Count of 0
     /// </summary>
     public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this IReadOnlyCollection<T>? collection)
-        => collection is null || collection.Count == 0;
+        => collection is null || (collection.Count == 0);
 }

@@ -155,7 +155,7 @@ public readonly struct Pair<TKey, TValue> :
         };
     }
 
-    public override int GetHashCode() => Hasher.Combine<TKey, TValue>(Key, Value);
+    public override int GetHashCode() => Hasher.HashMany<TKey, TValue>(Key, Value);
 
     public bool TryFormat(
         Span<char> destination,
@@ -173,15 +173,15 @@ public readonly struct Pair<TKey, TValue> :
         }.GetResult(out charsWritten);
     }
 
-    public string ToString(string? format, IFormatProvider? formatProvider = null)
+    public string ToString(string? format, IFormatProvider? provider = null)
     {
-        var text = new DefaultInterpolatedStringHandler(4, 2, formatProvider);
-        text.AppendLiteral("(");
-        text.AppendFormatted<TKey>(Key, format);
-        text.AppendLiteral(", ");
-        text.AppendFormatted<TValue>(Value, format);
-        text.AppendLiteral(")");
-        return text.ToStringAndClear();
+        var text = new TextBuffer();
+        text.Write("(");
+        text.Write<TKey>(Key, format, provider);
+        text.Write(", ");
+        text.Write<TValue>(Value, format, provider);
+        text.Write(")");
+        return text.ToStringAndDispose();
     }
 
     public override string ToString() => $"({Key}, {Value})";

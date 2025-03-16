@@ -719,8 +719,8 @@ public readonly struct Result<T, E> :
     public override int GetHashCode()
     {
         if (_isOk)
-            return Hasher.GetHashCode<T>(_value);
-        return Hasher.GetHashCode<E>(_error);
+            return Hasher.Hash<T>(_value);
+        return Hasher.Hash<E>(_error);
     }
 
     public override string ToString()

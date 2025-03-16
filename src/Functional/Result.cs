@@ -10,7 +10,7 @@ public static class Result
     /// </summary>
     /// <param name="action">The <see cref="Action"/> to invoke</param>
     /// <returns>
-    /// A <see cref="Result{Unit,Exception}">Result</see>&lt;<see cref="GlobalHelper.Unit"/>, <see cref="Exception"/>&gt; describing the invocation
+    /// A <see cref="Result{Unit,Exception}">Result</see>&lt;<see cref="Unit"/>, <see cref="Exception"/>&gt; describing the invocation
     /// </returns>
     public static Result<Unit, Exception> TryAction(Action? action)
     {
@@ -34,7 +34,7 @@ public static class Result
     /// <param name="instance">The instance to perform the action upon</param>
     /// <param name="action">The <see cref="Action"/> to invoke</param>
     /// <returns>
-    /// A <see cref="Result{Unit,Exception}">Result</see>&lt;<see cref="GlobalHelper.Unit"/>, <see cref="Exception"/>&gt; describing the invocation
+    /// A <see cref="Result{Unit,Exception}">Result</see>&lt;<see cref="Unit"/>, <see cref="Exception"/>&gt; describing the invocation
     /// </returns>
     public static Result<Unit, Exception> TryAction<TInstance>(
         [NotNullWhen(true)] TInstance? instance,

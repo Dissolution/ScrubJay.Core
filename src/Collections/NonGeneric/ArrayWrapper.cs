@@ -66,7 +66,7 @@ public sealed class ArrayWrapper<T> :
             int index = indices[d];
             int lower = _lowerBounds[d];
             int upper = _upperBounds[d];
-            if (index < lower || index > upper)
+            if ((index < lower) || (index > upper))
                 return new ArgumentOutOfRangeException(indicesName, indices, $"Indices[{d}] of {index} was not in [{lower}..{upper}]");
         }
         return indices;

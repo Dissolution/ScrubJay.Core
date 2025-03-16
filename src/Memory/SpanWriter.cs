@@ -39,7 +39,7 @@ public ref struct SpanWriter<T>
 
     public SpanWriter(Span<T> span, int position)
     {
-        if (position < 0 || position >= span.Length)
+        if ((position < 0) || (position >= span.Length))
             throw new ArgumentOutOfRangeException(nameof(position), position, "Position must be inside of span");
         _span = span;
         _position = position;

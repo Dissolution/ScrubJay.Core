@@ -120,7 +120,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal set
         {
-            Debug.Assert(value >= 0 && value < Capacity);
+            Debug.Assert((value >= 0) && (value < Capacity));
             _version++;
             _position = value;
         }
@@ -561,7 +561,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         int pos = _position;
         var span = new Span<T>(_array);
 
-        if (itemCount == 0 || itemCount > pos)
+        if ((itemCount == 0) || (itemCount > pos))
             return None();
 
         // we can only scan until an end item (past that there wouldn't be enough items to match)
@@ -858,7 +858,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         var array = _array;
 
         // Find the first item which needs to be removed.
-        while (freeIndex < pos && !itemPredicate(array[freeIndex]))
+        while ((freeIndex < pos) && !itemPredicate(array[freeIndex]))
             freeIndex++;
 
         if (freeIndex >= pos)
@@ -868,7 +868,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         while (current < pos)
         {
             // Find the first item which needs to be kept.
-            while (current < pos && itemPredicate(array[current]))
+            while ((current < pos) && itemPredicate(array[current]))
                 current++;
 
             if (current < pos)
@@ -935,7 +935,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public bool TryUseAvailable(UseAvailable<T> useAvailable)
     {
         int used = useAvailable(Available);
-        if (used < 0 || used > Available.Length)
+        if ((used < 0) || (used > Available.Length))
             return false;
         _version++;
         _position += used;
@@ -1086,7 +1086,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         return false;
     }
 
-    public override int GetHashCode() => Hasher.Combine<T>(Written);
+    public override int GetHashCode() => Hasher.HashMany<T>(Written);
 
     /// <summary>
     /// Gets a <see cref="string"/> representation of the <see cref="Written"/> items

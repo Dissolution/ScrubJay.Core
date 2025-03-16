@@ -1,18 +1,44 @@
-﻿using ScrubJay.Debugging;
+﻿using System.Reflection;
+using ScrubJay.Expressions;
+using ScrubJay.Functional.Linq;
 
 #pragma warning disable CA1031, MA0048, CA1045
 
 namespace ScrubJay.Utilities;
 
-public abstract class Disposable : IDisposable
+#if !NETFRAMEWORK && !NETSTANDARD2_0
+/// <summary>
+/// Helper utility for working with <see cref="IDisposable"/> and <see cref="IAsyncDisposable"/>
+/// </summary>
+#else
+/// <summary>
+/// Helper utility for working with <see cref="IDisposable"/>
+/// </summary>
+#endif
+[PublicAPI]
+public static class Disposable
 {
+    /// <summary>
+    /// Gets an <see cref="IDisposable"/> that will invoke an <see cref="Action"/> when it is disposed
+    /// </summary>
+    /// <param name="onDispose">
+    /// The <see cref="Action"/> that will be invoked during disposal
+    /// </param>
+    [MustDisposeResource]
     public static IDisposable Action(Action onDispose)
     {
         Throw.IfNull(onDispose);
         return new ActionDisposable(onDispose);
     }
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
+#if !NETFRAMEWORK && !NETSTANDARD2_0
+    /// <summary>
+    /// Gets an <see cref="IDisposable"/> that will asynchronously invoke an <see cref="Action"/> when it is disposed
+    /// </summary>
+    /// <param name="onDispose">
+    /// The <c>async</c> <see cref="Action"/> that will be invoked during disposal
+    /// </param>
+    [MustDisposeResource]
     public static IAsyncDisposable AsyncAction(Func<ValueTask> onDispose)
     {
         Throw.IfNull(onDispose);
@@ -20,55 +46,24 @@ public abstract class Disposable : IDisposable
     }
 #endif
 
-    public static bool TryDispose<T>([HandlesResourceDisposal] T? value)
-        where T : class
+    public static void Dispose(
+        [HandlesResourceDisposal]
+        this IEnumerator enumerator)
     {
-        if (value is IDisposable disposable)
+        if (enumerator is IDisposable)
         {
-            disposable.Dispose();
-            return true;
-        }
-        return false;
-    }
-
-    public static bool TryDispose([HandlesResourceDisposal] IDisposable? disposable)
-    {
-        if (disposable is not null)
-        {
-            try
-            {
-                disposable.Dispose();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                UnhandledEventWatcher.OnUnbreakableException($"{nameof(Disposable)}.{nameof(TryDispose)}", ex);
-                // Suppress any errors
-            }
-        }
-
-        return false;
-    }
-
-    public static bool TryDisposeRef<TDisposable>([HandlesResourceDisposal] ref TDisposable disposable)
-        where TDisposable : IDisposable
-    {
-        try
-        {
-            disposable.Dispose();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            UnhandledEventWatcher.OnUnbreakableException($"{nameof(Disposable)}.{nameof(TryDisposeRef)}", ex);
-            // Suppress any errors
-            return false;
+            ((IDisposable)enumerator).Dispose();
         }
     }
 
 
+    public static void DisposeVal<T>([HandlesResourceDisposal] T? value)
+        => Disposable<T>.Dispose(value);
 
-    public static bool TryNullDisposeRef<TDisposable>(
+    public static void Dispose([HandlesResourceDisposal] IDisposable? disposable)
+        => disposable?.Dispose();
+
+    public static bool TryDisposeAndDefaultRef<TDisposable>(
         [HandlesResourceDisposal]
         ref TDisposable? disposable)
         where TDisposable : class, IDisposable
@@ -82,41 +77,62 @@ public abstract class Disposable : IDisposable
                 localDisposable.Dispose();
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                UnhandledEventWatcher.OnUnbreakableException($"{nameof(Disposable)}.{nameof(TryNullDisposeRef)}", ex);
                 // Suppress any errors
                 return false;
             }
             finally
             {
-                // always set to null
-                disposable = null;
+                // always set to default
+                disposable = default;
             }
         }
 
         return true;
     }
+}
 
+public static class Disposable<T>
+{
+    private static readonly Action<T> _dispose;
 
-    private bool _disposed; // false
+    static Disposable()
+    {
+        var type = typeof(T);
 
-    protected abstract void OnDispose();
+        var disposeMethod = type
+            .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Where(static method => (method.Name == "Dispose") && (method.ReturnType == typeof(void)) && (method.GetParameters().Length == 0))
+            .OneOrDefault();
+
+        if (disposeMethod is null)
+        {
+            _dispose = DoNothing;
+        }
+        else
+        {
+            _dispose = new LambdaBuilder<Action<T>>()
+                .ParamName(0, "this")
+                .Body(b => b.Call(0, disposeMethod))
+                .TryCompile()
+                .OkOrThrow();
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
-            OnDispose();
-            _disposed = true;
-        }
+    private static void DoNothing(T _) { }
 
-        GC.SuppressFinalize(this);
+    public static void Dispose([HandlesResourceDisposal] T? disposable)
+    {
+        if (disposable is not null)
+        {
+            _dispose(disposable);
+        }
     }
 }
 
-internal sealed class ActionDisposable : Disposable
+internal sealed class ActionDisposable : IDisposable
 {
     private readonly Action _onDispose;
 
@@ -126,10 +142,10 @@ internal sealed class ActionDisposable : Disposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected override void OnDispose() => _onDispose();
+    public void Dispose() => _onDispose();
 }
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
+#if !NETFRAMEWORK && !NETSTANDARD2_0
 internal sealed class ActionAsyncDisposable : IAsyncDisposable
 {
     private readonly Func<ValueTask> _onAsyncDispose;

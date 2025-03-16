@@ -160,7 +160,7 @@ public class TypeExtensionsTests
         {
             Assert.False(canBeNull);
         }
-        else if (type.ContainsGenericParameters || type == typeof(void))
+        else if (type.ContainsGenericParameters || (type == typeof(void)))
         {
             // Skip these
         }
@@ -198,8 +198,8 @@ public class TypeExtensionsTests
             if (right.IsGenericTypeDefinition)
             {
                 assignable = left.HasGenericTypeDefinition(right) ||
-                    left.GetBaseTypes().Any(t => t.HasGenericTypeDefinition(right)) |
-                    left.GetInterfaces().Any(i => i.HasGenericTypeDefinition(right));
+                    (left.GetBaseTypes().Any(t => t.HasGenericTypeDefinition(right)) |
+                        left.GetInterfaces().Any(i => i.HasGenericTypeDefinition(right)));
             }
 #if NETFRAMEWORK
             else if (left.IsPointer)

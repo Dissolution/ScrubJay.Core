@@ -36,7 +36,7 @@ public static class MathHelper
 
     public static ulong GreatestCommonDivisor(ulong left, ulong right)
     {
-        while (left != 0UL && right != 0UL)
+        while ((left != 0UL) && (right != 0UL))
         {
             if (left > right)
                 left %= right;

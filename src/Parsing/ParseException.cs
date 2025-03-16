@@ -12,9 +12,11 @@ namespace ScrubJay.Parsing;
 [PublicAPI]
 public class ParseException : InvalidOperationException, IEnumerable
 {
-    public static ParseException Create(text input, Type? destType, string? additionalInfo = null, Exception? innerException = null) => new ParseException(input, destType, additionalInfo, innerException);
+    public static ParseException Create(text input, Type? destType, string? additionalInfo = null, Exception? innerException = null)
+        => new ParseException(input, destType, additionalInfo, innerException);
 
-    public static ParseException Create(string? input, Type? destType, string? additionalInfo = null, Exception? innerException = null) => new ParseException(input, destType, additionalInfo, innerException);
+    public static ParseException Create(string? input, Type? destType, string? additionalInfo = null, Exception? innerException = null)
+        => new ParseException(input, destType, additionalInfo, innerException);
 
     public static ParseException<T> Create<T>(text input, string? additionalInfo = null, Exception? innerException = null)
         => ParseException<T>.Create(input, additionalInfo, innerException);
@@ -25,44 +27,25 @@ public class ParseException : InvalidOperationException, IEnumerable
 
     private static string GetMessage(text input, Type? destType, string? info)
     {
-        var text = new Buffer<char>();
-        text.Write("Could not parse ");
-        text.Write('\"');
-        text.Write(input);
-        text.Write('\"');
-        text.Write(" into a ");
-        text.Write(destType.NameOf());
-        if (!string.IsNullOrEmpty(info))
-        {
-            text.Write(": ");
-            text.Write(info!);
-        }
-
-        return text.ToStringAndDispose();
+        return TextBuilder.New
+            .Append($"Could not parse \"{input}\" into a {destType.NameOf()}")
+            .InvokeIf(Validate.IsNotEmpty(info),
+                static (tb, nfo) => tb.Append(": ").Append(nfo))
+            .ToStringAndDispose();
     }
 
     private static string GetMessage(string? input, Type? destType, string? info)
     {
-        var text = new Buffer<char>();
-        text.Write("Could not parse ");
-        if (input is null)
-        {
-            text.Write("null");
-        }
-        else
-        {
-            text.Write('\"');
-            text.Write(input);
-            text.Write('\"');
-        }
-        text.Write(" into a ");
-        text.Write(destType.NameOf());
-        if (!string.IsNullOrEmpty(info))
-        {
-            text.Write(": ");
-            text.Write(info!);
-        }
-        return text.ToStringAndDispose();
+        return TextBuilder.New
+            .Append("Could not parse ")
+            .InvokeIf(Validate.IsNotNull(input),
+                static (tb, n) => tb.Append('"').Append(n).Append('"'),
+                static (tb, _) => tb.Append("null"))
+            .Append(" into a ")
+            .Append(destType.NameOf())
+            .InvokeIf(Validate.IsNotEmpty(info),
+                static (tb, nfo) => tb.Append(": ").Append(nfo))
+            .ToStringAndDispose();
     }
 
 
@@ -76,7 +59,8 @@ public class ParseException : InvalidOperationException, IEnumerable
     /// </summary>
     public Type? ParseType { get; }
 
-    public ParseException(text input,
+    public ParseException(
+        text input,
         Type? destType = null,
         string? additionalInfo = null,
         Exception? innerException = null)
@@ -86,7 +70,8 @@ public class ParseException : InvalidOperationException, IEnumerable
         ParseType = destType;
     }
 
-    public ParseException(string? input,
+    public ParseException(
+        string? input,
         Type? destType = null,
         string? additionalInfo = null,
         Exception? innerException = null)
@@ -118,7 +103,6 @@ public class ParseException : InvalidOperationException, IEnumerable
     }
 }
 
-
 [PublicAPI]
 public class ParseException<T> : ParseException
 {
@@ -130,15 +114,11 @@ public class ParseException<T> : ParseException
         text input,
         string? additionalInfo = null,
         Exception? innerException = null)
-        : base(input, typeof(T), additionalInfo, innerException)
-    {
-    }
+        : base(input, typeof(T), additionalInfo, innerException) { }
 
     public ParseException(
         string? input,
         string? additionalInfo = null,
         Exception? innerException = null)
-        : base(input, typeof(T), additionalInfo, innerException)
-    {
-    }
+        : base(input, typeof(T), additionalInfo, innerException) { }
 }

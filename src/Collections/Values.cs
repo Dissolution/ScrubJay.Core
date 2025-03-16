@@ -351,8 +351,8 @@ public readonly struct Values<T> :
     public override int GetHashCode()
         => Match(
             static () => Hasher.NullHash,
-            static value => Hasher.GetHashCode<T>(value),
-            static values => Hasher.Combine<T>(values));
+            static value => Hasher.Hash<T>(value),
+            static values => Hasher.HashMany<T>(values));
 
     public override string ToString()
         => Match(

@@ -53,7 +53,8 @@ public static unsafe class Notsafe
     }
 
 
-    #region Referencing
+#region Referencing
+
     /************************************
      * Roughly:
      * void*, T*, in T, ref T
@@ -62,14 +63,20 @@ public static unsafe class Notsafe
 
     // void* -> ?
 
+    /// <summary>
+    /// <c>void* -> T*</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* VoidPtrAsPtr<T>(void* voidPointer)
-       where T : unmanaged
+        where T : unmanaged
     {
         Emit.Ldarg(nameof(voidPointer));
         return ReturnPointer<T>();
     }
 
+    /// <summary>
+    /// <c>void* -> ref T</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T VoidPtrAsRef<T>(void* voidPointer)
     {
@@ -77,6 +84,9 @@ public static unsafe class Notsafe
         return ref ReturnRef<T>();
     }
 
+    /// <summary>
+    /// <c>void* -> in T</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly T VoidPtrAsIn<T>(void* voidPointer)
     {
@@ -86,6 +96,9 @@ public static unsafe class Notsafe
 
     // T* -> ?
 
+    /// <summary>
+    /// <c>T* -> void*</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void* PtrAsVoidPtr<T>(T* sourcePointer)
         where T : unmanaged
@@ -94,17 +107,23 @@ public static unsafe class Notsafe
         return ReturnPointer();
     }
 
+    /// <summary>
+    /// <c>T* -> ref T</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T PtrAsRef<T>(T* sourcePointer)
-       where T : unmanaged
+        where T : unmanaged
     {
         Emit.Ldarg(nameof(sourcePointer));
         return ref ReturnRef<T>();
     }
 
+    /// <summary>
+    /// <c>T* -> in T</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly T PtrAsIn<T>(T* sourcePointer)
-       where T : unmanaged
+        where T : unmanaged
     {
         Emit.Ldarg(nameof(sourcePointer));
         return ref ReturnRef<T>();
@@ -112,6 +131,9 @@ public static unsafe class Notsafe
 
     // in T -> ?
 
+    /// <summary>
+    /// <c>in T -> void*</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void* InAsVoidPtr<T>(in T inValue)
     {
@@ -119,6 +141,9 @@ public static unsafe class Notsafe
         return ReturnPointer();
     }
 
+    /// <summary>
+    /// <c>in T -> T*</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* InAsPtr<T>(in T inValue)
         where T : unmanaged
@@ -127,6 +152,9 @@ public static unsafe class Notsafe
         return ReturnPointer<T>();
     }
 
+    /// <summary>
+    /// <c>in T -> ref T</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T InAsRef<T>(in T inValue)
     {
@@ -136,6 +164,9 @@ public static unsafe class Notsafe
 
     // ref T -> ?
 
+    /// <summary>
+    /// <c>ref T -> void*</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void* RefAsVoidPtr<T>(ref T inValue)
     {
@@ -143,6 +174,9 @@ public static unsafe class Notsafe
         return ReturnPointer();
     }
 
+    /// <summary>
+    /// <c>ref T -> T*</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* RefAsPtr<T>(ref T inValue)
         where T : unmanaged
@@ -151,6 +185,9 @@ public static unsafe class Notsafe
         return ReturnPointer<T>();
     }
 
+    /// <summary>
+    /// <c>ref T -> in T</c>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly T RefAsIn<T>(ref T inValue)
     {
@@ -158,9 +195,9 @@ public static unsafe class Notsafe
         return ref ReturnRef<T>();
     }
 
-    #endregion
+#endregion
 
-    #region Casting
+#region Casting
 
     // object -> ?
 
@@ -286,7 +323,8 @@ public static unsafe class Notsafe
             pointer: InAsVoidPtr(in input.GetPinnableReference()),
             length: input.Length);
     }
-    #endregion
+
+#endregion
 
     // crazy stuff below
 

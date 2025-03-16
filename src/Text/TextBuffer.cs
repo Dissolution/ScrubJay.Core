@@ -1,5 +1,7 @@
 ﻿#pragma warning disable CA1045
 
+global using TextBuffer = ScrubJay.Pooling.Buffer<char>;
+
 // ReSharper disable MergeCastWithTypeCheck
 
 namespace ScrubJay.Text;
@@ -7,13 +9,13 @@ namespace ScrubJay.Text;
 /// <summary>
 /// Extensions on <see cref="Buffer{T}">Buffer&lt;char&gt;</see>
 /// </summary>
-public static class CharBufferExtensions
+public static class TextBufferExtensions
 {
-    public static void Write(this ref Buffer<char> buffer, char ch) => buffer.Add(ch);
+    public static void Write(this ref TextBuffer buffer, char ch) => buffer.Add(ch);
 
-    public static void Write(this ref Buffer<char> buffer, scoped text text) => buffer.AddMany(text);
+    public static void Write(this ref TextBuffer buffer, scoped text text) => buffer.AddMany(text);
 
-    public static void Write(this ref Buffer<char> buffer, string? str)
+    public static void Write(this ref TextBuffer buffer, string? str)
     {
         if (str is not null)
         {
@@ -21,7 +23,7 @@ public static class CharBufferExtensions
         }
     }
 
-    public static void Write<T>(this ref Buffer<char> buffer, T? value)
+    public static void Write<T>(this ref TextBuffer buffer, T? value)
     {
         string? str;
         // ReSharper disable once MergeCastWithTypeCheck
@@ -52,7 +54,7 @@ public static class CharBufferExtensions
         buffer.AddMany(str.AsSpan());
     }
 
-    public static void Write<T>(this ref Buffer<char> buffer, T? value, text format, IFormatProvider? provider = null)
+    public static void Write<T>(this ref TextBuffer buffer, T? value, text format, IFormatProvider? provider = null)
     {
         string? str;
         // ReSharper disable once MergeCastWithTypeCheck
@@ -83,7 +85,7 @@ public static class CharBufferExtensions
         buffer.AddMany(str.AsSpan());
     }
 
-    public static void Write<T>(this ref Buffer<char> buffer, T? value, string? format, IFormatProvider? provider = null)
+    public static void Write<T>(this ref TextBuffer buffer, T? value, string? format, IFormatProvider? provider = null)
     {
         string? str;
         // ReSharper disable once MergeCastWithTypeCheck
@@ -119,7 +121,7 @@ public static class CharBufferExtensions
     /// </summary>
     public static string ToStringAndDispose(
         [HandlesResourceDisposal]
-        this ref Buffer<char> buffer)
+        this ref TextBuffer buffer)
     {
         string str = buffer.Written.AsString();
         buffer.Dispose();

@@ -107,7 +107,7 @@ public ref struct SpanReader<T>
     public readonly SpanReadResult<T> TryPeek(int count)
     {
         int pos = _position;
-        if ((uint)pos + (uint)count <= (uint)_spanLength)
+        if (((uint)pos + (uint)count) <= (uint)_spanLength)
         {
             return Satisified(_span.Slice(pos, count));
         }
@@ -165,7 +165,7 @@ public ref struct SpanReader<T>
     public SpanReadResult<T> TryTake(int count)
     {
         int pos = _position;
-        if ((uint)pos + (uint)count <= (uint)_spanLength)
+        if (((uint)pos + (uint)count) <= (uint)_spanLength)
         {
             _position = pos + count;
             return Satisified(_span.Slice(pos, count));
@@ -362,7 +362,7 @@ public ref struct SpanReader<T>
     public bool TrySkip(int count)
     {
         int pos = _position;
-        if ((uint)pos + (uint)count <= (uint)_spanLength)
+        if (((uint)pos + (uint)count) <= (uint)_spanLength)
         {
             _position = pos + count;
             return true;
@@ -543,7 +543,7 @@ public ref struct SpanReader<T>
     public void Consume(ReadSpan consumeRemainingSpan)
     {
         int consumed = consumeRemainingSpan(RemainingSpan);
-        if (consumed < 0 || consumed > RemainingCount)
+        if ((consumed < 0) || (consumed > RemainingCount))
             throw new InvalidOperationException($"Cannot consume {consumed} items");
         _position += consumed;
     }
@@ -557,7 +557,7 @@ public ref struct SpanReader<T>
 
     private readonly string ToStringFromCharSpan()
     {
-        var text = new Buffer<char>();
+        var text = new TextBuffer();
 
         int index = _position;
         text chars = Notsafe.As<T, char>(_span);
@@ -610,7 +610,7 @@ public ref struct SpanReader<T>
         const string DELIMITER = ", ";
         const int CAPTURE_COUNT = 8;
 
-        var text = new Buffer<char>();
+        var text = new TextBuffer();
 
         int index = _position;
         var span = _span;

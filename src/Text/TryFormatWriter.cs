@@ -65,7 +65,7 @@ public ref struct TryFormatWriter : IEnumerable
 
     public TryFormatWriter(Span<char> destination, int position)
     {
-        if (position < 0 || position >= destination.Length)
+        if ((position < 0) || (position >= destination.Length))
             throw new ArgumentOutOfRangeException(nameof(position), position, "Position must be inside of span");
         _destination = destination;
         _position = position;

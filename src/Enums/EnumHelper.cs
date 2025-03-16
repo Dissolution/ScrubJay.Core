@@ -108,7 +108,7 @@ public class EnumInfo<TEnum> : EnumInfo
             if (flags.Length == 0)
                 return @enum.ToString();
 
-            var buffer = new Buffer<char>();
+            var buffer = new TextBuffer();
             TEnum flag = flags[0];
             string flagString = _memberInfos.TryGetValue(flag, out memberInfo) ? memberInfo.DisplayName : flag.ToString();
             buffer.Write(flagString);

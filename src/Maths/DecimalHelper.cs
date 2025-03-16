@@ -9,7 +9,7 @@
 {
     public override string ToString()
     {
-        var text = new Buffer<char>();
+        var text = new TextBuffer();
         text.Write(Mantissa);
         if (Exponent == 0)
         {

@@ -107,7 +107,7 @@ public sealed class ArrayInstancePool<T> : IArrayInstancePool<T>
 
     public void Return(T[]? instance)
     {
-        if (instance is not null && instance.Length > 0)
+        if (instance is not null && (instance.Length > 0))
         {
             _arrayPool.Return(instance, _clearArray);
         }

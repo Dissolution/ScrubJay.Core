@@ -578,7 +578,7 @@ public readonly ref struct OptionReadOnlySpan<T> //:
     public override int GetHashCode()
     {
         if (_isSome)
-            return Hasher.Combine(_value);
+            return Hasher.HashMany(_value);
         return 0;
     }
 

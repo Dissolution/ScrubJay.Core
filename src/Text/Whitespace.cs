@@ -61,7 +61,7 @@ internal class Whitespace : IDisposable
 
     public string NewLineAndIndents()
     {
-        var buffer = new Buffer<char>();
+        var buffer = new TextBuffer();
         buffer.Write(_newLine);
         using var e = _indents.GetEnumerator(false);
         while (e.MoveNext())

@@ -1,8 +1,8 @@
-﻿namespace ScrubJay.Comparison;
+﻿namespace ScrubJay.Text.Comparison;
 
 public interface ITextEqualityComparer :
 #if NET9_0_OR_GREATER
-    IEqualityComparer<ReadOnlySpan<char>>,
+    IEqualityComparer<text>,
 #endif
     IEqualityComparer<char>,
     IEqualityComparer<string>,

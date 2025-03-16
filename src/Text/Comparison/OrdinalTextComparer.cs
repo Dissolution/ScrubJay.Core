@@ -31,14 +31,14 @@ public sealed class OrdinalTextComparer : StringComparisonTextComparer
 
 
     public override int GetHashCode(char ch)
-        => Hasher.GetHashCode(ch);
+        => Hasher.Hash(ch);
 
     public override int GetHashCode(string? str)
-        => str is null ? Hasher.NullHash : Hasher.Combine<char>(str.AsSpan());
+        => str is null ? Hasher.NullHash : Hasher.HashMany<char>(str.AsSpan());
 
     public override int GetHashCode(char[]? chars)
-        => Hasher.Combine<char>(chars);
+        => Hasher.HashMany<char>(chars);
 
     public override int GetHashCode(scoped text text)
-        => Hasher.Combine<char>(text);
+        => Hasher.HashMany<char>(text);
 }

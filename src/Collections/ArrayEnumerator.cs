@@ -23,7 +23,7 @@ public sealed class ArrayEnumerator<T> : ITryEnumerator<T>
 
     public Result<T, Exception> TryGetCurrent()
     {
-        if (_getCurrentVersion is not null && _getCurrentVersion() != _version)
+        if (_getCurrentVersion is not null && (_getCurrentVersion() != _version))
             return new InvalidOperationException("Source array has changed");
 
         if (_step == +1)
@@ -124,7 +124,7 @@ public sealed class ArrayEnumerator<T> : ITryEnumerator<T>
             Throw.IfEnumerationSourceHasChanged(_getCurrentVersion() != _version);
 
         int newIndex = _index + _step;
-        if (newIndex < _minIndex || newIndex > _maxIndex)
+        if ((newIndex < _minIndex) || (newIndex > _maxIndex))
             return false;
         _index = newIndex;
         return true;
@@ -132,11 +132,11 @@ public sealed class ArrayEnumerator<T> : ITryEnumerator<T>
 
     public Result<T, Exception> TryMoveNext()
     {
-        if (_getCurrentVersion is not null && _getCurrentVersion() != _version)
+        if (_getCurrentVersion is not null && (_getCurrentVersion() != _version))
             return new InvalidOperationException("Version has changed");
 
         int newIndex = _index + 1;
-        if (newIndex < _minIndex || newIndex > _maxIndex)
+        if ((newIndex < _minIndex) || (newIndex > _maxIndex))
             return new InvalidOperationException("Enumeration has completed");
         _index = newIndex;
         return Ok(_array[newIndex]);

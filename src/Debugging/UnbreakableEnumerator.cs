@@ -88,5 +88,5 @@ public sealed class UnbreakableEnumerator<T> : IEnumerator<T>, IEnumerator, IDis
         }
     }
 
-    public void Dispose() => Disposable.TryNullDisposeRef(ref _enumerator);
+    public void Dispose() => Disposable.TryDisposeAndDefaultRef(ref _enumerator);
 }

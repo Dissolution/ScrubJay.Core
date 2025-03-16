@@ -124,7 +124,7 @@ public ref struct Buffer<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal set
         {
-            Debug.Assert(value >= 0 && value < Capacity);
+            Debug.Assert((value >= 0) && (value < Capacity));
             _position = value;
         }
     }
@@ -150,7 +150,7 @@ public ref struct Buffer<T>
     internal Buffer(T[] initialArray, int initialPosition)
     {
         _span = _array = initialArray;
-        Debug.Assert(initialPosition >= 0 && initialPosition <= Capacity);
+        Debug.Assert((initialPosition >= 0) && (initialPosition <= Capacity));
         _position = initialPosition;
     }
 
@@ -167,7 +167,7 @@ public ref struct Buffer<T>
     {
         _span = initialSpan;
         _array = null;
-        Debug.Assert(initialPosition >= 0 && initialPosition <= Capacity);
+        Debug.Assert((initialPosition >= 0) && (initialPosition <= Capacity));
         _position = initialPosition;
     }
 
@@ -378,7 +378,7 @@ public ref struct Buffer<T>
 
             int pos = _position;
             int newPos = pos + itemCount;
-            if (newPos > Capacity || _array is null)
+            if ((newPos > Capacity) || _array is null)
             {
                 GrowBy(itemCount);
             }
@@ -526,7 +526,7 @@ public ref struct Buffer<T>
             }
 
             int newPos = pos + itemCount;
-            if (newPos > Capacity || _array is null)
+            if ((newPos > Capacity) || _array is null)
             {
                 GrowBy(itemCount);
             }
@@ -723,7 +723,7 @@ public ref struct Buffer<T>
         int pos = _position;
         var span = _span;
 
-        if (itemCount == 0 || itemCount > pos)
+        if ((itemCount == 0) || (itemCount > pos))
         {
             return None();
         }
@@ -1000,7 +1000,7 @@ public ref struct Buffer<T>
         Span<T> span = _span;
 
         // Find the first item which needs to be removed.
-        while (freeIndex < pos && !itemPredicate(span[freeIndex]))
+        while ((freeIndex < pos) && !itemPredicate(span[freeIndex]))
         {
             freeIndex++;
         }
@@ -1014,7 +1014,7 @@ public ref struct Buffer<T>
         while (current < pos)
         {
             // Find the first item which needs to be kept.
-            while (current < pos && itemPredicate(span[current]))
+            while ((current < pos) && itemPredicate(span[current]))
             {
                 current++;
             }
@@ -1067,7 +1067,7 @@ public ref struct Buffer<T>
 
         int pos = _position;
         Span<T> span = _span;
-        if (pos + length <= span.Length)
+        if ((pos + length) <= span.Length)
         {
             _position = pos + length;
             return span.Slice(pos, length);
@@ -1091,7 +1091,7 @@ public ref struct Buffer<T>
     public bool TryUseAvailable(UseAvailable<T> useAvailable)
     {
         int used = useAvailable(Available);
-        if (used < 0 || used > Available.Length)
+        if ((used < 0) || (used > Available.Length))
         {
             return false;
         }

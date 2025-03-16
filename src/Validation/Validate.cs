@@ -43,7 +43,7 @@ public static class Validate
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
     {
-        if (index >= 0 && index < length)
+        if ((index >= 0) && (index < length))
             return index;
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length})");
     }
@@ -69,7 +69,7 @@ public static class Validate
         string? indexName = null)
     {
         int offset = index.GetOffset(length);
-        if (offset >= 0 && offset < length)
+        if ((offset >= 0) && (offset < length))
             return offset;
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length})");
     }
@@ -80,7 +80,7 @@ public static class Validate
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
     {
-        if (index >= 0 && index <= length)
+        if ((index >= 0) && (index <= length))
             return index;
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length}]");
     }
@@ -92,7 +92,7 @@ public static class Validate
         string? indexName = null)
     {
         int offset = index.GetOffset(length);
-        if (offset >= 0 && offset <= length)
+        if ((offset >= 0) && (offset <= length))
             return offset;
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length}]");
     }
@@ -124,9 +124,9 @@ public static class Validate
         [CallerArgumentExpression(nameof(length))]
         string? lengthName = null)
     {
-        if (index < 0 || index > available)
+        if ((index < 0) || (index > available))
             return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{available})");
-        if (length < 0 || index + length > available)
+        if ((length < 0) || ((index + length) > available))
             return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0..{available}]");
         return (index, length);
     }
@@ -159,9 +159,9 @@ public static class Validate
         string? lengthName = null)
     {
         int offset = index.GetOffset(available);
-        if (offset < 0 || offset > available)
+        if ((offset < 0) || (offset > available))
             return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{available}]");
-        if (length < 0 || offset + length > available)
+        if ((length < 0) || ((offset + length) > available))
             return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0..{available}]");
         return (offset, length);
     }
@@ -187,11 +187,11 @@ public static class Validate
         string? rangeName = null)
     {
         int start = range.Start.GetOffset(available);
-        if (start < 0 || start > available)
+        if ((start < 0) || (start > available))
             return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0..{available}]");
 
         int end = range.End.GetOffset(available);
-        if (end < start || end > available)
+        if ((end < start) || (end > available))
             return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0..{available}]");
 
         return (start, end - start);
@@ -551,7 +551,7 @@ public static class Validate
             from arr in IsNotNull(array, arrayName)
             from arrIndex in InRange(arrayIndex, ..arr.Length, arrayIndexName)
             from _ in IsErrorIf(
-                count + arrIndex > arr.Length,
+                (count + arrIndex) > arr.Length,
                 () => new ArgumentOutOfRangeException(
                     arrayName, arr,
                     $"Cannot fit {count} items into [{arr.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}"))
@@ -571,7 +571,7 @@ public static class Validate
             from arr in IsNotNull(array, arrayName)
             from arrIndex in InRange(arrayIndex, ..arr.Length, arrayIndexName)
             from _ in IsErrorIf(
-                count + arrIndex > arr.Length,
+                (count + arrIndex) > arr.Length,
                 () => new ArgumentOutOfRangeException(
                     arrayName, arr,
                     $"Cannot fit {count} items into [{arr.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}"))

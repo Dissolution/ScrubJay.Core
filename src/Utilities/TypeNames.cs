@@ -34,26 +34,24 @@ public static class TypeNames
         [typeof(nuint)] = "nuint",
     };
 
-    internal static void WriteTypeName(
-        this ref Buffer<char> name,
-        Type? type)
+    internal static void WriteTypeName(this ref TextBuffer buffer, Type? type)
     {
         if (type is null)
         {
-            name.Write("null");
+            buffer.Write("null");
             return;
         }
 
-        if (_typeNameCache.TryGetValue(type, out string? n))
+        if (_typeNameCache.TryGetValue(type, out var name))
         {
-            name.Write(n);
+            buffer.Write(name);
             return;
         }
 
-        // Enum types are their NameFrom
+        // Enum types are their Name
         if (type.IsEnum)
         {
-            name.Write(type.Name);
+            buffer.Write(type.Name);
             return;
         }
 
@@ -62,8 +60,8 @@ public static class TypeNames
         if (underType is not null)
         {
             // c# Nullable alias
-            name.WriteTypeName(underType);
-            name.Write("?");
+            buffer.WriteTypeName(underType);
+            buffer.Write("?");
             return;
         }
 
@@ -71,8 +69,8 @@ public static class TypeNames
         if (type.IsPointer)
         {
             underType = type.GetElementType()!;
-            name.WriteTypeName(underType);
-            name.Write("*");
+            buffer.WriteTypeName(underType);
+            buffer.Write("*");
             return;
         }
 
@@ -80,32 +78,41 @@ public static class TypeNames
         if (type.IsByRef)
         {
             underType = type.GetElementType()!;
-            name.Write("ref ");
-            name.WriteTypeName(underType);
+            buffer.Write("ref ");
+            buffer.WriteTypeName(underType);
             return;
         }
+
+#if !NETFRAMEWORK && !NETSTANDARD2_0
+        // allows ref struct, ???
+        if (type.IsByRefLike)
+        {
+            Debugger.Break();
+            // continue
+        }
+#endif
 
         // Array => T[]
         if (type.IsArray)
         {
             underType = type.GetElementType()!;
-            name.WriteTypeName(underType);
-            name.Write("[]");
+            buffer.WriteTypeName(underType);
+            buffer.Write("[]");
             return;
         }
 
         // Nested Type?
         if (type is { IsNested: true, IsGenericParameter: false })
         {
-            name.WriteTypeName(type.DeclaringType);
-            name.Write(".");
+            buffer.WriteTypeName(type.DeclaringType);
+            buffer.Write(".");
         }
 
         // If non-generic
         if (!type.IsGenericType)
         {
             // Just write the type name and we're done
-            name.Write(type.Name);
+            buffer.Write(type.Name);
         }
         else
         {
@@ -121,12 +128,13 @@ public static class TypeNames
             int i = typeName.IndexOf('`');
             if (i >= 0)
             {
-                name.Write(typeName.Slice(0, i));
+                buffer.Write(typeName.Slice(0, i));
             }
             else
             {
+                Debugger.Break();
                 // Odd... use the name
-                name.Write(typeName);
+                buffer.Write(typeName);
             }
 
             // Add our generic types to finish
@@ -134,21 +142,21 @@ public static class TypeNames
             int argCount = argTypes.Length;
             Debug.Assert(argCount > 0);
 
-            name.Write("<");
-            name.WriteTypeName(argTypes[0]);
+            buffer.Write("<");
+            buffer.WriteTypeName(argTypes[0]);
             for (i = 1; i < argCount; i++)
             {
-                name.Write(", ");
-                name.WriteTypeName(argTypes[i]);
+                buffer.Write(", ");
+                buffer.WriteTypeName(argTypes[i]);
             }
 
-            name.Write(">");
+            buffer.Write(">");
         }
     }
 
     private static string CreateTypeName(Type? type)
     {
-        var text = new Buffer<char>();
+        var text = new TextBuffer();
         WriteTypeName(ref text, type);
         return text.ToStringAndDispose();
     }
@@ -166,5 +174,9 @@ public static class TypeNames
     /// <summary>
     /// Gets the rendered name of a generic type
     /// </summary>
-    public static string NameOf<T>() => _typeNameCache.GetOrAdd<T>(static t => CreateTypeName(t));
+    public static string NameOf<T>()
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => _typeNameCache.GetOrAdd<T>(static t => CreateTypeName(t));
 }

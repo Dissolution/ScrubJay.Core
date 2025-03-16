@@ -55,18 +55,18 @@ public readonly struct StackIndex :
 
     public bool Equals(StackIndex other)
     {
-        return _index == other._index &&
-            _inArrayOrder == other._inArrayOrder;
+        return (_index == other._index) &&
+            (_inArrayOrder == other._inArrayOrder);
     }
 
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is StackIndex stackIndex && Equals(stackIndex);
 
-    public override int GetHashCode() => Hasher.Combine(_index, _inArrayOrder);
+    public override int GetHashCode() => Hasher.HashMany(_index, _inArrayOrder);
 
     public override string ToString()
     {
-        var buffer = new Buffer<char>(14);
+        var buffer = new TextBuffer(14);
 
         if (!_inArrayOrder)
         {

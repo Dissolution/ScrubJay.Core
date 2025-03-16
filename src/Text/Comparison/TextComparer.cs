@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace ScrubJay.Text.Comparison;
+﻿namespace ScrubJay.Text.Comparison;
 
 [PublicAPI]
 public abstract class TextComparer :
@@ -86,7 +84,7 @@ public abstract class TextComparer :
         if (obj is null)
             return Hasher.NullHash;
         if (TextHelper.TryUnboxText(obj, out text text))
-            return Hasher.Combine<char>(text);
+            return Hasher.HashMany<char>(text);
         throw new ArgumentException($"Cannot get a hashcode for non-textual object containing `{obj.GetType().NameOf()}`", nameof(obj));
     }
 

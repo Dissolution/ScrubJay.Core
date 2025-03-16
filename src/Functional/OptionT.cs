@@ -68,7 +68,7 @@ public readonly struct Option<T> :
     public static implicit operator Option<T>(T value) => Some(value);
 
     /// <summary>
-    /// Implicitly convert a standalone <see cref="Assist.None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
+    /// Implicitly convert a standalone <see cref="None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Option<T>(None _) => None();
@@ -539,7 +539,7 @@ public readonly struct Option<T> :
     public override int GetHashCode()
     {
         if (_isSome)
-            return Hasher.GetHashCode<T>(_value);
+            return Hasher.Hash<T>(_value);
         return Hasher.EmptyHash;
     }
 

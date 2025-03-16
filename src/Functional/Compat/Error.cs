@@ -1,5 +1,5 @@
-﻿// Prefix generic type parameter with T, Rename type
-#pragma warning disable CA1715, CA1716
+﻿// Prefix generic type parameter with T, Rename type, Should override Equals
+#pragma warning disable CA1715, CA1716, CA1815
 
 namespace ScrubJay.Functional.Compat;
 

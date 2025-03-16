@@ -116,7 +116,7 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
 
     public override string ToString()
     {
-        var text = new Buffer<char>();
+        var text = new TextBuffer();
 
         if (Lower.HasSome(out var lower))
         {

@@ -1,4 +1,5 @@
 ﻿// ReSharper disable RedundantBaseQualifier
+
 namespace ScrubJay.Collections;
 
 /// <summary>
@@ -11,22 +12,27 @@ namespace ScrubJay.Collections;
 [PublicAPI]
 public class TypeMap<TValue> : Dictionary<Type, TValue>
 {
-    public TypeMap()
-    {
-    }
+    public TypeMap() { }
 
     public TypeMap(int capacity)
-        : base(capacity)
-    {
-    }
+        : base(capacity) { }
 
     public bool ContainsKey<TKey>()
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
         => base.ContainsKey(typeof(TKey));
 
     public bool TryGetValue<TKey>([MaybeNullWhen(false)] out TValue value)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
         => base.TryGetValue(typeof(TKey), out value);
 
     public TValue GetOrAdd<TKey>(TValue addValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (!base.TryGetValue(keyType, out var value))
@@ -38,6 +44,9 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
     }
 
     public TValue GetOrAdd<TKey>(Fn<TValue> addValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (!base.TryGetValue(keyType, out var value))
@@ -49,6 +58,9 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
     }
 
     public TValue GetOrAdd<TKey>(Fn<Type, TValue> addValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (!base.TryGetValue(keyType, out var value))
@@ -60,6 +72,9 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
     }
 
     public bool TryAdd<TKey>(TValue addValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (base.ContainsKey(keyType))
@@ -75,12 +90,18 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
     }
 
     public TValue AddOrUpdate<TKey>(TValue value)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         base[typeof(TKey)] = value;
         return value;
     }
 
     public TValue AddOrUpdate<TKey>(TValue addValue, Func<TValue, TValue> updateValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (base.TryGetValue(keyType, out var value))
@@ -97,6 +118,9 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
     }
 
     public TValue AddOrUpdate<TKey>(TValue addValue, Func<Type, TValue, TValue> updateValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (base.TryGetValue(keyType, out var value))
@@ -113,6 +137,9 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
     }
 
     public TValue AddOrUpdate<TKey>(Func<TValue> createValue, Func<TValue, TValue> updateValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (base.TryGetValue(keyType, out var value))
@@ -128,6 +155,9 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
     }
 
     public TValue AddOrUpdate<TKey>(Func<TValue> createValue, Func<Type, TValue, TValue> updateValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (base.TryGetValue(keyType, out var value))
@@ -143,6 +173,9 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
     }
 
     public TValue AddOrUpdate<TKey>(Func<Type, TValue> createValue, Func<TValue, TValue> updateValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (base.TryGetValue(keyType, out var value))
@@ -158,6 +191,9 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
     }
 
     public TValue AddOrUpdate<TKey>(Func<Type, TValue> createValue, Func<Type, TValue, TValue> updateValue)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (base.TryGetValue(keyType, out var value))
@@ -174,9 +210,16 @@ public class TypeMap<TValue> : Dictionary<Type, TValue>
 
     public bool TryRemove(Type keyType) => base.Remove(keyType);
 
-    public bool TryRemove<TKey>() => base.Remove(typeof(TKey));
+    public bool TryRemove<TKey>()
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
+        => base.Remove(typeof(TKey));
 
     public bool TryRemove<TKey>([MaybeNullWhen(false)] out TValue value)
+#if NET9_0_OR_GREATER
+        where TKey : allows ref struct
+#endif
     {
         var keyType = typeof(TKey);
         if (base.TryGetValue(keyType, out value))

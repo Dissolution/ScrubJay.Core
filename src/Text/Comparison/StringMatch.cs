@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CA1008, CA2217, CA1034, CA2225
 
-namespace ScrubJay.Text;
+namespace ScrubJay.Text.Comparison;
 
 public abstract record class StringMatch
 {

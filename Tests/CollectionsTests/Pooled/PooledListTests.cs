@@ -379,7 +379,7 @@ public class PooledListTests
         List<TestClassRecord> records = new List<TestClassRecord>();
         for (int i = 0; i < 10; i++)
         {
-            var obj = new TestClassRecord(i, "Record #{i}", i % 2 == 0);
+            var obj = new TestClassRecord(i, "Record #{i}", (i % 2) == 0);
             recordPooledList.Add(obj);
             records.Add(obj);
         }

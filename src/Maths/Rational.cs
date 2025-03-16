@@ -296,11 +296,11 @@ public readonly struct Rational :
         }
 
         // Cannot simplify further
-        if (numerator != BigInteger.One && numerator != BigInteger.MinusOne &&
-            denominator != BigInteger.One && denominator != BigInteger.MinusOne)
+        if ((numerator != BigInteger.One) && (numerator != BigInteger.MinusOne) &&
+            (denominator != BigInteger.One) && (denominator != BigInteger.MinusOne))
         {
             var greatestCommonDivisor = BigInteger.GreatestCommonDivisor(numerator, denominator);
-            if (greatestCommonDivisor != BigInteger.One && greatestCommonDivisor != BigInteger.MinusOne)
+            if ((greatestCommonDivisor != BigInteger.One) && (greatestCommonDivisor != BigInteger.MinusOne))
             {
                 numerator /= greatestCommonDivisor;
                 denominator /= greatestCommonDivisor;
@@ -505,7 +505,7 @@ public readonly struct Rational :
     public static bool TryParse(text text, NumberStyles style, IFormatProvider? provider,
         out Rational rational)
     {
-        if (text.Length == 1 && _fastUnicodeRationals.TryGetValue(text[0], out rational))
+        if ((text.Length == 1) && _fastUnicodeRationals.TryGetValue(text[0], out rational))
             return true;
 
         var segments = text.Splitter('/');
@@ -595,11 +595,11 @@ public readonly struct Rational :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsInteger(Rational value) => value.Denominator == BigInteger.One;
 
-    public static bool IsNaN(Rational value) => value.Denominator == BigInteger.Zero && value.Numerator == BigInteger.Zero;
+    public static bool IsNaN(Rational value) => (value.Denominator == BigInteger.Zero) && (value.Numerator == BigInteger.Zero);
 
     public static bool IsNegative(Rational value) => value.Numerator < BigInteger.Zero;
 
-    public static bool IsNegativeInfinity(Rational value) => value.Denominator == BigInteger.Zero && value.Numerator < BigInteger.Zero;
+    public static bool IsNegativeInfinity(Rational value) => (value.Denominator == BigInteger.Zero) && (value.Numerator < BigInteger.Zero);
 
     public static bool IsNormal(Rational value) => value != Zero;
 
@@ -607,7 +607,7 @@ public readonly struct Rational :
 
     public static bool IsPositive(Rational value) => value.Numerator >= BigInteger.Zero;
 
-    public static bool IsPositiveInfinity(Rational value) => value.Denominator == BigInteger.Zero && value.Numerator > BigInteger.Zero;
+    public static bool IsPositiveInfinity(Rational value) => (value.Denominator == BigInteger.Zero) && (value.Numerator > BigInteger.Zero);
 
     public static bool IsRealNumber(Rational _) => true;
 
@@ -1130,8 +1130,8 @@ public readonly struct Rational :
     {
         if (Denominator == BigInteger.Zero)
             return new DivideByZeroException("The denominator of this Rational is Zero");
-        if (Numerator < MathHelper.BigInt.DecimalMinValue ||
-            Numerator > MathHelper.BigInt.DecimalMaxValue)
+        if ((Numerator < MathHelper.BigInt.DecimalMinValue) ||
+            (Numerator > MathHelper.BigInt.DecimalMaxValue))
         {
             return new InvalidOperationException($"Numerator '{Numerator}' is larger than a decimal");
         }
@@ -1156,8 +1156,8 @@ public readonly struct Rational :
                 return double.NegativeInfinity;
             return double.NaN;
         }
-        if (Numerator < MathHelper.BigInt.DoubleMinValue ||
-            Numerator > MathHelper.BigInt.DoubleMaxValue)
+        if ((Numerator < MathHelper.BigInt.DoubleMinValue) ||
+            (Numerator > MathHelper.BigInt.DoubleMaxValue))
         {
             return new InvalidOperationException($"Numerator '{Numerator}' is larger than a double");
         }
@@ -1181,8 +1181,8 @@ public readonly struct Rational :
                 return float.NegativeInfinity;
             return float.NaN;
         }
-        if (Numerator < MathHelper.BigInt.FloatMinValue ||
-            Numerator > MathHelper.BigInt.FloatMaxValue)
+        if ((Numerator < MathHelper.BigInt.FloatMinValue) ||
+            (Numerator > MathHelper.BigInt.FloatMaxValue))
         {
             return new InvalidOperationException($"Numerator '{Numerator}' is larger than a float");
         }
@@ -1206,8 +1206,8 @@ public readonly struct Rational :
     {
         if (Denominator == BigInteger.Zero)
             return new DivideByZeroException("The denominator of this Rational is Zero");
-        if (Numerator < MathHelper.BigInt.LongMinValue ||
-            Numerator > MathHelper.BigInt.LongMaxValue)
+        if ((Numerator < MathHelper.BigInt.LongMinValue) ||
+            (Numerator > MathHelper.BigInt.LongMaxValue))
         {
             return new InvalidOperationException($"Numerator '{Numerator}' is larger than a long");
         }
@@ -1368,7 +1368,7 @@ public readonly struct Rational :
             _ => false,
         };
 
-    public override int GetHashCode() => Hasher.Combine(Numerator, Denominator);
+    public override int GetHashCode() => Hasher.HashMany(Numerator, Denominator);
 
     public bool TryFormat(
         Span<char> destination,
@@ -1376,7 +1376,7 @@ public readonly struct Rational :
         text format = default,
         IFormatProvider? provider = default)
     {
-        var buffer = new Buffer<char>(initialSpan: destination, 0);
+        var buffer = new TextBuffer(initialSpan: destination, 0);
         try
         {
             WriteString(ref buffer, format.ToString(), provider);
@@ -1400,13 +1400,13 @@ public readonly struct Rational :
 
     public string ToString(string? format, IFormatProvider? formatProvider = null)
     {
-        Buffer<char> buffer = new();
+        TextBuffer buffer = new();
         WriteString(ref buffer, format, formatProvider);
         return buffer.ToStringAndDispose();
     }
 
 
-    private void WriteGeneral(ref Buffer<char> buffer)
+    private void WriteGeneral(ref TextBuffer buffer)
     {
         buffer.Write(Numerator);
         buffer.Write('/');
@@ -1414,7 +1414,7 @@ public readonly struct Rational :
     }
 
 
-    private void WriteString(ref Buffer<char> buffer, string? format, IFormatProvider? provider)
+    private void WriteString(ref TextBuffer buffer, string? format, IFormatProvider? provider)
     {
         if (string.IsNullOrEmpty(format))
         {
@@ -1434,7 +1434,7 @@ public readonly struct Rational :
         {
             BigInteger numerator = Numerator;
             BigInteger denominator = Denominator;
-            if (BigInteger.Abs(numerator) < BigInteger.Abs(denominator) || denominator == BigInteger.Zero)
+            if ((BigInteger.Abs(numerator) < BigInteger.Abs(denominator)) || (denominator == BigInteger.Zero))
             {
                 WriteGeneral(ref buffer);
                 return;

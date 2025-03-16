@@ -58,7 +58,7 @@ public static class TypeExtensions
         if (type == checkType)
             return true;
         // Everything implements object
-        if (checkType == typeof(object) && !type.IsPointer)
+        if ((checkType == typeof(object)) && !type.IsPointer)
             return true;
 
         if (!checkType.IsGenericTypeDefinition)

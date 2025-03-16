@@ -122,7 +122,7 @@ public class Validations<TError> : IReadOnlyCollection<TError>
     {
         if (_errors.Count > 0)
         {
-            var msg = new Buffer<char>();
+            var msg = new TextBuffer();
             msg.Write(_errors.Count);
             msg.Write(" Validations Failed:");
             foreach (var error in _errors)

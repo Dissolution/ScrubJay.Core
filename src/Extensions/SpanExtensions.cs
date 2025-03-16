@@ -32,7 +32,7 @@ public static class SpanExtensions
     public static Option<T> TryGet<T>(this Span<T> span, Index index)
     {
         int offset = index.GetOffset(span.Length);
-        if (offset < 0 || offset >= span.Length)
+        if ((offset < 0) || (offset >= span.Length))
             return None();
         return Some(span[offset]);
     }
@@ -41,7 +41,7 @@ public static class SpanExtensions
     public static Option<T> TryGet<T>(this ReadOnlySpan<T> span, Index index)
     {
         int offset = index.GetOffset(span.Length);
-        if (offset < 0 || offset >= span.Length)
+        if ((offset < 0) || (offset >= span.Length))
             return None();
         return Some(span[offset]);
     }
@@ -81,7 +81,7 @@ public static class SpanExtensions
     public static bool TrySet<T>(this Span<T> span, Index index, T value)
     {
         int offset = index.GetOffset(span.Length);
-        if (offset < 0 || offset >= span.Length)
+        if ((offset < 0) || (offset >= span.Length))
             return false;
         span[offset] = value;
         return true;

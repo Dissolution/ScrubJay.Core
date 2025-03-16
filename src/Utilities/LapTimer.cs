@@ -26,7 +26,7 @@ public sealed class LapTimer
         if (_laps.Count == 0)
             return "LapTimer: Empty";
 
-        var buffer = new Buffer<char>();
+        var buffer = new TextBuffer();
         foreach (var lap in _laps)
         {
             buffer.Write(lap);

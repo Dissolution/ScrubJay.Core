@@ -123,7 +123,7 @@ public class PooledStack<T> : PooledArray<T>,
         int end = _size;
         int offset = index.GetOffset(end);
 
-        if (offset < 0 || offset >= end)
+        if ((offset < 0) || (offset >= end))
             return new ArgumentOutOfRangeException(nameof(index));
 
         // If we indicated the front, push
@@ -151,7 +151,7 @@ public class PooledStack<T> : PooledArray<T>,
         int end = _size;
         int offset = index.GetOffset(end);
 
-        if (offset < 0 || offset >= end)
+        if ((offset < 0) || (offset >= end))
             return new ArgumentOutOfRangeException(nameof(index));
 
         int itemCount = items.Length;
@@ -224,7 +224,7 @@ public class PooledStack<T> : PooledArray<T>,
         int count = buffer.Length;
         int size = _size;
         int start = size - count;
-        if (count < 0 || count > size)
+        if ((count < 0) || (count > size))
             return new InvalidOperationException($"Cannot Peek to a buffer of size {count}: there are only {size} items");
 
         var slice = _array.AsSpan(new Range(start, size));
@@ -283,7 +283,7 @@ public class PooledStack<T> : PooledArray<T>,
         int count = buffer.Length;
         int size = _size;
         int start = size - count;
-        if (count < 0 || count > size)
+        if ((count < 0) || (count > size))
             return new InvalidOperationException($"Cannot Pop to a buffer of size {count}: there are only {size} items");
 
         var slice = _array.AsSpan(new Range(start, size));
@@ -320,7 +320,7 @@ public class PooledStack<T> : PooledArray<T>,
         int end = _size;
         int offset = index.GetOffset(end);
 
-        if (offset < 0 || offset >= end)
+        if ((offset < 0) || (offset >= end))
             return new ArgumentOutOfRangeException(nameof(index));
 
         int newSize = end - 1;
@@ -356,7 +356,7 @@ public class PooledStack<T> : PooledArray<T>,
     public bool Contains(T item)
     {
         int endIndex = _size - 1;
-        return endIndex >= 0 && Array.LastIndexOf<T>(_array, item, endIndex) >= 0;
+        return (endIndex >= 0) && (Array.LastIndexOf<T>(_array, item, endIndex) >= 0);
     }
 
     public bool Contains(T item, IEqualityComparer<T>? itemComparer)
@@ -377,7 +377,7 @@ public class PooledStack<T> : PooledArray<T>,
     {
         int end = _size;
         int offset = index.GetOffset(end);
-        if (offset < 0 || offset >= end)
+        if ((offset < 0) || (offset >= end))
             return new ArgumentOutOfRangeException(nameof(index));
         return _array[offset];
     }
@@ -386,7 +386,7 @@ public class PooledStack<T> : PooledArray<T>,
     {
         int end = _size;
         int offset = index.GetOffset(end);
-        if (offset < 0 || offset >= end)
+        if ((offset < 0) || (offset >= end))
             return new ArgumentOutOfRangeException(nameof(index));
         _array[offset] = item;
         return item;
@@ -419,7 +419,7 @@ public class PooledStack<T> : PooledArray<T>,
             aStep = +1;
         }
 
-        while (s < count && (uint)a < (uint)count)
+        while ((s < count) && ((uint)a < (uint)count))
         {
             span[s] = array[a];
 
@@ -427,7 +427,7 @@ public class PooledStack<T> : PooledArray<T>,
             a += aStep;
         }
 
-        Debug.Assert((s >= count) && (a < 0 || a >= count));
+        Debug.Assert((s >= count) && ((a < 0) || (a >= count)));
 
         return count;
     }
