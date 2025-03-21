@@ -28,4 +28,8 @@
       <ProjectReference Include="..\src\Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Playground\" />
+    </ItemGroup>
+
 </Project>

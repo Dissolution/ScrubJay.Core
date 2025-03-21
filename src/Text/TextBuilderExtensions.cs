@@ -163,11 +163,11 @@ public static class TextBuilderExtensions
 
 
 
-    public delegate void BuildEnumeratedSplitValue<B, T>(B builder, ReadOnlySpan<T> segment)
+    public delegate void BuildEnumeratedSplitValue<in B, T>(B builder, ReadOnlySpan<T> segment)
         where B : TextBuilderBase<B>
         where T : IEquatable<T>;
 
-    public delegate void BuildEnumeratedSplitValueIndex<B, T>(B builder, ReadOnlySpan<T> segment, int index)
+    public delegate void BuildEnumeratedSplitValueIndex<in B, T>(B builder, ReadOnlySpan<T> segment, int index)
         where B : TextBuilderBase<B>
         where T : IEquatable<T>;
 

@@ -41,7 +41,7 @@ public sealed class Lap : IDisposable
 {
     private readonly Stopwatch _stopwatch = new();
 
-    public string Name { get; init; }
+    public string Name { get; }
 
     public bool IsRunning => _stopwatch.IsRunning;
 

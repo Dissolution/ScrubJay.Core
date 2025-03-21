@@ -1,4 +1,7 @@
-﻿// CA1716: Identifiers should not match keywords
+﻿// CA1716: Prefix generic type with 'T'
+#pragma warning disable CA1715
+
+// CA1716: Identifiers should not match keywords
 #pragma warning disable CA1716
 
 namespace ScrubJay.Validation;
@@ -25,6 +28,7 @@ public static class Throw
     }
 
 #region Enumeration
+
     /// <summary>
     /// Throws an <see cref="InvalidOperationException"/> that indicates an <see cref="IEnumerator{T}"/> has deviated from its source
     /// </summary>
@@ -42,7 +46,8 @@ public static class Throw
 
     [StackTraceHidden]
     public static void IfBadEnumerationState(
-        [DoesNotReturnIf(true)] bool badState)
+        [DoesNotReturnIf(true)]
+        bool badState)
     {
         if (badState)
             throw new InvalidOperationException("Enumeration has not yet started or has finished");
@@ -50,27 +55,31 @@ public static class Throw
 
     [StackTraceHidden]
     public static void IfBadEnumerationState(
-        [DoesNotReturnIf(true)] bool notYetStarted,
-        [DoesNotReturnIf(true)] bool hasFinished)
+        [DoesNotReturnIf(true)]
+        bool notYetStarted,
+        [DoesNotReturnIf(true)]
+        bool hasFinished)
     {
         if (notYetStarted)
             throw new InvalidOperationException("Enumeration has not yet started");
         if (hasFinished)
             throw new InvalidOperationException("Enumeration has finished");
     }
+
 #endregion
 
     [StackTraceHidden]
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void KeyNotFound<TKey>(TKey key) => throw new KeyNotFoundException($"Key '{key}' was not found");
+    public static void KeyNotFound<K>(K key) => throw new KeyNotFoundException($"Key '{key}' was not found");
 
     [StackTraceHidden]
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void DuplicateKeyException<TKey>(
-        TKey key,
-        [CallerMemberName] string? keyName = null)
+    public static void DuplicateKeyException<K>(
+        K key,
+        [CallerMemberName]
+        string? keyName = null)
         => throw new ArgumentException($"Duplicate key '{key}' was found", keyName);
 
 
@@ -80,7 +89,8 @@ public static class Throw
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IfNull<T>(
-        [NotNull, NoEnumeration] T? value,
+        [NotNull, NoEnumeration]
+        T? value,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
         where T : class?
@@ -95,7 +105,8 @@ public static class Throw
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IfEmpty(
-        [NotNull] string? str,
+        [NotNull]
+        string? str,
         [CallerArgumentExpression(nameof(str))]
         string? stringName = null)
     {
@@ -110,8 +121,9 @@ public static class Throw
     /// </summary>
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void IfEmpty<T>(
-        [NotNull] T[]? array,
+    public static void IfEmpty<A>(
+        [NotNull]
+        A[]? array,
         [CallerArgumentExpression(nameof(array))]
         string? arrayName = null)
     {
@@ -155,7 +167,8 @@ public static class Throw
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void IfEmpty<T>(
-        [NotNull] ICollection<T>? collection,
+        [NotNull]
+        ICollection<T>? collection,
         [CallerArgumentExpression(nameof(collection))]
         string? collectionName = null)
     {
@@ -177,9 +190,29 @@ public static class Throw
     [DoesNotReturn]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TReturn IsReadOnly<T, TReturn>(
+    public static R IsReadOnly<T, R>(
         T? instance,
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)
         => throw new NotSupportedException($"{typeof(T).NameOf()} '{instance}' is read-only");
+
+    [DoesNotReturn]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void InvalidEnum<E>(
+        E @enum,
+        [CallerArgumentExpression(nameof(@enum))]
+        string? enumName = null)
+        where E : struct, Enum
+        => throw InvalidEnumException.Create<E>(@enum, enumName);
+
+    [DoesNotReturn]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static R InvalidEnum<E, R>(
+        E @enum,
+        [CallerArgumentExpression(nameof(@enum))]
+        string? enumName = null)
+        where E : struct, Enum
+        => throw InvalidEnumException.Create<E>(@enum, enumName);
 }

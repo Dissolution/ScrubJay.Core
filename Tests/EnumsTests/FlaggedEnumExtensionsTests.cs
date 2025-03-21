@@ -214,7 +214,7 @@ public class FlaggedEnumExtensionsTests
             .Where(flag =>
             {
                 ulong value = FlagsEnumExtensions.ToUInt64(flag);
-                return (value & (value - 1)) == 0 && value != 0;
+                return ((value & (value - 1)) == 0) && (value != 0);
             })
             .Where(flag => e.HasFlag(flag))
             .ToArray();
@@ -242,7 +242,7 @@ public class FlaggedEnumExtensionsTests
             .Where(flag =>
             {
                 ulong value = FlagsEnumExtensions.ToUInt64(flag);
-                return (value & (value - 1)) == 0 && value != 0;
+                return ((value & (value - 1)) == 0) && (value != 0);
             })
             .Where(flag => e.HasFlag(flag))
             .ToArray();
@@ -265,7 +265,7 @@ public class FlaggedEnumExtensionsTests
             .Where(flag => 
             {
                 ulong value = FlagsEnumExtensions.ToUInt64(flag);
-                return (value & (value - 1)) == 0 && value != 0;
+                return ((value & (value - 1)) == 0) && (value != 0);
             })
             .Where(flag => e.HasFlag(flag))
             .ToArray();

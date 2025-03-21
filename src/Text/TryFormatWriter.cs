@@ -326,7 +326,7 @@ public ref struct TryFormatWriter : IEnumerable
         _position = 0;
     }
 
-    public bool TryCopyTo(Span<char> span) => TextHelper.TryCopy(WrittenSpan, span);
+    public bool TryCopyTo(Span<char> span) => TextHelper.TryCopyTo(WrittenSpan, span);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<char> AsSpan() => WrittenSpan;

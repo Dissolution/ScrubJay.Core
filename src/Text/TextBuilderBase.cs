@@ -749,7 +749,7 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
         int i = 0;
         do
         {
-            TextHelper.Notsafe.CopyBlock(text, buffer[i..], textLength);
+            Notsafe.Text.CopyBlock(text, buffer[i..], textLength);
             i += textLength;
         } while (i < totalLength);
         return _builder;

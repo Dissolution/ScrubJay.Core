@@ -2,7 +2,6 @@
 
 namespace ScrubJay.Pooling;
 
-
 /// <summary>
 ///
 /// </summary>
@@ -112,7 +111,7 @@ public sealed class InstancePool<T> : IInstancePool<T>, IDisposable
             return; // stored
         }
 
-        dispose:
+    dispose:
         // Run any available dispose action
         _disposeInstance?.Invoke(instance);
         // not stored

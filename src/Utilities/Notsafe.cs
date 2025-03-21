@@ -1,16 +1,591 @@
-﻿#pragma warning disable IDE0060, CS8500, CA1045
+﻿#pragma warning disable IDE0060, CS8500, CA1045, CA1034, CA1715, CA1724
+// ReSharper disable InconsistentNaming
 
 using InlineIL;
 using static InlineIL.IL;
 
+
 namespace ScrubJay.Utilities;
 
 /// <summary>
-/// Very <b>unsafe</b> methods, more dangerous than <see cref="Unsafe"/>
+/// Very <b>unsafe</b> methods, more dangerous than <see cref="Unsafe"/><br/>
+/// Many of the methods in here have no validations of any kind
 /// </summary>
 [PublicAPI]
 public static unsafe class Notsafe
 {
+    /// <summary>
+    /// <b>Very unsafe</b> methods that operate on <c>unmanaged</c> values
+    /// </summary>
+    public static class Unmanaged
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CopyUnmanagedBlock<U>(in U source, ref U destination, int count)
+            where U : unmanaged
+        {
+            Emit.Ldarg(nameof(destination));
+            Emit.Ldarg(nameof(source));
+            Emit.Ldarg(nameof(count));
+            Emit.Sizeof<U>();
+            Emit.Mul();
+            Emit.Cpblk();
+        }
+
+        /* Source types: `T[]`, `Span<T>`, `ReadOnlySpan<T>`
+         * Destination types: `T[]`, `Span<T>`
+         */
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<U>(U[] source, U[] destination, int count)
+            where U : unmanaged
+            => CopyUnmanagedBlock<U>(
+#if NET5_0_OR_GREATER
+                in MemoryMarshal.GetArrayDataReference<U>(source),
+                ref MemoryMarshal.GetArrayDataReference<U>(destination),
+#else
+                in MemoryMarshal.GetReference<U>(source),
+                ref MemoryMarshal.GetReference<U>(destination),
+#endif
+                count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<U>(U[] source, Span<U> destination, int count)
+            where U : unmanaged
+            => CopyUnmanagedBlock<U>(
+#if NET5_0_OR_GREATER
+                in MemoryMarshal.GetArrayDataReference<U>(source),
+#else
+                in MemoryMarshal.GetReference<U>(source),
+#endif
+                ref MemoryMarshal.GetReference<U>(destination),
+                count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<U>(Span<U> source, U[] destination, int count)
+            where U : unmanaged
+            => CopyUnmanagedBlock<U>(
+                in MemoryMarshal.GetReference<U>(source),
+#if NET5_0_OR_GREATER
+                ref MemoryMarshal.GetArrayDataReference<U>(destination),
+#else
+                ref MemoryMarshal.GetReference<U>(destination),
+#endif
+                count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<U>(Span<U> source, Span<U> destination, int count)
+            where U : unmanaged
+            => CopyUnmanagedBlock<U>(
+                in MemoryMarshal.GetReference<U>(source),
+                ref MemoryMarshal.GetReference<U>(destination),
+                count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<U>(ReadOnlySpan<U> source, U[] destination, int count)
+            where U : unmanaged
+            => CopyUnmanagedBlock<U>(
+                in MemoryMarshal.GetReference<U>(source),
+#if NET5_0_OR_GREATER
+                ref MemoryMarshal.GetArrayDataReference<U>(destination),
+#else
+                ref MemoryMarshal.GetReference<U>(destination),
+#endif
+                count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<U>(ReadOnlySpan<U> source, Span<U> destination, int count)
+            where U : unmanaged
+            => CopyUnmanagedBlock<U>(
+                in MemoryMarshal.GetReference<U>(source),
+                ref MemoryMarshal.GetReference<U>(destination),
+                count);
+
+        /* And the below is just crazy */
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CopyBlock<USource, UDest>(in USource source, ref UDest destination, int count)
+            where USource : unmanaged
+            where UDest : unmanaged
+        {
+            Debug.Assert(Notsafe.SizeOf<USource>() == Notsafe.SizeOf<UDest>());
+            Emit.Ldarg(nameof(destination));
+            Emit.Ldarg(nameof(source));
+            Emit.Ldarg(nameof(count));
+            Emit.Sizeof<USource>();
+            Emit.Mul();
+            Emit.Cpblk();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<USource, UDest>(ReadOnlySpan<USource> source, Span<UDest> destination, int count)
+            where USource : unmanaged
+            where UDest : unmanaged
+        {
+            Debug.Assert(Notsafe.SizeOf<USource>() == Notsafe.SizeOf<UDest>());
+            CopyBlock<USource, UDest>(
+                in MemoryMarshal.GetReference<USource>(source),
+                ref MemoryMarshal.GetReference<UDest>(destination),
+                count);
+        }
+    }
+
+    /// <summary>
+    /// <b>Very unsafe</b> methods that operate on <see cref="byte"/> values
+    /// </summary>
+    public static class Bytes
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CopyByteBlock(in byte source, ref byte destination, int count)
+        {
+            Emit.Ldarg(nameof(destination));
+            Emit.Ldarg(nameof(source));
+            Emit.Ldarg(nameof(count));
+            Emit.Cpblk();
+        }
+
+        /* Source types: `T[]`, `Span<T>`, `ReadOnlySpan<T>`
+         * Destination types: `T[]`, `Span<T>`
+         */
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(byte[] source, byte[] destination, int count)
+            => CopyByteBlock(
+#if NET5_0_OR_GREATER
+                in MemoryMarshal.GetArrayDataReference(source),
+                ref MemoryMarshal.GetArrayDataReference(destination),
+                count);
+#else
+                in MemoryMarshal.GetReference<byte>(source),
+                ref MemoryMarshal.GetReference<byte>(destination),
+                count);
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(byte[] source, Span<byte> destination, int count)
+            => CopyByteBlock(
+#if NET5_0_OR_GREATER
+                in MemoryMarshal.GetArrayDataReference<byte>(source),
+#else
+                in MemoryMarshal.GetReference<byte>(source),
+#endif
+                ref MemoryMarshal.GetReference(destination),
+                count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(Span<byte> source, byte[] destination, int count)
+            => CopyByteBlock(
+                in MemoryMarshal.GetReference<byte>(source),
+#if NET5_0_OR_GREATER
+                ref MemoryMarshal.GetArrayDataReference<byte>(destination),
+#else
+                ref MemoryMarshal.GetReference<byte>(destination),
+#endif
+                count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(Span<byte> source, Span<byte> destination, int count)
+            => CopyByteBlock(
+                in MemoryMarshal.GetReference(source),
+                ref MemoryMarshal.GetReference(destination),
+                count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(ReadOnlySpan<byte> source, byte[] destination, int count)
+            => CopyByteBlock(
+                in MemoryMarshal.GetReference(source),
+#if NET5_0_OR_GREATER
+                ref MemoryMarshal.GetArrayDataReference(destination),
+#else
+                ref MemoryMarshal.GetReference(source),
+#endif
+                count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(ReadOnlySpan<byte> source, Span<byte> destination, int count)
+            => CopyByteBlock(
+                in MemoryMarshal.GetReference(source),
+                ref MemoryMarshal.GetReference(destination),
+                count);
+    }
+
+    /// <summary>
+    /// <c>unsafe</c> methods on textual types
+    /// </summary>
+    /// <remarks>
+    /// <b>WARNING</b>: All methods in <see cref="Notsafe"/> lack bounds checking and can cause undefined behavior
+    /// </remarks>
+    public static class Text
+    {
+        /// <summary>
+        /// Copies a specified <paramref name="count"/> of <see cref="char">chars</see>
+        /// from a <paramref name="source"/> to a <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// The readonly reference (<c>in</c>) to the first character in the block to copy from
+        /// </param>
+        /// <param name="destination">
+        /// The reference (<c>ref</c>) to the first character in the block to copy to
+        /// </param>
+        /// <param name="count">
+        /// The total number of characters to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CopyCharBlock(in char source, ref char destination, int count)
+        {
+            /* Instruction                         Stack
+             * -----------------------------       -----------*/
+            Emit.Ldarg(nameof(destination)); // char*                        // destination pointer
+            Emit.Ldarg(nameof(source)); // char* | char*                // source pointer
+            Emit.Ldarg(nameof(count)); // char* | char* | i32          // count
+            /* We need to convert the count of chars to the count of bytes
+             * sizeof(char) == 2 // bytes
+             * bytes = count * 2 // count * sizeof(char)
+             *
+             * There are two easy ways to do this
+             *  Ldc_I4_2()                      // char* | char* | i32 | i32    // 2
+             *  Mul()                           // char* | char* | i32          // count * 2
+             * and the below, which is usually faster                           */
+            Emit.Ldc_I4_1(); // char* | char* | i32 | i32    // 1
+            Emit.Shl(); // char* | char* | i32          // count << 1
+            Emit.Cpblk(); //                              // stack is empty
+
+            /* OpCodes:
+             * Ldc_I4_1     - https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.ldc_i4_1
+             * Shl          - https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.shl
+             * Cpblk        - https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.cpblk
+             */
+        }
+
+        /* All the public methods for CopyBlock allow for the most efficient conversion of
+         * source + dest to what CpBlk is expecting
+         *
+         * Source types: `in char`, `char[]`, `Span<char>`, `ReadOnlySpan<char>`, `string`
+         * Destination types: `ref char`, `char[]`, `Span<char>`
+         */
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// An <c>in char</c> reference to the start of some text
+        /// </param>
+        /// <param name="destination">
+        /// A <c>ref char</c> reference to the start of a writeable text buffer
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(in char source, ref char destination, int count)
+            => CopyCharBlock(in source, ref destination, count);
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// An <c>in char</c> reference to the start of some text
+        /// </param>
+        /// <param name="destination">
+        /// A character array (<c>char[]</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(in char source, char[] destination, int count)
+#if NET5_0_OR_GREATER
+            => CopyCharBlock(in source, ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
+#else
+        {
+            CopyCharBlock(
+                in source,
+                ref MemoryMarshal.GetReference<char>(destination),
+                count);
+        }
+#endif
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// An <c>in char</c> reference to the start of some text
+        /// </param>
+        /// <param name="destination">
+        /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(in char source, Span<char> destination, int count)
+            => CopyCharBlock(in source, ref MemoryMarshal.GetReference<char>(destination), count);
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A character array (<c>char[]</c>) to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A <c>ref char</c> reference to the start of a writeable text buffer
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(char[] source, ref char destination, int count)
+#if NET5_0_OR_GREATER
+            => CopyCharBlock(in MemoryMarshal.GetArrayDataReference<char>(source), ref destination, count);
+#else
+        {
+            CopyCharBlock(
+                in MemoryMarshal.GetReference<char>(source),
+                ref destination,
+                count);
+        }
+#endif
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A character array (<c>char[]</c>) to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character array (<c>char[]</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(char[] source, char[] destination, int count)
+#if NET5_0_OR_GREATER
+            => CopyCharBlock(in MemoryMarshal.GetArrayDataReference<char>(source), ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
+#else
+        {
+            CopyCharBlock(
+                in MemoryMarshal.GetReference<char>(source),
+                ref MemoryMarshal.GetReference<char>(destination),
+                count);
+        }
+#endif
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A character array (<c>char[]</c>) to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(char[] source, Span<char> destination, int count)
+#if NET5_0_OR_GREATER
+            => CopyCharBlock(in MemoryMarshal.GetArrayDataReference<char>(source), ref MemoryMarshal.GetReference<char>(destination), count);
+#else
+        {
+            CopyCharBlock(
+                in MemoryMarshal.GetReference<char>(source),
+                ref MemoryMarshal.GetReference<char>(destination),
+                count);
+        }
+#endif
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A <c>Span&lt;char&gt;</c> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A <c>ref char</c> reference to the start of a writeable text buffer
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        public static void CopyBlock(Span<char> source, ref char destination, int count)
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref destination, count);
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A <c>Span&lt;char&gt;</c> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character array (<c>char[]</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(Span<char> source, char[] destination, int count)
+#if NET5_0_OR_GREATER
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
+#else
+        {
+            CopyCharBlock(
+                in MemoryMarshal.GetReference<char>(source),
+                ref MemoryMarshal.GetReference<char>(destination),
+                count);
+        }
+#endif
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A <c>Span&lt;char&gt;</c> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(Span<char> source, Span<char> destination, int count)
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetReference<char>(destination), count);
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A <c>ReadOnlySpan&lt;char&gt;</c> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A <c>ref char</c> reference to the start of a writeable text buffer
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        public static void CopyBlock(text source, ref char destination, int count)
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref destination, count);
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A <c>ReadOnlySpan&lt;char&gt;</c> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character array (<c>char[]</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(text source, char[] destination, int count)
+#if NET5_0_OR_GREATER
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
+#else
+        {
+            CopyCharBlock(
+                in MemoryMarshal.GetReference<char>(source),
+                ref MemoryMarshal.GetReference<char>(destination),
+                count);
+        }
+#endif
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A <c>ReadOnlySpan&lt;char&gt;</c> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(text source, Span<char> destination, int count)
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetReference<char>(destination), count);
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A <see cref="string"/> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A <c>ref char</c> reference to the start of a writeable text buffer
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(string source, ref char destination, int count)
+#if NET5_0_OR_GREATER
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref destination, count);
+#else
+        {
+            CopyCharBlock(
+                in MemoryMarshal.GetReference<char>(source.AsSpan()),
+                ref destination,
+                count);
+        }
+#endif
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A <see cref="string"/> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character array (<c>char[]</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(string source, char[] destination, int count)
+#if NET5_0_OR_GREATER
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
+#else
+        {
+            CopyCharBlock(
+                in MemoryMarshal.GetReference<char>(source.AsSpan()),
+                ref MemoryMarshal.GetReference<char>(destination),
+                count);
+        }
+#endif
+
+        /// <summary>
+        /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
+        /// </summary>
+        /// <param name="source">
+        /// A <see cref="string"/> to be read from
+        /// </param>
+        /// <param name="destination">
+        /// A character span (<c>Span&lt;char&gt;</c>) to be written to
+        /// </param>
+        /// <param name="count">
+        /// The total number of <see cref="char">characters</see> to copy from <paramref name="source"/> to <paramref name="destination"/>
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyBlock(string source, Span<char> destination, int count)
+#if NET5_0_OR_GREATER
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetReference<char>(destination), count);
+#else
+        {
+            CopyCharBlock(
+                in MemoryMarshal.GetReference<char>(source.AsSpan()),
+                ref MemoryMarshal.GetReference<char>(destination),
+                count);
+        }
+#endif
+    }
+
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNullRef<T>([NotNullWhen(false)] ref readonly T source)
     {

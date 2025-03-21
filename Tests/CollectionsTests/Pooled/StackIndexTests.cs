@@ -25,10 +25,10 @@ public class StackIndexTests
         foreach (var index in indices)
         {
             int offset = index.GetOffset(array.Length);
-            bool offsetIsValid = offset >= 0 && offset < array.Length;
+            bool offsetIsValid = (offset >= 0) && (offset < array.Length);
 
             int k = (array.Length - offset) - 1;
-            bool kIsValid = k >= 0 && k < array.Length;
+            bool kIsValid = (k >= 0) && (k < array.Length);
 
             Assert.Equal(offsetIsValid, kIsValid);
         }

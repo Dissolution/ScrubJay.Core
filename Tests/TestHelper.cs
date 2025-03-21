@@ -96,4 +96,5 @@ public static class TestHelper
 
 }
 
+[PublicAPI]
 public record class TestClassRecord(int Id, string Name, bool IsAdmin);
