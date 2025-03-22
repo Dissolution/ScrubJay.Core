@@ -128,8 +128,9 @@ public class TextBuilderTests
         // additional tests in InterpolatedTextBuilderTests.cs
 
         using var text = new TextBuilder();
+        const string MID = "bc";
 
-        text.Append($"{'a'}_{"bc"}_{"def".AsSpan()}_{147.1311m:F2}");
+        text.Append($"{'a'}_{MID}_{"def".AsSpan()}_{147.1311m:F2}");
 
         Assert.Equal("a_bc_def_147.13", text.ToString());
     }

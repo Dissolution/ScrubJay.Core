@@ -12,6 +12,66 @@ using ScrubJay.Memory;
 using ScrubJay.Validation;
 using ScrubJay.Text;
 
+
+
+// Usage
+var done = parseDivideAsync("abc", "13");
+
+Console.WriteLine((object)done);
+
+return 0;
+
+static Result<double> parse(string input) => Result<double>.Try(() => double.Parse(input));
+
+static Result<double> divide(double x, double y) => Result<double>.Try(() =>
+{
+    if (y == 0)
+        throw new DivideByZeroException();
+    return x / y;
+});
+
+static async Result<double> parseDivideAsync(string a, string b)
+{
+    var x = await parse(a);
+    var y = await Result<double>.Try(() => double.Parse(b));
+    Console.WriteLine("Successfully parsed inputs");
+    return await divide(x, y);
+}
+
+
+/*
+
+static AsyncResult<double> Parse(string input)
+{
+    try
+    {
+        double f64 = double.Parse(input);
+        return AsyncResult<double>.Success(f64);
+    }
+    catch (Exception ex)
+    {
+        return AsyncResult<double>.Fail(ex);
+    }
+}
+
+static async AsyncResult<double> Add(string a, string b)
+{
+    var ad = await Parse(a);
+    var bd = await Parse(b);
+    return ad + bd;
+}
+*/
+
+
+
+
+
+
+
+
+
+
+/*
 object obj = (decimal)147.13m;
 // if (obj is char)
 // {
@@ -36,10 +96,7 @@ else
 ReadOnlySpan<char> text = new ReadOnlySpan<char>(in ch);
 var str = text.AsString();
 Console.WriteLine(str);
-
-
-
-
+*/
 /*
 ReadOnlySpan<char> left = ['a', 'b', 'c'];
 ReadOnlySpan<char> right = "abc".ToCharArray().AsSpan();

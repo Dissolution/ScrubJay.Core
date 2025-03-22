@@ -1,5 +1,6 @@
 ﻿// Prefix generic type parameter with T
-#pragma warning disable CA1715
+// Do not declare static methods on generic types
+#pragma warning disable CA1715, CA1000
 
 namespace ScrubJay.Functional;
 

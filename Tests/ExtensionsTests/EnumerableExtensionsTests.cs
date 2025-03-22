@@ -8,13 +8,14 @@ namespace ScrubJay.Tests.ExtensionsTests;
 public class EnumerableExtensionsTests
 {
     public static TheoryData<object?> Enumerables { get;} = new()
-    { 
+    {
         (object?)null!,
         (object?)Array.Empty<object?>(),
         (object?)"abc".ToCharArray(),
         (object?)"11234566".Distinct(),
         (object?)"kgbhfeeekg".ToCharArray().Select(c => c.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase),
         (object?)Enumerable.Empty<int>(),
+        // ReSharper disable once UseArrayCreationExpression.1
         (object?)Array.CreateInstance(typeof(byte), 0),
         (object?)new string?[4] { null, string.Empty, "c", "ABC" },
         (object?)Enumerable.Empty<int?>().Append(1).Append(null).Append(4).Append(null).Append(7),

@@ -154,6 +154,9 @@ public static class TypeNames
         }
     }
 
+    internal static void WriteTypeName<T>(this ref TextBuffer buffer)
+        => WriteTypeName(ref buffer, typeof(T));
+
     private static string CreateTypeName(Type? type)
     {
         var text = new TextBuffer();
