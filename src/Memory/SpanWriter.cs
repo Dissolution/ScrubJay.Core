@@ -51,7 +51,7 @@ public ref struct SpanWriter<T>
         _position += used;
     }
 
-    public Result<Unit, Exception> TryWrite(T item)
+    public Result<Unit> TryWrite(T item)
     {
         int pos = _position;
         int newPos = pos + 1;
@@ -65,7 +65,7 @@ public ref struct SpanWriter<T>
         return new InvalidOperationException($"Could not write item '{item}': No capacity remaining");
     }
 
-    public Result<Unit, Exception> TryWriteMany(scoped ReadOnlySpan<T> items)
+    public Result<Unit> TryWriteMany(scoped ReadOnlySpan<T> items)
     {
         int pos = _position;
         int newPos = pos + items.Length;
@@ -79,7 +79,7 @@ public ref struct SpanWriter<T>
         return new InvalidOperationException($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
     }
 
-    public Result<Unit, Exception> TryWriteMany(params T[]? items)
+    public Result<Unit> TryWriteMany(params T[]? items)
     {
         if (items is null)
             return Ok(Unit());
@@ -95,7 +95,7 @@ public ref struct SpanWriter<T>
         return new InvalidOperationException($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
     }
 
-    public Result<Unit, Exception> TryWriteMany(IEnumerable<T>? items)
+    public Result<Unit> TryWriteMany(IEnumerable<T>? items)
     {
         if (items is null)
             return Ok(Unit());
@@ -114,7 +114,7 @@ public ref struct SpanWriter<T>
                 }
                 Debug.Assert(pos == newPos);
                 _position = newPos;
-                return Unit();
+                return Ok(Unit());
             }
 
             return new InvalidOperationException($"Could not write {list.Count} items: Only {RemainingCount} capacity remaining");
@@ -131,7 +131,7 @@ public ref struct SpanWriter<T>
                 }
                 Debug.Assert(pos == newPos);
                 _position = newPos;
-                return Unit();
+                return Ok(Unit());
             }
 
             return new InvalidOperationException($"Could not write {collection.Count} items: Only {RemainingCount} capacity remaining");
@@ -150,7 +150,7 @@ public ref struct SpanWriter<T>
             }
 
             _position = pos;
-            return Unit();
+            return Ok(Unit());
         }
     }
 

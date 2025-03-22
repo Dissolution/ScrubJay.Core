@@ -26,31 +26,40 @@ namespace ScrubJay.Functional;
 public static class Prelude
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Unit Unit() => default(Unit);
+    public static Unit Unit()
+        => default(Unit);
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static None None() => default(None);
+    public static None None()
+        => default(None);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None<T>() => Option<T>.None();
+    public static Option<T> None<T>()
+        => Option<T>.None();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> Some<T>(T value) => Option<T>.Some(value);
+    public static Option<T> Some<T>(T value)
+        => Option<T>.Some(value);
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Ok<T> Ok<T>(T value) => new Ok<T>(value);
+    public static Result<T> Ok<T>(T value)
+        => Result<T>.Ok(value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<TOk, TError> Ok<TOk, TError>(TOk ok)
-        => Result<TOk, TError>.Ok(ok);
+    public static Result<T, E> Ok<T, E>(T value)
+        => Result<T, E>.Ok(value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Error<T> Error<T>(T value) => new Error<T>(value);
+    public static Error<Exception> Error(Exception error)
+        => new Error<Exception>(error);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Error<Exception> Error(Exception exception)
-        => new Error<Exception>(exception);
+    public static Result<T> Error<T>(Exception error)
+        => Result<T>.Error(error);
 
-    public static Result<TOk, TError> Error<TOk, TError>(TError error)
-        => Result<TOk, TError>.Error(error);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<T, E> Error<T, E>(E error)
+        => Result<T, E>.Error(error);
 }

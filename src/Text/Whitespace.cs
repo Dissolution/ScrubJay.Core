@@ -22,7 +22,7 @@ internal class Whitespace : IDisposable
     public void AddIndent(string? indent) => _indents.Push(indent ?? "");
     public void RemoveIndent() => _indents.Pop();
 
-    public Result<string, Exception> TryRemoveIndent() => _indents.TryPop();
+    public Result<string> TryRemoveIndent() => _indents.TryPop();
 
     public bool NewLineIsOneChar(out char ch)
     {

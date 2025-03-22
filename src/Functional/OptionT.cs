@@ -337,10 +337,10 @@ public readonly struct Option<T> :
         }
     }
 
-    public Result<T, Exception> AsResult(string? errorMessage = null)
+    public Result<T> AsResult(string? errorMessage = null)
     {
         if (_isSome)
-            return _value!;
+            return Ok(_value!);
         return new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
     }
 

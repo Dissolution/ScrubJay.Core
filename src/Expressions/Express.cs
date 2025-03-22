@@ -99,7 +99,7 @@ public class FluentLambdaBuilder<B> : FluentBuilder<B>
         return _builder;
     }
 
-    public Result<Delegate, Exception> TryCompile()
+    public Result<Delegate> TryCompile()
     {
         if (_body is null)
             return new InvalidOperationException("Body has not been set");
@@ -108,7 +108,7 @@ public class FluentLambdaBuilder<B> : FluentBuilder<B>
         {
             var lambda = Expression.Lambda(_delegateType, _body, _parameters);
             var del = lambda.Compile();
-            return del;
+            return Ok(del);
         }
         catch (Exception ex)
         {
@@ -133,7 +133,7 @@ public class FluentLambdaBuilder<B, D> : FluentLambdaBuilder<B>
     {
     }
 
-    public new Result<D, Exception> TryCompile()
+    public new Result<D> TryCompile()
     {
         return base.TryCompile()
             .Select(static del => del.Is<D>());

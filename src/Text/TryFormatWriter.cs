@@ -334,7 +334,7 @@ public ref struct TryFormatWriter : IEnumerable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public char[] ToArray() => WrittenSpan.ToArray();
 
-    public readonly Result<int, Exception> GetResult() => _hasFailed.HasSome(out var error) ? error : _position;
+    public readonly Result<int> GetResult() => _hasFailed.HasSome(out var error) ? error : Ok(_position);
 
     public readonly bool GetResult(out int charsWritten)
     {

@@ -24,6 +24,6 @@ public abstract class FluentRecordBuilder<TBuilder, TRecord> : FluentBuilder<TBu
         Validate.IsNotNull(_record),
     };
 
-    public Result<TRecord, Exception> TryGetRecord()
+    public Result<TRecord> TryGetRecord()
         => GetValidations().ToResult(_record!);
 }

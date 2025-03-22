@@ -404,7 +404,7 @@ public ref struct Buffer<T>
     /// <returns>
     /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the item was inserted at or an <see cref="Exception"/> that describes why insertion failed
     /// </returns>
-    public Result<int, Exception> TryInsert(Index index, T item)
+    public Result<int> TryInsert(Index index, T item)
     {
         int pos = _position;
         var vr = Validate.InsertIndex(index, pos);
@@ -439,7 +439,7 @@ public ref struct Buffer<T>
     /// <returns>
     /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
     /// </returns>
-    public Result<int, Exception> TryInsertMany(Index index, scoped ReadOnlySpan<T> items)
+    public Result<int> TryInsertMany(Index index, scoped ReadOnlySpan<T> items)
     {
         int itemCount = items.Length;
 
@@ -495,7 +495,7 @@ public ref struct Buffer<T>
     /// <returns>
     /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
     /// </returns>
-    public Result<int, Exception> TryInsertMany(Index index, IEnumerable<T>? items)
+    public Result<int> TryInsertMany(Index index, IEnumerable<T>? items)
     {
         if (items is null)
         {

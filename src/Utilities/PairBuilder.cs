@@ -23,7 +23,7 @@ public ref struct PairBuilder<TKey, TValue>
     private Step _step = Step.PreStartParen;
     private object? _error = null;
 
-    public Result<Pair<TKey, TValue>, Exception> TryGetPair()
+    public Result<Pair<TKey, TValue>> TryGetPair()
     {
         if (_error is Exception ex)
             return ex;

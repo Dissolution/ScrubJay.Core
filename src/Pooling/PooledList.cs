@@ -265,17 +265,17 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <returns>
     /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the item was inserted at or an <see cref="Exception"/> that describes why insertion failed
     /// </returns>
-    public Result<int, Exception> TryInsert(Index index, T item)
+    public Result<int> TryInsert(Index index, T item)
     {
         int pos = _position;
         var vr = Validate.InsertIndex(index, pos);
-        if (!vr.HasOk(out int offset))
+        if (!vr.IsOk(out int offset))
             return vr;
 
         if (offset == pos)
         {
             Add(item);
-            return offset;
+            return Ok(offset);
         }
 
         int newPos = pos + 1;
@@ -288,7 +288,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         Sequence.SelfCopy(_array, offset..pos, (offset + 1)..);
         _array[offset] = item;
         _position = newPos;
-        return offset;
+        return Ok(offset);
     }
 
     /// <summary>
@@ -299,7 +299,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <returns>
     /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
     /// </returns>
-    public Result<int, Exception> TryInsertMany(Index index, scoped ReadOnlySpan<T> items)
+    public Result<int> TryInsertMany(Index index, scoped ReadOnlySpan<T> items)
     {
         int itemCount = items.Length;
 
@@ -351,7 +351,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <returns>
     /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
     /// </returns>
-    public Result<int, Exception> TryInsertMany(Index index, IEnumerable<T>? items)
+    public Result<int> TryInsertMany(Index index, IEnumerable<T>? items)
     {
         if (items is null)
             return Validate.InsertIndex(index, _position);
@@ -712,17 +712,17 @@ public sealed class PooledList<T> : PooledArray<T>,
     }
 
 
-    public Result<T, Exception> TryGetAt(Index index)
+    public Result<T> TryGetAt(Index index)
         => Validate
             .Index(index, _position)
             .Select(i => _array[i]);
 
-    public Result<T[], Exception> TryGetMany(Range range)
+    public Result<T[]> TryGetMany(Range range)
         => Validate
             .Range(range, _position)
             .Select(ol => _array.Slice(ol.Offset, ol.Length));
 
-    public Result<Unit, Exception> TryGetManyTo(Range range, Span<T> destination)
+    public Result<Unit> TryGetManyTo(Range range, Span<T> destination)
     {
         if (!Validate.Range(range, _position).HasOkOrError(out var ol, out var error))
             return error;
@@ -732,14 +732,14 @@ public sealed class PooledList<T> : PooledArray<T>,
         return Unit();
     }
 
-    public Result<Unit, Exception> TrySetAt(Index index, T item) => Validate.Index(index, _position).Select(i =>
+    public Result<Unit> TrySetAt(Index index, T item) => Validate.Index(index, _position).Select(i =>
     {
         _version++;
         _array[i] = item;
         return Unit();
     });
 
-    public Result<Unit, Exception> TrySetMany(Range range, scoped ReadOnlySpan<T> items)
+    public Result<Unit> TrySetMany(Range range, scoped ReadOnlySpan<T> items)
     {
         if (!Validate.Range(range, _position).HasOkOrError(out var ol, out var error))
             return error;
@@ -763,7 +763,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <c>true</c> if the item was removed<br/>
     /// <c>false</c> if it was not
     /// </returns>
-    public Result<int, Exception> TryRemoveAt(Index index)
+    public Result<int> TryRemoveAt(Index index)
     {
         var valid = Validate.Index(index, _position);
         if (!valid.HasOk(out int offset))
@@ -783,7 +783,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <returns>
     /// An <see cref="Option{T}"/> that contains the removed value
     /// </returns>
-    public Result<T, Exception> TryRemoveAndGetAt(Index index)
+    public Result<T> TryRemoveAndGetAt(Index index)
     {
         var valid = Validate.Index(index, _position);
         if (!valid.HasOkOrError(out int offset, out var ex))
@@ -804,7 +804,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <c>true</c> if the range of items was removed<br/>
     /// <c>false</c> if they were not
     /// </returns>
-    public Result<int, Exception> TryRemoveMany(Range range)
+    public Result<int> TryRemoveMany(Range range)
     {
         var valid = Validate.Range(range, _position);
         if (!valid.HasOkOrError(out var ol, out var ex))
@@ -824,7 +824,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <returns>
     /// An <see cref="Option{T}"/> containing an <see cref="Array">T[]</see> of removed items
     /// </returns>
-    public Result<T[], Exception> TryRemoveAndGetMany(Range range)
+    public Result<T[]> TryRemoveAndGetMany(Range range)
     {
         var valid = Validate.Range(range, _position);
         if (!valid.HasOkOrError(out var ol, out var ex))

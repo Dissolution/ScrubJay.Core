@@ -16,6 +16,19 @@ public static class FunctionalExtensions
         }
     }
 
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
+        this IEnumerable<TIn> enumerable,
+        Func<TIn, Result<TOut>> selectWhere)
+    {
+        foreach (TIn input in enumerable)
+        {
+            if (selectWhere(input).IsOk(out var output))
+            {
+                yield return output;
+            }
+        }
+    }
+
     public static IEnumerable<TOut> SelectWhere<TIn, TOut, TError>(
         this IEnumerable<TIn> enumerable,
         Func<TIn, Result<TOut, TError>> selectWhere)
@@ -37,7 +50,7 @@ public static class FunctionalExtensions
      * Technically only OneOrDefault is required, but One is included for completeness.
      */
 
-    public static Result<T, Exception> TryGetOne<T>(
+    public static Result<T> TryGetOne<T>(
         [AllowNull, NotNullWhen(true)]
         this IEnumerable<T> source)
     {
@@ -78,7 +91,7 @@ public static class FunctionalExtensions
         }
     }
 
-    public static Result<T, Exception> TryGetOne<T>(
+    public static Result<T> TryGetOne<T>(
         [AllowNull, NotNullWhen(true)] this IEnumerable<T> source,
         Func<T, bool> predicate)
     {
@@ -159,7 +172,7 @@ public static class FunctionalExtensions
 #endregion
 
 #region First()
-    public static Result<T, Exception> TryGetFirst<T>(
+    public static Result<T> TryGetFirst<T>(
         [AllowNull, NotNullWhen(true)]
         this IEnumerable<T> source)
     {
@@ -196,7 +209,7 @@ public static class FunctionalExtensions
         }
     }
 
-    public static Result<T, Exception> TryGetFirst<T>(
+    public static Result<T> TryGetFirst<T>(
         [AllowNull, NotNullWhen(true)] this IEnumerable<T> source,
         Func<T, bool> predicate)
     {
@@ -257,7 +270,7 @@ public static class FunctionalExtensions
 
     #region Min
 
-    public static Result<T, Exception> TryGetMinimum<T>(
+    public static Result<T> TryGetMinimum<T>(
         [AllowNull, NotNullWhen(true)]
         this IEnumerable<T> source,
         IComparer<T>? valueComparer = null,
@@ -301,7 +314,7 @@ public static class FunctionalExtensions
                 minimum = value;
         }
 
-        return minimum;
+        return Ok(minimum);
     }
 
 #endregion

@@ -19,7 +19,7 @@ public static class Equate
     };
 
 
-    private static Result<object, Exception> TryFindEqualityComparer(Type? type)
+    private static Result<object> TryFindEqualityComparer(Type? type)
     {
         if (type is null)
             return new ArgumentNullException(nameof(type));
@@ -48,13 +48,13 @@ public static class Equate
         return Ok<object>(defaultEqualityComparer);
     }
 
-    private static Result<IEqualityComparer<T>, Exception> TryFindEqualityComparer<T>()
+    private static Result<IEqualityComparer<T>> TryFindEqualityComparer<T>()
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
         var result = TryFindEqualityComparer(typeof(T));
-        if (result.HasOkOrError(out var ok, out var error))
+        if (result.IsOkWithError(out var ok, out var error))
         {
             if (ok is IEqualityComparer<T> equalityComparer)
                 return Ok(equalityComparer);
@@ -63,7 +63,7 @@ public static class Equate
         return error;
     }
 
-    private static Result<object, Exception> TryCreateDelegateEqualityComparer(Type type)
+    private static Result<object> TryCreateDelegateEqualityComparer(Type type)
     {
         //Debug.Assert(type.IsByRefLike);
 
@@ -148,7 +148,7 @@ public static class Equate
 #endif
     {
         var comparer = _equalityComparers
-            .GetOrAdd(typeof(T), static _ => TryFindEqualityComparer<T>().OkOr(null!))
+            .GetOrAdd(typeof(T), static _ => TryFindEqualityComparer<T>().OkOrDefault())
             .As<IEqualityComparer<T>>();
         return comparer.SomeOrThrow();
     }

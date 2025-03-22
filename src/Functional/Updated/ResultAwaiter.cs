@@ -1,6 +1,6 @@
 ﻿// https://devblogs.microsoft.com/dotnet/how-async-await-really-works/
 
-namespace ScrubJay.Functional.Threading;
+namespace ScrubJay.Functional;
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]

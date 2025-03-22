@@ -1,7 +1,7 @@
 ﻿#pragma warning disable CA1000, CA1045, CA1815
 #pragma warning disable IDE0060, IDE0251
 
-namespace ScrubJay.Functional.Threading;
+namespace ScrubJay.Functional;
 
 // https://devblogs.microsoft.com/dotnet/how-async-await-really-works/
 
@@ -57,13 +57,13 @@ public struct ResultAsyncMethodBuilder<T>
 
     public void SetResult(T result)
     {
-        Debug.Assert(_result == default(Result<T, Exception>));
+        Debug.Assert(_result == default(Result<T>));
         _result = Result<T>.Ok(result);
     }
 
     public void SetException(Exception exception)
     {
-        Debug.Assert(_result == default(Result<T, Exception>));
+        Debug.Assert(_result == default(Result<T>));
         _result = Result<T>.Error(exception);
     }
 

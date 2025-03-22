@@ -1113,7 +1113,7 @@ public readonly struct Rational :
 
     /*public BigDecimal ToBigDecimal() => TryConvertToBigDecimal().OkOrThrow();
 
-    public Result<BigDecimal, Exception> TryConvertToBigDecimal()
+    public Result<BigDecimal> TryConvertToBigDecimal()
     {
         if (Denominator == BigInteger.Zero)
             return new DivideByZeroException("The denominator of this Rational is Zero");
@@ -1126,7 +1126,7 @@ public readonly struct Rational :
     /// <exception cref="DivideByZeroException">Thrown if <see cref="Denominator"/> is <c>BigInteger.Zero</c></exception>
     public decimal ToDecimal() => TryConvertToDecimal().OkOrThrow();
 
-    public Result<decimal, Exception> TryConvertToDecimal()
+    public Result<decimal> TryConvertToDecimal()
     {
         if (Denominator == BigInteger.Zero)
             return new DivideByZeroException("The denominator of this Rational is Zero");
@@ -1146,7 +1146,7 @@ public readonly struct Rational :
     /// </summary>
     public double ToDouble() => TryConvertToDouble().OkOrThrow();
 
-    public Result<double, Exception> TryConvertToDouble()
+    public Result<double> TryConvertToDouble()
     {
         if (Denominator == BigInteger.Zero)
         {
@@ -1171,7 +1171,7 @@ public readonly struct Rational :
     /// </summary>
     public float ToSingle() => TryConvertToFloat().OkOrThrow();
 
-    public Result<float, Exception> TryConvertToFloat()
+    public Result<float> TryConvertToFloat()
     {
         if (Denominator == BigInteger.Zero)
         {
@@ -1193,16 +1193,16 @@ public readonly struct Rational :
 
     public BigInteger ToBigInteger() => TryConvertToBigInteger().OkOrThrow();
 
-    public Result<BigInteger, Exception> TryConvertToBigInteger()
+    public Result<BigInteger> TryConvertToBigInteger()
     {
         if (Denominator == BigInteger.Zero)
             return new DivideByZeroException("The denominator of this Rational is Zero");
-        return (BigInteger)Numerator / (BigInteger)Denominator;
+        return Ok((BigInteger)Numerator / (BigInteger)Denominator);
     }
 
     public long ToInt64() => TryConvertToInt64().OkOrThrow();
 
-    public Result<long, Exception> TryConvertToInt64()
+    public Result<long> TryConvertToInt64()
     {
         if (Denominator == BigInteger.Zero)
             return new DivideByZeroException("The denominator of this Rational is Zero");
@@ -1213,7 +1213,7 @@ public readonly struct Rational :
         }
         if (Denominator > MathHelper.BigInt.LongMaxValue)
             return new InvalidOperationException($"Denominator '{Denominator}' is larger than long.MaxValue '{long.MaxValue}'");
-        return (long)Numerator / (long)Denominator;
+        return Ok((long)Numerator / (long)Denominator);
     }
 
     public int CompareTo(Rational other)

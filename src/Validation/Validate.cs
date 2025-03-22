@@ -37,14 +37,14 @@ public static class Validate
     /// A <see cref="Result{TOk,TError}">Result&lt;int, Exception&gt;</see> that contains a valid <c>int</c> offset
     /// or an <see cref="Exception"/> describing why the index was invalid
     /// </returns>
-    public static Result<int, Exception> Index(
+    public static Result<int> Index(
         int index,
         int length,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
     {
         if ((index >= 0) && (index < length))
-            return index;
+            return Ok(index);
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length})");
     }
 
@@ -62,7 +62,7 @@ public static class Validate
     /// A <see cref="Result{TOk,TError}">Result&lt;int, Exception&gt;</see> that contains a valid <c>int</c> offset
     /// or an <see cref="Exception"/> describing why the index was invalid
     /// </returns>
-    public static Result<int, Exception> Index(
+    public static Result<int> Index(
         Index index,
         int length,
         [CallerArgumentExpression(nameof(index))]
@@ -70,22 +70,22 @@ public static class Validate
     {
         int offset = index.GetOffset(length);
         if ((offset >= 0) && (offset < length))
-            return offset;
+            return Ok(offset);
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length})");
     }
 
-    public static Result<int, Exception> InsertIndex(
+    public static Result<int> InsertIndex(
         int index,
         int length,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
     {
         if ((index >= 0) && (index <= length))
-            return index;
+            return Ok(index);
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length}]");
     }
 
-    public static Result<int, Exception> InsertIndex(
+    public static Result<int> InsertIndex(
         Index index,
         int length,
         [CallerArgumentExpression(nameof(index))]
@@ -93,7 +93,7 @@ public static class Validate
     {
         int offset = index.GetOffset(length);
         if ((offset >= 0) && (offset <= length))
-            return offset;
+            return Ok(offset);
         return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{length}]");
     }
 
@@ -115,7 +115,7 @@ public static class Validate
     /// A <see cref="Result{TOk,TError}">Result&lt;(int Offset, int Length), Exception&gt;</see> that contains a valid start Offset and Length<br/>
     /// or an <see cref="Exception"/> that describes the first validation failure
     /// </returns>
-    public static Result<(int Offset, int Length), Exception> IndexLength(
+    public static Result<(int Offset, int Length)> IndexLength(
         int index,
         int length,
         int available,
@@ -128,7 +128,7 @@ public static class Validate
             return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{available})");
         if ((length < 0) || ((index + length) > available))
             return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0..{available}]");
-        return (index, length);
+        return Ok((index, length));
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ public static class Validate
     /// A <see cref="Result{TOk,TError}">Result&lt;(int Offset, int Length), Exception&gt;</see> that contains a valid start Offset and Length<br/>
     /// or an <see cref="Exception"/> that describes the first validation failure
     /// </returns>
-    public static Result<(int Offset, int Length), Exception> IndexLength(
+    public static Result<(int Offset, int Length)> IndexLength(
         Index index,
         int length,
         int available,
@@ -163,7 +163,7 @@ public static class Validate
             return new ArgumentOutOfRangeException(indexName, index, $"{indexName} '{index}' must be in [0..{available}]");
         if ((length < 0) || ((offset + length) > available))
             return new ArgumentOutOfRangeException(lengthName, length, $"{indexName} '{index}' + {lengthName} '{length}' must be in [0..{available}]");
-        return (offset, length);
+        return Ok((offset, length));
     }
 
     /// <summary>
@@ -180,7 +180,7 @@ public static class Validate
     /// A <see cref="Result{TOk,TError}">Result&lt;(int Offset, int Length), Exception&gt;</see> that contains a valid start Offset and Length<br/>
     /// or an <see cref="Exception"/> that describes the first validation failure
     /// </returns>
-    public static Result<(int Offset, int Length), Exception> Range(
+    public static Result<(int Offset, int Length)> Range(
         Range range,
         int available,
         [CallerArgumentExpression(nameof(range))]
@@ -194,12 +194,12 @@ public static class Validate
         if ((end < start) || (end > available))
             return new ArgumentOutOfRangeException(rangeName, range, $"{rangeName} '{range}' must be in [0..{available}]");
 
-        return (start, end - start);
+        return Ok((start, end - start));
     }
 
 
 
-     public static Result<int, Exception> InRange(
+     public static Result<int> InRange(
         int value,
         Range range,
         [CallerArgumentExpression(nameof(value))]
@@ -229,13 +229,13 @@ public static class Validate
             throw new NotImplementedException();
         }
 
-        return value;
+        return Ok(value);
 
         FAIL:
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {range}");
     }
 
-    public static Result<T, Exception> InBounds<T>(T value,
+    public static Result<T> InBounds<T>(T value,
         T inclusiveMin,
         T exclusiveMax,
         [CallerArgumentExpression(nameof(value))]
@@ -247,20 +247,20 @@ public static class Validate
         c = Comparer<T>.Default.Compare(value, exclusiveMax);
         if (c >= 0)
             goto FAIL;
-        return value;
+        return Ok(value);
         FAIL:
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [{inclusiveMin}..{exclusiveMax})");
     }
 
 
-    public static Result<T, Exception> InBounds<T>(T value, Bounds<T> bounds, [CallerArgumentExpression(nameof(value))] string? valueName = null)
+    public static Result<T> InBounds<T>(T value, Bounds<T> bounds, [CallerArgumentExpression(nameof(value))] string? valueName = null)
     {
         if (bounds.Contains(value))
-            return value;
+            return Ok(value);
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {bounds}");
     }
 
-    public static Result<T, Exception> InBounds<T>(
+    public static Result<T> InBounds<T>(
         T value,
         Bound<T> lowerBound,
         Bound<T> upperBound,
@@ -270,7 +270,7 @@ public static class Validate
 
 
 
-    public static Result<T, Exception> IsNotNull<T>(
+    public static Result<T> IsNotNull<T>(
         [AllowNull, NotNullWhen(true)] T? value,
         string? message = null,
         [CallerArgumentExpression(nameof(value))]
@@ -282,7 +282,7 @@ public static class Validate
         return new ArgumentNullException(valueName, message);
     }
 
-    public static Result<T, Exception> IsNotNull<T>(
+    public static Result<T> IsNotNull<T>(
         // ReSharper disable once ConvertNullableToShortForm
         [NotNullWhen(true)] Nullable<T> value,
         string? message = null,
@@ -291,11 +291,11 @@ public static class Validate
         where T : struct
     {
         if (value.HasValue)
-            return value.GetValueOrDefault();
+            return Ok(value.GetValueOrDefault());
         return new ArgumentNullException(valueName, message);
     }
 
-    public static Result<T, Exception> Is<T>(
+    public static Result<T> Is<T>(
         [NotNullWhen(true)] object? obj,
         [CallerArgumentExpression(nameof(obj))]
         string? objectName = null)
@@ -307,7 +307,7 @@ public static class Validate
         return new ArgumentException($"{objectName} '{obj}' is not a {typeof(T)}", objectName);
     }
 
-    public static Result<T, Exception> CanBe<T>(
+    public static Result<T> CanBe<T>(
         object? obj,
         [CallerArgumentExpression(nameof(obj))]
         string? objectName = null)
@@ -325,7 +325,7 @@ public static class Validate
         return new ArgumentException($"{objectName} '{obj}' does not contain a {typeof(T)}", objectName);
     }
 
-    public static Result<T[], Exception> IsNotEmpty<T>(
+    public static Result<T[]> IsNotEmpty<T>(
         [NotNullWhen(true)] T[]? array,
         [CallerArgumentExpression(nameof(array))]
         string? arrayName = null)
@@ -334,30 +334,30 @@ public static class Validate
             return new ArgumentNullException(arrayName);
         if (array.Length == 0)
             return new ArgumentException("Array cannot be empty", arrayName);
-        return array;
+        return Ok(array);
     }
 
-    public static Result<Unit, Exception> IsNotEmpty<T>(
+    public static Result<Unit> IsNotEmpty<T>(
         Span<T> span,
         [CallerArgumentExpression(nameof(span))]
         string? spanName = null)
     {
         if (span.Length == 0)
             return new ArgumentException("Span cannot be empty", spanName);
-        return Unit.Default;
+        return Ok(Unit());
     }
 
-    public static Result<Unit, Exception> IsNotEmpty<T>(
+    public static Result<Unit> IsNotEmpty<T>(
         ReadOnlySpan<T> span,
         [CallerArgumentExpression(nameof(span))]
         string? spanName = null)
     {
         if (span.Length == 0)
             return new ArgumentException("ReadOnlySpan cannot be empty", spanName);
-        return Unit.Default;
+        return Ok(Unit());
     }
 
-    public static Result<ICollection<T>, Exception> IsNotEmpty<T>(
+    public static Result<ICollection<T>> IsNotEmpty<T>(
         ICollection<T>? collection,
         [CallerArgumentExpression(nameof(collection))]
         string? collectionName = null)
@@ -369,7 +369,7 @@ public static class Validate
         return Ok(collection);
     }
 
-    public static Result<IReadOnlyCollection<T>, Exception> IsNotEmpty<T>(
+    public static Result<IReadOnlyCollection<T>> IsNotEmpty<T>(
         IReadOnlyCollection<T>? collection,
         [CallerArgumentExpression(nameof(collection))]
         string? collectionName = null)
@@ -381,7 +381,7 @@ public static class Validate
         return Ok(collection);
     }
 
-    public static Result<string, Exception> IsNotEmpty(
+    public static Result<string> IsNotEmpty(
         [NotNullWhen(true)] string? str,
         [CallerArgumentExpression(nameof(str))]
         string? strName = null)
@@ -390,7 +390,7 @@ public static class Validate
             return new ArgumentNullException(strName);
         if (str.Length == 0)
             return new ArgumentException("String cannot be empty", strName);
-        return str;
+        return Ok(str);
     }
 
     public enum CompareType
@@ -403,7 +403,7 @@ public static class Validate
         GreaterThanOrEqual,
     }
 
-    public static Result<T, Exception> Compares<T>(
+    public static Result<T> Compares<T>(
         CompareType compareType,
         T value,
         T comparisonValue,
@@ -427,37 +427,37 @@ public static class Validate
             case CompareType.Equal:
             {
                 if (c == 0)
-                    return value;
+                    return Ok(value);
                 return new ArgumentException($"{value} does not equal {comparisonValue}", valueName);
             }
             case CompareType.NotEqual:
             {
                 if (c != 0)
-                    return value;
+                    return Ok(value);
                 return new ArgumentException($"{value} equals {comparisonValue}", valueName);
             }
             case CompareType.LessThan:
             {
                 if (c < 0)
-                    return value;
+                    return Ok(value);
                 return new ArgumentException($"{value} is greater or equals {comparisonValue}", valueName);
             }
             case CompareType.LessThanOrEqual:
             {
                 if (c <= 0)
-                    return value;
+                    return Ok(value);
                 return new ArgumentException($"{value} is greater than {comparisonValue}", valueName);
             }
             case CompareType.GreaterThan:
             {
                 if (c > 0)
-                    return value;
+                    return Ok(value);
                 return new ArgumentException($"{value} is less or equals {comparisonValue}", valueName);
             }
             case CompareType.GreaterThanOrEqual:
             {
                 if (c >= 0)
-                    return value;
+                    return Ok(value);
                 return new ArgumentException($"{value} is less than {comparisonValue}", valueName);
             }
             default:
@@ -465,7 +465,7 @@ public static class Validate
         }
     }
 
-    public static Result<T, Exception> IsEqual<T>(
+    public static Result<T> IsEqual<T>(
         T value,
         T comparisonValue,
         IEqualityComparer<T>? valueComparer = null,
@@ -475,17 +475,17 @@ public static class Validate
         if (valueComparer is null)
         {
             if (EqualityComparer<T>.Default.Equals(value, comparisonValue))
-                return value;
+                return Ok(value);
         }
         else
         {
             if (valueComparer.Equals(value, comparisonValue))
-                return value;
+                return Ok(value);
         }
         return new ArgumentException($"{value} does not equal {comparisonValue}", valueName);
     }
 
-    public static Result<T, Exception> IsNotEqual<T>(
+    public static Result<T> IsNotEqual<T>(
         T value,
         T comparisonValue,
         IEqualityComparer<T>? valueComparer = null,
@@ -495,17 +495,17 @@ public static class Validate
         if (valueComparer is null)
         {
             if (!EqualityComparer<T>.Default.Equals(value, comparisonValue))
-                return value;
+                return Ok(value);
         }
         else
         {
             if (!valueComparer.Equals(value, comparisonValue))
-                return value;
+                return Ok(value);
         }
         return new ArgumentException($"{value} equals {comparisonValue}", valueName);
     }
 
-    public static Result<T, Exception> IsLessThan<T>(
+    public static Result<T> IsLessThan<T>(
         T value,
         T comparisonValue,
         IComparer<T>? valueComparer = null,
@@ -513,7 +513,7 @@ public static class Validate
         string? valueName = null)
         => Compares<T>(CompareType.LessThan, value, comparisonValue, valueComparer, valueName);
 
-    public static Result<T, Exception> IsLessThanOrEqual<T>(
+    public static Result<T> IsLessThanOrEqual<T>(
         T value,
         T comparisonValue,
         IComparer<T>? valueComparer = null,
@@ -521,7 +521,7 @@ public static class Validate
         string? valueName = null)
         => Compares<T>(CompareType.LessThanOrEqual, value, comparisonValue, valueComparer, valueName);
 
-    public static Result<T, Exception> IsGreaterThan<T>(
+    public static Result<T> IsGreaterThan<T>(
         T value,
         T comparisonValue,
         IComparer<T>? valueComparer = null,
@@ -529,7 +529,7 @@ public static class Validate
         string? valueName = null)
         => Compares<T>(CompareType.GreaterThan, value, comparisonValue, valueComparer, valueName);
 
-    public static Result<T, Exception> IsGreaterThanOrEqual<T>(
+    public static Result<T> IsGreaterThanOrEqual<T>(
         T value,
         T comparisonValue,
         IComparer<T>? valueComparer = null,
@@ -538,7 +538,7 @@ public static class Validate
         => Compares<T>(CompareType.GreaterThanOrEqual, value, comparisonValue, valueComparer, valueName);
 
 
-    public static Result<Unit, Exception> CanCopyTo(
+    public static Result<Unit> CanCopyTo(
         Array? array,
         int arrayIndex,
         int count,
@@ -558,7 +558,7 @@ public static class Validate
             select Unit.Default;
     }
 
-    public static Result<Unit, Exception> CanCopyTo<T>(
+    public static Result<Unit> CanCopyTo<T>(
         T[]? array,
         int arrayIndex,
         int count,
@@ -578,7 +578,7 @@ public static class Validate
             select Unit.Default;
     }
 
-    public static Result<Unit, Exception> CanCopyTo<T>(
+    public static Result<Unit> CanCopyTo<T>(
         Span<T> span,
         int count,
         [CallerArgumentExpression(nameof(span))]
@@ -591,19 +591,19 @@ public static class Validate
                 span.Length,
                 $"Cannot fit {count} items into a Span with capacity {span.Length}");
         }
-        return Unit();
+        return Ok(Unit());
     }
 
-    public static Result<Unit, Exception> IsErrorIf(
+    public static Result<Unit> IsErrorIf(
         bool predicate,
         Func<Exception> createException)
     {
         if (predicate)
             return createException();
-        return Unit();
+        return Ok(Unit());
     }
 
-    public static Result<T, Exception> IsErrorIf<T>(
+    public static Result<T> IsErrorIf<T>(
         T value,
         Func<T, bool> predicate,
         Func<Exception> createException)
@@ -614,7 +614,7 @@ public static class Validate
     }
 
 
-    public static Result<Type, Exception> Implements(
+    public static Result<Type> Implements(
         Type? type,
         Type subType,
         [CallerArgumentExpression(nameof(type))]
@@ -624,6 +624,6 @@ public static class Validate
             return new ArgumentNullException(typeName);
         if (!type.Implements(subType))
             return new ArgumentException($"Type `{type.NameOf()}` does not implement `{subType.NameOf()}`", typeName);
-        return type;
+        return Ok(type);
     }
 }

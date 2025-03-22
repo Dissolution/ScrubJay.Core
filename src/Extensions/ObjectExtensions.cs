@@ -37,7 +37,7 @@ public static class ObjectExtensions
         return false;
     }
 
-    public static Result<T, Exception> Is<T>(
+    public static Result<T> Is<T>(
         this object? obj,
         [CallerArgumentExpression(nameof(obj))]
         string? objName = null)

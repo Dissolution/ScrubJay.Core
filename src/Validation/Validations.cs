@@ -13,7 +13,7 @@ public class Validations : Validations<Exception>
         }
         catch (Exception ex)
         {
-            Add(ex);
+            base.Add(ex);
         }
     }
 
@@ -25,9 +25,31 @@ public class Validations : Validations<Exception>
         }
         catch (Exception ex)
         {
-            Add(ex);
+            base.Add(ex);
         }
     }
+
+    public void Add(Result<Unit> result)
+    {
+        if (result.IsError(out var error))
+        {
+            base.Add(error);
+        }
+    }
+
+    public void Add<T>(Result<T> result)
+    {
+        if (result.IsError(out var error))
+        {
+            base.Add(error);
+        }
+    }
+
+    public void Add(Func<Result<Unit>> getResult)
+        => Add(getResult());
+
+    public void Add<T>(Func<Result<T>> getResult)
+        => Add(getResult());
 
     public Option<Exception> HasException()
     {
@@ -64,18 +86,18 @@ public class Validations : Validations<Exception>
             throw ex;
     }
 
-    public Result<TOk, Exception> ToResult<TOk>(TOk okValue)
+    public Result<TOk> ToResult<TOk>(TOk okValue)
     {
         if (HasException(out var ex))
             return ex;
-        return okValue;
+        return Ok(okValue);
     }
 
-    public Result<TOk, Exception> ToResult<TOk>(Func<TOk> getOk)
+    public Result<TOk> ToResult<TOk>(Func<TOk> getOk)
     {
         if (HasException(out var ex))
             return ex;
-        return getOk();
+        return Ok(getOk());
     }
 }
 

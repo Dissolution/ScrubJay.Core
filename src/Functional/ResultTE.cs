@@ -283,7 +283,7 @@ public readonly struct Result<T, E> :
     {
         if (_isOk)
             return map(_value!);
-        return Error<E>(_error!);
+        return Result<TNewOk, E>.Error(_error!);
     }
 
     /// <summary>
@@ -611,8 +611,8 @@ public readonly struct Result<T, E> :
     public Result<TNewOk, E> Select<TNewOk>(Func<T, TNewOk> selector)
     {
         if (_isOk)
-            return Ok<TNewOk, E>(selector(_value!));
-        return Error<TNewOk, E>(_error!);
+            return Result<TNewOk, E>.Ok(selector(_value!));
+        return Result<TNewOk, E>.Error(_error!);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -632,15 +632,15 @@ public readonly struct Result<T, E> :
         {
             return selector(_value!);
         }
-        return Error<N, E>(_error!);
+        return Result<N, E>.Error(_error!);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Result<TNewOk, E> Select<TState, TNewOk>(TState state, Func<TState, T, TNewOk> selector)
     {
         if (_isOk)
-            return Ok<TNewOk, E>(selector(state, _value!));
-        return Error<TNewOk, E>(_error!);
+            return Result<TNewOk, E>.Ok(selector(state, _value!));
+        return Result<TNewOk, E>.Error(_error!);
     }
 
 
@@ -662,7 +662,7 @@ public readonly struct Result<T, E> :
     {
         if (_isOk && keySelector(_value!).HasOk(out var key))
         {
-            return Ok<TNewOk, E>(newSelector(_value!, key));
+            return Result<TNewOk, E>.Ok(newSelector(_value!, key));
         }
 
         return Error<TNewOk, E>(_error!);

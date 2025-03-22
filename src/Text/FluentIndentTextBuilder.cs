@@ -58,7 +58,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
         Interlocked.Exchange(ref _whitespace, newWhiteSpace);
 #if DEBUG
         var removed = newWhiteSpace.TryRemoveIndent();
-        Debug.Assert(removed.HasOk(out string? removedIndent));
+        Debug.Assert(removed.IsOk(out string? removedIndent));
         Debug.Assert(TextHelper.Equate(indent, removedIndent));
 #else
         // no need to remove indent, will be discarded

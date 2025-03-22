@@ -21,30 +21,30 @@ int i = int.TryParse("???").Match(
     err => return err);
 
 // Does not compile:
-Result<int, Exception> result = int.TryParse("???");
+Result<int> result = int.TryParse("???");
 int i;
 result.Match(
     ok => i = ok,
     err => return err);
 
 // Verbose:
-Result<int, Exception> result = int.TryParse("???");
+Result<int> result = int.TryParse("???");
 if (result.IsErr(out var ex))
     return result; // return ex;
 int i = result.Unwrap();    // has a redundant check for isOk that we already know is true
 
 // Best:
-Result<int, Exception> result = int.TryParse("???");
+Result<int> result = int.TryParse("???");
 if (!result.IsOk(out var ok))
     return result; // have to return Result and not TError (unless we call IsError or UnwrapErr)
 ```
 Thus, the methods `IsSuccess` and `IsFailure` were added to extract the ok and error values at the same time:
 ```csharp
-Result<int, Exception> result = int.TryParse("???");
+Result<int> result = int.TryParse("???");
 if (result.IsFailure(out var error, out var ok))
 {
-    return error;    
-}       
+    return error;
+}
 /* or */
 if (!result.IsSuccess(out var ok, out var error))
 {
@@ -63,12 +63,12 @@ Result<Model, IActionResult> Validate(obj? thing)
     {
         /* The below line does not compile, you cannot implicitly cast from an Interface Type
          * and we want to use Result<Ok,Error>'s implicit Ok => Result as shorthand */
-        return aResult;     
-        
+        return aResult;
+
         /* Instead, we must: */
         return Result<Model, IActionResult>.Error(aResult);
         /* Which can get verbose */
-        
+
         /* Ok<O> and Error<E> solve this problem (with the use of GlobalHelper): */
         return Error(aResult);
         /* Because the concrete type Error<E> will implicitly cast to a Result<?, E>

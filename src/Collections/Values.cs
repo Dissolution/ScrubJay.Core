@@ -158,7 +158,7 @@ public readonly struct Values<T> :
     /// A <typeparamref name="T"/> Value exists only at index 0<br/>
     /// <c>T[]</c> Values are indexed as a standard <see cref="Array"/>
     /// </remarks>
-    public Result<T, Exception> TryGetAt(Index index) => Match(
+    public Result<T> TryGetAt(Index index) => Match(
         onEmpty: static () => new InvalidOperationException("Values is empty"),
         onValue: val => Validate.Index(index, 1).Select(_ => val),
         onValues: vals => Validate.Index(index, vals.Length).Select(i => vals[i])
@@ -225,19 +225,19 @@ public readonly struct Values<T> :
         }
     }
 
-    public Result<int, Exception> TryCopyTo(Span<T> span)
+    public Result<int> TryCopyTo(Span<T> span)
     {
         object? obj = _obj;
         if (obj is null)
         {
-            return 0;
+            return Ok(0);
         }
         else if (obj is T value)
         {
             if (span.Length == 0)
                 return new ArgumentException(default, nameof(span));
             span[0] = value;
-            return 1;
+            return Ok(1);
         }
         else
         {
@@ -245,7 +245,7 @@ public readonly struct Values<T> :
             if (span.Length < values.Length)
                 return new ArgumentException(default, nameof(span));
             Sequence.CopyTo(values, span);
-            return values.Length;
+            return Ok(values.Length);
         }
     }
 

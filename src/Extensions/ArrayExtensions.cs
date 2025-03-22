@@ -27,7 +27,7 @@ public static class ArrayExtensions
         Converter<TInput, TOutput> converter)
         => Array.ConvertAll<TInput, TOutput>(array, converter);
 
-    public static Result<T, Exception> TryGet<T>(
+    public static Result<T> TryGet<T>(
         this T[]? array,
         Index index,
         [CallerArgumentExpression(nameof(array))]
@@ -41,7 +41,7 @@ public static class ArrayExtensions
             select arr[idx];
     }
 
-    public static Result<T, Exception> TrySet<T>(
+    public static Result<T> TrySet<T>(
         this T[]? array,
         Index index,
         T item,

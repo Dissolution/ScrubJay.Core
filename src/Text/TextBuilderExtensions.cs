@@ -145,6 +145,22 @@ public static class TextBuilderExtensions
         return builder;
     }
 
+    public static B InvokeIf<B, T>(this B builder, Result<T> result,
+        Action<B, T>? onOk,
+        Action<B, Exception>? onError = null)
+        where B : TextBuilderBase<B>
+    {
+        if (result.IsOkWithError(out var ok, out var error))
+        {
+            onOk?.Invoke(builder, ok);
+        }
+        else
+        {
+            onError?.Invoke(builder, error);
+        }
+        return builder;
+    }
+
     public static B InvokeIf<B, T, E>(this B builder, Result<T,E> result,
         Action<B, T>? onOk,
         Action<B, E>? onError = null)

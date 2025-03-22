@@ -170,11 +170,11 @@ public sealed class ArrayIndicesEnumerator : ITryEnumerator<int[]>
 
     public bool MoveNext() => TryIncrement();
 
-    public Result<int[], Exception> TryMoveNext()
+    public Result<int[]> TryMoveNext()
     {
         if (TryIncrement())
         {
-            return _indices;
+            return Ok(_indices);
         }
         else
         {

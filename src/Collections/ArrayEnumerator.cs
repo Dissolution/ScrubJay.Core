@@ -21,7 +21,7 @@ public sealed class ArrayEnumerator<T> : ITryEnumerator<T>
 
     public T Current => TryGetCurrent().OkOrThrow();
 
-    public Result<T, Exception> TryGetCurrent()
+    public Result<T> TryGetCurrent()
     {
         if (_getCurrentVersion is not null && (_getCurrentVersion() != _version))
             return new InvalidOperationException("Source array has changed");
@@ -41,7 +41,7 @@ public sealed class ArrayEnumerator<T> : ITryEnumerator<T>
                 return new InvalidOperationException("Enumeration has finished");
         }
         Debug.Assert((uint)_index < (uint)_array.Length);
-        return _array[_index];
+        return Ok(_array[_index]);
     }
 
     public ArrayEnumerator(T[] array) : this(array, step: +1) { }
@@ -130,7 +130,7 @@ public sealed class ArrayEnumerator<T> : ITryEnumerator<T>
         return true;
     }
 
-    public Result<T, Exception> TryMoveNext()
+    public Result<T> TryMoveNext()
     {
         if (_getCurrentVersion is not null && (_getCurrentVersion() != _version))
             return new InvalidOperationException("Version has changed");

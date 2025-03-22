@@ -118,7 +118,7 @@ public class PooledStack<T> : PooledArray<T>,
 
     void IList<T>.Insert(int index, T item) => TryPushAt(index, item).ThrowIfError();
 
-    public Result<Unit, Exception> TryPushAt(StackIndex index, T item)
+    public Result<Unit> TryPushAt(StackIndex index, T item)
     {
         int end = _size;
         int offset = index.GetOffset(end);
@@ -130,7 +130,7 @@ public class PooledStack<T> : PooledArray<T>,
         if (offset == (end - 1))
         {
             Push(item);
-            return Unit();
+            return Ok(Unit());
         }
 
         int newSize = end + 1;
@@ -143,10 +143,10 @@ public class PooledStack<T> : PooledArray<T>,
         Sequence.SelfCopy(_array, offset..end, (offset + 1)..);
         _array[offset] = item;
         _size = newSize;
-        return Unit();
+        return Ok(Unit());
     }
 
-    public Result<Unit, Exception> TryPushManyAt(StackIndex index, ReadOnlySpan<T> items)
+    public Result<Unit> TryPushManyAt(StackIndex index, ReadOnlySpan<T> items)
     {
         int end = _size;
         int offset = index.GetOffset(end);
@@ -156,13 +156,13 @@ public class PooledStack<T> : PooledArray<T>,
 
         int itemCount = items.Length;
         if (itemCount == 0)
-            return Unit();
+            return Ok(Unit());
 
         // If we indicated the front, push
         if (offset == (end - 1))
         {
             PushMany(items);
-            return Unit();
+            return Ok(Unit());
         }
 
         int newSize = end + itemCount;
@@ -175,7 +175,7 @@ public class PooledStack<T> : PooledArray<T>,
         Sequence.SelfCopy(_array, offset..end, (offset + itemCount)..);
         Sequence.CopyTo(items, _array.AsSpan(offset, itemCount));
         _size = newSize;
-        return Unit();
+        return Ok(Unit());
     }
 
     /// <summary>
@@ -196,15 +196,15 @@ public class PooledStack<T> : PooledArray<T>,
         return _array[endIndex];
     }
 
-    public Result<T, Exception> TryPeek()
+    public Result<T> TryPeek()
     {
         int topItemIndex = _size - 1;
         if (topItemIndex < 0)
             return new InvalidOperationException("Stack is empty");
-        return _array[topItemIndex];
+        return Ok(_array[topItemIndex]);
     }
 
-    public Result<T[], Exception> TryPeekMany(int peekCount)
+    public Result<T[]> TryPeekMany(int peekCount)
     {
         if (peekCount < 0)
             return new ArgumentOutOfRangeException(nameof(peekCount), peekCount, "Peek count must be zero or greater");
@@ -219,7 +219,7 @@ public class PooledStack<T> : PooledArray<T>,
         return Ok(peeked);
     }
 
-    public Result<Unit, Exception> TryPeekManyTo(Span<T> buffer)
+    public Result<Unit> TryPeekManyTo(Span<T> buffer)
     {
         int count = buffer.Length;
         int size = _size;
@@ -231,7 +231,7 @@ public class PooledStack<T> : PooledArray<T>,
         Debug.Assert(slice.Length == buffer.Length);
         Sequence.CopyTo(slice, buffer);
         buffer.Reverse();
-        return Unit();
+        return Ok(Unit());
     }
 
     /// <summary>
@@ -250,7 +250,7 @@ public class PooledStack<T> : PooledArray<T>,
         return popped;
     }
 
-    public Result<T, Exception> TryPop()
+    public Result<T> TryPop()
     {
         int topItemIndex = _size - 1;
         if (topItemIndex < 0)
@@ -258,10 +258,10 @@ public class PooledStack<T> : PooledArray<T>,
 
         _version++;
         _size = topItemIndex;
-        return _array[topItemIndex];
+        return Ok(_array[topItemIndex]);
     }
 
-    public Result<T[], Exception> TryPopMany(int peekCount)
+    public Result<T[]> TryPopMany(int peekCount)
     {
         if (peekCount < 0)
             return new ArgumentOutOfRangeException(nameof(peekCount), peekCount, "Pop count must be zero or greater");
@@ -278,7 +278,7 @@ public class PooledStack<T> : PooledArray<T>,
         return Ok(popped);
     }
 
-    public Result<Unit, Exception> TryPopManyTo(Span<T> buffer)
+    public Result<Unit> TryPopManyTo(Span<T> buffer)
     {
         int count = buffer.Length;
         int size = _size;
@@ -293,7 +293,7 @@ public class PooledStack<T> : PooledArray<T>,
         _size = start;
         Sequence.CopyTo(slice, buffer);
         buffer.Reverse();
-        return Unit();
+        return Ok(Unit());
     }
 
     bool ICollection<T>.Remove(T item)
@@ -315,7 +315,7 @@ public class PooledStack<T> : PooledArray<T>,
 
     void IList<T>.RemoveAt(int index) => TryPopAt(index).OkOrThrow();
 
-    public Result<T, Exception> TryPopAt(StackIndex index)
+    public Result<T> TryPopAt(StackIndex index)
     {
         int end = _size;
         int offset = index.GetOffset(end);
@@ -332,7 +332,7 @@ public class PooledStack<T> : PooledArray<T>,
         {
             Sequence.SelfCopy(_array, (offset + 1)..end, offset..);
         }
-        return item;
+        return Ok(item);
     }
 
     public void Clear()
@@ -373,33 +373,33 @@ public class PooledStack<T> : PooledArray<T>,
 
 #pragma warning disable IDE0060
 
-    public Result<T, Exception> TryGetItemAt(StackIndex index)
+    public Result<T> TryGetItemAt(StackIndex index)
     {
         int end = _size;
         int offset = index.GetOffset(end);
         if ((offset < 0) || (offset >= end))
             return new ArgumentOutOfRangeException(nameof(index));
-        return _array[offset];
+        return Ok(_array[offset]);
     }
 
-    public Result<T, Exception> TrySetItemAt(StackIndex index, T item)
+    public Result<T> TrySetItemAt(StackIndex index, T item)
     {
         int end = _size;
         int offset = index.GetOffset(end);
         if ((offset < 0) || (offset >= end))
             return new ArgumentOutOfRangeException(nameof(index));
         _array[offset] = item;
-        return item;
+        return Ok(item);
     }
 
     void ICollection<T>.CopyTo(T[] array, int arrayIndex) => TryCopyTo(array.AsSpan(arrayIndex)).ThrowIfError();
 
-    public Result<int, Exception> TryCopyTo(Span<T> span, bool popOrder = true)
+    public Result<int> TryCopyTo(Span<T> span, bool popOrder = true)
     {
         int count = _size;
         var array = _array;
 
-        if (Validate.CanCopyTo(span, count).HasError(out var ex))
+        if (Validate.CanCopyTo(span, count).IsError(out var ex))
             return ex;
 
         int s = 0; // index into span
@@ -429,7 +429,7 @@ public class PooledStack<T> : PooledArray<T>,
 
         Debug.Assert((s >= count) && ((a < 0) || (a >= count)));
 
-        return count;
+        return Ok(count);
     }
 
     /// <summary>

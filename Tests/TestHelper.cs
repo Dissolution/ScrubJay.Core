@@ -81,7 +81,7 @@ public static class TestHelper
             .CurrentDomain
             .GetAssemblies()
             // Assemblies can be tricky to access
-            .SelectMany(assembly => Result.TryFunc(assembly, static a => a.GetTypes()).OkOr([]))
+            .SelectMany(assembly => Result.TryInvoke(assembly, static a => a.GetTypes()).OkOr([]))
             .ToHashSet();
 
         var rand = new Random();

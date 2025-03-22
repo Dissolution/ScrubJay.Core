@@ -420,7 +420,7 @@
 //    static bool INumberBase<BigDecimal>.TryConvertFromTruncating<TOther>(TOther value, out BigDecimal result) => throw new NotImplementedException();
 //#endif
 //
-//    public static Result<BigDecimal, Exception> TryConvertFrom<TValue>(TValue? value)
+//    public static Result<BigDecimal> TryConvertFrom<TValue>(TValue? value)
 //    {
 //        switch (value)
 //        {

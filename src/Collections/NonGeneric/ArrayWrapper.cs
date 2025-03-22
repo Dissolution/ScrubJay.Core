@@ -8,7 +8,7 @@ public sealed class ArrayWrapper<T> :
     IReadOnlyCollection<T?>,
     IEnumerable<T?>
 {
-    private static Result<T?, Exception> ParseObject(
+    private static Result<T?> ParseObject(
         object? obj,
         [CallerArgumentExpression(nameof(obj))]
         string? objName = null)
@@ -56,7 +56,7 @@ public sealed class ArrayWrapper<T> :
         _upperBounds = upperBounds;
     }
 
-    private Result<int[], Exception> ValidateIndices(
+    private Result<int[]> ValidateIndices(
         int[] indices,
         [CallerArgumentExpression(nameof(indices))]
         string? indicesName = null)
@@ -69,19 +69,19 @@ public sealed class ArrayWrapper<T> :
             if ((index < lower) || (index > upper))
                 return new ArgumentOutOfRangeException(indicesName, indices, $"Indices[{d}] of {index} was not in [{lower}..{upper}]");
         }
-        return indices;
+        return Ok(indices);
     }
 
-    public Result<T?, Exception> TryGetValue(int[] indices)
+    public Result<T?> TryGetValue(int[] indices)
     {
         return ValidateIndices(indices)
-            .OkSelect(idx => ParseObject(_array.GetValue(idx)));
+            .Select(idx => ParseObject(_array.GetValue(idx)));
     }
 
-    public Result<T?, Exception> TrySetValue(int[] indices, T? item)
+    public Result<T?> TrySetValue(int[] indices, T? item)
     {
         return ValidateIndices(indices)
-            .OkSelect(idx =>
+            .Select(idx =>
             {
                 _array.SetValue(item, idx);
                 return item;
@@ -163,11 +163,11 @@ public sealed class ArrayWrapper<T> :
             //((IDisposable)_arrayIndicesEnumerator).Dispose();
         }
 
-        public Result<T?, Exception> TryMoveNext()
+        public Result<T?> TryMoveNext()
         {
             if (_arrayIndicesEnumerator.TryMoveNext())
             {
-                return Current;
+                return Ok(Current);
             }
             return new InvalidOperationException("There are no more elements in this array");
         }
