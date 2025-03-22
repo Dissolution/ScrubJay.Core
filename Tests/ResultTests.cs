@@ -198,7 +198,7 @@ public class ResultTests
     [Fact]
     public void ImplicitOkWorks()
     {
-        Result<int, Exception> r1 = 147;
+        Result<int> r1 = 147;
         Assert.True(r1.HasOk(out int r1Ok));
         Assert.Equal(147, r1Ok);
 
@@ -212,12 +212,12 @@ public class ResultTests
     public void ImplicitErrorWorks()
     {
         var ex1 = new Exception();
-        Result<int, Exception> r1 = ex1;
+        Result<int> r1 = ex1;
         Assert.True(r1.HasError(out var r1Error));
         Assert.Equal(ex1, r1Error);
 
         var ex2 = new InvalidOperationException();
-        Result<int, Exception> r2 = ex2;
+        Result<int> r2 = ex2;
         Assert.True(r2.HasError(out var r2Error));
         Assert.Equal(ex2, r2Error);
 
@@ -307,7 +307,7 @@ public class ResultTests
     [Fact]
     public void OkWorks()
     {
-        Result<int, Exception> r1 = Result<int, Exception>.Ok(147);
+        Result<int> r1 = Result<int>.Ok(147);
         Assert.True(r1.HasOk(out int r1Ok));
         Assert.Equal(147, r1Ok);
         Assert.False(r1.IsError);
@@ -328,7 +328,7 @@ public class ResultTests
     {
         var ex = new InvalidOperationException("BAD");
 
-        Result<int, Exception> r1 = Result<int, Exception>.Error(ex);
+        Result<int> r1 = Result<int>.Error(ex);
         Assert.True(r1.HasError(out var r1Error));
         Assert.Equal(ex, r1Error);
         Assert.False(r1.IsOk);

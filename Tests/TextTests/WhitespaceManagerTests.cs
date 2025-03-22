@@ -20,7 +20,7 @@
 //             Assert.True(started.IsOk);
 //         }
 //
-//         Result<string, Exception> ended;
+//         Result<string> ended;
 //
 //         for (var i = 0; i < indents.Length; i++)
 //         {
