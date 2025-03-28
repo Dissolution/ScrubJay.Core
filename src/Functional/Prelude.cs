@@ -1,6 +1,8 @@
 ﻿global using text = System.ReadOnlySpan<char>;
 global using NotNull = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
+#pragma warning disable CA1715
+
 using ScrubJay.Functional.Compat;
 
 namespace ScrubJay.Functional;
@@ -52,8 +54,9 @@ public static class Prelude
         => Result<T, E>.Ok(value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Error<Exception> Error(Exception error)
-        => new Error<Exception>(error);
+    public static Error<E> Error<E>(E error)
+        where E : Exception
+        => new Error<E>(error);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Error<T>(Exception error)

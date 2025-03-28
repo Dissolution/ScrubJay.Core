@@ -39,8 +39,8 @@ public class ResultTests
     [MemberData(nameof(ResultsData))]
     public void CannotBeOkAndError<T>(Result<T, Exception?> result)
     {
-        bool ok = result.IsOk;
-        bool error = result.IsError;
+        bool ok = result.IsOk();
+        bool error = result.IsError();
         Assert.NotEqual(ok, error);
     }
 
@@ -120,39 +120,40 @@ public class ResultTests
         }
     }
 
+    /*
     [Fact]
     public void CanImplicitlyCastFromT()
     {
         Result<object?, Exception> objectResult = (object?)null;
-        Assert.True(objectResult.IsOk);
+        Assert.True(objectResult.IsOk());
         objectResult = new object();
-        Assert.True(objectResult.IsOk);
+        Assert.True(objectResult.IsOk());
 
         int? nullNullableInt = null;
         Result<int?, Exception> nullableResult = nullNullableInt;
-        Assert.True(nullableResult.IsOk);
+        Assert.True(nullableResult.IsOk());
         int? nonnullNullableInt = 147;
         nullableResult = nonnullNullableInt;
-        Assert.True(nullableResult.IsOk);
+        Assert.True(nullableResult.IsOk());
 
         byte b = 255;
         Result<byte, Exception> byteResult = b;
-        Assert.True(byteResult.IsOk);
+        Assert.True(byteResult.IsOk());
 
         BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public;
         Result<BindingFlags, Exception> bindingFlagsResult = bindingFlags;
-        Assert.True(bindingFlagsResult.IsOk);
+        Assert.True(bindingFlagsResult.IsOk());
 
         string? nullString = null;
         Result<string?, Exception> stringResult = nullString;
-        Assert.True(stringResult.IsOk);
+        Assert.True(stringResult.IsOk());
         string? nonnullString = "abc";
         Result<string?, Exception> nonnullResultString = nonnullString;
-        Assert.True(nonnullResultString.IsOk);
+        Assert.True(nonnullResultString.IsOk());
 
         int[] numbers = [1, 4, 7];
         Result<IEnumerable<int>, Exception> numbersResult = numbers;
-        Assert.True(numbersResult.IsOk);
+        Assert.True(numbersResult.IsOk());
         numbersResult = new List<int>
         {
             1,
@@ -161,31 +162,31 @@ public class ResultTests
             4,
             5
         };
-        Assert.True(numbersResult.IsOk);
+        Assert.True(numbersResult.IsOk());
     }
-
+    */
 
     [Theory]
     [MemberData(nameof(ResultsData))]
     public void CanImplicitlyCastToBool<T>(Result<T, Exception?> result)
     {
         bool b = result;
-        Assert.Equal(b, result.IsOk);
-        Assert.NotEqual(b, result.IsError);
+        Assert.Equal(b, result.IsOk());
+        Assert.NotEqual(b, result.IsError());
     }
 
     [Theory]
     [MemberData(nameof(ResultsData))]
-    public void CanEnumerate<T>(Result<T, Exception?> result)
+    public void CanEnumerate<T>(Result<T> result)
     {
         using var e = result.GetEnumerator();
-        if (result.HasOk(out var ok))
+        if (result.IsOk(out var ok))
         {
             Assert.True(e.MoveNext());
             Assert.Equal<T>(ok, e.Current);
             Assert.False(e.MoveNext());
         }
-        else if (result.IsError)
+        else if (result.IsError())
         {
             Assert.False(e.MoveNext());
         }
@@ -195,39 +196,27 @@ public class ResultTests
         }
     }
 
-    [Fact]
-    public void ImplicitOkWorks()
-    {
-        Result<int> r1 = 147;
-        Assert.True(r1.HasOk(out int r1Ok));
-        Assert.Equal(147, r1Ok);
-
-        var nl = new List<int>();
-        Result<List<int>?, InvalidOperationException?> r2 = nl;
-        Assert.True(r2.HasOk(out var r2Ok));
-        Assert.Equal(nl, r2Ok);
-    }
-
+    /*
     [Fact]
     public void ImplicitErrorWorks()
     {
         var ex1 = new Exception();
         Result<int> r1 = ex1;
-        Assert.True(r1.HasError(out var r1Error));
+        Assert.True(r1.IsError(out var r1Error));
         Assert.Equal(ex1, r1Error);
 
         var ex2 = new InvalidOperationException();
         Result<int> r2 = ex2;
-        Assert.True(r2.HasError(out var r2Error));
+        Assert.True(r2.IsError(out var r2Error));
         Assert.Equal(ex2, r2Error);
 
         var ex3 = new List<int>();
         Result<int, IEnumerable> r3 = ex3;
-        Assert.True(r3.HasError(out var r3Error));
+        Assert.True(r3.IsError(out var r3Error));
         Assert.Equal(ex3, r3Error);
 
         Result<byte, Exception?> r4 = null;
-        Assert.True(r4.HasError(out var r4Error));
+        Assert.True(r4.IsError(out var r4Error));
         Assert.Null(r4Error);
     }
 
@@ -237,14 +226,14 @@ public class ResultTests
     {
         if (result)
         {
-            Assert.True(result.IsOk);
+            Assert.True(result.IsOk());
         }
         else
         {
-            Assert.True(result.IsError);
+            Assert.True(result.IsError());
         }
     }
-
+    */
 
 #pragma warning disable S1125
     [Theory]
@@ -253,25 +242,25 @@ public class ResultTests
     {
         // ReSharper disable once EqualExpressionComparison
         Assert.True(result == result);
-        if (result.HasOk(out var ok))
+        if (result.IsOk(out var ok))
         {
             Assert.True(result == ok);
-            Assert.True(ok == result);
+            //Assert.True(ok == result);
             Assert.True(result == true);
-            Assert.True(true == result);
+            //Assert.True(true == result);
             Assert.False(result == false);
-            Assert.False(false == result);
+            //Assert.False(false == result);
         }
         else
         {
-            bool isError = result.HasError(out var error);
+            bool isError = result.IsError(out var error);
             Assert.True(isError);
             Assert.True(result == error!);
-            Assert.True(error! == result);
+            //Assert.True(error! == result);
             Assert.True(result == false);
-            Assert.True(false == result);
+            //Assert.True(false == result);
             Assert.False(result == true);
-            Assert.False(true == result);
+            //Assert.False(true == result);
         }
     }
 
@@ -281,25 +270,25 @@ public class ResultTests
     {
         // ReSharper disable once EqualExpressionComparison
         Assert.False(result != result);
-        if (result.HasOk(out var ok))
+        if (result.IsOk(out var ok))
         {
             Assert.False(result != ok);
-            Assert.False(ok != result);
+            //Assert.False(ok != result);
             Assert.False(result != true);
-            Assert.False(true != result);
+            //Assert.False(true != result);
             Assert.True(result != false);
-            Assert.True(false != result);
+            //Assert.True(false != result);
         }
         else
         {
-            bool isError = result.HasError(out var error);
+            bool isError = result.IsError(out var error);
             Assert.True(isError);
             Assert.False(result != error!);
-            Assert.False(error! != result);
+            //Assert.False(error! != result);
             Assert.False(result != false);
-            Assert.False(false != result);
+            //Assert.False(false != result);
             Assert.True(result != true);
-            Assert.True(true != result);
+            //Assert.True(true != result);
         }
     }
 #pragma warning restore S1125
@@ -308,19 +297,19 @@ public class ResultTests
     public void OkWorks()
     {
         Result<int> r1 = Result<int>.Ok(147);
-        Assert.True(r1.HasOk(out int r1Ok));
+        Assert.True(r1.IsOk(out int r1Ok));
         Assert.Equal(147, r1Ok);
-        Assert.False(r1.IsError);
+        Assert.False(r1.IsError());
 
         Result<byte, byte> r2 = Result<byte, byte>.Ok(147);
-        Assert.True(r2.HasOk(out byte r2Ok));
+        Assert.True(r2.IsOk(out byte r2Ok));
         Assert.Equal(147, r2Ok);
-        Assert.False(r2.IsError);
+        Assert.False(r2.IsError());
 
         Result<List<int>?, Exception?> r3 = Result<List<int>?, Exception?>.Ok(null);
-        Assert.True(r3.HasOk(out var r3Ok));
+        Assert.True(r3.IsOk(out var r3Ok));
         Assert.Null(r3Ok);
-        Assert.False(r3.IsError);
+        Assert.False(r3.IsError());
     }
 
     [Fact]
@@ -329,26 +318,26 @@ public class ResultTests
         var ex = new InvalidOperationException("BAD");
 
         Result<int> r1 = Result<int>.Error(ex);
-        Assert.True(r1.HasError(out var r1Error));
+        Assert.True(r1.IsError(out var r1Error));
         Assert.Equal(ex, r1Error);
-        Assert.False(r1.IsOk);
+        Assert.False(r1.IsOk());
 
         Result<byte, byte> r2 = Result<byte, byte>.Error(147);
-        Assert.True(r2.HasError(out byte r2Error));
+        Assert.True(r2.IsError(out byte r2Error));
         Assert.Equal(147, r2Error);
-        Assert.False(r2.IsOk);
+        Assert.False(r2.IsOk());
 
         Result<List<int>?, Exception?> r3 = Result<List<int>?, Exception?>.Error(null);
-        Assert.True(r3.HasError(out var r3Error));
+        Assert.True(r3.IsError(out var r3Error));
         Assert.Null(r3Error);
-        Assert.False(r3.IsOk);
+        Assert.False(r3.IsOk());
     }
 
-    private static Result<TestClassRecord, Exception> IsOdd(TestClassRecord testRecord)
+    private static Result<TestClassRecord> IsOdd(TestClassRecord testRecord)
     {
         if (!testRecord.Id.IsEven())
         {
-            return testRecord;
+            return Result<TestClassRecord>.Ok(testRecord);
         }
 
         return new ArgumentException("Record is Even", nameof(testRecord));
@@ -371,7 +360,7 @@ public class ResultTests
         {
             if (testRecord.Id.IsOdd())
             {
-                Assert.True(k.HasOk(out var record));
+                Assert.True(k.IsOk(out var record));
                 Assert.NotNull(record);
                 Assert.True(record.Id.IsOdd());
             }

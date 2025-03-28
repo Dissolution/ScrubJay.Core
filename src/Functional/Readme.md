@@ -1,79 +1,72 @@
-﻿# `Result`
+﻿# `ScrubJay.Functional`
+Functional programming inspired types
+
+## `Option<T>`
+🚧
+
+## `Result<T>` and `Result<T, E>`
 ### Links
 - [Andrew Lock - Working with the Result Pattern](https://andrewlock.net/series/working-with-the-result-pattern/)
 - [Milan Jovanović - Functional Error Handling with the Result Pattern](https://www.milanjovanovic.tech/blog/functional-error-handling-in-dotnet-with-the-result-pattern)
 - [Ben Witt - Result Pattern](https://medium.com/@wgyxxbf/result-pattern-a01729f42f8c)
 
-In Rust, it is possible to return from a match statement, so they can more easily consume a `Result`
-e.g.:
+### The need for `IsOkWithError` and `IsErrorWithOk`
+
+#### [Rust](https://www.rust-lang.org/)
+In Rust, a `match` statement works inline, which supports early `return` from methods:
 ```rust
-// Early return on error
-let mut file = match File::create("my_best_friends.txt") {
-    Err(e) => return Err(e),
-    Ok(f) => f,
-};
+fn write_cool_text(path: &str) -> Result<()> {
+    let mut file = File::create(path)?;
+    file.write(b"Sphinx of black quartz, judge my vow!")?;
+    dbg!("Wrote text to file");
+    Ok(())
+}
 ```
-That is hard to do in C#:
+
+#### C#
+This behavior is hard to mimic:
 ```csharp
-// Does not compile:
-int i = int.TryParse("???").Match(
+// Given this supporting method that wraps `int.TryParse()`
+Result<int> TryParse(string? str);
+
+// Given this surrounding method
+public Result<int> ParseAndWriteI32(string text)
+{
+    {CODE}
+    Console.WriteLine(i);
+    return Result<int>.Ok(i);
+}
+
+// For {CODE}:
+
+// this does not compile
+int i = TryParse("???").Match(
     ok => ok,
-    err => return err);
+    err => return err); <- we're inside a delegate, cannot return from this method
 
-// Does not compile:
-Result<int> result = int.TryParse("???");
-int i;
-result.Match(
-    ok => i = ok,
-    err => return err);
 
-// Verbose:
-Result<int> result = int.TryParse("???");
-if (result.IsErr(out var ex))
-    return result; // return ex;
-int i = result.Unwrap();    // has a redundant check for isOk that we already know is true
+// verbose
+Result<int> result = TryParse("???");
+if (!result)                // Result<T> implicitly converts to bool
+    return result;          // return failed result
+int i = result.OkOrThrow(); // Has a redundant check on _isOk that we already know is true
 
-// Best:
-Result<int> result = int.TryParse("???");
-if (!result.IsOk(out var ok))
-    return result; // have to return Result and not TError (unless we call IsError or UnwrapErr)
+// cleaner
+Result<int> result = TryParse("???");
+if (!result.IsOk(out int i))    // Check for ok direcly
+    return result;              // return failed result
+// now we can use i
+// but this does not work if the Result<> for the return has a different type
+// then we have to extract the error
 ```
-Thus, the methods `IsSuccess` and `IsFailure` were added to extract the ok and error values at the same time:
+
+The methods `IsOkWithError` and `IsErrorWithOk` were added to extract the ok and error values at the same time:
 ```csharp
-Result<int> result = int.TryParse("???");
-if (result.IsFailure(out var error, out var ok))
-{
+Result<int> result = TryParse("???");
+if (result.IsOkWithError(out T ok, out E error))
     return error;
-}
-/* or */
-if (!result.IsSuccess(out var ok, out var error))
-{
-    return error;
-}
-/* or just use ok and/or error and beware that one of them will be default() */
+// continue to use ok
 ```
 
-#### `Ok` & `Error`
-The `Ok` and `Error` types together solve a tricky problem in C# (that may not exist shortly [C# Union Proposal](https://github.com/dotnet/csharplang/blob/18a527bcc1f0bdaf542d8b9a189c50068615b439/proposals/TypeUnions.md))
-```csharp
-Result<Model, IActionResult> Validate(obj? thing)
-{
-    IActionResult? aResult = DoThing(thing);
-    if (aResult is not null)
-    {
-        /* The below line does not compile, you cannot implicitly cast from an Interface Type
-         * and we want to use Result<Ok,Error>'s implicit Ok => Result as shorthand */
-        return aResult;
-
-        /* Instead, we must: */
-        return Result<Model, IActionResult>.Error(aResult);
-        /* Which can get verbose */
-
-        /* Ok<O> and Error<E> solve this problem (with the use of GlobalHelper): */
-        return Error(aResult);
-        /* Because the concrete type Error<E> will implicitly cast to a Result<?, E>
-         * and the shorthand of `Ok()` and `Error()` is much cleaner */
-    }
-    ...
-}
-```
+### `Ok<T>` and `Error<T>`
+🚧

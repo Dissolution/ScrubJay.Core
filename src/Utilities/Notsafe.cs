@@ -19,6 +19,8 @@ public static unsafe class Notsafe
     /// </summary>
     public static class Unmanaged
     {
+#region CopyTo
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyUnmanagedBlock<U>(in U source, ref U destination, int count)
             where U : unmanaged
@@ -108,7 +110,7 @@ public static unsafe class Notsafe
             where USource : unmanaged
             where UDest : unmanaged
         {
-            Debug.Assert(Notsafe.SizeOf<USource>() == Notsafe.SizeOf<UDest>());
+            Debug.Assert(SizeOf<USource>() == SizeOf<UDest>());
             Emit.Ldarg(nameof(destination));
             Emit.Ldarg(nameof(source));
             Emit.Ldarg(nameof(count));
@@ -122,12 +124,42 @@ public static unsafe class Notsafe
             where USource : unmanaged
             where UDest : unmanaged
         {
-            Debug.Assert(Notsafe.SizeOf<USource>() == Notsafe.SizeOf<UDest>());
+            Debug.Assert(SizeOf<USource>() == SizeOf<UDest>());
             CopyBlock<USource, UDest>(
                 in MemoryMarshal.GetReference<USource>(source),
                 ref MemoryMarshal.GetReference<UDest>(destination),
                 count);
         }
+
+#endregion
+
+#region Arrays
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T* ArrayAlloc<T>(int size)
+            where T : unmanaged
+            => (T*)Marshal.AllocHGlobal(size * sizeof(T));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ArrayFree<T>(T* array)
+            where T : unmanaged
+            => Marshal.FreeHGlobal((IntPtr)array);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ArrayClear<T>(T* array, int size)
+            where T : unmanaged
+        {
+            Unsafe.InitBlock(array, 0, (uint)(size * sizeof(T)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ArrayCopy<T>(T* src, T* dst, int size)
+            where T : unmanaged
+        {
+            CopyBlock(in PtrAsIn(src), ref PtrAsRef(dst), size * sizeof(T));
+        }
+
+#endregion
     }
 
     /// <summary>

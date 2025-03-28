@@ -18,7 +18,7 @@ public static class Reference
     [return: NotNullIfNotNull(nameof(location))]
     public static T Exchange<T>(ref T location, T value)
     {
-        var original = location;
+        T original = location;
         location = value;
         return original;
     }

@@ -1,5 +1,3 @@
-using ScrubJay.Debugging;
-
 namespace ScrubJay.Extensions;
 
 /// <summary>
@@ -81,10 +79,4 @@ public static class EnumerableExtensions
     }
 
 #pragma warning restore S3776
-
-    /// <summary>
-    /// A deep wrapper for <see cref="IEnumerable{T}"/> that ignores all thrown exceptions
-    /// at every level of enumeration, only returning values that could be acquired without error
-    /// </summary>
-    public static UnbreakableEnumerable<T> UnbreakableEnumerate<T>(this IEnumerable<T>? enumerable) => new UnbreakableEnumerable<T>(enumerable);
 }

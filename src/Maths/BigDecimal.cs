@@ -573,7 +573,7 @@
 //
 //    public int CompareTo(decimal other)
 //    {
-//        if (TryConvertFrom<decimal>(other).HasOk(out var bigDec))
+//        if (TryConvertFrom<decimal>(other).IsOk(out var bigDec))
 //            return CompareTo(bigDec);
 //        // unknown sorts before known
 //        return 1;
@@ -581,7 +581,7 @@
 //
 //    public int CompareTo(double other)
 //    {
-//        if (TryConvertFrom<double>(other).HasOk(out var bigDec))
+//        if (TryConvertFrom<double>(other).IsOk(out var bigDec))
 //            return CompareTo(bigDec);
 //        // unknown sorts before known
 //        return 1;
@@ -589,7 +589,7 @@
 //
 //    public int CompareTo(BigInteger other)
 //    {
-//        if (TryConvertFrom<BigInteger>(other).HasOk(out var bigDec))
+//        if (TryConvertFrom<BigInteger>(other).IsOk(out var bigDec))
 //            return CompareTo(bigDec);
 //        // unknown sorts before known
 //        return 1;
@@ -597,7 +597,7 @@
 //
 //    public int CompareTo(long other)
 //    {
-//        if (TryConvertFrom<long>(other).HasOk(out var bigDec))
+//        if (TryConvertFrom<long>(other).IsOk(out var bigDec))
 //            return CompareTo(bigDec);
 //        // unknown sorts before known
 //        return 1;
@@ -605,7 +605,7 @@
 //
 //    public int CompareTo(object? obj)
 //    {
-//        if (TryConvertFrom(obj).HasOk(out var bigDec))
+//        if (TryConvertFrom(obj).IsOk(out var bigDec))
 //            return CompareTo(bigDec);
 //        // unknown sorts before known
 //        return 1;
@@ -625,7 +625,7 @@
 //
 //    public bool Equals(decimal other)
 //    {
-//        if (TryConvertFrom<decimal>(other).HasOk(out var bigDec))
+//        if (TryConvertFrom<decimal>(other).IsOk(out var bigDec))
 //            return Equals(bigDec);
 //        // unknown sorts before known
 //        return false;
@@ -633,7 +633,7 @@
 //
 //    public bool Equals(double other)
 //    {
-//        if (TryConvertFrom<double>(other).HasOk(out var bigDec))
+//        if (TryConvertFrom<double>(other).IsOk(out var bigDec))
 //            return Equals(bigDec);
 //        // unknown sorts before known
 //        return false;
@@ -641,7 +641,7 @@
 //
 //    public bool Equals(BigInteger other)
 //    {
-//        if (TryConvertFrom<BigInteger>(other).HasOk(out var bigDec))
+//        if (TryConvertFrom<BigInteger>(other).IsOk(out var bigDec))
 //            return Equals(bigDec);
 //        // unknown sorts before known
 //        return false;
@@ -649,7 +649,7 @@
 //
 //    public bool Equals(long other)
 //    {
-//        if (TryConvertFrom<long>(other).HasOk(out var bigDec))
+//        if (TryConvertFrom<long>(other).IsOk(out var bigDec))
 //            return Equals(bigDec);
 //        // unknown sorts before known
 //        return false;
@@ -657,7 +657,7 @@
 //
 //    public override bool Equals([NotNullWhen(true)] object? obj)
 //    {
-//        if (TryConvertFrom(obj).HasOk(out var bigDec))
+//        if (TryConvertFrom(obj).IsOk(out var bigDec))
 //            return Equals(bigDec);
 //        return false;
 //    }

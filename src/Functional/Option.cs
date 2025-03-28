@@ -60,7 +60,7 @@ public static class Option
 
     public static Option<T> Flatten<T>(this Option<Option<T>> nestedOption)
     {
-        if (nestedOption.HasSome(out var option) && option.HasSome(out var value))
+        if (nestedOption.IsSome(out var option) && option.IsSome(out var value))
             return Some<T>(value);
         return None<T>();
     }

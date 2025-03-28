@@ -65,7 +65,7 @@ public class ValidateTests
             tryEx = ex;
         }
 
-        if (validationResult.HasOk(out var offsetLength))
+        if (validationResult.IsOk(out var offsetLength))
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
@@ -103,7 +103,7 @@ public class ValidateTests
             tryEx = ex;
         }
 
-        if (validationResult.HasOk(out var offsetLength))
+        if (validationResult.IsOk(out var offsetLength))
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);
@@ -139,7 +139,7 @@ public class ValidateTests
             tryEx = ex;
         }
 
-        if (validationResult.HasOk(out var offsetLength))
+        if (validationResult.IsOk(out var offsetLength))
         {
             Assert.Null(tryEx);
             var thisSlice = items.Slice(offsetLength.Offset, offsetLength.Length);

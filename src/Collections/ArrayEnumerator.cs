@@ -6,7 +6,7 @@
 /// <typeparam name="T"></typeparam>
 [PublicAPI]
 [MustDisposeResource(false)]
-public sealed class ArrayEnumerator<T> : ITryEnumerator<T>
+public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator
 {
     private readonly T[] _array;
     private readonly int _version;

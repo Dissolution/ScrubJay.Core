@@ -8,7 +8,7 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
 {
     public bool Contains(T? value)
     {
-        if (Lower.HasSome(out Bound<T> lowerBounds))
+        if (Lower.IsSome(out Bound<T> lowerBounds))
         {
             (T lower, bool lowerInc) = lowerBounds;
             if (lowerInc)
@@ -23,7 +23,7 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
             }
         }
 
-        if (Upper.HasSome(out Bound<T> upperBounds))
+        if (Upper.IsSome(out Bound<T> upperBounds))
         {
             (T upper, bool upperInc) = upperBounds;
             if (upperInc)
@@ -45,7 +45,7 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
     {
         comparer ??= Comparer<T>.Default;
 
-        if (Lower.HasSome(out Bound<T> lowerBounds))
+        if (Lower.IsSome(out Bound<T> lowerBounds))
         {
             (T lower, bool lowerInc) = lowerBounds;
             if (lowerInc)
@@ -60,7 +60,7 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
             }
         }
 
-        if (Upper.HasSome(out Bound<T> upperBounds))
+        if (Upper.IsSome(out Bound<T> upperBounds))
         {
             (T upper, bool upperInc) = upperBounds;
             if (upperInc)
@@ -81,7 +81,7 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
     [return: NotNullIfNotNull(nameof(value))]
     public T? Clamped(T? value)
     {
-        if (Lower.HasSome(out Bound<T> lowerBounds))
+        if (Lower.IsSome(out Bound<T> lowerBounds))
         {
             (T lower, bool lowerInc) = lowerBounds;
             if (lowerInc)
@@ -96,7 +96,7 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
             }
         }
 
-        if (Upper.HasSome(out Bound<T> upperBounds))
+        if (Upper.IsSome(out Bound<T> upperBounds))
         {
             (T upper, bool upperInc) = upperBounds;
             if (upperInc)
@@ -118,7 +118,7 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
     {
         var text = new TextBuffer();
 
-        if (Lower.HasSome(out var lower))
+        if (Lower.IsSome(out var lower))
         {
             if (lower.IsInclusive)
             {
@@ -133,7 +133,7 @@ public readonly record struct Bounds<T>(Option<Bound<T>> Lower, Option<Bound<T>>
 
         text.Write("..");
 
-        if (Upper.HasSome(out var upper))
+        if (Upper.IsSome(out var upper))
         {
             text.Write<T>(upper.Value);
 

@@ -1303,4 +1303,24 @@ public static class Sequence
 
     public static bool Contains<T>(ReadOnlySpan<T> source, T item, IEqualityComparer<T>? comparer = null)
         => SpanExtensions.Contains<T>(source, item, comparer);
+
+
+
+    public static bool Contains<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match, IEqualityComparer<T>? comparer = null)
+    {
+        int sourceLen = source.Length;
+        int matchLen = match.Length;
+
+        // inclusive
+        int end = sourceLen - matchLen;
+
+        for (int i = 0; i <= end; i++)
+        {
+            if (Equal(source.Slice(i, matchLen), match, comparer))
+                return true;
+        }
+
+        return false;
+    }
+
 }

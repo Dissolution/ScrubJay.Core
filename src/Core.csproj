@@ -30,6 +30,7 @@
         <NoWarn>$(NoWarn);
             CS1591; <!-- Missing XML comments for public member -->
             CA1810; <!-- Use static field init instead of ctor -->
+            CA1715;
         </NoWarn>
         <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options -->
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -133,14 +134,19 @@
 
     <!-- Expose our internals to our tests and other trusted ScrubJay libraries -->
     <ItemGroup>
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-            <_Parameter1>ScrubJay.Benchmarks</_Parameter1>
-        </AssemblyAttribute>
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-            <_Parameter1>ScrubJay.Tests</_Parameter1>
-        </AssemblyAttribute>
-        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-            <_Parameter1>ScrubJay.Reflection</_Parameter1>
-        </AssemblyAttribute>
+        <InternalsVisibleTo Include="ScrubJay.Benchmarks" />
+        <InternalsVisibleTo Include="ScrubJay.Tests" />
+        <InternalsVisibleTo Include="ScrubJay.Reflection" />
+<!--        -->
+<!--        -->
+<!--        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">-->
+<!--            <_Parameter1>ScrubJay.Benchmarks</_Parameter1>-->
+<!--        </AssemblyAttribute>-->
+<!--        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">-->
+<!--            <_Parameter1>ScrubJay.Tests</_Parameter1>-->
+<!--        </AssemblyAttribute>-->
+<!--        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">-->
+<!--            <_Parameter1>ScrubJay.Reflection</_Parameter1>-->
+<!--        </AssemblyAttribute>-->
     </ItemGroup>
 </Project>

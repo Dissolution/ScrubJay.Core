@@ -12,7 +12,7 @@ namespace ScrubJay.Utilities;
 public static class Pair
 {
 #if NET7_0_OR_GREATER
-    public static Result<Pair<TKey, TValue>, ParseException> TryParse<TKey, TValue>(text text, IFormatProvider? provider = default)
+    public static Result<Pair<TKey, TValue>> TryParse<TKey, TValue>(text text, IFormatProvider? provider = default)
         where TKey : ISpanParsable<TKey>
         where TValue : ISpanParsable<TValue>
     {
@@ -52,7 +52,7 @@ public static class Pair
             return getEx(text);
 
         var pair = new Pair<TKey, TValue>(key, value);
-        return pair;
+        return Ok(pair);
 
 
         static ParseException getEx(text text, Exception? innerEx = null)

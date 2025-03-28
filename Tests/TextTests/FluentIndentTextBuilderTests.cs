@@ -16,7 +16,7 @@ public class FluentIndentTextBuilderTests
         L8
         """;
 
-        string? text = FluentIndentTextBuilder.New
+        string? text = IndentTextBuilder.New
             .Append("L1")
             .NewLine()
             .Append("L2")
@@ -42,7 +42,7 @@ public class FluentIndentTextBuilderTests
     [Fact]
     public void IndentsWork()
     {
-        using var builder = new FluentIndentTextBuilder();
+        using var builder = new IndentTextBuilder();
         builder.Append("Start")
             .Indented(
                 "   ", b =>
@@ -82,7 +82,7 @@ public class FluentIndentTextBuilderTests
                 and let hours pass.
             """;
 
-        using var builder = new FluentIndentTextBuilder();
+        using var builder = new IndentTextBuilder();
 
         builder.Indented(
             "    ", b => b
@@ -98,9 +98,9 @@ public class FluentIndentTextBuilderTests
     {
         string className = "Test";
 
-        Action<FluentIndentTextBuilder> ba = tb => tb.Append("public void DoThing() => { };");
+        Action<IndentTextBuilder> ba = tb => tb.Append("public void DoThing() => { };");
 
-        using var builder = new FluentIndentTextBuilder();
+        using var builder = new IndentTextBuilder();
         builder.Append(
             $$"""
             public void {{className}}()
@@ -118,7 +118,7 @@ public class FluentIndentTextBuilderTests
         Assert.Equal(output, builder.ToString());
     }
 
-    private static void WriteBody(FluentIndentTextBuilder builder)
+    private static void WriteBody(IndentTextBuilder builder)
     {
         builder.Delimit(static b => b.NewLine(), Enumerable.Range(0, 10), static (b, i) => b.Append(i));
     }
@@ -126,7 +126,7 @@ public class FluentIndentTextBuilderTests
     [Fact]
     public void ComplexInterpolationWorks()
     {
-        using var builder = new FluentIndentTextBuilder();
+        using var builder = new IndentTextBuilder();
         builder.Append(
             $$"""
             public class TestClass()

@@ -2,12 +2,12 @@
 
 namespace ScrubJay.Text;
 
-public sealed class FluentIndentTextBuilder : FluentIndentTextBuilder<FluentIndentTextBuilder>
+public sealed class IndentTextBuilder : FluentIndentTextBuilder<IndentTextBuilder>
 {
     /// <summary>
-    /// Gets a <c>new</c> <see cref="FluentIndentTextBuilder"/> instance
+    /// Gets a <c>new</c> <see cref="IndentTextBuilder"/> instance
     /// </summary>
-    public static FluentIndentTextBuilder New
+    public static IndentTextBuilder New
     {
         [MustDisposeResource]
         get => new();
@@ -39,7 +39,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
 
         var lastNewLineIndex = _text.TryFindIndex(newLine, firstToLast: false);
         // If we don't have one, nothing to capture
-        if (!lastNewLineIndex.HasSome(out int i))
+        if (!lastNewLineIndex.IsSome(out int i))
         {
             build.Invoke(_builder);
             return;
@@ -162,7 +162,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
     }
 
 
-    public B Block(Action<B> blockCode)
+    public B BracedBlock(Action<B> blockCode)
     {
         // A block starts on a new line
         return NewLineIfNeeded()
@@ -175,7 +175,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
             // write the block code
             .Invoke(blockCode)
             // If we're on the start of a newline
-            .InvokeIf(IsOnStartOfNewLine(),
+            .If(IsOnStartOfNewLine(),
                 // Remove the excess indent, decrement the indent
                 b => b.RemoveLast(4).RemoveIndent(),
                 // otherwise remove the indent and start a new line
@@ -185,6 +185,23 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
             // start a new line for other code
             .NewLine();
     }
+
+    /// <summary>
+    /// Starts a new block, indents it, writes what you back in `block`, then starts a new line on the old indent
+    /// </summary>
+    /// <param name="indent"></param>
+    /// <param name="block"></param>
+    /// <returns></returns>
+    public B Block(string indent, Action<B> block)
+    {
+        return this.AddIndent(indent)
+            .If(IsOnStartOfNewLine(), tb => tb.Append(indent), tb => tb.NewLine())
+            .Invoke(block)
+            .If(IsOnStartOfNewLine(),
+                tb => tb.RemoveIndent().RemoveLast(indent.Length),
+                tb => tb.RemoveIndent().NewLine());
+    }
+
 
 
     public override void Dispose()

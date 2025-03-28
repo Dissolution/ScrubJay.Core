@@ -25,7 +25,7 @@
 //         for (var i = 0; i < indents.Length; i++)
 //         {
 //             ended = whitespace.TryEndIndent();
-//             Assert.True(ended.HasOk(out var indent));
+//             Assert.True(ended.IsOk(out var indent));
 //             Assert.Equal(indents[^(i + 1)], indent);
 //         }
 //
@@ -59,7 +59,7 @@
 //         for (var w = width - 1; w >= 0; w--)
 //         {
 //             var name = WideName(w);
-//             Assert.True(whitespace.TryEndIndent().HasOk(out var indent));
+//             Assert.True(whitespace.TryEndIndent().IsOk(out var indent));
 //             Assert.Equal(name, indent);
 //             Assert.NotEqual(text.ToString(), whitespace.CurrentIndentString);
 //             text.RemoveLast(name.Length);
@@ -110,7 +110,7 @@
 //
 //             for (var w = width - 1; w >= 0; w--)
 //             {
-//                 Assert.True(whitespace.TryEndIndent().HasOk(out var indent));
+//                 Assert.True(whitespace.TryEndIndent().IsOk(out var indent));
 //
 //                 // Slice off the end of text
 //                 var textEnd = text.AsText().Slice(text.Length - indent.Length);
@@ -145,7 +145,7 @@
 //
 //             for (var w = width - 1; w >= 0; w--)
 //             {
-//                 Assert.True(whitespace.TryEndIndent().HasOk(out var indent));
+//                 Assert.True(whitespace.TryEndIndent().IsOk(out var indent));
 //
 //                 // Slice off the end of text
 //                 var textEnd = text.AsText().Slice(text.Length - indent.Length);

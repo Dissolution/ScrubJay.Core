@@ -9,6 +9,12 @@
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <NoWarn>$(NoWarn);
+            CS1591; <!-- Missing XML comments for public member -->
+            CA1810; <!-- Use static field init instead of ctor -->
+            CA1715;
+        </NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

@@ -29,7 +29,7 @@ public class ParseException : InvalidOperationException, IEnumerable
     {
         return TextBuilder.New
             .Append($"Could not parse \"{input}\" into a {destType.NameOf()}")
-            .InvokeIf(Validate.IsNotEmpty(info),
+            .If(Validate.IsNotEmpty(info),
                 static (tb, nfo) => tb.Append(": ").Append(nfo))
             .ToStringAndDispose();
     }
@@ -38,12 +38,12 @@ public class ParseException : InvalidOperationException, IEnumerable
     {
         return TextBuilder.New
             .Append("Could not parse ")
-            .InvokeIf(Validate.IsNotNull(input),
+            .If(Validate.IsNotNull(input),
                 static (tb, n) => tb.Append('"').Append(n).Append('"'),
                 static (tb, _) => tb.Append("null"))
             .Append(" into a ")
             .Append(destType.NameOf())
-            .InvokeIf(Validate.IsNotEmpty(info),
+            .If(Validate.IsNotEmpty(info),
                 static (tb, nfo) => tb.Append(": ").Append(nfo))
             .ToStringAndDispose();
     }

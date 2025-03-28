@@ -4,12 +4,12 @@
 /// The unit type is a type that indicates the absence of a specific value; the unit type has only a single value, which acts as a placeholder when no other value exists or is needed.
 /// </summary>
 /// <remarks>
-/// Based upon F# and Rust's Unit types<br/>
+/// Based upon F# and Rust's Unit types.<br/>
 /// In C#, <c>void</c> cannot be used as a generic type, thus why <see cref="Func{TResult}"/> and <see cref="Action"/> are separate<br/>
 /// (as <c>Func&lt;void&gt;</c> is invalid)<br/>
 /// You can use <see cref="Unit"/> for this and similar tasks:<br/>
 /// - <c>Func&lt;Unit&gt;</c><br/>
-/// - <c>Result&lt;Unit, Exception&gt;</c><br/>
+/// - <c>Result&lt;Unit&gt;</c><br/>
 /// </remarks>
 [PublicAPI]
 public readonly struct Unit :
@@ -18,7 +18,8 @@ public readonly struct Unit :
     IComparisonOperators<Unit, Unit, bool>,
 #endif
     IEquatable<Unit>,
-    IComparable<Unit>
+    IComparable<Unit>,
+    IFormattable, ISpanFormattable
 {
     // ValueTuple would be written as '()' (if the C# compiler allowed it), and is virtually the same as Unit already
     // so we support implicit conversions between them
@@ -44,5 +45,19 @@ public readonly struct Unit :
     public bool Equals(Unit unit) => true;
     public override bool Equals(object? obj) => obj is Unit;
     public override int GetHashCode() => 0;
+
+    public string ToString(string? format, IFormatProvider? provider = default) => "()";
+
+    public bool TryFormat(Span<char> destination, out int charsWritten, text format = default, IFormatProvider? provider = default)
+    {
+        if ("()".TryCopyTo(destination))
+        {
+            charsWritten = 2;
+            return true;
+        }
+        charsWritten = 0;
+        return false;
+    }
+
     public override string ToString() => "()";
 }

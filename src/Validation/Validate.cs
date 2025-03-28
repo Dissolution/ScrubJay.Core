@@ -393,6 +393,19 @@ public static class Validate
         return Ok(str);
     }
 
+    public static Result<ICollection> IsNotEmpty(
+        ICollection? collection,
+        [CallerArgumentExpression(nameof(collection))]
+        string? collectionName = null)
+    {
+        if (collection is null)
+            return new ArgumentNullException(collectionName);
+        if (collection.Count == 0)
+            return new ArgumentException("Collection cannot be empty", collectionName);
+        return Ok(collection);
+    }
+
+
     public enum CompareType
     {
         Equal,

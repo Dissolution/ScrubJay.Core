@@ -2,17 +2,61 @@
 // ReSharper disable UnusedVariable
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using ScrubJay.Debugging;
 using ScrubJay.Extensions;
 using ScrubJay.Memory;
+using ScrubJay.Scratch;
 using ScrubJay.Validation;
 using ScrubJay.Text;
 
 
+
+int[] numbers = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,];
+
+try
+{
+    int i = int.MaxValue;
+    int k;
+    checked
+    {
+        k = i + 1;
+    }
+    Console.WriteLine(k);
+}
+catch (Exception ex)
+{
+    var hr = new HResult(ex.HResult);
+    var hex = hr.ToString("X");
+    Console.WriteLine(hr);
+    Console.WriteLine(hex);
+
+    var dump = ex.Dump();
+    Console.WriteLine(dump);
+    Dbg.Break();
+}
+
+Debugger.Break();
+return 0;
+
+
+namespace ScrubJay.Scratch
+{
+
+
+}
+
+
+
+
+
+/*
 
 // Usage
 var done = parseDivideAsync("abc", "13");
@@ -22,9 +66,9 @@ Console.WriteLine((object)done);
 
 return 0;
 
-static Result<double> parse(string input) => Result<double>.Try(() => double.Parse(input));
+static Result<double> parse(string input) => Result.TryInvoke(() => double.Parse(input));
 
-static Result<double> divide(double x, double y) => Result<double>.Try(() =>
+static Result<double> divide(double x, double y) => Result.TryInvoke(() =>
 {
     if (y == 0)
         throw new DivideByZeroException();
@@ -34,12 +78,12 @@ static Result<double> divide(double x, double y) => Result<double>.Try(() =>
 static async Result<double> parseDivideAsync(string a, string b)
 {
     var x = await parse(a);
-    var y = await Result<double>.Try(() => double.Parse(b));
+    var y = await Result.TryInvoke(() => double.Parse(b));
     Console.WriteLine("Successfully parsed inputs");
     return await divide(x, y);
 }
 
-
+*/
 /*
 
 static AsyncResult<double> Parse(string input)
@@ -149,4 +193,3 @@ var getter = dyn.CreateDelegate<Func<Point, int>>();
 int x3 = getter(pt);
 
 */
-Debugger.Break();

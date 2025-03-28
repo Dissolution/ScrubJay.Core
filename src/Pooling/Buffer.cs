@@ -408,7 +408,7 @@ public ref struct Buffer<T>
     {
         int pos = _position;
         var vr = Validate.InsertIndex(index, pos);
-        if (!vr.HasOk(out int offset))
+        if (!vr.IsOk(out int offset))
         {
             return vr;
         }
@@ -416,7 +416,7 @@ public ref struct Buffer<T>
         if (offset == pos)
         {
             Add(item);
-            return offset;
+            return Ok(offset);
         }
 
         int newPos = pos + 1;
@@ -428,7 +428,7 @@ public ref struct Buffer<T>
         Sequence.SelfCopy(_span, offset..pos, (offset + 1)..);
         _span[offset] = item;
         _position = newPos;
-        return offset;
+        return Ok(offset);
     }
 
     /// <summary>
@@ -454,7 +454,7 @@ public ref struct Buffer<T>
         }
 
         var vr = Validate.InsertIndex(index, _position);
-        if (!vr.HasOk(out int offset))
+        if (!vr.IsOk(out int offset))
         {
             return vr;
         }
@@ -462,7 +462,7 @@ public ref struct Buffer<T>
         if (offset == _position)
         {
             AddMany(items);
-            return offset;
+            return Ok(offset);
         }
 
         int newPos = _position + itemCount;
@@ -474,7 +474,7 @@ public ref struct Buffer<T>
         Sequence.SelfCopy(_span, offset.._position, (offset + itemCount)..);
         Sequence.CopyTo(items, _span.Slice(offset, itemCount));
         _position = newPos;
-        return offset;
+        return Ok(offset);
     }
 
     /// <summary>
@@ -505,7 +505,7 @@ public ref struct Buffer<T>
         int pos = _position;
 
         var vr = Validate.InsertIndex(index, pos);
-        if (!vr.HasOk(out int offset))
+        if (!vr.IsOk(out int offset))
         {
             return vr;
         }
@@ -513,7 +513,7 @@ public ref struct Buffer<T>
         if (offset == _position)
         {
             AddMany(items);
-            return offset;
+            return Ok(offset);
         }
 
         int itemCount;
@@ -522,7 +522,7 @@ public ref struct Buffer<T>
             itemCount = collection.Count;
             if (itemCount == 0)
             {
-                return offset;
+                return Ok(offset);
             }
 
             int newPos = pos + itemCount;
@@ -534,12 +534,12 @@ public ref struct Buffer<T>
             Sequence.SelfCopy(_span, offset.._position, (offset + itemCount)..);
             collection.CopyTo(_array!, offset);
             _position = newPos;
-            return offset;
+            return Ok(offset);
         }
 
         // Enumerate to a temporary PooledList, then insert
         InsertManyEnumerable(offset, items);
-        return offset;
+        return Ok(offset);
     }
 
     /// <summary>
@@ -643,7 +643,7 @@ public ref struct Buffer<T>
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                 {
                     return None();
                 }
@@ -671,7 +671,7 @@ public ref struct Buffer<T>
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                 {
                     return None();
                 }
@@ -742,7 +742,7 @@ public ref struct Buffer<T>
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                 {
                     return None();
                 }
@@ -769,7 +769,7 @@ public ref struct Buffer<T>
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                 {
                     return None();
                 }
@@ -838,7 +838,7 @@ public ref struct Buffer<T>
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                 {
                     return None();
                 }
@@ -866,7 +866,7 @@ public ref struct Buffer<T>
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                 {
                     return None();
                 }
@@ -903,7 +903,7 @@ public ref struct Buffer<T>
     /// </returns>
     public bool TryRemoveAt(Index index)
     {
-        if (!Validate.Index(index, _position).HasOk(out int offset))
+        if (!Validate.Index(index, _position).IsOk(out int offset))
         {
             return None<T>();
         }
@@ -923,7 +923,7 @@ public ref struct Buffer<T>
     /// </returns>
     public Option<T> TryRemoveAndGetAt(Index index)
     {
-        if (!Validate.Index(index, _position).HasOk(out int offset))
+        if (!Validate.Index(index, _position).IsOk(out int offset))
         {
             return None<T>();
         }
@@ -945,7 +945,7 @@ public ref struct Buffer<T>
     /// </returns>
     public bool TryRemoveMany(Range range)
     {
-        if (!Validate.Range(range, _position).HasOk(out var ol))
+        if (!Validate.Range(range, _position).IsOk(out var ol))
         {
             return false;
         }
@@ -967,7 +967,7 @@ public ref struct Buffer<T>
     #pragma warning disable IDE0251
     public Option<T[]> TryRemoveAndGetMany(Range range)
     {
-        if (!Validate.Range(range, _position).HasOk(out var ol))
+        if (!Validate.Range(range, _position).IsOk(out var ol))
         {
             return None<T[]>();
         }

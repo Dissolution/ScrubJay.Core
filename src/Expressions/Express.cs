@@ -186,12 +186,12 @@ public class FluentBodyBuilder<B> : FluentBuilder<B>
 
     private Expression Resolve(ExprNode paramRef)
     {
-        if (paramRef.IsIndex.HasSome(out var index))
+        if (paramRef.IsIndex.IsSome(out var index))
         {
             Validate.Index(index, Parameters.Count).ThrowIfError();
             return Parameters[index];
         }
-        else if (paramRef.IsName.HasSome(out var name))
+        else if (paramRef.IsName.IsSome(out var name))
         {
             var param = Parameters.OneOrDefault(p => TextHelper.Equate(p.Name, name));
             if (param is not null)

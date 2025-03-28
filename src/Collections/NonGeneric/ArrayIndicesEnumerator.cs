@@ -5,7 +5,7 @@ namespace ScrubJay.Collections.NonGeneric;
 
 [PublicAPI]
 [MustDisposeResource(false)]
-public sealed class ArrayIndicesEnumerator : ITryEnumerator<int[]>
+public sealed class ArrayIndicesEnumerator : IEnumerator<int[]>
 {
     public static ArrayIndicesEnumerator For(Array array)
     {

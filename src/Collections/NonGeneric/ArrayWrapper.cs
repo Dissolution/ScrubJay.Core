@@ -88,7 +88,7 @@ public sealed class ArrayWrapper<T> :
             });
     }
 
-    public bool Contains(T? element) => IndexOf(element).IsSome;
+    public bool Contains(T? element) => IndexOf(element).IsSome();
 
     public Option<int[]> IndexOf(T? element, IEqualityComparer<T>? elementComparer = null)
     {

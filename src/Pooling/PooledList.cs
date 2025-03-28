@@ -310,13 +310,13 @@ public sealed class PooledList<T> : PooledArray<T>,
             return TryInsert(index, items[0]);
 
         var vr = Validate.InsertIndex(index, _position);
-        if (!vr.HasOk(out int offset))
+        if (!vr.IsOk(out int offset))
             return vr;
 
         if (offset == _position)
         {
             AddMany(items);
-            return offset;
+            return Ok(offset);
         }
 
         int newPos = _position + itemCount;
@@ -329,7 +329,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         Sequence.SelfCopy(_array, offset.._position, (offset + itemCount)..);
         Sequence.CopyTo(items, _array.AsSpan(offset, itemCount));
         _position = newPos;
-        return offset;
+        return Ok(offset);
     }
 
     /// <summary>
@@ -359,13 +359,13 @@ public sealed class PooledList<T> : PooledArray<T>,
         int pos = _position;
 
         var vr = Validate.InsertIndex(index, pos);
-        if (!vr.HasOk(out int offset))
+        if (!vr.IsOk(out int offset))
             return vr;
 
         if (offset == _position)
         {
             AddMany(items);
-            return offset;
+            return Ok(offset);
         }
 
         int itemCount;
@@ -373,7 +373,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         {
             itemCount = collection.Count;
             if (itemCount == 0)
-                return offset;
+                return Ok(offset);
 
             int newPos = pos + itemCount;
             if (newPos > Capacity)
@@ -385,12 +385,12 @@ public sealed class PooledList<T> : PooledArray<T>,
             Sequence.SelfCopy(_array, offset.._position, (offset + itemCount)..);
             collection.CopyTo(_array, offset);
             _position = newPos;
-            return offset;
+            return Ok(offset);
         }
 
         // Enumerate to a temporary PooledList, then insert
         InsertManyEnumerable(offset, items);
-        return offset;
+        return Ok(offset);
     }
 
     /// <summary>
@@ -485,7 +485,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                     return None();
             }
             else
@@ -511,7 +511,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                     return None();
             }
             else
@@ -578,7 +578,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                     return None();
             }
             else
@@ -601,7 +601,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                     return None();
 
                 // No point in scanning until the last valid index
@@ -662,7 +662,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                     return None();
             }
             else
@@ -688,7 +688,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             {
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
-                if (!validIndex.HasOk(out index))
+                if (!validIndex.IsOk(out index))
                     return None();
             }
             else
@@ -724,12 +724,12 @@ public sealed class PooledList<T> : PooledArray<T>,
 
     public Result<Unit> TryGetManyTo(Range range, Span<T> destination)
     {
-        if (!Validate.Range(range, _position).HasOkOrError(out var ol, out var error))
+        if (!Validate.Range(range, _position).IsOkWithError(out var ol, out var error))
             return error;
         if (ol.Length > destination.Length)
             return new ArgumentException($"Destination span cannot hold {ol.Length} items", nameof(destination));
         Sequence.CopyTo(_array.AsSpan(range), destination);
-        return Unit();
+        return Ok(Unit());
     }
 
     public Result<Unit> TrySetAt(Index index, T item) => Validate.Index(index, _position).Select(i =>
@@ -741,13 +741,13 @@ public sealed class PooledList<T> : PooledArray<T>,
 
     public Result<Unit> TrySetMany(Range range, scoped ReadOnlySpan<T> items)
     {
-        if (!Validate.Range(range, _position).HasOkOrError(out var ol, out var error))
+        if (!Validate.Range(range, _position).IsOkWithError(out var ol, out var error))
             return error;
         if (ol.Length > items.Length)
             return new ArgumentException($"{items.Length} items cannot fit in a Range Length of {ol.Length}");
         _version++;
         Sequence.CopyTo(items, _array.AsSpan(ol.Offset, ol.Length));
-        return Unit();
+        return Ok(Unit());
     }
 
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
@@ -766,11 +766,11 @@ public sealed class PooledList<T> : PooledArray<T>,
     public Result<int> TryRemoveAt(Index index)
     {
         var valid = Validate.Index(index, _position);
-        if (!valid.HasOk(out int offset))
+        if (!valid.IsOk(out int offset))
             return valid;
         _version++;
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
-        return offset;
+        return Ok(offset);
     }
 
 
@@ -786,7 +786,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public Result<T> TryRemoveAndGetAt(Index index)
     {
         var valid = Validate.Index(index, _position);
-        if (!valid.HasOkOrError(out int offset, out var ex))
+        if (!valid.IsOkWithError(out int offset, out var ex))
             return ex;
         T item = Written[offset];
         _version++;
@@ -807,12 +807,12 @@ public sealed class PooledList<T> : PooledArray<T>,
     public Result<int> TryRemoveMany(Range range)
     {
         var valid = Validate.Range(range, _position);
-        if (!valid.HasOkOrError(out var ol, out var ex))
+        if (!valid.IsOkWithError(out var ol, out var ex))
             return ex;
         (int offset, int length) = ol;
         _version++;
         Sequence.SelfCopy(Written, (offset + length).., offset..);
-        return length;
+        return Ok(length);
     }
 
     /// <summary>
@@ -827,7 +827,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public Result<T[]> TryRemoveAndGetMany(Range range)
     {
         var valid = Validate.Range(range, _position);
-        if (!valid.HasOkOrError(out var ol, out var ex))
+        if (!valid.IsOkWithError(out var ol, out var ex))
             return ex;
         (int offset, int length) = ol;
         T[] items = _array.AsSpan(offset, length).ToArray();

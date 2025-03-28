@@ -1,5 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
-#pragma warning disable CA1031
+#pragma warning disable CA1031, CA1715
 
 namespace ScrubJay.Functional;
 
@@ -85,4 +85,13 @@ public static class Result
             return ex;
         }
     }
+
+    #region Extensions
+    public static Result<T> Flatten<T>(this Result<Result<T>> resultResult)
+        => resultResult.Select(static result => result);
+
+    public static Result<T> Flatten<T>(this Result<Option<T>> resultResult)
+        => resultResult.Select(static option => option);
+
+#endregion
 }

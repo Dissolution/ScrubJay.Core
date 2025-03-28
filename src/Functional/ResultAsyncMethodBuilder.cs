@@ -5,10 +5,16 @@ namespace ScrubJay.Functional;
 
 // https://devblogs.microsoft.com/dotnet/how-async-await-really-works/
 
+/// <summary>
+/// An <c>AsyncMethodBuilder</c> that works on <see cref="Result{T}"/>
+/// </summary>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public struct ResultAsyncMethodBuilder<T>
 {
+    /// <summary>
+    /// Creates a new <see cref="ResultAsyncMethodBuilder{T}"/>
+    /// </summary>
     public static ResultAsyncMethodBuilder<T> Create() => new();
 
     private static Action CreateCompletionAction<TStateMachine>(
@@ -21,39 +27,23 @@ public struct ResultAsyncMethodBuilder<T>
     }
 
 
-    // ^static   instance_v
-
     private Result<T> _result;
 
+    /// <summary>
+    /// Gets the <see cref="Task"/> this <see cref="ResultAsyncMethodBuilder{T}"/> is building
+    /// </summary>
     public Result<T> Task
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _result;
     }
 
-    // no ctor
+    // only implicit ctor
 
 
     public void Start<TStateMachine>(ref TStateMachine stateMachine)
         where TStateMachine : IAsyncStateMachine
-    {
-#if NET5_0_OR_GREATER
-        ExecutionContext? ctx = ExecutionContext.Capture();
-        try
-        {
-            stateMachine.MoveNext();
-        }
-        finally
-        {
-            if (ctx is not null)
-            {
-                ExecutionContext.Restore(ctx);
-            }
-        }
-#else
-        stateMachine.MoveNext();
-#endif
-    }
+        => stateMachine.MoveNext();
 
     public void SetResult(T result)
     {
@@ -74,6 +64,7 @@ public struct ResultAsyncMethodBuilder<T>
         where TAwaiter : INotifyCompletion
         where TStateMachine : IAsyncStateMachine
     {
+        Debugger.Break();
         var completionAction = CreateCompletionAction(ref stateMachine);
         awaiter.OnCompleted(completionAction);
     }
@@ -84,14 +75,14 @@ public struct ResultAsyncMethodBuilder<T>
         where TAwaiter : ICriticalNotifyCompletion
         where TStateMachine : IAsyncStateMachine
     {
+        Debugger.Break();
         var completionAction = CreateCompletionAction(ref stateMachine);
         awaiter.UnsafeOnCompleted(completionAction);
     }
 
     public void SetStateMachine(IAsyncStateMachine stateMachine)
     {
-        // Do we get here?
         Debugger.Break();
-        throw new InvalidOperationException();
+        throw new NotSupportedException();
     }
 }

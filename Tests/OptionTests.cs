@@ -14,7 +14,7 @@ public class OptionTests
     [MemberData(nameof(Options))]
     public void EnumerationWorks(Option<int> option)
     {
-        if (option.HasSome(out int some))
+        if (option.IsSome(out int some))
         {
             var e = option.GetEnumerator();
             Assert.True(e.MoveNext());
@@ -26,17 +26,17 @@ public class OptionTests
             var e = option.GetEnumerator();
             Assert.False(e.MoveNext());
         }
-        
-        
+
+
         bool hasValue = false;
-        
+
         foreach (int i in option)
         {
-            Assert.True(option.HasSome(out some));
+            Assert.True(option.IsSome(out some));
             Assert.Equal(some, i);
             hasValue = true;
         }
 
-        Assert.Equal(option.IsSome, hasValue);
+        Assert.Equal(option.IsSome(), hasValue);
     }
 }

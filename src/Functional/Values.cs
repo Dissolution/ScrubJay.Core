@@ -1,10 +1,12 @@
 ﻿// Exception to Identifiers Require Correct Suffix
+
+using ScrubJay.Collections;
 #pragma warning disable CA1710
 
-namespace ScrubJay.Collections;
+namespace ScrubJay.Functional;
 
 /// <summary>
-/// A small, immutable collection of Values
+/// A small, immutable collection of zero or more <typeparamref name="T"/> values
 /// </summary>
 /// <typeparam name="T"></typeparam>
 [PublicAPI]
@@ -13,26 +15,49 @@ public readonly struct Values<T> :
     IEqualityOperators<Values<T>, Values<T>, bool>,
     IEqualityOperators<Values<T>, T, bool>,
     IEqualityOperators<Values<T>, T[], bool>,
-    //IEqualityOperators<Values<T>, object, bool>,
+    IAdditionOperators<Values<T>, Values<T>, Values<T>>,
+    IAdditionOperators<Values<T>, T[], Values<T>>,
+    IAdditionOperators<Values<T>, T, Values<T>>,
 #endif
     IReadOnlyList<T>,
     IReadOnlyCollection<T>,
     IEnumerable<T>,
     IEquatable<Values<T>>,
+    IEquatable<T[]>,
     IEquatable<T>,
-    IEquatable<T[]>
+    IFormattable,
+    ISpanFormattable
 {
+    public static implicit operator Values<T>(Unit _) => new();
+
     public static implicit operator Values<T>(T value) => new(value);
+
     public static implicit operator Values<T>(T[] values) => new(values);
 
     public static bool operator ==(Values<T> left, T? right) => left.Equals(right);
+
     public static bool operator ==(Values<T> left, T[]? right) => left.Equals(right);
+
     public static bool operator ==(Values<T> left, Values<T> right) => left.Equals(right);
+
     public static bool operator ==(Values<T> left, object? right) => left.Equals(right);
+
     public static bool operator !=(Values<T> left, T? right) => !left.Equals(right);
+
     public static bool operator !=(Values<T> left, T[]? right) => !left.Equals(right);
+
     public static bool operator !=(Values<T> left, Values<T> right) => !left.Equals(right);
+
     public static bool operator !=(Values<T> left, object? right) => !left.Equals(right);
+
+    public static Values<T> operator +(Values<T> left, Values<T> right)
+        => left.With(right);
+
+    public static Values<T> operator +(Values<T> left, T[] right)
+        => left.With(right);
+
+    public static Values<T> operator +(Values<T> left, T right)
+        => left.With(right);
 
 
     /// <summary>
@@ -40,12 +65,64 @@ public readonly struct Values<T> :
     /// </summary>
     public static readonly Values<T> Empty;
 
+    public static Values<T> Create() => Empty;
+
+    public static Values<T> Create(T value) => new(value);
+
+    public static Values<T> Create(params T[]? values)
+    {
+        if (values is null)
+            return Empty;
+
+        return values.Length switch
+        {
+            0 => Empty,
+            1 => new(values[0]),
+            _ => new(values),
+        };
+    }
+
+    public static Values<T> Create(IEnumerable<T>? values)
+    {
+        if (values is null)
+            return Empty;
+
+        if (values is ICollection<T> collection)
+        {
+            var array = new T[collection.Count];
+            collection.CopyTo(array, 0);
+            return array.Length switch
+            {
+                0 => Empty,
+                1 => new(array[0]),
+                _ => new(array),
+            };
+        }
+
+        using var e = values.GetEnumerator();
+        if (!e.MoveNext())
+            return Empty;
+
+        T value = e.Current;
+        if (!e.MoveNext())
+            return new(value);
+
+        using var buffer = new Buffer<T>();
+        buffer.Add(value);
+        buffer.Add(e.Current);
+        while (e.MoveNext())
+        {
+            buffer.Add(e.Current);
+        }
+        return new(buffer.ToArray());
+    }
+
     /// <summary>
-    /// Storage object
+    /// Boxed value(s)
     /// </summary>
     private readonly object? _obj;
 
-    public T this[int index] => TryGetAt(index).OkOrThrow();
+    public T this[int index] => TryGetValueAt(index).OkOrThrow();
 
     /// <summary>
     /// Get the number of stored values
@@ -53,100 +130,27 @@ public readonly struct Values<T> :
     public int Count => Match(static () => 0, static _ => 1, static values => values.Length);
 
     public bool IsEmpty => _obj is null;
+
     public bool IsValue => _obj is T;
+
     public bool IsValues => _obj is T[];
 
-    private Values(T[] array, byte _)
-    {
-        _obj = array;
-    }
 
-    public Values()
-    {
-        _obj = null;
-    }
-
-    public Values(T value)
+    private Values(T value)
     {
         _obj = value;
     }
 
-    public Values(params T[]? values)
+    private Values(params T[] values)
     {
-        if (values is null)
-        {
-            _obj = null;
-        }
-        else
-        {
-            _obj = values.Length switch
-            {
-                0 => null,
-                1 => values[0],
-                _ => values,
-            };
-        }
+        Debug.Assert(values is not null);
+        Debug.Assert(values!.Length > 1);
+        _obj = values;
     }
 
-    public Values(IEnumerable<T>? values)
-    {
-        if (values is null)
-        {
-            _obj = null;
-        }
-        else if (values is ICollection<T> collection)
-        {
-            var array = new T[collection.Count];
-            collection.CopyTo(array, 0);
-            _obj = array.Length switch
-            {
-                0 => null,
-                1 => array[0],
-                _ => array,
-            };
-        }
-        else
-        {
-            using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-            {
-                _obj = null;
-            }
-            else
-            {
-                T value = e.Current;
-                if (!e.MoveNext())
-                {
-                    _obj = value;
-                }
-                else
-                {
-                    using var buffer = new Buffer<T>();
-                    buffer.Add(value);
-                    buffer.Add(e.Current);
-                    while (e.MoveNext())
-                        buffer.Add(e.Current);
-                    _obj = buffer.ToArray();
-                }
-            }
-        }
-    }
+    public bool TryGetValue([MaybeNullWhen(false)] out T value) => _obj.Is(out value);
 
-
-    public bool HasValue([MaybeNullWhen(false)] out T value) => _obj.Is(out value);
-
-    public bool HasValues([MaybeNullWhen(false)] out T[] values) => _obj.Is(out values);
-
-    public bool Contains(T value) => Match(
-        static () => false,
-        val => Equate.Values(val, value),
-        vals => Array.IndexOf<T>(vals, value) >= 0);
-
-    public bool Contains(T value, IEqualityComparer<T>? itemComparer) => Match(
-        static () => false,
-        val => Equate.Values(value, val, itemComparer),
-        vals => Sequence.Contains(vals, value, itemComparer));
-
+    public bool TryGetValues([MaybeNullWhen(false)] out T[] values) => _obj.Is(out values);
 
     /// <summary>
     /// Tries to get the value at the given <see cref="Index"/>
@@ -158,11 +162,47 @@ public readonly struct Values<T> :
     /// A <typeparamref name="T"/> Value exists only at index 0<br/>
     /// <c>T[]</c> Values are indexed as a standard <see cref="Array"/>
     /// </remarks>
-    public Result<T> TryGetAt(Index index) => Match(
+    public Result<T> TryGetValueAt(Index index) => Match(
         onEmpty: static () => new InvalidOperationException("Values is empty"),
         onValue: val => Validate.Index(index, 1).Select(_ => val),
         onValues: vals => Validate.Index(index, vals.Length).Select(i => vals[i])
     );
+
+
+    public bool Contains(T value) => Match(
+        static () => false,
+        val => Equate.Values(val, value),
+        vals => Array.IndexOf<T>(vals, value) >= 0);
+
+    public bool Contains(T value, IEqualityComparer<T>? itemComparer) => Match(
+        static () => false,
+        val => Equate.Values(value, val, itemComparer),
+        vals => Sequence.Contains(vals, value, itemComparer));
+
+    public bool Contains(T[] values) => Match(
+        static () => false,
+        val => (values.Length == 1) && Equate.Values(val, values[0]),
+        vals => Sequence.Contains<T>(vals, values));
+
+    public Values<T> With() => this;
+
+    public Values<T> With(T value)
+    {
+        if (_obj is null)
+            return new(value);
+
+        if (_obj is T val)
+            return new(val, value);
+
+        T[] vals = Notsafe.As<T[]>(_obj);
+        return new([..vals, value,]);
+    }
+
+    public Values<T> With(params T[]? values)
+        => With(Create(values));
+
+    public Values<T> With(IEnumerable<T>? values)
+        => With(Create(values));
 
     public Values<T> With(Values<T> values)
     {
@@ -178,12 +218,12 @@ public readonly struct Values<T> :
         {
             if (otherObj is T otherVal)
             {
-                return new Values<T>([thisVal, otherVal], default);
+                return new Values<T>(thisVal, otherVal);
             }
             else
             {
                 Debug.Assert(otherObj is T[]);
-                return new Values<T>([thisVal, ..(T[])otherObj!], default);
+                return new Values<T>([thisVal, ..(T[])otherObj!, ]);
             }
         }
         else
@@ -191,28 +231,21 @@ public readonly struct Values<T> :
             Debug.Assert(thisObj is T[]);
             if (otherObj is T otherVal)
             {
-                return new Values<T>([..(T[])thisObj, otherVal], default);
+                return new Values<T>([..(T[])thisObj, otherVal, ]);
             }
             else
             {
                 Debug.Assert(otherObj is T[]);
-                return new Values<T>([..(T[])thisObj, ..(T[])otherObj!], default);
+                return new Values<T>([..(T[])thisObj, ..(T[])otherObj!, ]);
             }
         }
     }
 
-    public Values<T> With(T value) => With(new Values<T>(value));
-
-    public Values<T> WithMany(T[] values) => With(new Values<T>(values));
-    public Values<T> WithMany(IEnumerable<T> values) => With(new Values<T>(values));
 
     internal void FastCopyTo(Span<T> span)
     {
         object? obj = _obj;
-        if (obj is null)
-        {
-
-        }
+        if (obj is null) { }
         else if (obj is T value)
         {
             span[0] = value;
@@ -228,25 +261,23 @@ public readonly struct Values<T> :
     public Result<int> TryCopyTo(Span<T> span)
     {
         object? obj = _obj;
+
         if (obj is null)
-        {
             return Ok(0);
-        }
-        else if (obj is T value)
+
+        if (obj is T value)
         {
             if (span.Length == 0)
                 return new ArgumentException(default, nameof(span));
             span[0] = value;
             return Ok(1);
         }
-        else
-        {
-            var values = Unsafe.As<T[]>(obj);
-            if (span.Length < values.Length)
-                return new ArgumentException(default, nameof(span));
-            Sequence.CopyTo(values, span);
-            return Ok(values.Length);
-        }
+
+        var values = Notsafe.As<T[]>(obj);
+        if (span.Length < values.Length)
+            return new ArgumentException(default, nameof(span));
+        Sequence.CopyTo(values, span);
+        return Ok(values.Length);
     }
 
     public ReadOnlySpan<T> AsSpan()
@@ -260,7 +291,7 @@ public readonly struct Values<T> :
         return new(Notsafe.As<T[]>(obj));
     }
 
-    public T[] ToArray() => Match(static () => [], static value => [value], static values => values);
+    public T[] ToArray() => Match(static () => [], static value => [value, ], static values => values);
 
 
     public void Match(Action onEmpty, Action<T> onValue, Action<T[]> onValues)
@@ -277,27 +308,19 @@ public readonly struct Values<T> :
         else
         {
             Debug.Assert(obj is T[]);
-            var values = Notsafe.As<T[]>(obj);
-            onValues(values);
+            onValues(Notsafe.As<T[]>(obj));
         }
     }
 
     public TResult Match<TResult>(Fn<TResult> onEmpty, Fn<T, TResult> onValue, Fn<T[], TResult> onValues)
     {
         object? obj = _obj;
-        switch (obj)
-        {
-            case null:
-                return onEmpty();
-            case T value:
-                return onValue(value);
-            default:
-            {
-                Debug.Assert(obj is T[]);
-                var values = Notsafe.As<T[]>(obj);
-                return onValues(values);
-            }
-        }
+        if (obj == null)
+            return onEmpty();
+        if (obj is T value)
+            return onValue(value);
+        Debug.Assert(obj is T[]);
+        return onValues(Notsafe.As<T[]>(obj));
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -331,7 +354,7 @@ public readonly struct Values<T> :
         {
             Debug.Assert(obj is T[]);
             var myValues = Notsafe.As<T[]>(obj);
-            return values.HasValues(out var otherValues) &&
+            return values.TryGetValues(out var otherValues) &&
                 Sequence.Equal(myValues, otherValues);
         }
     }
@@ -354,14 +377,42 @@ public readonly struct Values<T> :
             static value => Hasher.Hash<T>(value),
             static values => Hasher.HashMany<T>(values));
 
-    public override string ToString()
-        => Match(
-            static () => string.Empty,
-            static value => value?.ToString() ?? string.Empty,
-            static values => values.Length switch
+    public string ToString(string? format, IFormatProvider? provider = null)
+    {
+        return TextBuilder.New
+            .Append('[')
+            .AppendIf(_obj.Is<T>(), format, provider)
+            .If(_obj.Is<T[]>(), (tb, vals) => tb.DelimitAppend<T>(',', vals, format, provider))
+            .Append(']')
+            .ToStringAndDispose();
+    }
+
+    public bool TryFormat(
+        Span<char> destination,
+        out int charsWritten,
+        text format = default,
+        IFormatProvider? provider = default)
+    {
+        var writer = new TryFormatWriter(destination);
+        writer.Add('[');
+        if (_obj is T value)
+        {
+            writer.Add(value, format, provider);
+        }
+        else if (_obj is T[] values)
+        {
+            int len = values.Length;
+            Debug.Assert(len > 1);
+            writer.Add(values[0], format, provider);
+            for (int i = 1; i < len; i++)
             {
-                0 => string.Empty,
-                1 => values[0]?.ToString() ?? string.Empty,
-                _ => string.Join<T>(", ", values),
-            });
+                writer.Add(',');
+                writer.Add(values[i], format, provider);
+            }
+        }
+        writer.Add(']');
+        return writer.GetResult(out charsWritten);
+    }
+
+    public override string ToString() => ToString(default, default);
 }

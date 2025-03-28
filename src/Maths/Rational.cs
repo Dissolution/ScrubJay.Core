@@ -752,28 +752,28 @@ public readonly struct Rational :
             return rational
                 .TryConvertToFloat()
                 .Select(Notsafe.As<float, TOther>)
-                .HasOk(out other);
+                .IsOk(out other);
         }
         else if (otherType == typeof(double))
         {
             return rational
                 .TryConvertToDouble()
                 .Select(Notsafe.As<double, TOther>)
-                .HasOk(out other);
+                .IsOk(out other);
         }
         else if (otherType == typeof(decimal))
         {
             return rational
                 .TryConvertToDecimal()
                 .Select(Notsafe.As<decimal, TOther>)
-                .HasOk(out other);
+                .IsOk(out other);
         }
         /*else if (otherType == typeof(BigDecimal))
         {
             return rational
                 .TryConvertToBigDecimal()
                 .Select(Notsafe.As<BigDecimal, TOther>)
-                .HasOk(out other);
+                .IsOk(out other);
         }*/
         else if (otherType == typeof(string))
         {
@@ -1137,7 +1137,7 @@ public readonly struct Rational :
         }
         if (Denominator > MathHelper.BigInt.DecimalMaxValue)
             return new InvalidOperationException($"Denominator '{Denominator}' is larger than decimal.MaxValue '{decimal.MaxValue}'");
-        return (decimal)Numerator / (decimal)Denominator;
+        return Ok((decimal)Numerator / (decimal)Denominator);
     }
 
 
@@ -1151,10 +1151,10 @@ public readonly struct Rational :
         if (Denominator == BigInteger.Zero)
         {
             if (Numerator > BigInteger.Zero)
-                return double.PositiveInfinity;
+                return Ok(double.PositiveInfinity);
             if (Numerator < BigInteger.Zero)
-                return double.NegativeInfinity;
-            return double.NaN;
+                return Ok(double.NegativeInfinity);
+            return Ok(double.NaN);
         }
         if ((Numerator < MathHelper.BigInt.DoubleMinValue) ||
             (Numerator > MathHelper.BigInt.DoubleMaxValue))
@@ -1163,7 +1163,7 @@ public readonly struct Rational :
         }
         if (Denominator > MathHelper.BigInt.DoubleMaxValue)
             return new InvalidOperationException($"Denominator '{Denominator}' is larger than double.MaxValue '{double.MaxValue}'");
-        return (double)Numerator / (double)Denominator;
+        return Ok((double)Numerator / (double)Denominator);
     }
 
     /// <summary>
@@ -1176,10 +1176,10 @@ public readonly struct Rational :
         if (Denominator == BigInteger.Zero)
         {
             if (Numerator > BigInteger.Zero)
-                return float.PositiveInfinity;
+                return Ok(float.PositiveInfinity);
             if (Numerator < BigInteger.Zero)
-                return float.NegativeInfinity;
-            return float.NaN;
+                return Ok(float.NegativeInfinity);
+            return Ok(float.NaN);
         }
         if ((Numerator < MathHelper.BigInt.FloatMinValue) ||
             (Numerator > MathHelper.BigInt.FloatMaxValue))
@@ -1188,7 +1188,7 @@ public readonly struct Rational :
         }
         if (Denominator > MathHelper.BigInt.FloatMaxValue)
             return new InvalidOperationException($"Denominator '{Denominator}' is larger than float.MaxValue '{float.MaxValue}'");
-        return (float)Numerator / (float)Denominator;
+        return Ok((float)Numerator / (float)Denominator);
     }
 
     public BigInteger ToBigInteger() => TryConvertToBigInteger().OkOrThrow();
@@ -1315,7 +1315,7 @@ public readonly struct Rational :
 
     public bool Equals(double other, double accuracy)
     {
-        if (TryConvertToDouble().HasOk(out double f64))
+        if (TryConvertToDouble().IsOk(out double f64))
         {
             bool? maybeEqual;
             bool equal;

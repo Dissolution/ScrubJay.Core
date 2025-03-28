@@ -124,13 +124,13 @@ public class Validations<TError> : IReadOnlyCollection<TError>
 
     public void Add(Result<Unit, TError> result)
     {
-        if (result.HasError(out var error))
+        if (result.IsError(out var error))
             Add(error);
     }
 
     public void Add<T>(Result<T, TError> result)
     {
-        if (result.HasError(out var error))
+        if (result.IsError(out var error))
             Add(error);
     }
 

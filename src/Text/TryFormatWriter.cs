@@ -74,7 +74,7 @@ public ref struct TryFormatWriter : IEnumerable
 
     private bool AddError(Exception error)
     {
-        Debug.Assert(_hasFailed.IsNone);
+        Debug.Assert(_hasFailed.IsNone());
         _hasFailed = Some<Exception>(error);
         return false;
     }
@@ -334,7 +334,7 @@ public ref struct TryFormatWriter : IEnumerable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public char[] ToArray() => WrittenSpan.ToArray();
 
-    public readonly Result<int> GetResult() => _hasFailed.HasSome(out var error) ? error : Ok(_position);
+    public readonly Result<int> GetResult() => _hasFailed.IsSome(out var error) ? error : Ok(_position);
 
     public readonly bool GetResult(out int charsWritten)
     {
@@ -361,7 +361,7 @@ public ref struct TryFormatWriter : IEnumerable
 
     readonly IEnumerator IEnumerable.GetEnumerator()
     {
-        if (_hasFailed.HasSome(out var error))
+        if (_hasFailed.IsSome(out var error))
             return Enumerator.Single<Exception>(error);
         return Enumerator.Empty<Exception>();
     }

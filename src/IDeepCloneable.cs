@@ -29,6 +29,7 @@ public interface IDeepCloneable<TSelf>
     TSelf DeepClone();
 }
 
+[PublicAPI]
 public interface ICloneable<TSelf> : ICloneable
     where TSelf : ICloneable<TSelf>
 {

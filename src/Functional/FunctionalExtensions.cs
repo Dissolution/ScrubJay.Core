@@ -9,7 +9,7 @@ public static class FunctionalExtensions
     {
         foreach (TIn input in enumerable)
         {
-            if (selectWhere(input).HasSome(out var output))
+            if (selectWhere(input).IsSome(out var output))
             {
                 yield return output;
             }
@@ -35,7 +35,7 @@ public static class FunctionalExtensions
     {
         foreach (TIn input in enumerable)
         {
-            if (selectWhere(input).HasOk(out var output))
+            if (selectWhere(input).IsOk(out var output))
             {
                 yield return output;
             }

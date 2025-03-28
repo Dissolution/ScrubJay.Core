@@ -162,14 +162,14 @@ public static class Equate
 
 
 #if NET9_0_OR_GREATER
-    public static bool Values<T>(T? left, T? right)
+    public static bool RefValues<T>(T? left, T? right)
         where T : allows ref struct
         => GetEqualityComparer<T>().Equals(left!, right!);
+#endif
 
-#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Values<T>(T? left, T? right) => EqualityComparer<T>.Default.Equals(left!, right!);
-#endif
+
 
     public static bool Values<T>(T? left, T? right, IEqualityComparer<T>? comparer)
     {

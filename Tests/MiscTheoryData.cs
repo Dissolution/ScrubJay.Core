@@ -41,7 +41,7 @@ public sealed class MiscTheoryData : IReadOnlyCollection<object?[]>
 
         var data = new MiscTheoryData();
 
-        while (indices.TryMoveNext().HasOk(out int[]? index))
+        while (indices.TryMoveNext().IsOk(out int[]? index))
         {
             object?[] row = new object?[columns];
             for (int c = 0; c < columns; c++)

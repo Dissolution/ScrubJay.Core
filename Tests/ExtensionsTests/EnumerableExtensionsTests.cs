@@ -74,38 +74,5 @@ public class EnumerableExtensionsTests
         (IEnumerable<int>?)new BadEnumerableBad(),
     };
 
-    [Theory]
-    [MemberData(nameof(SwallowedData))]
-    public void SwallowedWorks(IEnumerable<int>? enumerable)
-    {
-        var a = enumerable.UnbreakableEnumerate().ToList();
-        // No exception should be thrown
-        Assert.NotNull(a);
-    }
 
-    [Theory]
-    [MemberData(nameof(SwallowedData))]
-    public void SwallowedIsTransitive(IEnumerable<int>? enumerable)
-    {
-        // ReSharper disable PossibleMultipleEnumeration
-        var stringList = enumerable
-            .UnbreakableEnumerate()
-            .Select(i => i.ToString())
-            .ToList();
-        Assert.NotNull(stringList);
-        // No exception thrown
-
-        if (enumerable is null)
-        {
-            return;
-        }
-
-        var objList = enumerable
-            .Select<int, object?>(_ => throw new InvalidOperationException())
-            .UnbreakableEnumerate()
-            .ToList();
-        Assert.NotNull(objList);
-        // No Exception Thrown
-        // ReSharper restore PossibleMultipleEnumeration
-    }
 }

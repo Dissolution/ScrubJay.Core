@@ -7,60 +7,44 @@
 namespace ScrubJay.Debugging;
 
 [PublicAPI]
-public static class UnhandledEventWatcher
+public sealed class UnhandledEventWatcher : IDisposable
 {
-    public static IDisposable Start()
+    public event EventHandler<UnhandledEventArgs>? UnhandledException;
+
+    public UnhandledEventWatcher()
     {
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
-        return Disposable.Action(Stop);
     }
 
-    private static void Stop()
+    private void CurrentDomainOnUnhandledException(object? sender, UnhandledExceptionEventArgs args)
     {
-        AppDomain.CurrentDomain.UnhandledException -= CurrentDomainOnUnhandledException;
-        TaskScheduler.UnobservedTaskException -= TaskSchedulerOnUnobservedTaskException;
-        _ = Interlocked.Exchange(ref UnhandledException, null);
-    }
-
-
-    public static event EventHandler<UnhandledEventArgs>? UnhandledException;
-
-    private static void CurrentDomainOnUnhandledException(object? sender, UnhandledExceptionEventArgs args)
-    {
-        var unhandledEventArgs = new UnhandledEventArgs
+        UnhandledEventArgs unhandledArgs = new CurrentDomainUnhandledEventArgs()
         {
-            Source = UnhandledEventSource.AppDomain,
-            Sender = sender,
-            Exception = args.ExceptionObject as Exception,
-            Data = (args.ExceptionObject is not Exception) ? args.ExceptionObject : null,
+            OriginalSender = sender,
+            ExceptionObject = args.ExceptionObject,
             IsTerminating = args.IsTerminating,
         };
-        UnhandledException?.Invoke(sender, unhandledEventArgs);
+        UnhandledException?.Invoke(sender, unhandledArgs);
     }
 
-    private static void TaskSchedulerOnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs args)
+    private void TaskSchedulerOnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs args)
     {
-        var unhandledEventArgs = new UnhandledEventArgs
+        UnhandledEventArgs unhandledArgs = new UnobservedTaskEventArgs()
         {
-            Source = UnhandledEventSource.TaskScheduler,
-            Sender = sender,
+            OriginalSender = sender,
             Exception = args.Exception,
-            IsObserved = args.Observed,
+            WasObserved = args.Observed,
         };
-        UnhandledException?.Invoke(sender, unhandledEventArgs);
+        UnhandledException?.Invoke(sender, unhandledArgs);
         // We observed this!
         args.SetObserved();
     }
 
-    internal static void OnUnbreakableException(object? sender, Exception? exception)
+    public void Dispose()
     {
-        var unhandledEventArgs = new UnhandledEventArgs
-        {
-            Source = UnhandledEventSource.Unbreakable,
-            Exception = exception,
-            Data = sender,
-        };
-        UnhandledException?.Invoke(sender, unhandledEventArgs);
+        AppDomain.CurrentDomain.UnhandledException -= CurrentDomainOnUnhandledException;
+        TaskScheduler.UnobservedTaskException -= TaskSchedulerOnUnobservedTaskException;
+        _ = Interlocked.Exchange(ref UnhandledException, null);
     }
 }

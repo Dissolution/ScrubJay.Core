@@ -1,4 +1,4 @@
-#pragma warning disable IDE0058
+#pragma warning disable IDE0058, CA2263
 
 using ScrubJay.Collections;
 
@@ -156,6 +156,14 @@ public static class TypeNames
 
     internal static void WriteTypeName<T>(this ref TextBuffer buffer)
         => WriteTypeName(ref buffer, typeof(T));
+
+    internal static void WriteTypeNameOf(this ref TextBuffer buffer, object? obj)
+        => WriteTypeName(ref buffer, obj?.GetType());
+
+    internal static void WriteTypeNameOf<T>(this ref TextBuffer buffer, T? _)
+        => WriteTypeName(ref buffer, typeof(T));
+
+
 
     private static string CreateTypeName(Type? type)
     {

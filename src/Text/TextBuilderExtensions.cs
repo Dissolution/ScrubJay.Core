@@ -56,20 +56,51 @@ public static class TextBuilderExtensions
         return builder;
     }
 
-    public static B AppendIf<B, T>(this B builder, Option<T> option)
+    public static B AppendIf<B, T>(this B builder, Option<T> option, string? format = null, IFormatProvider? provider = null)
         where B : TextBuilderBase<B>
     {
-        if (option.HasSome(out var some))
+        if (option.IsSome(out var some))
         {
-            builder.Append<T>(some);
+            builder.Append<T>(some, format, provider);
         }
         return builder;
     }
 
+    public static B AppendIf<B, T>(this B builder, Result<T> result, string? format = null, IFormatProvider? provider = null)
+        where B : TextBuilderBase<B>
+    {
+        if (result.IsOk(out var ok))
+        {
+            builder.Append<T>(ok, format, provider);
+        }
+        return builder;
+    }
+
+    public static B AppendOk<B, T>(this B builder, Result<T> result)
+        where B : TextBuilderBase<B>
+    {
+        if (result.IsOk(out var ok))
+        {
+            builder.Append<T>(ok);
+        }
+        return builder;
+    }
+
+    public static B AppendError<B, T>(this B builder, Result<T> result)
+        where B : TextBuilderBase<B>
+    {
+        if (result.IsError(out var error))
+        {
+            builder.Append(error);
+        }
+        return builder;
+    }
+
+
     public static B AppendIf<B, T, E>(this B builder, Result<T, E> result)
         where B : TextBuilderBase<B>
     {
-        if (result.HasOk(out var ok))
+        if (result.IsOk(out var ok))
         {
             builder.Append<T>(ok);
         }
@@ -79,7 +110,7 @@ public static class TextBuilderExtensions
     public static B AppendOk<B, T, E>(this B builder, Result<T, E> result)
         where B : TextBuilderBase<B>
     {
-        if (result.HasOk(out var ok))
+        if (result.IsOk(out var ok))
         {
             builder.Append<T>(ok);
         }
@@ -89,7 +120,7 @@ public static class TextBuilderExtensions
     public static B AppendError<B, T, E>(this B builder, Result<T, E> result)
         where B : TextBuilderBase<B>
     {
-        if (result.HasError(out var error))
+        if (result.IsError(out var error))
         {
             builder.Append<E>(error);
         }
@@ -97,7 +128,7 @@ public static class TextBuilderExtensions
     }
 
 
-    public static B InvokeIf<B>(this B builder, bool condition,
+    public static B If<B>(this B builder, bool condition,
         Action<B>? onTrue,
         Action<B>? onFalse = null)
         where B : TextBuilderBase<B>
@@ -113,12 +144,12 @@ public static class TextBuilderExtensions
         return builder;
     }
 
-    public static B InvokeIf<B, T>(this B builder, Option<T> option,
+    public static B If<B, T>(this B builder, Option<T> option,
         Action<B, T>? onSome,
         Action<B>? onNone = null)
         where B : TextBuilderBase<B>
     {
-        if (option.HasSome(out var some))
+        if (option.IsSome(out var some))
         {
             onSome?.Invoke(builder, some);
         }
@@ -128,24 +159,8 @@ public static class TextBuilderExtensions
         }
         return builder;
     }
-
-    public static B InvokeIf<B, T>(this B builder, Option<T> option,
-        Action<B, T>? onSome,
-        Action<B, None>? onNone = null)
-        where B : TextBuilderBase<B>
-    {
-        if (option.HasSome(out var some))
-        {
-            onSome?.Invoke(builder, some);
-        }
-        else
-        {
-            onNone?.Invoke(builder, None());
-        }
-        return builder;
-    }
-
-    public static B InvokeIf<B, T>(this B builder, Result<T> result,
+    
+    public static B If<B, T>(this B builder, Result<T> result,
         Action<B, T>? onOk,
         Action<B, Exception>? onError = null)
         where B : TextBuilderBase<B>
@@ -161,7 +176,7 @@ public static class TextBuilderExtensions
         return builder;
     }
 
-    public static B InvokeIf<B, T, E>(this B builder, Result<T,E> result,
+    public static B If<B, T, E>(this B builder, Result<T,E> result,
         Action<B, T>? onOk,
         Action<B, E>? onError = null)
         where B : TextBuilderBase<B>

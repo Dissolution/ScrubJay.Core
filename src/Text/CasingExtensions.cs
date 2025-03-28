@@ -80,7 +80,7 @@ public static class TextCaseExtensions
                     if ((previousCategory == UnicodeCategory.SpaceSeparator) ||
                         (previousCategory == UnicodeCategory.LowercaseLetter) ||
                         ((previousCategory != UnicodeCategory.DecimalDigitNumber) &&
-                        previousCategory.IsSome && (i > 0) && ((i + 1) < len) && char.IsLower(str[i + 1])))
+                        previousCategory && (i > 0) && ((i + 1) < len) && char.IsLower(str[i + 1])))
                     {
                         text.Append('_');
                         if (casing == Casing.Title)
@@ -105,7 +105,7 @@ public static class TextCaseExtensions
                 }
                 default:
                 {
-                    if (previousCategory.IsNone)
+                    if (previousCategory.IsNone())
                     {
                         previousCategory = Some(UnicodeCategory.SpaceSeparator);
                     }

@@ -46,7 +46,6 @@ public readonly struct Result<T> :
     /// <summary>
     /// Implicitly convert a <see cref="Result{T}"/> into <c>true</c> if it is <c>Ok</c> and <c>false</c> if it is <c>Error</c>
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Result<T> result) => result._isOk;
 
     /// <summary>
@@ -56,17 +55,15 @@ public readonly struct Result<T> :
     /// This exists (but the equivalent implicit convert from T does not) only to support
     /// implicit conversions from supertypes
     /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Result<T>(Exception ex) => Error(ex);
 
     /// <summary>
     /// Implicitly convert a standalone <see cref="Ok{T}"/> to an <see cref="Result{T}.Ok(T)"/>
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Result<T>(Compat.Ok<T> ok) => Ok(ok._value);
 
     /// <summary>
-    /// Implicitly convert a standalone <see cref="Error{E}"/> to an <see cref="Result{T}.Error(E)"/>
+    /// Implicitly convert a standalone <see cref="Error{E}"/> to an <see cref="Result{T}.Error"/>
     /// </summary>
     public static implicit operator Result<T>(Compat.Error<Exception> error) => Error(error._value);
 
@@ -90,7 +87,6 @@ public readonly struct Result<T> :
     /// </summary>
     /// <param name="ok">The Ok value</param>
     /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Ok(T ok) => new Result<T>(true, ok, default);
 
     /// <summary>
@@ -98,7 +94,6 @@ public readonly struct Result<T> :
     /// </summary>
     /// <param name="ex">The Error value</param>
     /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Error(Exception ex) => new Result<T>(false, default, ex);
 
 
@@ -126,7 +121,6 @@ public readonly struct Result<T> :
 
 #region Ok
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Option<T> IsOk()
     {
         if (_isOk)
@@ -139,14 +133,14 @@ public readonly struct Result<T> :
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool IsOk([MaybeNullWhen(false)] out T value)
     {
         value = _value;
         return _isOk;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool IsOkWithError([MaybeNullWhen(false)] out T ok, [MaybeNullWhen(true)] out Exception error)
     {
         ok = _value;
@@ -164,7 +158,6 @@ public readonly struct Result<T> :
     public bool IsOkAnd(Fn<T, bool> predicate) => _isOk && predicate(_value!);
 
 
-    [StackTraceHidden]
     public T OkOrThrow()
     {
         if (_isOk)
@@ -200,7 +193,6 @@ public readonly struct Result<T> :
     /// <param name="getFallback"></param>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap_or_else"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T OkOr(Fn<T> getFallback)
     {
         if (_isOk)
@@ -210,7 +202,7 @@ public readonly struct Result<T> :
         return getFallback();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public T? OkOrDefault()
     {
         if (_isOk)
@@ -224,7 +216,6 @@ public readonly struct Result<T> :
 
 #region Error
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Option<Exception> IsError()
     {
         if (!_isOk)
@@ -237,14 +228,14 @@ public readonly struct Result<T> :
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool IsError([MaybeNullWhen(false)] out Exception error)
     {
         error = _error;
         return !_isOk;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool IsErrorWithOk([MaybeNullWhen(false)] out Exception error, [MaybeNullWhen(true)] out T ok)
     {
         error = _error;
@@ -287,11 +278,10 @@ public readonly struct Result<T> :
         }
     }
 
-
 #endregion
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(Action<T> onOk, Action<Exception> onError)
+
+    public void Match(Act<T> onOk, Act<Exception> onError)
     {
         if (_isOk)
         {
@@ -303,7 +293,7 @@ public readonly struct Result<T> :
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public TResult Match<TResult>(Fn<T, TResult> onOk, Fn<Exception, TResult> onError)
     {
         if (_isOk)
@@ -361,11 +351,11 @@ public readonly struct Result<T> :
 
 #endregion
 
-    #region ToString / TryFormat
+#region ToString / TryFormat
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
-        Buffer<char> text = stackalloc char[256];
+        TextBuffer text = stackalloc char[256];
         if (_isOk)
         {
             text.Write("Ok(");
@@ -406,12 +396,12 @@ public readonly struct Result<T> :
     }
 
     public override string ToString() => ToString(default, default);
+
 #endregion
 
 
 #region LINQ
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Result<N> Select<N>(Fn<T, N> selector)
     {
         if (_isOk)
@@ -421,17 +411,17 @@ public readonly struct Result<T> :
         return new(false, default, _error);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public Result<N> Select<N>(Fn<T, Option<N>> selector)
     {
-        if (_isOk && selector(_value!).HasSome(out var value))
+        if (_isOk && selector(_value!).IsSome(out var value))
         {
             return new(true, value, default);
         }
         return new(false, default, _error);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public Result<N> Select<N>(Fn<T, Result<N>> selector)
     {
         if (_isOk)
@@ -441,7 +431,7 @@ public readonly struct Result<T> :
         return new(false, default, _error);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public Result<N> Select<X, N>(X state, Fn<X, T, N> selector)
     {
         if (_isOk)
@@ -452,7 +442,6 @@ public readonly struct Result<T> :
     }
 
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Result<N> SelectMany<N>(Fn<T, Result<N>> newSelector)
     {
         if (_isOk)
@@ -462,7 +451,7 @@ public readonly struct Result<T> :
         return new(false, default, _error);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public Result<N> SelectMany<K, N>(Fn<T, Result<K>> keySelector, Fn<T, K, N> newSelector)
     {
         if (_isOk && keySelector(_value!).IsOk(out var key))
@@ -480,6 +469,7 @@ public readonly struct Result<T> :
     public ResultAwaiter<T> GetAwaiter() => new(this);
 
 #region IEnumerable
+
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
@@ -492,17 +482,17 @@ public readonly struct Result<T> :
     public sealed class ResultEnumerator : IEnumerator<T>, IEnumerator, IDisposable
     {
         private readonly Result<T> _result;
-
         private bool _canYield;
 
-        object? IEnumerator.Current => (object?)Current;
+        object? IEnumerator.Current => this.Current;
 
         public T Current
         {
             get
             {
                 Throw.IfBadEnumerationState(!_canYield);
-                return _result.OkOrThrow();
+                Debug.Assert(_result._isOk);
+                return _result._value!;
             }
         }
 
@@ -510,6 +500,11 @@ public readonly struct Result<T> :
         {
             _result = result;
             _canYield = result._isOk;
+        }
+
+        void IDisposable.Dispose()
+        {
+            /* Do Nothing */
         }
 
         public bool MoveNext()
@@ -527,14 +522,11 @@ public readonly struct Result<T> :
 
         public void Reset()
         {
-            _canYield = true;
-        }
-
-        void IDisposable.Dispose()
-        {
-            /* Do Nothing */
+            _canYield = _result._isOk;
         }
     }
+
 #endregion
+
 #endregion
 }

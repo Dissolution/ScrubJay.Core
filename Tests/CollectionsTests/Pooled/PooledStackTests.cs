@@ -57,7 +57,7 @@ public class PooledStackTests
         stack.PushMany(array);
         Assert.Equal(3, stack.Count);
 
-        Assert.True(stack.TryPeekMany(2).HasOk(out int[]? peeked));
+        Assert.True(stack.TryPeekMany(2).IsOk(out int[]? peeked));
         Assert.Equal(3, stack.Count);
 
         Assert.Equal(2, peeked.Length);

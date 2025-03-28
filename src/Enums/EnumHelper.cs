@@ -8,11 +8,11 @@ namespace ScrubJay.Enums;
 [PublicAPI]
 public abstract class EnumInfo
 {
-    public static Result<TEnum, ParseException> TryParse<TEnum>(text text)
+    public static Result<TEnum> TryParse<TEnum>(text text)
         where TEnum : struct, Enum
         => EnumInfo<TEnum>.TryParse(text);
 
-    public static Result<TEnum, ParseException> TryParse<TEnum>(string? str)
+    public static Result<TEnum> TryParse<TEnum>(string? str)
         where TEnum : struct, Enum
         => EnumInfo<TEnum>.TryParse(str);
 
@@ -48,19 +48,19 @@ public class EnumInfo<TEnum> : EnumInfo
         foreach (var pair in _memberInfos)
         {
             if (pair.Value.TryParse(text))
-                return pair.Key;
+                return Some(pair.Key);
         }
         return None();
     }
 
-    public static Result<TEnum, ParseException> TryParse(text text)
+    public static Result<TEnum> TryParse(text text)
     {
         text = text.Trim();
         if (text.Length == 0)
             return ParseException.Create<TEnum>(text, "Empty text");
 
-        if (TryParseMember(text).HasSome(out var @enum))
-            return @enum;
+        if (TryParseMember(text).IsSome(out var @enum))
+            return Ok(@enum);
 
         if (Instance.IsFlags)
         {
@@ -69,7 +69,7 @@ public class EnumInfo<TEnum> : EnumInfo
             var splitText = SpanSplitter<char>.SplitAny(text, [',', '|', ' '], SpanSplitterOptions.IgnoreEmpty);
             foreach (var segment in splitText)
             {
-                if (TryParseMember(segment).HasSome(out var flag))
+                if (TryParseMember(segment).IsSome(out var flag))
                 {
                     @enum.AddFlag(flag);
                     continue;
@@ -79,13 +79,13 @@ public class EnumInfo<TEnum> : EnumInfo
 
             if (@enum.IsDefault())
                 return ParseException.Create<TEnum>(text, "Could not parse into a valid set of flags");
-            return @enum;
+            return Ok(@enum);
         }
 
         return ParseException.Create<TEnum>(text);
     }
 
-    public static Result<TEnum, ParseException> TryParse(string? str) => TryParse(str.AsSpan());
+    public static Result<TEnum> TryParse(string? str) => TryParse(str.AsSpan());
 
     private EnumInfo() : base(typeof(TEnum))
     {

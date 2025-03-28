@@ -29,9 +29,9 @@ public ref struct PairBuilder<TKey, TValue>
             return ex;
         if (_error is List<Exception> exs)
             return new AggregateException(exs);
-        if (!_key.HasSome(out var key))
+        if (!_key.IsSome(out var key))
             return new InvalidOperationException("No key has been specified");
-        if (!_value.HasSome(out var value))
+        if (!_value.IsSome(out var value))
             return new InvalidOperationException("No value has been specified");
         return Ok(Pair.New(key, value));
     }
@@ -99,7 +99,7 @@ public ref struct PairBuilder<TKey, TValue>
 
     public void AppendFormatted(TKey key)
     {
-        if (_key.IsSome)
+        if (_key.IsSome())
             throw new InvalidOperationException();
         if (_step != Step.PreKey)
             throw new InvalidOperationException();
@@ -109,7 +109,7 @@ public ref struct PairBuilder<TKey, TValue>
 
     public void AppendFormatted(TValue value)
     {
-        if (_value.IsSome)
+        if (_value.IsSome())
             throw new InvalidOperationException();
         if (_step != Step.PreValue)
             throw new InvalidOperationException();

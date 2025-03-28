@@ -634,6 +634,78 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
 
 #endregion
 
+    #region Array
+
+    public B Delimit<T>(char delimiter, T[]? values, Action<B, T> onBuilderValue)
+    {
+        if (values is null)
+            return _builder;
+        int len = values.Length;
+        if (len == 0)
+            return _builder;
+        onBuilderValue(_builder, values[0]);
+        for (int i = 1; i < len; i++)
+        {
+            Append(delimiter);
+            onBuilderValue(_builder, values[i]);
+        }
+
+        return _builder;
+    }
+
+
+    public B Delimit<T>(string delimiter, T[]? values, Action<B, T> onBuilderValue) => Delimit(delimiter.AsSpan(), values, onBuilderValue);
+
+    public B Delimit<T>(scoped text delimiter, T[]? values, Action<B, T> onBuilderValue)
+    {
+        if (values is null)
+            return _builder;
+        if (delimiter.Length == 0)
+            return Enumerate(values.AsSpan(), onBuilderValue);
+        int len = values.Length;
+        if (len == 0)
+            return _builder;
+        onBuilderValue(_builder, values[0]);
+        for (int i = 1; i < len; i++)
+        {
+            Append(delimiter);
+            onBuilderValue(_builder, values[i]);
+        }
+
+        return _builder;
+    }
+
+    public B Delimit<T>(Action<B> onDelimit, T[]? values, Action<B, T> onBuilderValue)
+    {
+        if (values is null)
+            return _builder;
+        int len = values.Length;
+        if (len == 0)
+            return _builder;
+        onBuilderValue(_builder, values[0]);
+        for (int i = 1; i < len; i++)
+        {
+            onDelimit(_builder);
+            onBuilderValue(_builder, values[i]);
+        }
+
+        return _builder;
+    }
+
+    public B DelimitAppend<T>(char delimiter, T[]? values, string? format = null, IFormatProvider? provider = null)
+        => Delimit(delimiter, values, (tb, value) => tb.Append(value, format, provider));
+
+    public B DelimitAppend<T>(string delimiter, T[]? values, string? format = null, IFormatProvider? provider = null)
+        => Delimit(delimiter, values, (tb, value) => tb.Append(value, format, provider));
+
+    public B DelimitAppend<T>(scoped text delimiter, T[]? values, string? format = null, IFormatProvider? provider = null)
+        => Delimit(delimiter, values, (tb, value) => tb.Append(value, format, provider));
+
+    public B DelimitAppend<T>(Action<B> onDelimit, T[]? values, string? format = null, IFormatProvider? provider = null)
+        => Delimit(onDelimit, values, (tb, value) => tb.Append(value, format, provider));
+
+#endregion
+
 #region IEnumerable
 
     public B Delimit<T>(char delimiter, IEnumerable<T> values, Action<B, T> onBuilderValue)
@@ -721,7 +793,7 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
 
 #endregion
 
-    public B Allocate(int count, WSAct<char> write)
+    public B Allocate(int count, SpanDelegates.ActionS<char> write)
     {
         if (count <= 0)
             return _builder;
@@ -791,7 +863,7 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
 
     bool ICollection<char>.Remove(char item)
     {
-        if (TryFindIndex(item).HasSome(out int index))
+        if (TryFindIndex(item).IsSome(out int index))
         {
             return _text.TryRemoveAt(index);
         }

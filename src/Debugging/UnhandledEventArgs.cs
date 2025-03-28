@@ -4,12 +4,21 @@ namespace ScrubJay.Debugging;
 /// Event Arguments for <see cref="UnhandledEventWatcher"/> events
 /// </summary>
 [PublicAPI]
-public class UnhandledEventArgs : EventArgs
+public abstract class UnhandledEventArgs : EventArgs
 {
-    public required UnhandledEventSource Source { get; init; }
-    public object? Sender { get; init; }
-    public Exception? Exception { get; init; }
-    public object? Data { get; init; }
-    public bool? IsTerminating { get; init; }
-    public bool? IsObserved { get; init; }
+    public object? OriginalSender { get; init; }
+}
+
+[PublicAPI]
+public class CurrentDomainUnhandledEventArgs : UnhandledEventArgs
+{
+    public required object ExceptionObject { get; init; }
+    public required bool IsTerminating { get; init; }
+}
+
+[PublicAPI]
+public class UnobservedTaskEventArgs : UnhandledEventArgs
+{
+    public required bool WasObserved { get; init; }
+    public required AggregateException? Exception { get; init; }
 }
