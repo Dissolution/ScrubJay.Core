@@ -923,16 +923,16 @@ public sealed class PooledList<T> : PooledArray<T>,
     }
 
     /// <summary>
-    /// Try to use the available capacity of this <see cref="PooledList{T}"/> using a <see cref="UseAvailable{T}"/> delegate
+    /// Try to use the available capacity of this <see cref="PooledList{T}"/> using a <see cref="SpanDelegates.FuncS{T1,R}"/> delegate
     /// </summary>
     /// <param name="useAvailable">
-    /// <see cref="UseAvailable{T}"/> to apply to any currently available space
+    /// <see cref="SpanDelegates.FuncS{T1,R}"/> to apply to any currently available space
     /// </param>
     /// <returns>
-    /// <c>true</c> if the <see cref="UseAvailable{T}"/> operation succeeded<br/>
+    /// <c>true</c> if the <see cref="SpanDelegates.FuncS{T1,R}"/> operation succeeded<br/>
     /// <c>false</c> if it did not
     /// </returns>
-    public bool TryUseAvailable(UseAvailable<T> useAvailable)
+    public bool TryUseAvailable(SpanDelegates.FuncS<T,int> useAvailable)
     {
         int used = useAvailable(Available);
         if ((used < 0) || (used > Available.Length))
@@ -943,12 +943,12 @@ public sealed class PooledList<T> : PooledArray<T>,
     }
 
     /// <summary>
-    /// Performs a <see cref="RefItem{T}"/> operation on each item in this <see cref="PooledList{T}"/>
+    /// Performs a <see cref="ActionRef{T}"/> operation on each item in this <see cref="PooledList{T}"/>
     /// </summary>
     /// <param name="perItem">
-    /// The <see cref="RefItem{T}"/> delegate that can mutate items
+    /// The <see cref="ActionRef{T}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(RefItem<T> perItem)
+    public void ForEach(ActionRef<T> perItem)
     {
         int pos = _position;
         var array = _array;
@@ -960,12 +960,12 @@ public sealed class PooledList<T> : PooledArray<T>,
     }
 
     /// <summary>
-    /// Performs a <see cref="RefItemAndIndex{T}"/> operation on each item in this <see cref="PooledList{T}"/>
+    /// Performs a <see cref="ActionRef{T,I}"/> operation on each item in this <see cref="PooledList{T}"/>
     /// </summary>
     /// <param name="perItem">
-    /// The <see cref="RefItemAndIndex{T}"/> delegate that can mutate items
+    /// The <see cref="ActionRef{T,I}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(RefItemAndIndex<T> perItem)
+    public void ForEach(ActionRef<T, int> perItem)
     {
         int pos = _position;
         var array = _array;

@@ -203,7 +203,7 @@ dotnet_diagnostic.ide0002.severity = error
 # Remove unnecessary cast (IDE0004)
 dotnet_diagnostic.ide0002.severity = suggestion
 # Remove unnecessary using directives (IDE0005)
-dotnet_diagnostic.ide0005.severity = error
+dotnet_diagnostic.ide0005.severity = warning
 # Add missing cases to switch statement (IDE0010)
 dotnet_diagnostic.ide0010.severity = error
 # Remove unreachable code (IDE0035)

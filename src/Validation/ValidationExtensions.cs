@@ -3,6 +3,7 @@
 /// <summary>
 /// Extensions related to validation
 /// </summary>
+[PublicAPI]
 public static class ValidationExtensions
 {
     /// <summary>

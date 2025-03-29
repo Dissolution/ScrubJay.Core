@@ -10,8 +10,12 @@ namespace ScrubJay.Enums;
 /// <summary>
 /// Generic (non-boxing) extensions upon <c>enum</c>
 /// </summary>
+[PublicAPI]
 public static class EnumExtensions
 {
+    /// <summary>
+    /// Returns the underlying <see cref="Type"/> for the generic enumeration type <typeparamref name="TEnum"/>
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Type UnderlyingType<TEnum>()
         where TEnum : struct, Enum
@@ -97,5 +101,5 @@ public static class EnumExtensions
 
     public static string AsString<TEnum>(this TEnum @enum)
         where TEnum : struct, Enum
-        => EnumInfo<TEnum>.Instance.AsString(@enum);
+        => @enum.ToString();
 }

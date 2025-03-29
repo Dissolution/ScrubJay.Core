@@ -10,13 +10,16 @@ public static class Enumerator
     /// Gets an <see cref="ArrayEnumerator{T}"/> for the given <paramref name="array"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ArrayEnumerator<T> ForArray<T>(T[] array) => new(array);
+    public static ArrayEnumerator<T> ForArray<T>(T[] array)
+    {
+        return new(array);
+    }
 
     /// <summary>
     /// Gets an empty <see cref="IEnumerator{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerator<T> Empty<T>() => new EmptyEnumerator<T>();
+    public static IEnumerator<T> Empty<T>() => new EmptyEnumerable<T>();
 
     /// <summary>
     /// Gets an <see cref="IEnumerator{T}"/> that enumerates over a single <paramref name="value"/>

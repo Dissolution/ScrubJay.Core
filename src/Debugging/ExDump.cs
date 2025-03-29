@@ -76,9 +76,6 @@ public static class ExDump
                                 .Enumerate(agg.InnerExceptions, (t, ex) => t.AppendExceptionDump(ex))))
                     ;
             });
-
-        // string str = text.ToString();
-        // Dbg.Break();
         return text;
     }
 

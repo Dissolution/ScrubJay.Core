@@ -215,4 +215,10 @@ public static class Throw
         string? enumName = null)
         where E : struct, Enum
         => throw InvalidEnumException.Create<E>(@enum, enumName);
+
+    [DoesNotReturn]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void NotSupported([CallerMemberName] string? callerName = null)
+        => throw new NotSupportedException($"{callerName} is not supported");
 }

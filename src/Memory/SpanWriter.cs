@@ -45,7 +45,7 @@ public ref struct SpanWriter<T>
         _position = position;
     }
 
-    public void UseAvailable(UseAvailable<T> useAvailable)
+    public void UseAvailable(SpanDelegates.FuncS<T,int> useAvailable)
     {
         int used = useAvailable(_span.Slice(_position));
         _position += used;

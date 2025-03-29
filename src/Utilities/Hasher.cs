@@ -425,7 +425,7 @@ public ref struct Hasher
     /// <summary>
     /// Gets a hashcode generated from all the items in a <see cref="Array">T[]</see>
     /// </summary>
-    public static int HashMany<T>(params T[]? array)
+    public static int HashMany<T>(T[]? array)
     {
         if (array is null)
             return NullHash;

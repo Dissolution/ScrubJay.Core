@@ -11,7 +11,11 @@ public static class TextBuilderExtensions
     /// </summary>
     public static B AppendType<B>(this B builder, Type? type)
         where B : TextBuilderBase<B>
-        => builder.Append(type.NameOf());
+        => builder.Append(TypeNames.NameOf(type));
+
+    public static B AppendTypeOf<B, T>(this B builder, T? value)
+        where B : TextBuilderBase<B>
+        => builder.Append(TypeNames.NameOfType(value));
 
 
     public static B AppendIf<B, T>(this B builder, bool condition, T trueValue)
@@ -159,7 +163,7 @@ public static class TextBuilderExtensions
         }
         return builder;
     }
-    
+
     public static B If<B, T>(this B builder, Result<T> result,
         Action<B, T>? onOk,
         Action<B, Exception>? onError = null)

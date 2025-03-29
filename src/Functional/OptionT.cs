@@ -120,6 +120,14 @@ public readonly struct Option<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some(T value) => new(value);
 
+    public delegate bool TryOut([MaybeNullWhen(false)] out T value);
+
+    public static Option<T> From(TryOut tryOut)
+    {
+        if (tryOut(out var value))
+            return new(value);
+        return default;
+    }
 
     // Is this Option.Some?
     // if someone does default(Option), this will be false, so default(Option) == None

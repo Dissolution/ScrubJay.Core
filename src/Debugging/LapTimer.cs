@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Utilities;
+﻿namespace ScrubJay.Debugging;
 
 [PublicAPI]
 public sealed class LapTimer

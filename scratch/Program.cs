@@ -9,45 +9,87 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using InlineIL;
 using ScrubJay.Debugging;
 using ScrubJay.Extensions;
 using ScrubJay.Memory;
 using ScrubJay.Scratch;
 using ScrubJay.Validation;
 using ScrubJay.Text;
+using static InlineIL.IL;
 
+int[] a = [1, 4, 7];
+//Type aType = Utils.GetTypeOf<int[]>(a);
+Type aSafeType = Utils.SafeGetTypeOf<int[]>(a);
 
+ReadOnlySpan<char> b = "abcdf";
+//Type bType = Utils.GetTypeOf<ReadOnlySpan<char>>(b);
+Type bSafeType = Utils.SafeGetTypeOf<ReadOnlySpan<char>>(b);
 
-int[] numbers = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,];
-
-try
-{
-    int i = int.MaxValue;
-    int k;
-    checked
-    {
-        k = i + 1;
-    }
-    Console.WriteLine(k);
-}
-catch (Exception ex)
-{
-    var hr = new HResult(ex.HResult);
-    var hex = hr.ToString("X");
-    Console.WriteLine(hr);
-    Console.WriteLine(hex);
-
-    var dump = ex.Dump();
-    Console.WriteLine(dump);
-    Dbg.Break();
-}
+object c = (object)Guid.NewGuid();
+//Type cType = Utils.GetTypeOf<object>(c);
+Type cSafeType = Utils.SafeGetTypeOf<object>(c);
 
 Debugger.Break();
 return 0;
 
 
+
 namespace ScrubJay.Scratch
 {
+    public static class Utils
+    {
+        public static Type GetTypeOf<I>(I instance)
+            where I : allows ref struct
+        {
+            var methods = typeof(I)
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+               .Where(method => method.Name == nameof(GetType))
+                //.Where(method => method.GetParameters().Length == 0)
+                .ToList();
+
+            Debug.Assert(methods.Count == 1);
+            var getTypeMethod = methods[0];
+
+            DynamicMethod dyn = new DynamicMethod(
+                "GT",
+                MethodAttributes.Public | MethodAttributes.Static,
+                CallingConventions.Standard,
+                typeof(Type),
+                [typeof(I)],
+                typeof(Utils).Module,
+                true);
+            ILGenerator il = dyn.GetILGenerator();
+            if (typeof(I).IsValueType)
+            {
+                il.Emit(OpCodes.Ldarga, 0);
+                il.Emit(OpCodes.Call, getTypeMethod);
+            }
+            else
+            {
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Callvirt, getTypeMethod);
+            }
+
+            il.Emit(OpCodes.Ret);
+
+            Func<I, Type> gt = dyn.CreateDelegate<Func<I, Type>>();
+            Type t = gt(instance);
+            Debugger.Break();
+            return t;
+        }
+
+        public static Type SafeGetTypeOf<I>(I instance)
+            where I : allows ref struct
+        {
+            // Emit.Ldarg(nameof(instance));
+            // Emit.Call(MethodRef.Method(TypeRef.Type<I>(), nameof(GetTypeOf)));
+            // return Return<Type>();
+            return typeof(I);
+        }
+    }
+
+
 
 
 }

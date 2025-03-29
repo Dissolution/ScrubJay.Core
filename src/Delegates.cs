@@ -181,6 +181,27 @@ public delegate TReturn Fn<in T1, in T2, in T3, in T4, in T5, in T6, in T7, in T
 
 
 /// <summary>
+/// Action&lt;ref T&gt;
+/// </summary>
+/// <typeparam name="T">
+/// The <see cref="Type"/> of value being referenced
+/// </typeparam>
+/// <param name="ref1">
+/// The value passed by reference as the first argument to this Action
+/// </param>
+[PublicAPI]
+public delegate void ActionRef<T>(ref T ref1);
+
+/// <summary>
+/// Action&lt;ref T1, in T2&gt;
+/// </summary>
+[PublicAPI]
+public delegate void ActionRef<T1, in T2>(ref T1 ref1, T2 arg2);
+
+
+
+
+/// <summary>
 /// Support for <see cref="Span{T}"/> and <see cref="ReadOnlySpan{T}"/> in Action and Functions
 /// </summary>
 /// <remarks>
@@ -205,13 +226,13 @@ public static class SpanDelegates
     public delegate void ActionROS<T1, in T2>(ReadOnlySpan<T1> arg1, T2 arg2);
     public delegate void ActionROS<T1, in T2, in T3>(ReadOnlySpan<T1> arg1, T2 arg2, T3 arg3);
     public delegate void ActionROS<T1, in T2, in T3, in T4>(ReadOnlySpan<T1> arg1, T2 arg2, T3 arg3, T4 arg4);
-    public delegate void ActionROS<T1, in T2, in T3, in T4, in T5>(ReadOnlySpan<T1> arg1, T2 arg2, T3 arg3, T4 arg4, T4 arg5);
+    public delegate void ActionROS<T1, in T2, in T3, in T4, in T5>(ReadOnlySpan<T1> arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
 
     public delegate void ActionS<T1>(Span<T1> arg1);
     public delegate void ActionS<T1, in T2>(Span<T1> arg1, T2 arg2);
     public delegate void ActionS<T1, in T2, in T3>(Span<T1> arg1, T2 arg2, T3 arg3);
     public delegate void ActionS<T1, in T2, in T3, in T4>(Span<T1> arg1, T2 arg2, T3 arg3, T4 arg4);
-    public delegate void ActionS<T1, in T2, in T3, in T4, in T5>(Span<T1> arg1, T2 arg2, T3 arg3, T4 arg4, T4 arg5);
+    public delegate void ActionS<T1, in T2, in T3, in T4, in T5>(Span<T1> arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
 
     public delegate R FuncROS<T1, out R>(ReadOnlySpan<T1> arg1);
     public delegate R FuncROS<T1, in T2, out R>(ReadOnlySpan<T1> arg1, T2 arg2);
@@ -264,42 +285,3 @@ public static class SpanDelegates
     public delegate Span<R> SFuncS<T1, in T2, in T3, in T4, R>(Span<T1> arg1, T2 arg2, T3 arg3, T4 arg4);
     public delegate Span<R> SFuncS<T1, in T2, in T3, in T4, in T5, R>(Span<T1> arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
 }
-
-/// <summary>
-/// A delegate that acts upon an item reference
-/// </summary>
-/// <typeparam name="T">
-/// The <see cref="Type"/> of <paramref name="item"/> being referenced
-/// </typeparam>
-/// <param name="item">
-/// The item being used by <c>ref</c>
-/// </param>
-[PublicAPI]
-public delegate void RefItem<T>(ref T item);
-
-/// <summary>
-/// A delegate that acts upon an item reference and its index
-/// </summary>
-/// <typeparam name="T">
-/// The <see cref="Type"/> of <paramref name="item"/> being referenced
-/// </typeparam>
-/// <param name="item">
-/// The item being used by <c>ref</c>
-/// </param>
-/// <param name="index">
-/// The index of the referenced item
-/// </param>
-[PublicAPI]
-public delegate void RefItemAndIndex<T>(ref T item, int index);
-
-/// <summary>
-/// A delegate that represents access to an available, unwritten portion of a <see cref="Span{T}"/>
-/// </summary>
-/// <param name="buffer">
-/// The available <see cref="Span{T}"/>
-/// </param>
-/// <returns>
-/// The number of items added to <paramref name="buffer"/>
-/// </returns>
-[PublicAPI]
-public delegate int UseAvailable<T>(Span<T> buffer);

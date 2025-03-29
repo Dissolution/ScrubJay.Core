@@ -115,12 +115,12 @@ public readonly struct OneOf<T1> :
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         var buffer = new TextBuffer();
-        buffer.WriteTypeName(GetType());
+        buffer.Write(GetType().NameOf());
         buffer.Write('.');
 
         if (_arg == 1)
         {
-            buffer.WriteTypeNameOf(_first);
+            buffer.Write(_first?.GetType().NameOf());
             buffer.Write('(');
             buffer.Write(_first, format, provider);
             buffer.Write(')');
@@ -275,19 +275,19 @@ public readonly struct OneOf<T1, T2> :
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         var buffer = new TextBuffer();
-        buffer.WriteTypeName(GetType());
+        buffer.Write(GetType().NameOf());
         buffer.Write('.');
 
         switch (_arg)
         {
             case 1:
-                buffer.WriteTypeNameOf(_first);
+                buffer.Write(_first?.GetType().NameOf());
                 buffer.Write('(');
                 buffer.Write(_first, format, provider);
                 buffer.Write(')');
                 break;
             case 2:
-                buffer.WriteTypeNameOf(_second);
+                buffer.Write(_second?.GetType().NameOf());
                 buffer.Write('(');
                 buffer.Write(_second, format, provider);
                 buffer.Write(')');
@@ -481,25 +481,25 @@ public readonly struct OneOf<T1, T2, T3> :
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         var buffer = new TextBuffer();
-        buffer.WriteTypeName(GetType());
+        buffer.Write(GetType().NameOf());
         buffer.Write('.');
 
         switch (_arg)
         {
             case 1:
-                buffer.WriteTypeNameOf(_first);
+                buffer.Write(_first?.GetType().NameOf());
                 buffer.Write('(');
                 buffer.Write(_first, format, provider);
                 buffer.Write(')');
                 break;
             case 2:
-                buffer.WriteTypeNameOf(_second);
+                buffer.Write(_second?.GetType().NameOf());
                 buffer.Write('(');
                 buffer.Write(_second, format, provider);
                 buffer.Write(')');
                 break;
             case 3:
-                buffer.WriteTypeNameOf(_third);
+                buffer.Write(_third?.GetType().NameOf());
                 buffer.Write('(');
                 buffer.Write(_third, format, provider);
                 buffer.Write(')');

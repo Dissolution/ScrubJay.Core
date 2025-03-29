@@ -12,15 +12,15 @@ public static class SpanExtensions
     /// Performs the given <paramref name="perItem"/> action on each item in the <see cref="Span{T}"/>
     /// </summary>
     /// <param name="span">
-    /// The <see cref="Span{T}"/> of items to perform the <see cref="RefItem{T}"/> delegate upon
+    /// The <see cref="Span{T}"/> of items to perform the <see cref="ActionRef{T}"/> delegate upon
     /// </param>
     /// <param name="perItem">
-    /// The <see cref="RefItem{T}"/> delegate to perform on each item of the <see cref="Span{T}"/>
+    /// The <see cref="ActionRef{T}"/> delegate to perform on each item of the <see cref="Span{T}"/>
     /// </param>
     /// <typeparam name="T">
     /// The <see cref="Type"/> of items in the <see cref="Span{T}"/>
     /// </typeparam>
-    public static void ForEach<T>(this Span<T> span, RefItem<T> perItem)
+    public static void ForEach<T>(this Span<T> span, ActionRef<T> perItem)
     {
         for (int i = 0; i < span.Length; i++)
         {

@@ -2,6 +2,9 @@
 
 namespace ScrubJay.Validation;
 
+/// <summary>
+/// An Exception caused by an undefined <see cref="Enum"/> value
+/// </summary>
 [PublicAPI]
 public class InvalidEnumException : ArgumentOutOfRangeException
 {

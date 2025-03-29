@@ -3,6 +3,7 @@
 
 namespace ScrubJay.Validation;
 
+[PublicAPI]
 public class Validations : Validations<Exception>
 {
     public void Add(Action action)
@@ -108,6 +109,7 @@ public class Validations : Validations<Exception>
 /// Supports <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/object-and-collection-initializers#collection-initializers">collection initialization</a>
 /// and <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions">collection expressions</a>
 /// </remarks>
+[PublicAPI]
 public class Validations<TError> : IReadOnlyCollection<TError>
 {
     protected readonly List<TError> _errors = [];
@@ -142,19 +144,16 @@ public class Validations<TError> : IReadOnlyCollection<TError>
 
     public virtual void ThrowIfErrors()
     {
-        if (_errors.Count > 0)
-        {
-            var msg = new TextBuffer();
-            msg.Write(_errors.Count);
-            msg.Write(" Validations Failed:");
-            foreach (var error in _errors)
-            {
-                msg.Write(Environment.NewLine);
-                msg.Write(error);
-            }
-            string message = msg.ToStringAndDispose();
-            throw new InvalidOperationException(message);
-        }
+        if (_errors.Count <= 0)
+            return;
+
+        string message = TextBuilder.New
+            .Append(_errors.Count)
+            .Append(" validations failed:")
+            .NewLine()
+            .DelimitAppend(static tb => tb.NewLine(), _errors)
+            .ToStringAndDispose();
+        throw new InvalidOperationException(message);
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

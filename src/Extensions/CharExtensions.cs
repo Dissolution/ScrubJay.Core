@@ -3,7 +3,7 @@
 public static class CharExtensions
 {
     /// <summary>
-    /// Returns <see langword="true"/> if <paramref name="c"/> is an ASCII
+    /// Returns <see langword="true"/> if <paramref name="ch"/> is an ASCII
     /// character ([ U+0000..U+007F ]).
     /// </summary>
     /// <remarks>

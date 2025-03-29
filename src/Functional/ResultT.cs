@@ -364,9 +364,9 @@ public readonly struct Result<T> :
         }
         else
         {
-            text.WriteTypeName(_error!.GetType());
+            text.Write(_error.NameOfType());
             text.Write('(');
-            text.Write(_error.Message);
+            text.Write(_error?.Message);
             text.Write(')');
         }
         return text.ToStringAndDispose();
@@ -387,9 +387,9 @@ public readonly struct Result<T> :
         }
         else
         {
-            writer.Add(_error!.GetType().NameOf());
+            writer.Add(_error.NameOfType());
             writer.Add('(');
-            writer.Add(_error.Message);
+            writer.Add(_error!.Message);
             writer.Add(')');
         }
         return writer.GetResult(out charsWritten);

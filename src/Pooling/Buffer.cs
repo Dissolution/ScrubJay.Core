@@ -1,4 +1,7 @@
-﻿namespace ScrubJay.Pooling;
+﻿// Member can be made readonly
+#pragma warning disable IDE0251
+
+namespace ScrubJay.Pooling;
 
 /// <summary>
 /// A Buffer is a stack-based <see cref="IList{T}"/>-like collection <i>(grows as required)</i>,
@@ -1079,16 +1082,16 @@ public ref struct Buffer<T>
     }
 
     /// <summary>
-    /// Try to use the available capacity of this <see cref="Buffer{T}"/> using a <see cref="UseAvailable{T}"/> delegate
+    /// Try to use the available capacity of this <see cref="Buffer{T}"/> using a <see cref="SpanDelegates.FuncS{T1,R}"/> delegate
     /// </summary>
     /// <param name="useAvailable">
-    /// <see cref="UseAvailable{T}"/> to apply to any currently available space
+    /// <see cref="SpanDelegates.FuncS{T1,R}"/> to apply to any currently available space
     /// </param>
     /// <returns>
-    /// <c>true</c> if the <see cref="UseAvailable{T}"/> operation succeeded<br/>
+    /// <c>true</c> if the <see cref="SpanDelegates.FuncS{T1,R}"/> operation succeeded<br/>
     /// <c>false</c> if it did not
     /// </returns>
-    public bool TryUseAvailable(UseAvailable<T> useAvailable)
+    public bool TryUseAvailable(SpanDelegates.FuncS<T, int> useAvailable)
     {
         int used = useAvailable(Available);
         if ((used < 0) || (used > Available.Length))
@@ -1101,12 +1104,12 @@ public ref struct Buffer<T>
     }
 
     /// <summary>
-    /// Performs a <see cref="RefItem{T}"/> operation on each item in this <see cref="Buffer{T}"/>
+    /// Performs a <see cref="ActionRef{T}"/> operation on each item in this <see cref="Buffer{T}"/>
     /// </summary>
     /// <param name="perItem">
-    /// The <see cref="RefItem{T}"/> delegate that can mutate items
+    /// The <see cref="ActionRef{T}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(RefItem<T>? perItem)
+    public void ForEach(ActionRef<T>? perItem)
     {
         if (perItem is null)
         {

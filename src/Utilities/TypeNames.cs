@@ -34,53 +34,44 @@ public static class TypeNames
         [typeof(nuint)] = "nuint",
     };
 
-    internal static void WriteTypeName(this ref TextBuffer buffer, Type? type)
+    private static string CreateTypeName(Type type)
     {
-        if (type is null)
-        {
-            buffer.Write("null");
-            return;
-        }
-
-        if (_typeNameCache.TryGetValue(type, out var name))
-        {
-            buffer.Write(name);
-            return;
-        }
-
         // Enum types are their Name
         if (type.IsEnum)
         {
-            buffer.Write(type.Name);
-            return;
+            return type.Name;
         }
+
+        using var text = TextBuilder.New;
 
         // Nullable<T> => T?
         var underType = Nullable.GetUnderlyingType(type);
         if (underType is not null)
         {
             // c# Nullable alias
-            buffer.WriteTypeName(underType);
-            buffer.Write("?");
-            return;
+            return text
+                .AppendType(underType)
+                .Append('?')
+                .ToString();
         }
 
         // Pointer -> uType*
         if (type.IsPointer)
         {
+            // ptr alias
             underType = type.GetElementType()!;
-            buffer.WriteTypeName(underType);
-            buffer.Write("*");
-            return;
+            return text.AppendType(underType)
+                .Append('*')
+                .ToString();
         }
 
         // ByRef => ref type
         if (type.IsByRef)
         {
             underType = type.GetElementType()!;
-            buffer.Write("ref ");
-            buffer.WriteTypeName(underType);
-            return;
+            return text.Append("ref ")
+                .AppendType(underType)
+                .ToString();
         }
 
 #if !NETFRAMEWORK && !NETSTANDARD2_0
@@ -96,84 +87,59 @@ public static class TypeNames
         if (type.IsArray)
         {
             underType = type.GetElementType()!;
-            buffer.WriteTypeName(underType);
-            buffer.Write("[]");
-            return;
+            return text.AppendType(underType)
+                .Append("[]")
+                .ToString();
         }
 
         // Nested Type?
         if (type is { IsNested: true, IsGenericParameter: false })
         {
-            buffer.WriteTypeName(type.DeclaringType);
-            buffer.Write(".");
+            text.AppendType(type.DeclaringType)
+                .Append('.');
         }
+
+        // Start processing type name
+        text typeName = type.Name.AsSpan();
 
         // If non-generic
         if (!type.IsGenericType)
         {
             // Just write the type name and we're done
-            buffer.Write(type.Name);
+            return text.Append(typeName).ToString();
         }
-        else
-        {
-            // Start processing type name
-            var typeName = type.Name.AsSpan();
 
-            /* The default NameFrom for a generic type is:
+        /* The default Name for a generic type is:
              * Thing<>   = Thing`1
              * Thing<,>  = Thing`2
              * Thing<,,> = Thing`3
              * ...
              */
-            int i = typeName.IndexOf('`');
-            if (i >= 0)
-            {
-                buffer.Write(typeName.Slice(0, i));
-            }
-            else
-            {
-                Debugger.Break();
-                // Odd... use the name
-                buffer.Write(typeName);
-            }
-
-            // Add our generic types to finish
-            var argTypes = type.GetGenericArguments();
-            int argCount = argTypes.Length;
-            Debug.Assert(argCount > 0);
-
-            buffer.Write("<");
-            buffer.WriteTypeName(argTypes[0]);
-            for (i = 1; i < argCount; i++)
-            {
-                buffer.Write(", ");
-                buffer.WriteTypeName(argTypes[i]);
-            }
-
-            buffer.Write(">");
+        int i = typeName.IndexOf('`');
+        if (i >= 0)
+        {
+            text.Append(typeName[..i]);
         }
-    }
+        else
+        {
+            Debugger.Break();
+            // Odd... use the name
+            text.Append(typeName);
+        }
 
-    internal static void WriteTypeName<T>(this ref TextBuffer buffer)
-        => WriteTypeName(ref buffer, typeof(T));
+        // Add our generic types to finish
+        var argTypes = type.GetGenericArguments();
+        int argCount = argTypes.Length;
+        Debug.Assert(argCount > 0);
 
-    internal static void WriteTypeNameOf(this ref TextBuffer buffer, object? obj)
-        => WriteTypeName(ref buffer, obj?.GetType());
-
-    internal static void WriteTypeNameOf<T>(this ref TextBuffer buffer, T? _)
-        => WriteTypeName(ref buffer, typeof(T));
-
-
-
-    private static string CreateTypeName(Type? type)
-    {
-        var text = new TextBuffer();
-        WriteTypeName(ref text, type);
-        return text.ToStringAndDispose();
+        return text.Append('<')
+            .Delimit(", ", argTypes, static (tb, argType) => tb.AppendType(argType))
+            .Append('>')
+            .ToString();
     }
 
     /// <summary>
-    /// Gets the rendered name of this <see cref="Type"/>
+    /// Gets the rendered name of a <see cref="Type"/>
     /// </summary>
     public static string NameOf(this Type? type)
     {
@@ -183,11 +149,27 @@ public static class TypeNames
     }
 
     /// <summary>
-    /// Gets the rendered name of a generic type
+    /// Gets the rendered name of <typeparamref name="T"/>
     /// </summary>
     public static string NameOf<T>()
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
         => _typeNameCache.GetOrAdd<T>(static t => CreateTypeName(t));
+
+    /// <summary>
+    /// Gets the rendered name of the <see cref="Type"/> of this <paramref name="instance"/>
+    /// </summary>
+    public static string NameOfType<TInstance>(this TInstance instance)
+        where TInstance : struct
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+        => NameOf<TInstance>();
+
+    /// <summary>
+    /// Gets the rendered name of the <see cref="Type"/> of this <paramref name="instance"/>
+    /// </summary>
+    public static string NameOfType(this object? instance)
+        => NameOf(instance?.GetType());
 }
