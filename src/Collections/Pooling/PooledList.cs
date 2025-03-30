@@ -1,6 +1,4 @@
 ﻿// Identifiers should have correct suffix
-
-
 #pragma warning disable CA1710
 
 namespace ScrubJay.Collections.Pooling;

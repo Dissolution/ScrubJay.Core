@@ -1,7 +1,6 @@
 ﻿// ReSharper disable InvokeAsExtensionMethod
 
 using System.Reflection;
-using ScrubJay.Collections;
 using ScrubJay.Expressions;
 
 namespace ScrubJay.Comparison;

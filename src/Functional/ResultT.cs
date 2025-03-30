@@ -58,12 +58,12 @@ public readonly struct Result<T> :
     public static implicit operator Result<T>(Exception ex) => Error(ex);
 
     /// <summary>
-    /// Implicitly convert a standalone <see cref="Ok{T}"/> to an <see cref="Result{T}.Ok(T)"/>
+    /// Implicitly convert a standalone <see cref="Compat.Ok{T}"/> to an <see cref="Result{T}.Ok(T)"/>
     /// </summary>
     public static implicit operator Result<T>(Compat.Ok<T> ok) => Ok(ok._value);
 
     /// <summary>
-    /// Implicitly convert a standalone <see cref="Error{E}"/> to an <see cref="Result{T}.Error"/>
+    /// Implicitly convert a standalone <see cref="Compat.Error{E}"/> to an <see cref="Result{T}.Error"/>
     /// </summary>
     public static implicit operator Result<T>(Compat.Error<Exception> error) => Error(error._value);
 

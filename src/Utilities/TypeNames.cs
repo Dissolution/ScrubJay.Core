@@ -1,7 +1,5 @@
 #pragma warning disable IDE0058, CA2263
 
-using ScrubJay.Collections;
-
 namespace ScrubJay.Utilities;
 
 /// <summary>
@@ -110,11 +108,11 @@ public static class TypeNames
         }
 
         /* The default Name for a generic type is:
-             * Thing<>   = Thing`1
-             * Thing<,>  = Thing`2
-             * Thing<,,> = Thing`3
-             * ...
-             */
+         * Thing<>   = Thing`1
+         * Thing<,>  = Thing`2
+         * Thing<,,> = Thing`3
+         * ...
+         */
         int i = typeName.IndexOf('`');
         if (i >= 0)
         {
@@ -160,6 +158,7 @@ public static class TypeNames
     /// <summary>
     /// Gets the rendered name of the <see cref="Type"/> of this <paramref name="instance"/>
     /// </summary>
+#pragma warning disable IDE0060
     public static string NameOfType<TInstance>(this TInstance instance)
         where TInstance : struct
 #if NET9_0_OR_GREATER
@@ -172,4 +171,6 @@ public static class TypeNames
     /// </summary>
     public static string NameOfType(this object? instance)
         => NameOf(instance?.GetType());
+
+#pragma warning restore IDE0060
 }

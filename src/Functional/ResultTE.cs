@@ -40,12 +40,12 @@ public readonly struct Result<T, E> :
     public static implicit operator bool(Result<T, E> result) => result._isOk;
 
     /// <summary>
-    /// Implicitly convert a standalone <see cref="Ok{T}"/> to an <see cref="Result{T, E}.Ok(T)"/>
+    /// Implicitly convert a standalone <see cref="Compat.Ok{T}"/> to an <see cref="Result{T, E}.Ok(T)"/>
     /// </summary>
     public static implicit operator Result<T, E>(Compat.Ok<T> ok) => Ok(ok._value);
 
     /// <summary>
-    /// Implicitly convert a standalone <see cref="Error{E}"/> to an <see cref="Result{T, E}.Error(E)"/>
+    /// Implicitly convert a standalone <see cref="Compat.Error{E}"/> to an <see cref="Result{T, E}.Error(E)"/>
     /// </summary>
     public static implicit operator Result<T, E>(Compat.Error<E> error) => Error(error._value);
 
@@ -156,7 +156,7 @@ public readonly struct Result<T, E> :
             return _value!;
         if (_error is Exception ex)
             throw ex;
-        throw new InvalidOperationException(ToString());
+        throw new InvalidOperationException(errorMessage ?? ToString());
     }
 
     /// <summary>

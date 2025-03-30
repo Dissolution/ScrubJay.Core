@@ -5,10 +5,11 @@
 /// that uses underlying type equality
 /// </summary>
 public sealed class ObjectComparer :
+    IHasDefault<ObjectComparer>,
     IEqualityComparer<object>, IEqualityComparer,
     IComparer<object>, IComparer
 {
-    public static readonly ObjectComparer Default = new();
+    public static ObjectComparer Default { get; } = new();
 
     public new bool Equals(object? x, object? y)
     {

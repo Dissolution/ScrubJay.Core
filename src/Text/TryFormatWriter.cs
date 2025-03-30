@@ -1,6 +1,5 @@
 ﻿// Exception to Identifiers Require Correct Suffix
 
-using ScrubJay.Collections;
 #pragma warning disable CA1710
 // Only implements IEnumerable for fluent collection initialization support
 #pragma warning disable CA1010

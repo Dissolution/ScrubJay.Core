@@ -2,7 +2,12 @@
 
 [PublicAPI]
 [StructLayout(LayoutKind.Explicit, Size = 4)]
-public readonly struct HResult : IFormattable
+public readonly struct HResult :
+#if NET7_0_OR_GREATER
+    IEqualityOperators<HResult, HResult, bool>,
+#endif
+    IEquatable<HResult>,
+    IFormattable
 {
     private const uint FAIL_MASK = 0b_10000000_00000000_00000000_00000000;
     private const uint FACI_MASK = 0b_01111111_11111111_00000000_00000000;
@@ -10,6 +15,10 @@ public readonly struct HResult : IFormattable
 
     public static implicit operator HResult(int hresult) => new(hresult);
     public static implicit operator HResult(uint hresult) => new(hresult);
+
+    public static bool operator ==(HResult left, HResult right) => left.Equals(right);
+    public static bool operator !=(HResult left, HResult right) => !left.Equals(right);
+
 
     [FieldOffset(0)]
     private readonly uint _hresult;
@@ -43,6 +52,25 @@ public readonly struct HResult : IFormattable
     {
         _hresult = hresult;
     }
+
+    public bool Equals(HResult hresult) => _hresult == hresult._hresult;
+
+    public bool Equals(uint hresult) => _hresult == hresult;
+
+    public bool Equals(int hresult) => _hresult == (uint)hresult;
+
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        return obj switch
+        {
+            HResult hresult => Equals(hresult),
+            uint uhr => Equals(uhr),
+            int hr => Equals(hr),
+            _ => false,
+        };
+    }
+
+    public override int GetHashCode() => (int)_hresult;
 
     public string ToString(string? format, IFormatProvider? provider = default)
     {
