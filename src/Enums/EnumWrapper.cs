@@ -35,27 +35,35 @@ public readonly struct EnumWrapper<TEnum> :
 
 #region Parse
 
-    public static EnumWrapper<TEnum> Parse(string str, IFormatProvider? _ = default) => EnumInfo<TEnum>.TryParse(str).OkOrThrow();
+    public static EnumWrapper<TEnum> Parse(string str, IFormatProvider? _ = default)
+    {
+#if NETFRAMEWORK || NETSTANDARD2_0
+        object obj = System.Enum.Parse(typeof(TEnum), str, true);
+        TEnum e = obj.ThrowIfNot<TEnum>();
+        return new(e);
+#else
+        return System.Enum.Parse<TEnum>(str, true);
+#endif
+    }
 
-    public static EnumWrapper<TEnum> Parse(text text, IFormatProvider? _ = default) => Parse(text.ToString());
+    public static EnumWrapper<TEnum> Parse(text text, IFormatProvider? _ = default)
+        => Parse(text.ToString());
 
     public static bool TryParse([NotNullWhen(true)] string? str, IFormatProvider? _, out EnumWrapper<TEnum> result)
     {
-        var parseResult = EnumInfo.TryParse<TEnum>(str);
-        if (!parseResult.IsOk(out var @enum))
+        if (!System.Enum.TryParse(str, true, out result))
         {
             result = default;
             return false;
         }
 
-        result = new(@enum);
         return true;
     }
 
     public static bool TryParse(text text, IFormatProvider? _, out EnumWrapper<TEnum> result)
         => TryParse(text.ToString(), _, out result);
 
-    #endregion
+#endregion
 
 
     public readonly TEnum Enum;
@@ -93,7 +101,9 @@ public readonly struct EnumWrapper<TEnum> :
 
     public override int GetHashCode() => Enum.GetHashCode();
 
-    public bool TryFormat(Span<char> destination, out int charsWritten,
+    public bool TryFormat(
+        Span<char> destination,
+        out int charsWritten,
         text format = default,
         IFormatProvider? provider = default)
     {

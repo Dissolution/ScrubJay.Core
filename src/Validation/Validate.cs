@@ -2,7 +2,7 @@
 
 using ScrubJay.Constraints;
 using ArgumentNullException = System.ArgumentNullException;
-using Unit = ScrubJay.Functional.Unit;
+
 
 namespace ScrubJay.Validation;
 
@@ -568,7 +568,7 @@ public static class Validate
                 () => new ArgumentOutOfRangeException(
                     arrayName, arr,
                     $"Cannot fit {count} items into [{arr.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}"))
-            select Unit.Default;
+            select Unit();
     }
 
     public static Result<Unit> CanCopyTo<T>(
@@ -588,7 +588,7 @@ public static class Validate
                 () => new ArgumentOutOfRangeException(
                     arrayName, arr,
                     $"Cannot fit {count} items into [{arr.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}"))
-            select Unit.Default;
+            select Unit();
     }
 
     public static Result<Unit> CanCopyTo<T>(

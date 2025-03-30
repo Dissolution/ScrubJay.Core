@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Functional.Linq;
+﻿namespace ScrubJay.Functional;
 
 [PublicAPI]
 public static class FunctionalExtensions

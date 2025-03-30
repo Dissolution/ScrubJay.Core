@@ -177,7 +177,7 @@ public class ResultTests
 
     [Theory]
     [MemberData(nameof(ResultsData))]
-    public void CanEnumerate<T>(Result<T> result)
+    public void CanEnumerate<T>(Result<T, Exception?> result)
     {
         using var e = result.GetEnumerator();
         if (result.IsOk(out var ok))

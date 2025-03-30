@@ -512,19 +512,10 @@ public readonly struct Option<T> :
     public sealed class OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
     {
         private readonly Option<T> _option;
-
         private bool _canYield;
 
-        object? IEnumerator.Current => (object?)Current;
-
-        public T Current
-        {
-            get
-            {
-                Throw.IfBadEnumerationState(!_canYield);
-                return _option.SomeOrThrow();
-            }
-        }
+        object? IEnumerator.Current => _option.SomeOrThrow();
+        public T Current => _option.SomeOrThrow();
 
         public OptionEnumerator(Option<T> option)
         {

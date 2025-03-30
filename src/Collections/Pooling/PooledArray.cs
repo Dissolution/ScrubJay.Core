@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CA1816
 
-namespace ScrubJay.Pooling;
+namespace ScrubJay.Collections.Pooling;
 
 [PublicAPI]
 public abstract class PooledArray<T> : IDisposable

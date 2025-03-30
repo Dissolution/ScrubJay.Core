@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Pooling;
+﻿namespace ScrubJay.Collections.Pooling;
 
 public readonly struct StackIndex :
 #if NET7_0_OR_GREATER

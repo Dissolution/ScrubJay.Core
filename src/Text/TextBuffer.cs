@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CA1045
 
-global using TextBuffer = ScrubJay.Pooling.Buffer<char>;
+global using TextBuffer = ScrubJay.Collections.Pooling.Buffer<char>;
 
 // ReSharper disable MergeCastWithTypeCheck
 

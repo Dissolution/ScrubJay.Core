@@ -1,7 +1,6 @@
-﻿using ScrubJay.Collections;
-#pragma warning disable CA1711, CA1815
+﻿#pragma warning disable CA1711, CA1815
 
-namespace ScrubJay.Pooling;
+namespace ScrubJay.Collections.Pooling;
 
 [PublicAPI]
 [MustDisposeResource(true)]

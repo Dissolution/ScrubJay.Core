@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
+using ScrubJay.Collections.Pooling;
 using ScrubJay.Extensions;
-using ScrubJay.Pooling;
 
 // ReSharper disable AccessToDisposedClosure
 
@@ -12,7 +12,7 @@ public class InstancePoolTests
     [Fact]
     public void InstanceIsTheSame()
     {
-        using var pool = Pool.Create(static () => new StrongBox<Guid>(Guid.NewGuid()));
+        using var pool = InstancePool.Create(static () => new StrongBox<Guid>(Guid.NewGuid()));
 
         var firstInstance = pool.Rent();
         var firstGuid = firstInstance.Value;
@@ -27,7 +27,7 @@ public class InstancePoolTests
     [Fact]
     public void TotalCapacityWorks()
     {
-        using var pool = Pool.FromPolicy<StrongBox<Guid>>(new()
+        using var pool = InstancePool.FromPolicy<StrongBox<Guid>>(new()
         {
             CreateInstance = static () => new(Guid.NewGuid()), MaxCapacity = 2,
         });
@@ -53,7 +53,7 @@ public class InstancePoolTests
     [Fact]
     public void CanCreateStringBuilder()
     {
-        using var pool = Pool.Default<StringBuilder>();
+        using var pool = InstancePool.Default<StringBuilder>();
         var builder = pool.Rent();
         Assert.NotNull(builder);
         Assert.Equal(0, builder.Length);
@@ -63,7 +63,7 @@ public class InstancePoolTests
     [Fact]
     public void CanReuseStringBuilder()
     {
-        using var pool = Pool.Default<StringBuilder>();
+        using var pool = InstancePool.Default<StringBuilder>();
 
         var builder = pool.Rent();
         Assert.NotNull(builder);
@@ -91,9 +91,9 @@ public class InstancePoolTests
     [Fact]
     public void CanCleanStringBuilder()
     {
-        using var pool = Pool.Create<StringBuilder>(
+        using var pool = InstancePool.Create<StringBuilder>(
             static () => new(),
-            static sb => sb.Clear());
+            cleanInstance: static sb => sb.Clear());
 
         var builder = pool.Rent();
         Assert.Equal(0, builder.Length);
@@ -120,9 +120,9 @@ public class InstancePoolTests
     [Fact]
     public void CanCleanArray()
     {
-        using var pool = Pool.Create<int[]>(
+        using var pool = InstancePool.Create<int[]>(
             static () => new int[8],
-            static arr => arr.AsSpan().ForEach((ref int i) => i = 0)
+            cleanInstance: static arr => arr.AsSpan().ForEach((ref int i) => i = 0)
         );
 
         int[]? array = pool.Rent();
@@ -138,9 +138,9 @@ public class InstancePoolTests
     public async Task TestIfInstancePoolIsAsyncSafeAsync()
     {
         var rand = new Random();
-        using var pool = Pool.Create<StringBuilder>(
+        using var pool = InstancePool.Create<StringBuilder>(
             static () => new(),
-            static sb => sb.Clear());
+            cleanInstance: static sb => sb.Clear());
         const int COUNT = 100;
         var tasks = new Task<string>[COUNT];
         for (int i = 0; i < COUNT; i++)

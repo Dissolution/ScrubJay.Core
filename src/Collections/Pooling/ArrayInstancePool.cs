@@ -1,6 +1,6 @@
 ﻿using System.Buffers;
 
-namespace ScrubJay.Pooling;
+namespace ScrubJay.Collections.Pooling;
 
 [PublicAPI]
 public sealed class ArrayInstancePool<T> : IArrayInstancePool<T>

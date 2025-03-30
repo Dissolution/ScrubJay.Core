@@ -48,6 +48,9 @@ public class BaseNTextEncoder
             buffer.Add(symbols[(int)charsIndex]);
             iBig /= len;
         } while (iBig > BigInteger.Zero);
+
+        // have to reverse
+        buffer.Written.Reverse();
         return Ok(buffer.ToString());
     }
 

@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Pooling;
+﻿namespace ScrubJay.Collections.Pooling;
 
 [PublicAPI]
 public interface IArrayInstancePool<T> : IInstancePool<T[]>

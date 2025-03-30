@@ -94,12 +94,12 @@
         <Using Include="System.Runtime.CompilerServices"/>
         <Using Include="System.Runtime.InteropServices"/>
         <Using Include="JetBrains.Annotations"/>
-        <Using Include="ScrubJay.Pooling"/>
 
         <!-- Recommendations for downstream too -->
         <Using Include="ScrubJay.Functional"/>
         <Using Include="ScrubJay.Functional.Prelude" Static="true"/>
-
+        <Using Include="ScrubJay.Collections"/>
+        <Using Include="ScrubJay.Collections.Pooling"/>
         <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.Enums"/>
         <Using Include="ScrubJay.Extensions"/>

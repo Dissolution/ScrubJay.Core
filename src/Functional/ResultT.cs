@@ -484,17 +484,9 @@ public readonly struct Result<T> :
         private readonly Result<T> _result;
         private bool _canYield;
 
-        object? IEnumerator.Current => this.Current;
+        object? IEnumerator.Current => _result.OkOrThrow();
 
-        public T Current
-        {
-            get
-            {
-                Throw.IfBadEnumerationState(!_canYield);
-                Debug.Assert(_result._isOk);
-                return _result._value!;
-            }
-        }
+        public T Current => _result.OkOrThrow();
 
         public ResultEnumerator(Result<T> result)
         {

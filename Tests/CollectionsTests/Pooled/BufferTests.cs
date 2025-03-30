@@ -1,9 +1,9 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using ScrubJay.Collections.Pooling;
 using ScrubJay.Comparison;
-using ScrubJay.Pooling;
 
-namespace ScrubJay.Tests.BuffersTests;
+namespace ScrubJay.Tests.CollectionsTests.Pooled;
 
 public class BufferTests
 {

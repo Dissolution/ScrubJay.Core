@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using ScrubJay.Expressions;
-using ScrubJay.Functional.Linq;
 
 #pragma warning disable CA1031, MA0048, CA1045
 

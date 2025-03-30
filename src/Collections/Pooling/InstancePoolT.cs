@@ -1,34 +1,24 @@
 ﻿using System.Collections.Concurrent;
 
-namespace ScrubJay.Pooling;
+namespace ScrubJay.Collections.Pooling;
 
 /// <summary>
-///
+/// An <see cref="IInstancePool{T}"/> that uses delegates to control its operations
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">
+/// The <see cref="Type"/> of <c>class</c> instances stored in this <see cref="InstancePool{T}"/>
+/// </typeparam>
 /// <seealso href="https://github.dev/dotnet/aspnetcore/blob/main/src/ObjectPool/src/DefaultObjectPool.cs"/>
 [PublicAPI]
-[MustDisposeResource]
+[MustDisposeResource(true)]
 public sealed class InstancePool<T> : IInstancePool<T>, IDisposable
     where T : class
 {
-    /// <summary>
-    /// Whenever an instance is requested but unavailable, this function will create a new instance
-    /// </summary>
-    private readonly Func<T> _createInstance;
-
-    /// <summary>
-    /// <i>Optional</i><br/>
-    /// Whenever an instance is returned to the pool, this function will try ready that instance for re-use<br/>
-    /// Failure of this function will cause the instance to be disposed instead
-    /// </summary>
+    private readonly Func<T>        _createInstance;
+    private readonly Func<T, bool>? _tryReadyInstance;
     private readonly Func<T, bool>? _tryCleanInstance;
+    private readonly Action<T>?     _disposeInstance;
 
-    /// <summary>
-    /// <i>Optional</i><br/>
-    /// Whenever an instance returned to the pool would be discarded, this action will dispose that instance
-    /// </summary>
-    private readonly Action<T>? _disposeInstance;
 
     /// <summary>
     /// The first instance is stored in this dedicated field as we expect to be able to satisfy most rents from it
@@ -38,6 +28,9 @@ public sealed class InstancePool<T> : IInstancePool<T>, IDisposable
     /// <summary>
     /// Storage for the extra pool instances
     /// </summary>
+    /// <remarks>
+    /// If this is <c>null</c>, this pool has been disposed
+    /// </remarks>
     private ConcurrentQueue<T>? _instances = [];
 
     private int _itemCount;
@@ -57,31 +50,49 @@ public sealed class InstancePool<T> : IInstancePool<T>, IDisposable
         MaxCapacity = poolPolicy.MaxCapacity.Clamp(0, 0x40000000);
 
         _createInstance = poolPolicy.CreateInstance;
+        _tryReadyInstance = poolPolicy.TryReadyInstance;
         _tryCleanInstance = poolPolicy.TryCleanInstance;
         _disposeInstance = poolPolicy.DisposeInstance;
     }
 
     public T Rent()
     {
-        // check for disposal
-        Throw.IfDisposed(_instances is null, _instances);
-
-        // check first instance and try to take it
-        T? instance = _firstInstance;
-        if ((instance == null) || (Interlocked.CompareExchange<T?>(ref _firstInstance, null, instance) != instance))
+        while (true)
         {
-            // There was no instance or we could not take it
-            // can we get from instances?
-            if (!_instances.TryDequeue(out instance))
-            {
-                // no instance available, create a new one (item count does not change)
-                return _createInstance();
-            }
-        }
+            // check for disposal
+            Throw.IfDisposed(_instances is null, _instances);
 
-        // we are storing one fewer instance
-        Interlocked.Decrement(ref _itemCount);
-        return instance;
+            // check first instance and try to take it
+            T? instance = _firstInstance;
+            if ((instance == null) || (Interlocked.CompareExchange<T?>(ref _firstInstance, null, instance) != instance))
+            {
+                // There was no instance or we could not take it
+                // can we get from instances?
+                if (!_instances.TryDequeue(out instance))
+                {
+                    // no instance available, create a new one (item count does not change)
+                    instance = _createInstance();
+                    if (_tryReadyInstance is not null && !_tryReadyInstance(instance))
+                    {
+                        throw new InvalidOperationException("Could not Ready brand new Instance");
+                    }
+                    return instance;
+                }
+            }
+
+            // we are storing one fewer instance
+            Interlocked.Decrement(ref _itemCount);
+
+            if (_tryReadyInstance is not null && !_tryReadyInstance(instance))
+            {
+                // Could not ready this instance, destroy it
+                _disposeInstance?.Invoke(instance);
+                // try again
+                continue;
+            }
+
+            return instance;
+        }
     }
 
     public void Return(T? instance)

@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Pooling;
+﻿namespace ScrubJay.Collections.Pooling;
 
 [PublicAPI]
 public static class InstancePoolExtensions

@@ -1,12 +1,12 @@
 ﻿using static ScrubJay.Constraints.GenericTypeConstraint;
 
-namespace ScrubJay.Pooling;
+namespace ScrubJay.Collections.Pooling;
 
 /// <summary>
 ///
 /// </summary>
 [PublicAPI]
-public static class Pool
+public static class InstancePool
 {
     [MustDisposeResource]
     public static InstancePool<T> FromPolicy<T>(InstancePoolPolicy<T> policy)
@@ -14,27 +14,24 @@ public static class Pool
         => new(policy);
 
     [MustDisposeResource]
-    public static InstancePool<T> Create<T>(Func<T> createInstance)
-        where T : class
-        => new(new(createInstance));
-
-    [MustDisposeResource]
     public static InstancePool<T> Create<T>(
         Func<T> createInstance,
-        Func<T, bool>? tryCleanInstance,
-        Action<T>? disposeInstance = null)
-        where T : class
-        => new(new(createInstance, tryCleanInstance, disposeInstance));
-
-    [MustDisposeResource]
-    public static InstancePool<T> Create<T>(
-        Func<T> createInstance,
-        Action<T>? cleanInstance,
+        Func<T, bool>? tryReadyInstance = null,
+        Action<T>? readyInstance = null,
+        Func<T, bool>? tryCleanInstance = null,
+        Action<T>? cleanInstance = null,
         Action<T>? disposeInstance = null)
         where T : class
     {
-        Func<T, bool>? tryCleanInstance = null;
-        if (cleanInstance is not null)
+        if (tryReadyInstance is null && readyInstance is not null)
+        {
+            tryReadyInstance = inst =>
+            {
+                readyInstance(inst);
+                return true;
+            };
+        }
+        if (tryCleanInstance is null && cleanInstance is not null)
         {
             tryCleanInstance = inst =>
             {
@@ -42,8 +39,14 @@ public static class Pool
                 return true;
             };
         }
-        return new(new(createInstance, tryCleanInstance, disposeInstance));
+        var policy = new InstancePoolPolicy<T>(
+            createInstance: createInstance,
+            tryReadyInstance: tryReadyInstance,
+            tryCleanInstance: tryCleanInstance,
+            disposeInstance: disposeInstance);
+        return new InstancePool<T>(policy);
     }
+
 
     public static InstancePool<T> Default<T>(IsNew<T> _ = default)
         where T : class, new()
@@ -53,7 +56,6 @@ public static class Pool
         where T : class, IDisposable, new()
         => new(new InstancePoolPolicy<T>(
             createInstance: static () => new(),
-            cleanInstance: null,
             disposeInstance: static instance => instance.Dispose()));
 
 

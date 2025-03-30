@@ -3,7 +3,6 @@
 using System.Reflection;
 using ScrubJay.Collections;
 using ScrubJay.Expressions;
-using ScrubJay.Functional.Linq;
 
 namespace ScrubJay.Comparison;
 
