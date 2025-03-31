@@ -53,10 +53,10 @@ public static class Prelude
     public static Result<T, E> Ok<T, E>(T value)
         => Result<T, E>.Ok(value);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Error<E> Error<E>(E error)
-        where E : Exception
-        => new Error<E>(error);
+    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // public static Error<E> Error<E>(E error)
+    //     where E : Exception
+    //     => new Error<E>(error);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Error<T>(Exception error)

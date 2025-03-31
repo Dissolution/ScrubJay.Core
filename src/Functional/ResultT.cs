@@ -51,12 +51,13 @@ public readonly struct Result<T> :
     public static implicit operator bool(Result<T> result) => result._isOk;
 
     /// <summary>
+    /// Implicitly convert a <typeparamref name="T"/> <paramref name="value"/> to a <see cref="Result{T}.Ok"/>
+    /// </summary>
+    public static implicit operator Result<T>(T value) => Ok(value);
+
+    /// <summary>
     /// Implicitly convert an <see cref="Exception"/> to a <see cref="Result{T}.Error"/>
     /// </summary>
-    /// <remarks>
-    /// This exists (but the equivalent implicit convert from T does not) only to support
-    /// implicit conversions from supertypes
-    /// </remarks>
     public static implicit operator Result<T>(Exception ex) => Error(ex);
 
     /// <summary>
