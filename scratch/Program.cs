@@ -13,119 +13,47 @@ using InlineIL;
 using ScrubJay.Debugging;
 using ScrubJay.Extensions;
 using ScrubJay.Memory;
-using ScrubJay.Scratch;
 using ScrubJay.Validation;
 using ScrubJay.Text;
 using static InlineIL.IL;
 
-int[] a = [1, 4, 7];
-//Type aType = Utils.GetTypeOf<int[]>(a);
-Type aSafeType = Utils.SafeGetTypeOf<int[]>(a);
-
-ReadOnlySpan<char> b = "abcdf";
-//Type bType = Utils.GetTypeOf<ReadOnlySpan<char>>(b);
-Type bSafeType = Utils.SafeGetTypeOf<ReadOnlySpan<char>>(b);
-
-object c = (object)Guid.NewGuid();
-//Type cType = Utils.GetTypeOf<object>(c);
-Type cSafeType = Utils.SafeGetTypeOf<object>(c);
-
-Debugger.Break();
-return 0;
-
-
-
-namespace ScrubJay.Scratch
-{
-    public static class Utils
-    {
-        public static Type GetTypeOf<I>(I instance)
-            where I : allows ref struct
-        {
-            var methods = typeof(I)
-                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-               .Where(method => method.Name == nameof(GetType))
-                //.Where(method => method.GetParameters().Length == 0)
-                .ToList();
-
-            Debug.Assert(methods.Count == 1);
-            var getTypeMethod = methods[0];
-
-            DynamicMethod dyn = new DynamicMethod(
-                "GT",
-                MethodAttributes.Public | MethodAttributes.Static,
-                CallingConventions.Standard,
-                typeof(Type),
-                [typeof(I)],
-                typeof(Utils).Module,
-                true);
-            ILGenerator il = dyn.GetILGenerator();
-            if (typeof(I).IsValueType)
-            {
-                il.Emit(OpCodes.Ldarga, 0);
-                il.Emit(OpCodes.Call, getTypeMethod);
-            }
-            else
-            {
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Callvirt, getTypeMethod);
-            }
-
-            il.Emit(OpCodes.Ret);
-
-            Func<I, Type> gt = dyn.CreateDelegate<Func<I, Type>>();
-            Type t = gt(instance);
-            Debugger.Break();
-            return t;
-        }
-
-        public static Type SafeGetTypeOf<I>(I instance)
-            where I : allows ref struct
-        {
-            // Emit.Ldarg(nameof(instance));
-            // Emit.Call(MethodRef.Method(TypeRef.Type<I>(), nameof(GetTypeOf)));
-            // return Return<Type>();
-            return typeof(I);
-        }
-    }
-
-
-
-
-}
-
-
-
-
-
-/*
 
 // Usage
-var done = parseDivideAsync("abc", "13");
+var done = ScrubJay.Scratch.Util_2.parseDivideAsync("abc", "13");
 
 
 Console.WriteLine((object)done);
 
 return 0;
 
-static Result<double> parse(string input) => Result.TryInvoke(() => double.Parse(input));
 
-static Result<double> divide(double x, double y) => Result.TryInvoke(() =>
-{
-    if (y == 0)
-        throw new DivideByZeroException();
-    return x / y;
-});
 
-static async Result<double> parseDivideAsync(string a, string b)
+
+namespace ScrubJay.Scratch
 {
-    var x = await parse(a);
-    var y = await Result.TryInvoke(() => double.Parse(b));
-    Console.WriteLine("Successfully parsed inputs");
-    return await divide(x, y);
+    public static class Util_2
+    {
+        private static Result<double> parse(string input) => Result.TryInvoke(() => double.Parse(input));
+
+        private static Result<double> divide(double x, double y) => Result.TryInvoke(() =>
+        {
+            if (y == 0)
+                throw new DivideByZeroException();
+            return x / y;
+        });
+
+        public static async Result<double> parseDivideAsync(string a, string b)
+        {
+            var x = await parse(a);
+            var y = await Result.TryInvoke(() => double.Parse(b));
+            Console.WriteLine("Successfully parsed inputs");
+            return await divide(x, y);
+        }
+    }
 }
 
-*/
+
+
 /*
 
 static AsyncResult<double> Parse(string input)

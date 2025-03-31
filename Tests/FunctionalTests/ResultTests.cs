@@ -9,7 +9,7 @@ using NIExResult = ScrubJay.Functional.Result<int?, System.Exception?>;
 
 // ReSharper disable VariableCanBeNotNullable
 
-namespace ScrubJay.Tests;
+namespace ScrubJay.Tests.FunctionalTests;
 
 public class ResultTests
 {

@@ -1,23 +1,31 @@
-﻿// https://devblogs.microsoft.com/dotnet/how-async-await-really-works/
+﻿// Override equals and operator equals on value types
+#pragma warning disable CA1815
 
 namespace ScrubJay.Functional;
 
+/// <summary>
+///
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <remarks>
+/// <a href="https://devblogs.microsoft.com/dotnet/how-async-await-really-works/"/><br/>
+/// <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/classes#15151-general"/><br/>
+/// </remarks>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public readonly struct ResultAwaiter<T> :
-    IEquatable<ResultAwaiter<T>>,
     ICriticalNotifyCompletion,
     INotifyCompletion
 {
-    public static bool operator ==(ResultAwaiter<T> left, ResultAwaiter<T> right) => left.Equals(right);
-
-    public static bool operator !=(ResultAwaiter<T> left, ResultAwaiter<T> right) => !left.Equals(right);
-
-
     private readonly Result<T> _result;
 
-    public bool IsCompleted => true;
+    public bool IsCompleted
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => true;
+    }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ResultAwaiter(Result<T> result)
     {
         _result = result;
@@ -32,12 +40,4 @@ public readonly struct ResultAwaiter<T> :
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void UnsafeOnCompleted(Action continuation) => continuation();
-
-    public bool Equals(ResultAwaiter<T> other) => other._result == this._result;
-
-    public override bool Equals(object? obj) => obj is ResultAwaiter<T> other && Equals(other);
-
-    public override int GetHashCode() => _result.GetHashCode();
-
-    public override string ToString() => $"await {_result}";
 }

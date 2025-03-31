@@ -52,7 +52,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>ScrubJay.Core</PackageId>
         <Title>ScrubJay - Core</Title>
-        <Version>0.40.0-alpha</Version>
+        <Version>0.40.1-alpha</Version>
         <Authors>Dissolution</Authors>
 
         <Description>

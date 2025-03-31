@@ -12,10 +12,15 @@ public readonly ref struct Ok<T>
 public readonly struct Ok<T>
 #endif
 {
-    internal readonly T _value;
+    public readonly T Value;
 
     public Ok(T value)
     {
-        _value = value;
+        Value = value;
+    }
+
+    public void Deconstruct(out T value)
+    {
+        value = this.Value;
     }
 }

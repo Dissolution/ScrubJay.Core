@@ -42,7 +42,7 @@ public readonly struct Result<T, E> :
     /// <summary>
     /// Implicitly convert a standalone <see cref="Compat.Ok{T}"/> to an <see cref="Result{T, E}.Ok(T)"/>
     /// </summary>
-    public static implicit operator Result<T, E>(Compat.Ok<T> ok) => Ok(ok._value);
+    public static implicit operator Result<T, E>(Compat.Ok<T> ok) => Ok(ok.Value);
 
     /// <summary>
     /// Implicitly convert a standalone <see cref="Compat.Error{E}"/> to an <see cref="Result{T, E}.Error(E)"/>

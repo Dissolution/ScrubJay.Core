@@ -21,22 +21,24 @@ namespace ScrubJay.Functional;
 /// <typeparam name="T"></typeparam>
 /// <remarks>
 /// This result type also uses c# syntax to be more fluent<br/>
-/// TODO!!!
 /// 🦀 Heavily inspired by Rust's Result type 🦀
 /// </remarks>
 /// <seealso href="https://doc.rust-lang.org/std/result/enum.Result.html"/>
 [PublicAPI]
-#if !NETFRAMEWORK && !NETSTANDARD2_0
 [AsyncMethodBuilder(typeof(ResultAsyncMethodBuilder<>))]
-#endif
 [StructLayout(LayoutKind.Auto)]
 public readonly struct Result<T> :
+    /* All commented out interfaces are implemented, but cannot be declared per CS0695
+     * 'Result<T>' cannot implement both 'X' and 'Y' because they may unify for some type parameter substitutions
+     */
 #if NET7_0_OR_GREATER
     IEqualityOperators<Result<T>, Result<T>, bool>,
     IEqualityOperators<Result<T>, T, bool>,
 #endif
     IEquatable<Result<T>>,
     IEquatable<T>,
+    IEquatable<Compat.Ok<T>>,
+    //IEquatable<bool>,
     IFormattable,
     ISpanFormattable,
     IEnumerable<T>
@@ -60,7 +62,7 @@ public readonly struct Result<T> :
     /// <summary>
     /// Implicitly convert a standalone <see cref="Compat.Ok{T}"/> to an <see cref="Result{T}.Ok(T)"/>
     /// </summary>
-    public static implicit operator Result<T>(Compat.Ok<T> ok) => Ok(ok._value);
+    public static implicit operator Result<T>(Compat.Ok<T> ok) => Ok(ok.Value);
 
     /// <summary>
     /// Implicitly convert a standalone <see cref="Compat.Error{E}"/> to an <see cref="Result{T}.Error"/>
@@ -70,41 +72,32 @@ public readonly struct Result<T> :
     // We pass equality down to T values
 
     public static bool operator ==(Result<T> left, Result<T> right) => left.Equals(right);
-
     public static bool operator !=(Result<T> left, Result<T> right) => !left.Equals(right);
-
     public static bool operator ==(Result<T> result, T? value) => result.Equals(value);
-
     public static bool operator !=(Result<T> result, T? value) => !result.Equals(value);
+    public static bool operator ==(T? value, Result<T> result) => result.Equals(value);
+    public static bool operator !=(T? value, Result<T> result) => !result.Equals(value);
 
 #endregion
 
-    private static InvalidOperationException GetDefaultError()
-        => new($"Result<{typeof(T).NameOf()}>.Error");
 
     /// <summary>
-    /// Creates a new Ok <see cref="Result{T}"/>
+    /// Creates <see cref="Result{T}"/>.Ok(<paramref name="value"/>)
     /// </summary>
-    /// <param name="ok">The Ok value</param>
-    /// <returns></returns>
-    public static Result<T> Ok(T ok) => new Result<T>(true, ok, default);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<T> Ok(T value) => new Result<T>(true, value, default);
 
     /// <summary>
-    /// Creates a new Error <see cref="Result{T}"/>
+    /// Creates <see cref="Result{T}"/>.Error(<paramref name="ex"/>)
     /// </summary>
-    /// <param name="ex">The Error value</param>
-    /// <returns></returns>
     public static Result<T> Error(Exception ex) => new Result<T>(false, default, ex);
 
+    /* These exact fields were chosen so that
+     * default(Result<>) would be a failure (same as default(bool) == false)
+     */
 
-    // is this Result.Ok?
-    // default(Result) implies !_isOk, thus default(Result) == None)]
-    private readonly bool _isOk;
-
-    // if this is Result.Ok, the Ok Value
-    private readonly T? _value;
-
-    // if this is Result.Error, the Error Value
+    private readonly bool       _isOk;
+    private readonly T?         _value;
     private readonly Exception? _error;
 
     /// <summary>
@@ -168,7 +161,7 @@ public readonly struct Result<T> :
         {
             throw _error;
         }
-        throw GetDefaultError();
+        throw new InvalidOperationException(ToString());
     }
 
     /// <summary>
@@ -274,7 +267,7 @@ public readonly struct Result<T> :
             {
                 throw _error;
             }
-            throw GetDefaultError();
+            throw new InvalidOperationException(ToString());
         }
     }
 
@@ -325,19 +318,31 @@ public readonly struct Result<T> :
         if (!_isOk)
             return !result._isOk;
         return result._isOk &&
-            EqualityComparer<T>.Default.Equals(_value!, result._value!);
+            Equate.Values(_value!, result._value!);
     }
 
-    public bool Equals(T? ok)
-        => _isOk && EqualityComparer<T>.Default.Equals(_value!, ok!);
+    public bool Equals(Compat.Ok<T> ok)
+        => _isOk && Equate.Values(_value, ok.Value);
+
+    public bool Equals(T? value)
+        => _isOk && Equate.Values(_value, value);
+
+    public bool Equals(T? value, IEqualityComparer<T>? valueComparer)
+        => _isOk && Equate.Values(_value, value, valueComparer);
+
+    public bool Equals<E>(Compat.Error<E> _) => !_isOk;
+
+    public bool Equals(Exception? _) => !_isOk;
+
+    public bool Equals(bool isOk) => _isOk == isOk;
 
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj switch
         {
             Result<T> result => Equals(result),
-            T ok => Equals(ok),
-            Exception => !_isOk,
-            bool isOk => (_isOk == isOk),
+            T value => Equals(value),
+            Exception ex => Equals(ex),
+            bool isOk => Equals(isOk),
             _ => false,
         };
 
@@ -378,21 +383,25 @@ public readonly struct Result<T> :
         text format = default,
         IFormatProvider? provider = default)
     {
-        var writer = new TryFormatWriter(destination);
         if (_isOk)
         {
-            writer.Add("Ok(");
-            writer.Add(_value, format, provider);
-            writer.Add(')');
+            return new TryFormatWriter(destination)
+            {
+                "Ok(",
+                {
+                    _value, format, provider
+                },
+                ')',
+            }.GetResult(out charsWritten);
         }
-        else
+
+        return new TryFormatWriter(destination)
         {
-            writer.Add(_error.NameOfType());
-            writer.Add('(');
-            writer.Add(_error!.Message);
-            writer.Add(')');
-        }
-        return writer.GetResult(out charsWritten);
+            _error.NameOfType(),
+            '(',
+            _error?.Message,
+            ')',
+        }.GetResult(out charsWritten);
     }
 
     public override string ToString() => ToString(default, default);
@@ -400,7 +409,7 @@ public readonly struct Result<T> :
 #endregion
 
 
-#region LINQ
+#region Linq + Async duck typing
 
     public Result<N> Select<N>(Fn<T, N> selector)
     {
@@ -411,7 +420,6 @@ public readonly struct Result<T> :
         return new(false, default, _error);
     }
 
-
     public Result<N> Select<N>(Fn<T, Option<N>> selector)
     {
         if (_isOk && selector(_value!).IsSome(out var value))
@@ -420,7 +428,6 @@ public readonly struct Result<T> :
         }
         return new(false, default, _error);
     }
-
 
     public Result<N> Select<N>(Fn<T, Result<N>> selector)
     {
@@ -431,7 +438,6 @@ public readonly struct Result<T> :
         return new(false, default, _error);
     }
 
-
     public Result<N> Select<X, N>(X state, Fn<X, T, N> selector)
     {
         if (_isOk)
@@ -441,7 +447,6 @@ public readonly struct Result<T> :
         return new(false, default, _error);
     }
 
-
     public Result<N> SelectMany<N>(Fn<T, Result<N>> newSelector)
     {
         if (_isOk)
@@ -450,7 +455,6 @@ public readonly struct Result<T> :
         }
         return new(false, default, _error);
     }
-
 
     public Result<N> SelectMany<K, N>(Fn<T, Result<K>> keySelector, Fn<T, K, N> newSelector)
     {
@@ -463,9 +467,9 @@ public readonly struct Result<T> :
     }
 
     /// <summary>
-    /// Support for <c>await</c> syntax in order to support early-return / short-circuiting
+    /// Support for <c>await</c> syntax in order to support early return from <c>async</c> methods
     /// </summary>
-    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ResultAwaiter<T> GetAwaiter() => new(this);
 
 #region IEnumerable
@@ -479,19 +483,17 @@ public readonly struct Result<T> :
 
     [PublicAPI]
     [MustDisposeResource(false)]
-    public sealed class ResultEnumerator : IEnumerator<T>, IEnumerator, IDisposable
+    public readonly struct ResultEnumerator : IEnumerator<T>, IEnumerator, IDisposable
     {
         private readonly Result<T> _result;
-        private bool _canYield;
 
-        object? IEnumerator.Current => _result.OkOrThrow();
+        object? IEnumerator.Current => (object?)Current;
 
         public T Current => _result.OkOrThrow();
 
         public ResultEnumerator(Result<T> result)
         {
             _result = result;
-            _canYield = result._isOk;
         }
 
         void IDisposable.Dispose()
@@ -499,23 +501,12 @@ public readonly struct Result<T> :
             /* Do Nothing */
         }
 
-        public bool MoveNext()
+        void IEnumerator.Reset()
         {
-            if (!_canYield)
-            {
-                return false;
-            }
-            else
-            {
-                _canYield = false;
-                return true;
-            }
+            /* Do Nothing */
         }
 
-        public void Reset()
-        {
-            _canYield = _result._isOk;
-        }
+        public bool MoveNext() => _result;
     }
 
 #endregion

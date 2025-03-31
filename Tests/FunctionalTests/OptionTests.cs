@@ -1,6 +1,6 @@
 ﻿using ScrubJay.Functional;
 
-namespace ScrubJay.Tests;
+namespace ScrubJay.Tests.FunctionalTests;
 
 public class OptionTests
 {
