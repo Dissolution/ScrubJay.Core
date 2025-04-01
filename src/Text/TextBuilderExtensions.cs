@@ -44,22 +44,6 @@ public static class TextBuilderExtensions
         return builder;
     }
 
-    public static B AppendIf<B, T, F>(this B builder, bool condition,
-        T trueValue,
-        F falseValue)
-        where B : TextBuilderBase<B>
-    {
-        if (condition)
-        {
-            builder.Append<T>(trueValue);
-        }
-        else
-        {
-            builder.Append<F>(falseValue);
-        }
-        return builder;
-    }
-
     public static B AppendIf<B, T>(this B builder, Option<T> option, string? format = null, IFormatProvider? provider = null)
         where B : TextBuilderBase<B>
     {

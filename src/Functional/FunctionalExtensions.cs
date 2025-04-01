@@ -246,26 +246,6 @@ public static class FunctionalExtensions
 
         return new ArgumentException("Source has no matching values");
     }
-
-
-    public static T First<T>(this IEnumerable<T> source)
-        => TryGetFirst<T>(source).OkOrThrow();
-
-    public static T First<T>(this IEnumerable<T> source, Func<T, bool> predicate)
-        => TryGetFirst<T>(source, predicate).OkOrThrow();
-
-    public static T? FirstOrDefault<T>(this IEnumerable<T> source)
-        => TryGetFirst<T>(source).OkOrDefault();
-
-    public static T FirstOr<T>(this IEnumerable<T> source, T fallback)
-        => TryGetFirst<T>(source).OkOr(fallback);
-
-    public static T? FirstOrDefault<T>(this IEnumerable<T> source, Func<T, bool> predicate)
-        => TryGetFirst<T>(source, predicate).OkOrDefault();
-
-    public static T FirstOr<T>(this IEnumerable<T> source, Func<T, bool> predicate, T fallback)
-        => TryGetFirst<T>(source, predicate).OkOr(fallback);
-
 #endregion
 
     #region Min
