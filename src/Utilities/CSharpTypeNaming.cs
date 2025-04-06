@@ -1,4 +1,4 @@
-#pragma warning disable IDE0058, CA2263
+#pragma warning disable IDE0058, CA2263, IDE0060
 
 namespace ScrubJay.Utilities;
 

@@ -3,8 +3,6 @@ global using NotNull = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 #pragma warning disable CA1715
 
-using ScrubJay.Functional.Compat;
-
 namespace ScrubJay.Functional;
 
 // <summary>
