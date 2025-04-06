@@ -1,4 +1,5 @@
 ﻿// Prefix generic type parameter with T
+
 #pragma warning disable CA1715
 
 namespace ScrubJay.Text;
@@ -6,18 +7,6 @@ namespace ScrubJay.Text;
 [PublicAPI]
 public static class TextBuilderExtensions
 {
-    /// <summary>
-    /// Appends the name of a <see cref="Type"/> to this <typeparamref name="B"/>
-    /// </summary>
-    public static B AppendType<B>(this B builder, Type? type)
-        where B : TextBuilderBase<B>
-        => builder.Append(TypeNames.NameOf(type));
-
-    public static B AppendTypeOf<B, T>(this B builder, T? value)
-        where B : TextBuilderBase<B>
-        => builder.Append(TypeNames.NameOfType(value));
-
-
     public static B AppendIf<B, T>(this B builder, bool condition, T trueValue)
         where B : TextBuilderBase<B>
     {
@@ -28,7 +17,9 @@ public static class TextBuilderExtensions
         return builder;
     }
 
-    public static B AppendIf<B, T>(this B builder, bool condition,
+    public static B AppendIf<B, T>(
+        this B builder,
+        bool condition,
         T trueValue,
         T falseValue)
         where B : TextBuilderBase<B>
@@ -116,7 +107,9 @@ public static class TextBuilderExtensions
     }
 
 
-    public static B If<B>(this B builder, bool condition,
+    public static B If<B>(
+        this B builder,
+        bool condition,
         Action<B>? onTrue,
         Action<B>? onFalse = null)
         where B : TextBuilderBase<B>
@@ -132,7 +125,29 @@ public static class TextBuilderExtensions
         return builder;
     }
 
-    public static B If<B, T>(this B builder, Option<T> option,
+    public static B If<B, S>(
+        this B builder,
+        S state,
+        Func<S, bool> condition,
+        Action<B, S> onTrue,
+        Action<B, S>? onFalse)
+        where B : TextBuilderBase<B>
+    {
+        if (condition(state))
+        {
+            onTrue?.Invoke(builder, state);
+        }
+        else
+        {
+            onFalse?.Invoke(builder, state);
+        }
+        return builder;
+    }
+
+
+    public static B If<B, T>(
+        this B builder,
+        Option<T> option,
         Action<B, T>? onSome,
         Action<B>? onNone = null)
         where B : TextBuilderBase<B>
@@ -148,7 +163,9 @@ public static class TextBuilderExtensions
         return builder;
     }
 
-    public static B If<B, T>(this B builder, Result<T> result,
+    public static B If<B, T>(
+        this B builder,
+        Result<T> result,
         Action<B, T>? onOk,
         Action<B, Exception>? onError = null)
         where B : TextBuilderBase<B>
@@ -164,7 +181,9 @@ public static class TextBuilderExtensions
         return builder;
     }
 
-    public static B If<B, T, E>(this B builder, Result<T,E> result,
+    public static B If<B, T, E>(
+        this B builder,
+        Result<T, E> result,
         Action<B, T>? onOk,
         Action<B, E>? onError = null)
         where B : TextBuilderBase<B>
@@ -179,7 +198,6 @@ public static class TextBuilderExtensions
         }
         return builder;
     }
-
 
 
     public delegate void BuildEnumeratedSplitValue<in B, T>(B builder, ReadOnlySpan<T> segment)

@@ -219,6 +219,18 @@ public static class Throw
     [DoesNotReturn]
     [StackTraceHidden]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void NotSupported([CallerMemberName] string? callerName = null)
-        => throw new NotSupportedException($"{callerName} is not supported");
+    public static void NotSupported(
+        string? message = null,
+        [CallerMemberName]
+        string? callerName = null)
+        => throw new NotSupportedException($"{callerName} is not supported: {message}");
+
+    [DoesNotReturn]
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static R NotSupported<R>(
+        string? message = null,
+        [CallerMemberName]
+        string? callerName = null)
+        => throw new NotSupportedException($"{callerName} is not supported: {message}");
 }

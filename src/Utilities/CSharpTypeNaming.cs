@@ -6,7 +6,7 @@ namespace ScrubJay.Utilities;
 /// A helper for rendering <see cref="Type"/> names
 /// </summary>
 [PublicAPI]
-public static class TypeNames
+public static class CSharpTypeNaming
 {
     // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/
     private static readonly ConcurrentTypeMap<string> _typeNameCache = new()
@@ -32,8 +32,13 @@ public static class TypeNames
         [typeof(nuint)] = "nuint",
     };
 
-    private static string CreateTypeName(Type type)
+    public static string NameOf(this Type? type)
     {
+        if (type is null) return string.Empty;
+
+        if (_typeNameCache.TryGetValue(type, out var name))
+            return name;
+
         // Enum types are their Name
         if (type.IsEnum)
         {
@@ -48,7 +53,7 @@ public static class TypeNames
         {
             // c# Nullable alias
             return text
-                .AppendType(underType)
+                .Append(NameOf(underType))
                 .Append('?')
                 .ToString();
         }
@@ -58,7 +63,7 @@ public static class TypeNames
         {
             // ptr alias
             underType = type.GetElementType()!;
-            return text.AppendType(underType)
+            return text.Append(NameOf(underType))
                 .Append('*')
                 .ToString();
         }
@@ -68,24 +73,15 @@ public static class TypeNames
         {
             underType = type.GetElementType()!;
             return text.Append("ref ")
-                .AppendType(underType)
+                .Append(NameOf(underType))
                 .ToString();
         }
-
-#if !NETFRAMEWORK && !NETSTANDARD2_0
-        // allows ref struct, ???
-        if (type.IsByRefLike)
-        {
-            Debugger.Break();
-            // continue
-        }
-#endif
 
         // Array => T[]
         if (type.IsArray)
         {
             underType = type.GetElementType()!;
-            return text.AppendType(underType)
+            return text.Append(NameOf(underType))
                 .Append("[]")
                 .ToString();
         }
@@ -93,7 +89,7 @@ public static class TypeNames
         // Nested Type?
         if (type is { IsNested: true, IsGenericParameter: false })
         {
-            text.AppendType(type.DeclaringType)
+            text.Append(NameOf(type.DeclaringType))
                 .Append('.');
         }
 
@@ -131,20 +127,11 @@ public static class TypeNames
         Debug.Assert(argCount > 0);
 
         return text.Append('<')
-            .Delimit(", ", argTypes, static (tb, argType) => tb.AppendType(argType))
+            .Delimit(", ", argTypes, static (tb, argType) => tb.Append(NameOf(argType)))
             .Append('>')
             .ToString();
     }
 
-    /// <summary>
-    /// Gets the rendered name of a <see cref="Type"/>
-    /// </summary>
-    public static string NameOf(this Type? type)
-    {
-        if (type is null)
-            return "null";
-        return _typeNameCache.GetOrAdd(type, static t => CreateTypeName(t));
-    }
 
     /// <summary>
     /// Gets the rendered name of <typeparamref name="T"/>
@@ -153,12 +140,11 @@ public static class TypeNames
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
-        => _typeNameCache.GetOrAdd<T>(static t => CreateTypeName(t));
+        => NameOf(typeof(T));
 
     /// <summary>
     /// Gets the rendered name of the <see cref="Type"/> of this <paramref name="instance"/>
     /// </summary>
-#pragma warning disable IDE0060
     public static string NameOfType<TInstance>(this TInstance instance)
         where TInstance : struct
 #if NET9_0_OR_GREATER
@@ -171,6 +157,4 @@ public static class TypeNames
     /// </summary>
     public static string NameOfType(this object? instance)
         => NameOf(instance?.GetType());
-
-#pragma warning restore IDE0060
 }
