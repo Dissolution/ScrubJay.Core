@@ -7,6 +7,8 @@ namespace ScrubJay.Text;
 [PublicAPI]
 public static class TextBuilderExtensions
 {
+#region AppendIf
+
     public static B AppendIf<B, T>(this B builder, bool condition, T trueValue)
         where B : TextBuilderBase<B>
     {
@@ -35,6 +37,17 @@ public static class TextBuilderExtensions
         return builder;
     }
 
+    public static B AppendIf<B, T>(this B builder, Nullable<T> nullable, string? format = null, IFormatProvider? provider = null)
+        where B : TextBuilderBase<B>
+        where T : struct
+    {
+        if (nullable.TryGetValue(out var value))
+        {
+            builder.Append<T>(value, format, provider);
+        }
+        return builder;
+    }
+
     public static B AppendIf<B, T>(this B builder, Option<T> option, string? format = null, IFormatProvider? provider = null)
         where B : TextBuilderBase<B>
     {
@@ -54,6 +67,10 @@ public static class TextBuilderExtensions
         }
         return builder;
     }
+
+#endregion
+
+#region AppendOk + AppendError
 
     public static B AppendOk<B, T>(this B builder, Result<T> result)
         where B : TextBuilderBase<B>
@@ -76,16 +93,6 @@ public static class TextBuilderExtensions
     }
 
 
-    public static B AppendIf<B, T, E>(this B builder, Result<T, E> result)
-        where B : TextBuilderBase<B>
-    {
-        if (result.IsOk(out var ok))
-        {
-            builder.Append<T>(ok);
-        }
-        return builder;
-    }
-
     public static B AppendOk<B, T, E>(this B builder, Result<T, E> result)
         where B : TextBuilderBase<B>
     {
@@ -106,11 +113,14 @@ public static class TextBuilderExtensions
         return builder;
     }
 
+#endregion
+
+#region If
 
     public static B If<B>(
         this B builder,
         bool condition,
-        Action<B>? onTrue,
+        Action<B>? onTrue = null,
         Action<B>? onFalse = null)
         where B : TextBuilderBase<B>
     {
@@ -129,8 +139,8 @@ public static class TextBuilderExtensions
         this B builder,
         S state,
         Func<S, bool> condition,
-        Action<B, S> onTrue,
-        Action<B, S>? onFalse)
+        Action<B, S>? onTrue = null,
+        Action<B, S>? onFalse = null)
         where B : TextBuilderBase<B>
     {
         if (condition(state))
@@ -144,11 +154,29 @@ public static class TextBuilderExtensions
         return builder;
     }
 
+    public static B If<B, T>(
+        this B builder,
+        Nullable<T> nullable,
+        Action<B, T>? onNotNull = null,
+        Action<B>? onNull = null)
+        where B : TextBuilderBase<B>
+        where T : struct
+    {
+        if (nullable.TryGetValue(out var value))
+        {
+            onNotNull?.Invoke(builder, value);
+        }
+        else
+        {
+            onNull?.Invoke(builder);
+        }
+        return builder;
+    }
 
     public static B If<B, T>(
         this B builder,
         Option<T> option,
-        Action<B, T>? onSome,
+        Action<B, T>? onSome = null,
         Action<B>? onNone = null)
         where B : TextBuilderBase<B>
     {
@@ -166,7 +194,7 @@ public static class TextBuilderExtensions
     public static B If<B, T>(
         this B builder,
         Result<T> result,
-        Action<B, T>? onOk,
+        Action<B, T>? onOk = null,
         Action<B, Exception>? onError = null)
         where B : TextBuilderBase<B>
     {
@@ -184,7 +212,7 @@ public static class TextBuilderExtensions
     public static B If<B, T, E>(
         this B builder,
         Result<T, E> result,
-        Action<B, T>? onOk,
+        Action<B, T>? onOk = null,
         Action<B, E>? onError = null)
         where B : TextBuilderBase<B>
     {
@@ -199,6 +227,9 @@ public static class TextBuilderExtensions
         return builder;
     }
 
+#endregion
+
+#region With SpanSplitter
 
     public delegate void BuildEnumeratedSplitValue<in B, T>(B builder, ReadOnlySpan<T> segment)
         where B : TextBuilderBase<B>
@@ -280,4 +311,6 @@ public static class TextBuilderExtensions
 
         return builder;
     }
+
+#endregion
 }

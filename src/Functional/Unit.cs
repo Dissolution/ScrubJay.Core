@@ -12,6 +12,7 @@
 /// - <c>Result&lt;Unit&gt;</c><br/>
 /// </remarks>
 [PublicAPI]
+[StructLayout(LayoutKind.Auto, Size = 0)]
 public readonly struct Unit :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Unit, Unit, bool>,
@@ -37,9 +38,14 @@ public readonly struct Unit :
     public static bool operator <=(Unit _, Unit __) => true;
 
     /// <summary>
-    /// The <see cref="Unit"/> value
+    /// Gets <see cref="Unit"/>
     /// </summary>
     public static readonly Unit Default;
+
+    /// <summary>
+    /// Gets a <c>ref</c> to <see cref="Unit"/>
+    /// </summary>
+    public static ref Unit Ref => ref Notsafe.InAsRef(in Default);
 
     public int CompareTo(Unit unit) => 0;
     public bool Equals(Unit unit) => true;

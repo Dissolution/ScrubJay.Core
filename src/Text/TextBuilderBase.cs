@@ -164,11 +164,7 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
             return _builder;
         }
 
-        if (value is IWriteable)
-        {
-            ((IWriteable)value).WriteTo(_builder);
-        }
-        else if (value is IFormattable)
+        if (value is IFormattable)
         {
             if (value is ISpanFormattable)
             {
@@ -209,11 +205,7 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
             return _builder;
         }
 
-        if (value is IWriteable)
-        {
-            ((IWriteable)value).WriteTo(_builder);
-        }
-        else if (value is IFormattable)
+        if (value is IFormattable)
         {
             if (value is ISpanFormattable)
             {
@@ -254,11 +246,7 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
             return _builder;
         }
 
-        if (value is IWriteable)
-        {
-            ((IWriteable)value).WriteTo(_builder);
-        }
-        else if (value is IFormattable)
+        if (value is IFormattable)
         {
             if (value is ISpanFormattable)
             {
