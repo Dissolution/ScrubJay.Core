@@ -1,6 +1,6 @@
 ﻿// CA1716: Identifiers should not match keywords
-
-#pragma warning disable CA1716
+// CA1045: Consider a design that does not require ref parameters
+#pragma warning disable CA1716, CA1045
 
 namespace ScrubJay.Functional;
 
@@ -63,5 +63,25 @@ public static class Option
         if (nestedOption.IsSome(out var option) && option.IsSome(out var value))
             return Some<T>(value);
         return None<T>();
+    }
+
+
+    public static T SomeOrFill<T>(this ref Option<T> option, T value)
+    {
+        if (option.IsSome(out var some))
+            return some;
+
+        option = Some(value);
+        return value;
+    }
+
+    public static T SomeOrFill<T>(this ref Option<T> option, Func<T> getValue)
+    {
+        if (option.IsSome(out var some))
+            return some;
+
+        some = getValue();
+        option = Some(some);
+        return some;
     }
 }

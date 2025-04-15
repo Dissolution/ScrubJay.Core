@@ -24,17 +24,15 @@ public readonly struct ExprNode :
         _obj = obj;
     }
 
-    public Option<int> IsIndex => _obj.As<int>();
+    public Option<int> IsIndex => _obj.Is<int>();
 
-    public Option<string> IsName => _obj.As<string>();
+    public Option<string> IsName => _obj.Is<string>();
 
-    public Option<ParameterExpression> IsParameter => _obj.As<ParameterExpression>();
+    public Option<ParameterExpression> IsParameter => _obj.Is<ParameterExpression>();
 
 
     public bool Equals(ExprNode other)
-    {
-        return ObjectComparer.Default.Equals(_obj, other._obj);
-    }
+        => ObjectComparer.Default.Equals(_obj, other._obj);
 
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is ExprNode node && Equals(node);

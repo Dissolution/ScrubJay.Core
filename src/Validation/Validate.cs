@@ -1,6 +1,5 @@
 ﻿#pragma warning disable S907, S3236, S3247
 
-using ScrubJay.Constraints;
 using ArgumentNullException = System.ArgumentNullException;
 
 
@@ -251,23 +250,6 @@ public static class Validate
         FAIL:
         return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' must be in [{inclusiveMin}..{exclusiveMax})");
     }
-
-
-    public static Result<T> InBounds<T>(T value, Bounds<T> bounds, [CallerArgumentExpression(nameof(value))] string? valueName = null)
-    {
-        if (bounds.Contains(value))
-            return Ok(value);
-        return new ArgumentOutOfRangeException(valueName, value, $"{valueName} '{value}' was not in {bounds}");
-    }
-
-    public static Result<T> InBounds<T>(
-        T value,
-        Bound<T> lowerBound,
-        Bound<T> upperBound,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-        => InBounds<T>(value, Bounds.Create(lowerBound, upperBound), valueName);
-
 
 
     public static Result<T> IsNotNull<T>(

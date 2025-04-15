@@ -79,4 +79,9 @@ public static class EnumerableExtensions
     }
 
 #pragma warning restore S3776
+
+#if NETSTANDARD2_0
+    public static HashSet<T> ToHashSet<T>(this IEnumerable<T> enumerable)
+        => new(enumerable);
+#endif
 }

@@ -2,52 +2,28 @@
 
 namespace ScrubJay.Text.Comparison;
 
-public abstract record class StringMatch
+public sealed record class StringMatch
 {
-    public static implicit operator StringMatch(StringComparison stringComparison) => stringComparison switch
+    public StringComparison StringComparison { get; init; } = StringComparison.Ordinal;
+
+    public bool StartsWith { get; init; } = false;
+
+    public bool EndsWith { get; init; } = false;
+
+    public bool Contains { get; init; } = false;
+
+
+    public bool IgnoresCase => (((int)StringComparison % 2) != 0);
+
+    public bool IsExact => (StringComparison == StringComparison.Ordinal) &&
+        !StartsWith && !EndsWith && !Contains;
+
+
+    public StringMatch() { }
+
+    public StringMatch(StringComparison comparison)
     {
-        StringComparison.CurrentCulture => new Current(),
-        StringComparison.CurrentCultureIgnoreCase => new Current()
-        {
-            IgnoreCase = true,
-        },
-        StringComparison.InvariantCulture => new Invariant(),
-        StringComparison.InvariantCultureIgnoreCase => new Invariant()
-        {
-            IgnoreCase = true,
-        },
-        StringComparison.Ordinal => new Ordinal(),
-        StringComparison.OrdinalIgnoreCase => new Ordinal()
-        {
-            IgnoreCase = true,
-        },
-        _ => throw new UnreachableException(),
-    };
-
-    public bool IgnoreCase { get; init; }
-    public bool StartsWith { get; init; }
-    public bool EndsWith { get; init; }
-    public bool Contains { get; init; }
-
-    public bool IsExact => !IgnoreCase && !StartsWith && !EndsWith && !Contains;
-    public abstract StringComparison StringComparison { get; }
-
-    public sealed record class Ordinal : StringMatch
-    {
-        public override StringComparison StringComparison
-            => IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-    }
-
-    public sealed record class Invariant : StringMatch
-    {
-        public override StringComparison StringComparison
-            => IgnoreCase ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture;
-    }
-
-    public sealed record class Current : StringMatch
-    {
-        public override StringComparison StringComparison
-            => IgnoreCase ? StringComparison.CurrentCultureIgnoreCase : StringComparison.CurrentCulture;
+        this.StringComparison = comparison;
     }
 }
 

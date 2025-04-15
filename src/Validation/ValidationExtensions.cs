@@ -72,9 +72,11 @@ public static class ValidationExtensions
 
 
     [return: NotNullIfNotNull(nameof(obj))]
-    public static TOut? ThrowIfCannotBe<TOut>(this object? obj, [CallerArgumentExpression(nameof(obj))] string? objName = null)
+    public static TOut? ThrowIfCannotBe<TOut>(
+        this object? obj,
+        [CallerArgumentExpression(nameof(obj))] string? objName = null)
     {
-        if (obj.CanBe<TOut>(out var output))
+        if (obj.Is<TOut?>(out TOut? output))
             return output;
         throw new ArgumentException($"The given {obj?.GetType().NameOf()} value is not a valid {typeof(TOut).NameOf()} instance", objName);
     }

@@ -13,7 +13,7 @@ public sealed class ArrayWrapper<T> :
         [CallerArgumentExpression(nameof(obj))]
         string? objName = null)
     {
-        if (obj.CanBe<T>(out var value))
+        if (obj.K<T>(out var value))
             return Ok(value);
         return new ArgumentException($"Object `{obj}` is not a {typeof(T).NameOf()}", objName);
     }

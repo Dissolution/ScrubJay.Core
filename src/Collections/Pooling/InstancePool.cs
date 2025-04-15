@@ -1,4 +1,4 @@
-﻿using static ScrubJay.Constraints.GenericTypeConstraint;
+﻿using static ScrubJay.Utilities.GenericTypeConstraint;
 
 namespace ScrubJay.Collections.Pooling;
 

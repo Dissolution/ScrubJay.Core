@@ -136,7 +136,7 @@ public static class Equate
     {
         var comparer = _equalityComparers
             .GetOrAdd(type, static t => TryFindEqualityComparer(t).OkOr(null!))
-            .As<IEqualityComparer>();
+            .Is<IEqualityComparer>();
         return comparer.SomeOrThrow();
     }
 
@@ -147,7 +147,7 @@ public static class Equate
     {
         var comparer = _equalityComparers
             .GetOrAdd(typeof(T), static _ => TryFindEqualityComparer<T>().OkOrDefault())
-            .As<IEqualityComparer<T>>();
+            .Is<IEqualityComparer<T>>();
         return comparer.SomeOrThrow();
     }
 

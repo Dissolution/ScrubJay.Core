@@ -51,6 +51,11 @@ public readonly struct None :
     public static readonly None Default;
 
     /// <summary>
+    /// Gets a <c>ref</c> to <see cref="None"/>
+    /// </summary>
+    public static ref None Ref => ref Notsafe.InAsRef(in Default);
+
+    /// <summary>
     /// All <see cref="None"/>s are the same
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

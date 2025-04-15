@@ -1,4 +1,4 @@
-﻿using static ScrubJay.Constraints.GenericTypeConstraint;
+﻿using static ScrubJay.Utilities.GenericTypeConstraint;
 // ReSharper disable InvokeAsExtensionMethod
 // ReSharper disable MethodOverloadWithOptionalParameter
 

@@ -4,6 +4,13 @@
 
 namespace ScrubJay.Text;
 
+public delegate void BuildWithSpan<in B, T>(B builder, Span<T> span)
+    where B : TextBuilderBase<B>;
+
+public delegate void BuildWithReadOnlySpan<in B, T>(B builder, ReadOnlySpan<T> span)
+    where B : TextBuilderBase<B>;
+
+
 [PublicAPI]
 public static class TextBuilderExtensions
 {
@@ -223,6 +230,156 @@ public static class TextBuilderExtensions
         else
         {
             onError?.Invoke(builder, error);
+        }
+        return builder;
+    }
+
+#endregion
+
+#region Validation
+
+    public static B IfNotNull<B, T>(
+        this B builder,
+        T? value,
+        Action<B, T>? onNotNull = null,
+        Action<B>? onNull = null)
+        where B : TextBuilderBase<B>
+    {
+        if (value is not null)
+        {
+            onNotNull?.Invoke(builder, value!);
+        }
+        else
+        {
+            onNull?.Invoke(builder);
+        }
+        return builder;
+    }
+
+    public static B IfNotNull<B, T, S>(
+        this B builder,
+        T? value,
+        S state,
+        Action<B, T>? onNotNull = null,
+        Action<B, S>? onNull = null)
+        where B : TextBuilderBase<B>
+    {
+        if (value is not null)
+        {
+            onNotNull?.Invoke(builder, value!);
+        }
+        else
+        {
+            onNull?.Invoke(builder, state);
+        }
+        return builder;
+    }
+
+    public static B IfNotEmpty<B, T>(
+        this B builder,
+        T[]? array,
+        Action<B, T[]>? onNotEmpty = null,
+        Action<B>? onEmpty = null)
+        where B : TextBuilderBase<B>
+    {
+        if (array is null || (array.Length == 0))
+        {
+            onEmpty?.Invoke(builder);
+        }
+        else
+        {
+            onNotEmpty?.Invoke(builder, array);
+        }
+        return builder;
+    }
+
+    public static B IfNotEmpty<B, T>(
+        this B builder,
+        Span<T> span,
+        BuildWithSpan<B,T>? onNotEmpty = null,
+        Action<B>? onEmpty = null)
+        where B : TextBuilderBase<B>
+    {
+        if (span.Length == 0)
+        {
+            onEmpty?.Invoke(builder);
+        }
+        else
+        {
+            onNotEmpty?.Invoke(builder, span);
+        }
+        return builder;
+    }
+
+    public static B IfNotEmpty<B, T>(
+        this B builder,
+        ReadOnlySpan<T> span,
+        BuildWithReadOnlySpan<B,T>? onNotEmpty = null,
+        Action<B>? onEmpty = null)
+        where B : TextBuilderBase<B>
+    {
+        if (span.Length == 0)
+        {
+            onEmpty?.Invoke(builder);
+        }
+        else
+        {
+            onNotEmpty?.Invoke(builder, span);
+        }
+        return builder;
+    }
+
+    public static B IfNotEmpty<B, T>(
+        this B builder,
+        ICollection<T>? collection,
+        Action<B, ICollection<T>>? onNotEmpty = null,
+        Action<B>? onEmpty = null)
+        where B : TextBuilderBase<B>
+    {
+        if (collection is null || (collection.Count == 0))
+        {
+            onEmpty?.Invoke(builder);
+        }
+        else
+        {
+            onNotEmpty?.Invoke(builder, collection);
+        }
+        return builder;
+    }
+
+    public static B IfNotEmpty<B>(
+        this B builder,
+        string? str,
+        Action<B, string>? onNotEmpty = null,
+        Action<B>? onEmpty = null)
+        where B : TextBuilderBase<B>
+    {
+        if (string.IsNullOrEmpty(str))
+        {
+            onEmpty?.Invoke(builder);
+        }
+        else
+        {
+            onNotEmpty?.Invoke(builder, str!);
+        }
+        return builder;
+    }
+
+
+    public static B IfNotEmpty<B>(
+        this B builder,
+        ICollection? collection,
+        Action<B, ICollection>? onNotEmpty = null,
+        Action<B>? onEmpty = null)
+        where B : TextBuilderBase<B>
+    {
+        if (collection is null || (collection.Count == 0))
+        {
+            onEmpty?.Invoke(builder);
+        }
+        else
+        {
+            onNotEmpty?.Invoke(builder, collection);
         }
         return builder;
     }

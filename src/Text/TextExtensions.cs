@@ -166,7 +166,7 @@ public static class TextExtensions
         var comparison = match.StringComparison;
 
         // Always match on exact
-        if (MemoryExtensions.Equals(text, value, comparison))
+        if (TextHelper.Equate(text, value, comparison))
             return true;
         if (match.Contains && TextHelper.Contains(text, value, comparison))
             return true;

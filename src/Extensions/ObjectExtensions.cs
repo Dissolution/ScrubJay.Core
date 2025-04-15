@@ -10,22 +10,6 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class ObjectExtensions
 {
-    /// <summary>
-    /// Tests if this <see cref="object"/> is a valid <typeparamref name="T"/> value
-    /// </summary>
-    /// <param name="input">The <see cref="object"/> to validate</param>
-    /// <param name="output">
-    /// If the <paramref name="input"/> <see cref="object"/> is a valid <typeparamref name="T"/> value, that value<br/>
-    /// otherwise, <c>default(</c><typeparamref name="T"/><c>)</c>
-    /// </param>
-    /// <typeparam name="T">
-    /// The <see cref="Type"/> of value to check for
-    /// </typeparam>
-    /// <returns>
-    /// <c>true</c> and non-<c>null</c> <paramref name="output"/> if <paramref name="input"/> is a <typeparamref name="T"/><br/>
-    /// <c>false</c> and <c>default</c> <paramref name="output"/> otherwise
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Is<T>(this object? input, [NotNullWhen(true)] out T? output)
     {
         if (input is T)
@@ -37,27 +21,16 @@ public static class ObjectExtensions
         return false;
     }
 
-    public static Result<T> Is<T>(
-        this object? obj,
-        [CallerArgumentExpression(nameof(obj))]
-        string? objName = null)
-        => obj switch
+    public static Option<T> Is<T>(this object? input)
+    {
+        if (input is T)
         {
-            null => new ArgumentNullException(objName),
-            T value => Ok(value),
-            _ => new ArgumentException($"Object `{obj}` is not a `{typeof(T).NameOf()}`", objName),
-        };
+            return Some((T)input);
+        }
+        return None();
+    }
 
-
-    /// <summary>
-    /// Tests if this <see cref="object"/> can be a <typeparamref name="T"/> value,<br/>
-    /// which includes allowing <c>null</c> for <c>class</c> and <c>interface</c> types
-    /// </summary>
-    /// <param name="input"></param>
-    /// <param name="output"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public static bool CanBe<T>(this object? input, [NotNullIfNotNull(nameof(input)), MaybeNullWhen(false)] out T? output)
+    public static bool K<T>(this object? input, [NotNullIfNotNull(nameof(input)), MaybeNullWhen(false)] out T? output)
     {
         if (input is T)
         {
@@ -69,24 +42,27 @@ public static class ObjectExtensions
         return typeof(T).CanContainNull();
     }
 
-    /// <summary>
-    /// Tests if this <see cref="object"/> can be a valid <typeparamref name="T"/> value (similar to the <c>as</c> operator)
-    /// </summary>
-    /// <param name="input">The <see cref="object"/> to validate</param>
-    /// <typeparam name="T">
-    /// The <see cref="Type"/> of value that <paramref name="input"/> should be
-    /// </typeparam>
-    /// <returns>
-    /// <see cref="Option{T}.Some"/> if <paramref name="input"/> is a <typeparamref name="T"/><br/>
-    /// <see cref="Option{T}.None"/> otherwise
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> As<T>(this object? input) => input is T ? Some((T)input) : None<T>();
+    public static bool CanUnboxAs<T>(this object? input)
+    {
+        if (input is T)
+            return true;
+        if (input is null)
+            return typeof(T).CanContainNull();
+        return false;
+    }
+
+    public static bool CanUnboxAs(this object? input, Type? type)
+    {
+        if (input is null)
+            return type.CanContainNull();
+        return input.GetType().Implements(type);
+
+    }
 
     public static Option<T> NotNull<T>(this T? input)
     {
-        if (input is null)
-            return None<T>();
-        return Some<T>(input);
+        if (input is not null)
+            return Some<T>(input);
+        return None<T>();
     }
 }

@@ -44,30 +44,30 @@ public static class ExDump
                 exBlock
                     .AppendLine($"Message: {exception.Message}")
                     .AppendLine($"HResult: {hresult:X}")
-                    .If(Validate.IsNotEmpty(helpLink),
+                    .IfNotEmpty(helpLink,
                         static (tb, hl) => tb
                             .AppendLine($"HelpLink: {hl}"))
-                    .If(Validate.IsNotEmpty(exception.Data),
+                    .IfNotEmpty(exception.Data,
                         static (tb, data) => tb
                             .Append($"Data x{data.Count}")
                             .Block(INDENT, dataBlock => dataBlock
                                 .Enumerate(data.OfType<DictionaryEntry>(),
                                     static (tb, entry) => tb.AppendLine($"{entry.Key}: {entry.Value}"))))
-                    .If(Validate.IsNotEmpty(exception.Source),
+                    .IfNotEmpty(exception.Source,
                         static (tb, source) => tb.AppendLine($"Source: {source}"))
-                    .If(Validate.IsNotNull(exception.TargetSite),
+                    .IfNotNull(exception.TargetSite,
                         (tb, ts) => tb
                             .Append("Target Site: ")
                             .AppendMethodDump(ts)
                             .NewLine())
-                    .If(Validate.IsNotEmpty(exception.StackTrace),
+                    .IfNotEmpty(exception.StackTrace,
                         static (tb, st) => tb.AppendLine($"Trace: {st}"))
-                    .If(Validate.IsNotNull(exception.InnerException),
+                    .IfNotNull(exception.InnerException,
                         (tb, inner) => tb
                             .Append("Inner ").AddIndent(INDENT)
                             .AppendExceptionDump(inner)
                             .RemoveIndent())
-                    .If(exception.As<AggregateException>(),
+                    .If(exception.Is<AggregateException>(),
                         (tb, agg) => tb
                             .Append("Inner Exceptions:")
                             .Block(INDENT, exceptionsBlock => exceptionsBlock

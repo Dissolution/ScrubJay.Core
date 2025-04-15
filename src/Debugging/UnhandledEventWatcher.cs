@@ -1,5 +1,4 @@
 // Sender parameter should be 'this' for instance events
-
 #pragma warning disable MA0091
 // Sender parameter should be 'null' for static events
 #pragma warning disable S4220, MA0092

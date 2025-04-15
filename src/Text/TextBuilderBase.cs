@@ -612,6 +612,22 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
         return _builder;
     }
 
+    public B LineDelimit<T>(ReadOnlySpan<T> values, Action<B, T> buildValue)
+    {
+        int len = values.Length;
+        var builder = _builder;
+        if (len == 0)
+            return builder;
+        buildValue(builder, values[0]);
+        for (int i = 1; i < len; i++)
+        {
+            NewLine();
+            buildValue(builder, values[i]);
+        }
+
+        return builder;
+    }
+
     public B DelimitAppend<T>(char delimiter, ReadOnlySpan<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
 
     public B DelimitAppend<T>(string delimiter, ReadOnlySpan<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
@@ -620,6 +636,7 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
 
     public B DelimitAppend<T>(Action<B> onDelimit, ReadOnlySpan<T> values) => Delimit(onDelimit, values, static (tb, value) => tb.Append(value));
 
+    public B LineDelimitAppend<T>(ReadOnlySpan<T> values) => LineDelimit(values, static (tb, value) => tb.Append<T>(value));
 #endregion
 
     #region Array
@@ -680,6 +697,24 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
         return _builder;
     }
 
+    public B LineDelimit<T>(T[]? values, Action<B, T> buildValue)
+    {
+        var builder = _builder;
+        if (values is null)
+            return builder;
+        int len = values.Length;
+        if (len == 0)
+            return builder;
+        buildValue(builder, values[0]);
+        for (int i = 1; i < len; i++)
+        {
+            NewLine();
+            buildValue(builder, values[i]);
+        }
+
+        return builder;
+    }
+
     public B DelimitAppend<T>(char delimiter, T[]? values, string? format = null, IFormatProvider? provider = null)
         => Delimit(delimiter, values, (tb, value) => tb.Append(value, format, provider));
 
@@ -692,68 +727,97 @@ public abstract class TextBuilderBase<B> : FluentBuilder<B>,
     public B DelimitAppend<T>(Action<B> onDelimit, T[]? values, string? format = null, IFormatProvider? provider = null)
         => Delimit(onDelimit, values, (tb, value) => tb.Append(value, format, provider));
 
+    public B LineDelimitAppend<T>(T[]? values) => LineDelimit(values, static (tb, value) => tb.Append<T>(value));
 #endregion
 
 #region IEnumerable
 
-    public B Delimit<T>(char delimiter, IEnumerable<T> values, Action<B, T> onBuilderValue)
+    public B Delimit<T>(char delimiter, IEnumerable<T>? values, Action<B, T> onBuilderValue)
     {
+        var builder = _builder;
+        if (values is null)
+            return builder;
         using var e = values.GetEnumerator();
         if (!e.MoveNext())
-            return _builder;
-        onBuilderValue(_builder, e.Current);
+            return builder;
+        onBuilderValue(builder, e.Current);
         while (e.MoveNext())
         {
-            _text.Add(delimiter);
-            onBuilderValue(_builder, e.Current);
+            Append(delimiter);
+            onBuilderValue(builder, e.Current);
         }
 
         return _builder;
     }
 
 
-    public B Delimit<T>(string delimiter, IEnumerable<T> values, Action<B, T> onBuilderValue)
+    public B Delimit<T>(string delimiter, IEnumerable<T>? values, Action<B, T> onBuilderValue)
         => Delimit(delimiter.AsSpan(), values, onBuilderValue);
 
-    public B Delimit<T>(scoped text delimiter, IEnumerable<T> values, Action<B, T> onBuilderValue)
+    public B Delimit<T>(scoped text delimiter, IEnumerable<T>? values, Action<B, T> onBuilderValue)
     {
+        var builder = _builder;
+        if (values is null)
+            return builder;
         if (delimiter.Length == 0)
             return Enumerate(values, onBuilderValue);
         using var e = values.GetEnumerator();
         if (!e.MoveNext())
-            return _builder;
-        onBuilderValue(_builder, e.Current);
+            return builder;
+        onBuilderValue(builder, e.Current);
         while (e.MoveNext())
         {
-            _text.AddMany(delimiter);
-            onBuilderValue(_builder, e.Current);
+            Append(delimiter);
+            onBuilderValue(builder, e.Current);
         }
 
         return _builder;
     }
 
-    public B Delimit<T>(Action<B> onDelimit, IEnumerable<T> values, Action<B, T> onBuilderValue)
+    public B Delimit<T>(Action<B> onDelimit, IEnumerable<T>? values, Action<B, T> onBuilderValue)
     {
+        var builder = _builder;
+        if (values is null)
+            return builder;
         using var e = values.GetEnumerator();
         if (!e.MoveNext())
-            return _builder;
-        onBuilderValue(_builder, e.Current);
+            return builder;
+        onBuilderValue(builder, e.Current);
         while (e.MoveNext())
         {
-            onDelimit(_builder);
-            onBuilderValue(_builder, e.Current);
+            onDelimit(builder);
+            onBuilderValue(builder, e.Current);
         }
 
         return _builder;
     }
 
-    public B DelimitAppend<T>(char delimiter, IEnumerable<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+    public B LineDelimit<T>(IEnumerable<T>? values, Action<B, T> onBuilderValue)
+    {
+        var builder = _builder;
+        if (values is null) return builder;
+        using var e = values.GetEnumerator();
+        if (!e.MoveNext())
+            return builder;
+        onBuilderValue(builder, e.Current);
+        while (e.MoveNext())
+        {
+            NewLine();
+            onBuilderValue(builder, e.Current);
+        }
 
-    public B DelimitAppend<T>(string delimiter, IEnumerable<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+        return builder;
+    }
 
-    public B DelimitAppend<T>(scoped text delimiter, IEnumerable<T> values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+    public B DelimitAppend<T>(char delimiter, IEnumerable<T>? values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
 
-    public B DelimitAppend<T>(Action<B> onDelimit, IEnumerable<T> values) => Delimit(onDelimit, values, static (tb, value) => tb.Append(value));
+    public B DelimitAppend<T>(string delimiter, IEnumerable<T>? values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+
+    public B DelimitAppend<T>(scoped text delimiter, IEnumerable<T>? values) => Delimit(delimiter, values, static (tb, value) => tb.Append(value));
+
+    public B DelimitAppend<T>(Action<B> onDelimit, IEnumerable<T>? values) => Delimit(onDelimit, values, static (tb, value) => tb.Append(value));
+
+    public B LineDelimitAppend<T>(IEnumerable<T>? values) => LineDelimit(values, static (tb, value) => tb.Append<T>(value));
 
 #endregion
 

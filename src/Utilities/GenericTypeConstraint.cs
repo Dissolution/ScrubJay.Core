@@ -1,7 +1,7 @@
 ﻿#pragma warning disable CA1034, S2326, CA1711
 
 // ReSharper disable UnusedTypeParameter
-namespace ScrubJay.Constraints;
+namespace ScrubJay.Utilities;
 
 /// <summary>
 /// Constraints are added to generic methods so that generic type constraints can co-exist without compiler error<br />
@@ -44,7 +44,6 @@ public static class GenericTypeConstraint
     /// <c>T : IComparable&lt;T&gt;</c>
     /// </typeparam>
     public readonly struct IsComparable<T> where T : IComparable<T>;
-
 
     public readonly struct IsDisposableNew<T> where T : IDisposable, new();
 
