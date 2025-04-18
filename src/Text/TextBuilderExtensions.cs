@@ -256,6 +256,25 @@ public static class TextBuilderExtensions
         return builder;
     }
 
+    public static B IfNotNull<B, T>(
+        this B builder,
+        Nullable<T> value,
+        Action<B, T>? onNotNull = null,
+        Action<B>? onNull = null)
+        where B : TextBuilderBase<B>
+        where T : struct
+    {
+        if (value.TryGetValue(out var v))
+        {
+            onNotNull?.Invoke(builder, v);
+        }
+        else
+        {
+            onNull?.Invoke(builder);
+        }
+        return builder;
+    }
+
     public static B IfNotNull<B, T, S>(
         this B builder,
         T? value,

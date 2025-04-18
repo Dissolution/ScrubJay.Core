@@ -1,7 +1,9 @@
-﻿namespace ScrubJay.Fluent;
+﻿using ScrubJay.Building;
+
+namespace ScrubJay.Fluent;
 
 [PublicAPI]
-public abstract class FluentRecordBuilder<TBuilder, TRecord> : FluentBuilder<TBuilder>
+public abstract class FluentRecordBuilder<TBuilder, TRecord> : BuilderBase<TBuilder>
     where TBuilder : FluentRecordBuilder<TBuilder, TRecord>
     where TRecord : class
 {

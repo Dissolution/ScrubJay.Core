@@ -1,10 +1,11 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
+using ScrubJay.Building;
 using ScrubJay.Fluent;
 
 namespace ScrubJay.Expressions;
 
-public class FluentBodyBuilder<B> : FluentBuilder<B>
+public class FluentBodyBuilder<B> : BuilderBase<B>
     where B : FluentBodyBuilder<B>
 {
     public IReadOnlyList<ParameterExpression> Parameters { get; }

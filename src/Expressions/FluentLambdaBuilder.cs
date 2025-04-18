@@ -1,9 +1,10 @@
 ﻿using System.Linq.Expressions;
+using ScrubJay.Building;
 using ScrubJay.Fluent;
 
 namespace ScrubJay.Expressions;
 
-public class FluentLambdaBuilder<B> : FluentBuilder<B>
+public class FluentLambdaBuilder<B> : BuilderBase<B>
     where B : FluentLambdaBuilder<B>
 {
     protected readonly Type _delegateType;

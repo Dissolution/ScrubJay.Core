@@ -1,4 +1,5 @@
-﻿using ScrubJay.Fluent;
+﻿using ScrubJay.Building;
+using ScrubJay.Fluent;
 using ScrubJay.Maths;
 #pragma warning disable S3247, S4136, RCS1220
 #pragma warning disable IDE1006, IDE0060
@@ -16,7 +17,7 @@ namespace ScrubJay.Text;
 /// </typeparam>
 [PublicAPI]
 [MustDisposeResource]
-public abstract class TextBuilderBase<B> : FluentBuilder<B>,
+public abstract class TextBuilderBase<B> : BuilderBase<B>,
     IList<char>,
     IReadOnlyList<char>,
     ICollection<char>,
