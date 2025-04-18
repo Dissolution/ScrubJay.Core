@@ -18,14 +18,16 @@ public readonly struct Values<T> :
     IAdditionOperators<Values<T>, T[], Values<T>>,
     IAdditionOperators<Values<T>, T, Values<T>>,
 #endif
+#if !NETSTANDARD2_1
+    ISpanFormattable,
+#endif
     IReadOnlyList<T>,
     IReadOnlyCollection<T>,
     IEnumerable<T>,
     IEquatable<Values<T>>,
     IEquatable<T[]>,
     IEquatable<T>,
-    IFormattable,
-    ISpanFormattable
+    IFormattable
 {
     public static implicit operator Values<T>(Unit _) => new();
 

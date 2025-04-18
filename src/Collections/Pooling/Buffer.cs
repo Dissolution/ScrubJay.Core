@@ -1235,6 +1235,7 @@ public ref struct Buffer<T>
             return written.ToString(); // will convert directly to a string
         }
 
+
         DefaultInterpolatedStringHandler text = new(Count * 2, Count);
         text.AppendLiteral("[");
         if (written.Length > 0)

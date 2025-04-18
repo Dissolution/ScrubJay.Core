@@ -29,7 +29,10 @@ public readonly struct Result<T, E> :
     IEquatable<Result<T, E>>,
     // IEquatable<T>,
     // IEquatable<E>,
-    IFormattable, ISpanFormattable,
+    IFormattable,
+#if !NETSTANDARD2_1
+    ISpanFormattable,
+#endif
     IEnumerable<T>
 {
 #region Operators

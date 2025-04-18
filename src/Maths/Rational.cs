@@ -41,7 +41,9 @@ public readonly struct Rational :
     IAlgebraic<Rational, double>,
     IAlgebraic<Rational, BigInteger>,
     IAlgebraic<Rational, long>,
+#if !NETSTANDARD2_1
     ISpanFormattable,
+#endif
     IFormattable
 {
 #region Operators

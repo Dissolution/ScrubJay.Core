@@ -10,6 +10,18 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class ObjectExtensions
 {
+    /// <summary>
+    /// If the <paramref name="input"/> <see cref="object"/> <c>is</c><sup>1</sup> a <typeparamref name="T"/> value,<br/>
+    /// stores that value in <paramref name="output"/> and returns <c>true</c><br/>
+    /// otherwise sets <paramref name="output"/> to <c>default(T)</c> and returns <c>false</c>
+    /// </summary>
+    /// <param name="input"></param>
+    /// <param name="output"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    /// <remarks>
+    /// <sup>1</sup> - <c>Unbox</c> or <c>Cast class</c>
+    /// </remarks>
     public static bool Is<T>(this object? input, [NotNullWhen(true)] out T? output)
     {
         if (input is T)
@@ -30,7 +42,7 @@ public static class ObjectExtensions
         return None();
     }
 
-    public static bool K<T>(this object? input, [NotNullIfNotNull(nameof(input)), MaybeNullWhen(false)] out T? output)
+    public static bool As<T>(this object? input, [NotNullIfNotNull(nameof(input)), MaybeNull] out T? output)
     {
         if (input is T)
         {
@@ -42,21 +54,28 @@ public static class ObjectExtensions
         return typeof(T).CanContainNull();
     }
 
-    public static bool CanUnboxAs<T>(this object? input)
+    public static Option<T?> As<T>(this object? input)
     {
         if (input is T)
-            return true;
-        if (input is null)
-            return typeof(T).CanContainNull();
-        return false;
+        {
+            return Some<T?>((T)input);
+        }
+
+        if (input is null && typeof(T).CanContainNull())
+        {
+            return Some<T?>(default(T));
+        }
+
+        return None();
     }
 
-    public static bool CanUnboxAs(this object? input, Type? type)
+    public static Option<object?> As(this object? input, Type? type)
     {
         if (input is null)
-            return type.CanContainNull();
-        return input.GetType().Implements(type);
-
+            return type.CanContainNull() ? Some<object?>(null) : None();
+        if (input.GetType().Implements(type))
+            return Some<object?>(input);
+        return None();
     }
 
     public static Option<T> NotNull<T>(this T? input)

@@ -35,7 +35,7 @@ public sealed class DictionaryAdapter<K, V> :
         [CallerArgumentExpression(nameof(objValue))]
         string? valueName = null)
     {
-        if (objValue.K<V>(out var value))
+        if (objValue.As<V>(out var value))
             return value;
         throw new ArgumentException($"Invalid Value - '{objValue}' is not a {typeof(V).NameOf()}", valueName);
     }

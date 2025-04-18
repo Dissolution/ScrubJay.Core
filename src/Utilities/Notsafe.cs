@@ -4,7 +4,6 @@
 using InlineIL;
 using static InlineIL.IL;
 
-
 namespace ScrubJay.Utilities;
 
 /// <summary>

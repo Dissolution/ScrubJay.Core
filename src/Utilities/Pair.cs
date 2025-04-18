@@ -84,7 +84,9 @@ public readonly struct Pair<TKey, TValue> :
 #endif
     IEquatable<Pair<TKey, TValue>>,
     IComparable<Pair<TKey, TValue>>,
+#if !NETSTANDARD2_1
     ISpanFormattable,
+#endif
     IFormattable
 {
     // Interop with KeyValuePair, Tuple, and ValueTuple

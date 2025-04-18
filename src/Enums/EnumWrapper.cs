@@ -9,11 +9,13 @@ public readonly struct EnumWrapper<TEnum> :
     ISpanParsable<EnumWrapper<TEnum>>,
     IParsable<EnumWrapper<TEnum>>,
 #endif
+#if !NETSTANDARD2_1
+    ISpanFormattable,
+#endif
     IEquatable<EnumWrapper<TEnum>>,
     IEquatable<TEnum>,
     IComparable<EnumWrapper<TEnum>>,
     IComparable<TEnum>,
-    ISpanFormattable,
     IFormattable
     where TEnum : struct, Enum
 {

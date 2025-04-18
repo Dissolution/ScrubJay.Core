@@ -2,13 +2,18 @@
 
 public abstract class ListSlice
 {
-    public static ListSlice<T> Of<T>(IList<T> list, Range range)
+    public static ListSlice<T> Create<T>(IList<T> list)
+    {
+        return new ListSlice<T>(list, 0, list.Count);
+    }
+
+    public static ListSlice<T> Create<T>(IList<T> list, Range range)
     {
         (int offset, int len) = Validate.Range(range, list.Count).OkOrThrow();
         return new ListSlice<T>(list, offset, len);
     }
 
-    public static ListSlice<T> Of<T>(IList<T> list, Index index, int length)
+    public static ListSlice<T> Create<T>(IList<T> list, Index index, int length)
     {
         (int offset, int len) = Validate.IndexLength(index, length, list.Count).OkOrThrow();
         return new ListSlice<T>(list, offset, len);
@@ -45,8 +50,8 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
     }
 
 
-    void ICollection<T>.Add(T item) => throw new NotSupportedException();
-    void IList<T>.Insert(int index, T item) => throw new NotSupportedException();
+    void ICollection<T>.Add(T item) => Throw.NotSupported();
+    void IList<T>.Insert(int index, T item) => Throw.NotSupported();
 
     public bool Contains(T item) => IndexOf(item) >= 0;
 
@@ -71,10 +76,10 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
     }
 
 
-    bool ICollection<T>.Remove(T item) => throw new NotSupportedException();
+    bool ICollection<T>.Remove(T item) => Throw.NotSupported<bool>();
 
 
-    void IList<T>.RemoveAt(int index) => throw new NotSupportedException();
+    void IList<T>.RemoveAt(int index) => Throw.NotSupported();
 
     public void Clear()
     {

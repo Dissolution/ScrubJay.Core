@@ -29,7 +29,7 @@ public sealed class ArrayAdapter<T> :
         [CallerArgumentExpression(nameof(objValue))]
         string? valueName = null)
     {
-        if (objValue.K<T>(out var value))
+        if (objValue.As<T>(out var value))
             return value;
         throw new ArgumentException($"Value '{objValue}' is not a '{typeof(T).NameOf()}'", valueName);
     }

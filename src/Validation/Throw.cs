@@ -68,37 +68,6 @@ public static class Throw
 
 #endregion
 
-    [StackTraceHidden]
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void KeyNotFound<K>(K key) => throw new KeyNotFoundException($"Key '{key}' was not found");
-
-    [StackTraceHidden]
-    [DoesNotReturn]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void DuplicateKeyException<K>(
-        K key,
-        [CallerMemberName]
-        string? keyName = null)
-        => throw new ArgumentException($"Duplicate key '{key}' was found", keyName);
-
-
-    /// <summary>
-    /// Throw an <see cref="ArgumentNullException"/> if <paramref name="value"/> is <c>null</c>
-    /// </summary>
-    [StackTraceHidden]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void IfNull<T>(
-        [NotNull, NoEnumeration]
-        T? value,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
-        where T : class?
-    {
-        if (value is null)
-            throw new ArgumentNullException(valueName);
-    }
-
     /// <summary>
     /// Throw an <see cref="ArgumentException"/> if a <see cref="string"/> is empty
     /// </summary>
@@ -233,4 +202,35 @@ public static class Throw
         [CallerMemberName]
         string? callerName = null)
         => throw new NotSupportedException($"{callerName} is not supported: {message}");
+
+    [StackTraceHidden]
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void KeyNotFound<K>(K key) => throw new KeyNotFoundException($"Key '{key}' was not found");
+
+    [StackTraceHidden]
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void DuplicateKeyException<K>(
+        K key,
+        [CallerMemberName]
+        string? keyName = null)
+        => throw new ArgumentException($"Duplicate key '{key}' was found", keyName);
+
+
+    /// <summary>
+    /// Throw an <see cref="ArgumentNullException"/> if <paramref name="value"/> is <c>null</c>
+    /// </summary>
+    [StackTraceHidden]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void IfNull<T>(
+        [AllowNull, NotNull, NoEnumeration]
+        T? value,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+        where T : class?
+    {
+        if (value is null)
+            throw new ArgumentNullException(valueName);
+    }
 }

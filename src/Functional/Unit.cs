@@ -18,9 +18,12 @@ public readonly struct Unit :
     IEqualityOperators<Unit, Unit, bool>,
     IComparisonOperators<Unit, Unit, bool>,
 #endif
+#if !NETSTANDARD2_1
+    ISpanFormattable,
+#endif
     IEquatable<Unit>,
     IComparable<Unit>,
-    IFormattable, ISpanFormattable
+    IFormattable
 {
     // ValueTuple would be written as '()' (if the C# compiler allowed it), and is virtually the same as Unit already
     // so we support implicit conversions between them

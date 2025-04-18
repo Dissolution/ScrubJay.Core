@@ -6,17 +6,17 @@ namespace ScrubJay;
 /// <summary>
 /// Indicates that this type provides a static <see cref="Default"/> instance
 /// </summary>
-/// <typeparam name="TSelf">
+/// <typeparam name="S">
 /// <c>self</c>
 /// </typeparam>
 [PublicAPI]
-public interface IHasDefault<out TSelf>
-    where TSelf : IHasDefault<TSelf>
+public interface IHasDefault<out S>
+    where S : IHasDefault<S>
 {
 #if NET7_0_OR_GREATER
     /// <summary>
-    /// Get the default <typeparamref name="TSelf"/> instance
+    /// Get the default <typeparamref name="S"/> instance
     /// </summary>
-    static abstract TSelf Default { get; }
+    static abstract S Default { get; }
 #endif
 }

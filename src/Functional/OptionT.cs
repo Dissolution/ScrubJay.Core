@@ -39,7 +39,9 @@ public readonly struct Option<T> :
     //IComparable<T>,
     IEnumerable<T>,
     IEnumerable,
+#if !NETSTANDARD2_1
     ISpanFormattable,
+#endif
     IFormattable
 {
 #region Operators

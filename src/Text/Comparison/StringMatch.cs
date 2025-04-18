@@ -2,6 +2,7 @@
 
 namespace ScrubJay.Text.Comparison;
 
+[PublicAPI]
 public sealed record class StringMatch
 {
     public StringComparison StringComparison { get; init; } = StringComparison.Ordinal;

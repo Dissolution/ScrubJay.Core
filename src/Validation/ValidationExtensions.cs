@@ -76,7 +76,7 @@ public static class ValidationExtensions
         this object? obj,
         [CallerArgumentExpression(nameof(obj))] string? objName = null)
     {
-        if (obj.Is<TOut?>(out TOut? output))
+        if (obj.As<TOut?>(out TOut? output))
             return output;
         throw new ArgumentException($"The given {obj?.GetType().NameOf()} value is not a valid {typeof(TOut).NameOf()} instance", objName);
     }

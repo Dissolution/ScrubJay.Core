@@ -40,7 +40,9 @@ public readonly struct Result<T> :
     IEquatable<Compat.Ok<T>>,
     //IEquatable<bool>,
     IFormattable,
+#if !NETSTANDARD2_1
     ISpanFormattable,
+#endif
     IEnumerable<T>
 {
 #region Operators
