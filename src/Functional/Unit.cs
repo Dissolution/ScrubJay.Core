@@ -57,7 +57,9 @@ public readonly struct Unit :
 
     public string ToString(string? format, IFormatProvider? provider = default) => "()";
 
-    public bool TryFormat(Span<char> destination, out int charsWritten, text format = default, IFormatProvider? provider = default)
+#pragma warning disable CA1822 // method can be marked static
+    public bool TryFormat(Span<char> destination, out int charsWritten, text format = default,
+        IFormatProvider? provider = default)
     {
         if ("()".TryCopyTo(destination))
         {
@@ -67,6 +69,7 @@ public readonly struct Unit :
         charsWritten = 0;
         return false;
     }
+#pragma warning restore CA1822
 
     public override string ToString() => "()";
 }

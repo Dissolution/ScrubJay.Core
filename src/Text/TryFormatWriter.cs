@@ -361,7 +361,7 @@ public ref struct TryFormatWriter : IEnumerable
     readonly IEnumerator IEnumerable.GetEnumerator()
     {
         if (_hasFailed.IsSome(out var error))
-            return Enumerator.Single<Exception>(error);
+            return Enumerator.One<Exception>(error);
         return Enumerator.Empty<Exception>();
     }
 }

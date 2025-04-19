@@ -1,5 +1,4 @@
 ﻿using ScrubJay.Building;
-using ScrubJay.Fluent;
 using ScrubJay.Maths;
 #pragma warning disable S3247, S4136, RCS1220
 #pragma warning disable IDE1006, IDE0060

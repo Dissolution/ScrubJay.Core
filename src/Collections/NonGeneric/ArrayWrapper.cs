@@ -1,5 +1,7 @@
 ﻿// Exception to Identifiers Require Correct Suffix
 #pragma warning disable CA1710
+// CA1043 : Use Integral Or String Argument For Indexers
+#pragma warning disable CA1043
 
 namespace ScrubJay.Collections.NonGeneric;
 

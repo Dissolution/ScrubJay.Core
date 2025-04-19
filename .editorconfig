@@ -1,0 +1,168 @@
+[*]
+charset = utf-8
+end_of_line = crlf
+indent_size = 4
+indent_style = space
+insert_final_newline = false
+max_line_length = 128
+tab_width = 4
+trim_trailing_whitespace = true
+
+ij_continuation_indent_size = 8
+ij_formatter_off_tag = @formatter:off
+ij_formatter_on_tag = @formatter: on
+ij_formatter_tags_enabled = true
+ij_smart_tabs = false
+ij_visual_guides =
+ij_wrap_on_typing = false
+
+[.editorconfig]
+ij_editorconfig_align_group_field_declarations = false
+ij_editorconfig_space_after_colon = true
+ij_editorconfig_space_after_comma = true
+ij_editorconfig_space_before_colon = false
+ij_editorconfig_space_before_comma = false
+ij_editorconfig_spaces_around_assignment_operators = true
+
+[{*.ant,*.appxmanifest,*.axml,*.cscfg,*.csdef,*.disco,*.dotsettings,*.filelayout,*.fxml,*.jhm,*.jnlp,*.jrxml,*.manifest,*.myapp,*.nuspec,*.rng,*.stylecop,*.svcmap,*.tld,*.wadcfgx,*.webref,*.wsdl,*.xml,*.xsd,*.xsl,*.xslt,*.xul,StyleCop.Cache}]
+ij_xml_align_attributes = true
+ij_xml_align_text = false
+ij_xml_attribute_wrap = normal
+ij_xml_block_comment_add_space = false
+ij_xml_block_comment_at_first_column = true
+ij_xml_keep_blank_lines = 2
+ij_xml_keep_indents_on_empty_lines = false
+ij_xml_keep_line_breaks = true
+ij_xml_keep_line_breaks_in_text = true
+ij_xml_keep_whitespaces = false
+ij_xml_keep_whitespaces_around_cdata = preserve
+ij_xml_keep_whitespaces_inside_cdata = false
+ij_xml_line_comment_at_first_column = true
+ij_xml_space_after_tag_name = false
+ij_xml_space_around_equals_in_attribute = false
+ij_xml_space_inside_empty_tag = false
+ij_xml_text_wrap = normal
+
+[{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,.ws-context,jest.config}]
+indent_size = 2
+ij_json_array_wrapping = split_into_lines
+ij_json_keep_blank_lines_in_code = 0
+ij_json_keep_indents_on_empty_lines = false
+ij_json_keep_line_breaks = true
+ij_json_keep_trailing_comma = false
+ij_json_object_wrapping = split_into_lines
+ij_json_property_alignment = do_not_align
+ij_json_space_after_colon = true
+ij_json_space_after_comma = true
+ij_json_space_before_colon = false
+ij_json_space_before_comma = false
+ij_json_spaces_within_braces = false
+ij_json_spaces_within_brackets = false
+ij_json_wrap_long_lines = false
+
+[{*.markdown,*.md}]
+ij_markdown_force_one_space_after_blockquote_symbol = true
+ij_markdown_force_one_space_after_header_symbol = true
+ij_markdown_force_one_space_after_list_bullet = true
+ij_markdown_force_one_space_between_words = true
+ij_markdown_format_tables = true
+ij_markdown_insert_quote_arrows_on_wrap = true
+ij_markdown_keep_indents_on_empty_lines = false
+ij_markdown_keep_line_breaks_inside_text_blocks = true
+ij_markdown_max_lines_around_block_elements = 1
+ij_markdown_max_lines_around_header = 1
+ij_markdown_max_lines_between_paragraphs = 1
+ij_markdown_min_lines_around_block_elements = 1
+ij_markdown_min_lines_around_header = 1
+ij_markdown_min_lines_between_paragraphs = 1
+ij_markdown_wrap_text_if_long = true
+ij_markdown_wrap_text_inside_blockquotes = true
+
+[{*.yaml,*.yml}]
+indent_size = 2
+ij_yaml_align_values_properties = do_not_align
+ij_yaml_autoinsert_sequence_marker = true
+ij_yaml_block_mapping_on_new_line = false
+ij_yaml_indent_sequence_value = true
+ij_yaml_keep_indents_on_empty_lines = false
+ij_yaml_keep_line_breaks = true
+ij_yaml_line_comment_add_space = false
+ij_yaml_line_comment_add_space_on_reformat = false
+ij_yaml_line_comment_at_first_column = true
+ij_yaml_sequence_on_new_line = false
+ij_yaml_space_before_colon = false
+ij_yaml_spaces_within_braces = true
+ij_yaml_spaces_within_brackets = true
+
+
+
+# C#, VB, and F# suppressions
+[*.{cs,vb,fs}]
+
+## CA1000: Do not declare static members on generic types
+# I understand
+dotnet_diagnostic.CA1000.severity = none
+
+## CA1002 : Change 'List<T>' in 'X' to use 'Collection<T>', 'ReadOnlyCollection<T>' or 'KeyedCollection<K,V>'
+# It incorrectly hits protected members
+dotnet_diagnostic.CA1002.severity = none
+
+## CA1031 : Modify 'X' to catch a more specific allowed exception type, or rethrow the exception
+# I understand
+dotnet_diagnostic.CA1031.severity = none
+
+## CA1033: Interface methods should be callable by child types
+# No child type needs to call ICollection.IsReadOnly
+dotnet_diagnostic.CA1033.severity = none
+
+## CA1051: Do not declare visible instance fields
+# They are there as protected members or for performance reasons
+dotnet_diagnostic.CA1051.severity = none
+
+## CA1062 : In externally visible method 'X', validate parameter 'Y' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.
+# I understand and use nullability, with no guarantees to a caller that I'm doing checks beyond that
+dotnet_diagnostic.CA1062.severity = none
+
+## CA1063: Implement IDisposable correctly
+# I understand
+dotnet_diagnostic.CA1063.severity = none
+
+## CA1305 : The behavior of 'X' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.
+# I do not support localization
+dotnet_diagnostic.CA1305.severity = none
+
+## CA1307 : 'X' has a method overload that takes a 'StringComparison' parameter. Replace this call in 'Y' with a call to 'Z' for clarity of intent.
+# I understand
+dotnet_diagnostic.CA1307.severity = none
+
+## CA1715: Identifiers should have correct prefix
+# I prefer S for self, B for builder, E for emitter for cleaner code
+dotnet_diagnostic.CA1715.severity = none
+
+## CA1725 : In member string HResult.ToString(string? format, IFormatProvider? provider = null), change parameter name provider to formatProvider in order to match the identifier as it has been declared in string IFormattable.ToString(string? format, IFormatProvider? formatProvider)
+# Some of the defaults are unwieldly or do not fit with other conventions
+dotnet_diagnostic.CA1725.severity = none
+
+## CA1805 : Member 'Contains' is explicitly initialized to its default value
+# I prefer the clarity of intent
+dotnet_diagnostic.CA1805.severity = none
+
+## CA1810 : Initialize all static fields in 'X' when those fields are declared and remove the explicit static constructor
+# Code gets unwieldy in a field constructor
+dotnet_diagnostic.CA1810.severity = none
+
+## CA1816 : Change X.Dispose() to call GC.SuppressFinalize(object). This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.
+# I understand
+dotnet_diagnostic.CA1816.severity = none
+
+## CA2225: Operator overloads have named alternates
+# I only support languages that can use operators
+dotnet_diagnostic.CA2225.severity = none
+
+
+
+# Below this line I want to clean up eventually
+
+## CS1591 : Missing XML comment for publicly visible type or member
+# 10k+ errors
+dotnet_diagnostic.CS1591.severity = none

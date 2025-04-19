@@ -328,7 +328,7 @@ public readonly struct Values<T> :
 
     public IEnumerator<T> GetEnumerator() => Match(
         static () => Enumerator.Empty<T>(),
-        static value => Enumerator.Single<T>(value),
+        static value => Enumerator.One<T>(value),
         static values => Enumerator.ForArray<T>(values));
 
 

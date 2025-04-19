@@ -1,5 +1,5 @@
-﻿// ReSharper disable FieldCanBeMadeReadOnly.Local
-#pragma warning disable IDE0044
+﻿// Properties should not return arrays
+#pragma warning disable CA1819
 
 namespace ScrubJay.Collections.NonGeneric;
 

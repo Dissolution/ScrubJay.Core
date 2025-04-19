@@ -27,11 +27,7 @@
         <AnalysisLevel>latest</AnalysisLevel>
         <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
         <WarningsAsErrors>nullable</WarningsAsErrors>
-        <NoWarn>$(NoWarn);
-            CS1591; <!-- Missing XML comments for public member -->
-            CA1810; <!-- Use static field init instead of ctor -->
-            CA1715;
-        </NoWarn>
+
         <!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options -->
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <!-- https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#code-analysis-properties -->
@@ -52,7 +48,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>ScrubJay.Core</PackageId>
         <Title>ScrubJay - Core</Title>
-        <Version>0.41.1-alpha</Version>
+        <Version>0.41.2-alpha</Version>
         <Authors>Dissolution</Authors>
 
         <Description>

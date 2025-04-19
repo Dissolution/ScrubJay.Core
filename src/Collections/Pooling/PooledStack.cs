@@ -23,11 +23,13 @@ public class PooledStack<T> : PooledArray<T>,
 
     T IReadOnlyList<T>.this[int index] => this[index];
 
+    #pragma warning disable CA1043 // Use Integral Or String Argument For indexers
     public T this[StackIndex index]
     {
         get => TryGetItemAt(index).OkOrThrow();
         set => TrySetItemAt(index, value).ThrowIfError();
     }
+    #pragma warning restore CA1043
 
     public int Count
     {

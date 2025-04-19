@@ -10,43 +10,34 @@
 public abstract class BuilderBase<B> : IBuilder<B>
     where B : BuilderBase<B>
 {
+    /// <summary>
+    /// Stores a reference to this builder instance as a <typeparamref name="B"/>
+    /// </summary>
     protected internal B _builder;
 
+    /// <summary>
+    /// Initiates a new <typeparamref name="B"/> instance by storing it in the <see cref="_builder"/> field
+    /// </summary>
     protected BuilderBase()
     {
         _builder = (B)this;
     }
-
-    /// <summary>
-    /// Invoke an action on this <typeparamref name="B"/>
-    /// </summary>
-    /// <param name="build">
-    /// The <see cref="Action{T}"/> to invoke on this <typeparamref name="B"/>
-    /// </param>
-    /// <returns>
-    /// This <typeparamref name="B"/> instance after invoking <paramref name="build"/>
-    /// </returns>
-    public virtual B Invoke(Action<B>? build)
+    
+    /// <inheritdoc/>
+    public virtual B Invoke(Action<B>? instanceAction)
     {
-        build?.Invoke(_builder);
+        instanceAction?.Invoke(_builder);
         return _builder;
     }
 
-    /// <summary>
-    /// Invoke a function on this <typeparamref name="B"/>
-    /// </summary>
-    /// <param name="build">
-    /// The <see cref="Func{T,T}"/> to invoke on this <typeparamref name="B"/>
-    /// </param>
-    /// <returns>
-    /// This <typeparamref name="B"/> instance after invoking <paramref name="build"/>
-    /// </returns>
-    public virtual B Invoke(Func<B, B>? build)
+    /// <inheritdoc/>
+    public virtual B Invoke(Func<B, B>? instanceFluentFunc)
     {
-        // Throwaway what build returns, we always return our _builder
-        _ = build?.Invoke(_builder);
+        // Throwaway what func returns, we always return our _builder
+        _ = instanceFluentFunc?.Invoke(_builder);
         return _builder;
     }
 
+    /// <inheritdoc/>
     public override string ToString() => typeof(B).NameOf();
 }

@@ -278,7 +278,7 @@ public static class TextHelper
         => Equate(left.AsSpan(), right.AsSpan());
 
     public static bool Equate(string? left, string? right)
-        => string.Equals(left, right);
+        => string.Equals(left, right, StringComparison.Ordinal);
 
     public static bool Equate(string? left, char[]? right)
         => Equate(left.AsSpan(), right.AsSpan());

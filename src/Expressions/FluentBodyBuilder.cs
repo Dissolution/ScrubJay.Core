@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using ScrubJay.Building;
-using ScrubJay.Fluent;
 
 namespace ScrubJay.Expressions;
 

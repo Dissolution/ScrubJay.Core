@@ -7,6 +7,7 @@
 /// The <see cref="Type"/> of the implementation (<b>S</b>elf)
 /// </typeparam>
 /// <see href="https://en.wikipedia.org/wiki/Builder_pattern"/>
+[PublicAPI]
 public interface IBuilder<S>
     where S : IBuilder<S>
 {

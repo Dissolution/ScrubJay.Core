@@ -24,7 +24,7 @@ public sealed class OrdinalTextComparer : StringComparisonTextComparer
         => x.Equals(y);
 
     public override bool Equals(string? x, string? y)
-        => string.Equals(x, y);
+        => string.Equals(x, y, StringComparison.Ordinal);
 
     public override bool Equals(text x, text y)
         => MemoryExtensions.SequenceEqual<char>(x, y);
