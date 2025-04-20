@@ -22,19 +22,22 @@ public abstract class BuilderBase<B> : IBuilder<B>
     {
         _builder = (B)this;
     }
-    
-    /// <inheritdoc/>
+
     public virtual B Invoke(Action<B>? instanceAction)
     {
-        instanceAction?.Invoke(_builder);
+        if (instanceAction is not null)
+        {
+            instanceAction(_builder);
+        }
         return _builder;
     }
 
-    /// <inheritdoc/>
-    public virtual B Invoke(Func<B, B>? instanceFluentFunc)
+    public virtual B Invoke<R>(Func<B, R>? instanceFunc)
     {
-        // Throwaway what func returns, we always return our _builder
-        _ = instanceFluentFunc?.Invoke(_builder);
+        if (instanceFunc is not null)
+        {
+            _ = instanceFunc(_builder);
+        }
         return _builder;
     }
 

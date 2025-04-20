@@ -17,6 +17,7 @@ namespace ScrubJay.Utilities;
 /// <c>public static T DoThing&lt;T&gt;(T value, IsClass&lt;T&gt; _ = default) where T : class</c><br />
 /// <br/>
 /// </summary>
+[PublicAPI]
 public static class GenericTypeConstraint
 {
     public readonly struct Any<T>;

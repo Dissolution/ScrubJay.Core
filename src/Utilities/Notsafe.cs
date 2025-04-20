@@ -10,6 +10,7 @@ namespace ScrubJay.Utilities;
 /// Very <b>unsafe</b> methods, more dangerous than <see cref="Unsafe"/><br/>
 /// Many of the methods in here have no validations of any kind
 /// </summary>
+/// <seealso href="https://github.com/ltrzesniewski/InlineIL.Fody/blob/master/src/InlineIL.Examples/UnsafeNet9.cs"/>
 [PublicAPI]
 public static unsafe class Notsafe
 {
@@ -19,10 +20,12 @@ public static unsafe class Notsafe
     public static class Unmanaged
     {
 #region CopyTo
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyUnmanagedBlock<U>(in U source, ref U destination, int count)
             where U : unmanaged
+#if NET9_0_OR_GREATER
+            , allows ref struct
+#endif
         {
             Emit.Ldarg(nameof(destination));
             Emit.Ldarg(nameof(source));
@@ -129,11 +132,9 @@ public static unsafe class Notsafe
                 ref MemoryMarshal.GetReference<UDest>(destination),
                 count);
         }
-
 #endregion
 
 #region Arrays
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* ArrayAlloc<T>(int size)
             where T : unmanaged
@@ -157,7 +158,6 @@ public static unsafe class Notsafe
         {
             CopyBlock(in PtrAsIn(src), ref PtrAsRef(dst), size * sizeof(T));
         }
-
 #endregion
     }
 
@@ -393,7 +393,8 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(char[] source, char[] destination, int count)
 #if NET5_0_OR_GREATER
-            => CopyCharBlock(in MemoryMarshal.GetArrayDataReference<char>(source), ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
+            => CopyCharBlock(in MemoryMarshal.GetArrayDataReference<char>(source),
+                ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
 #else
         {
             CopyCharBlock(
@@ -418,7 +419,8 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(char[] source, Span<char> destination, int count)
 #if NET5_0_OR_GREATER
-            => CopyCharBlock(in MemoryMarshal.GetArrayDataReference<char>(source), ref MemoryMarshal.GetReference<char>(destination), count);
+            => CopyCharBlock(in MemoryMarshal.GetArrayDataReference<char>(source),
+                ref MemoryMarshal.GetReference<char>(destination), count);
 #else
         {
             CopyCharBlock(
@@ -458,7 +460,8 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(Span<char> source, char[] destination, int count)
 #if NET5_0_OR_GREATER
-            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source),
+                ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
 #else
         {
             CopyCharBlock(
@@ -482,7 +485,8 @@ public static unsafe class Notsafe
         /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(Span<char> source, Span<char> destination, int count)
-            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetReference<char>(destination), count);
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetReference<char>(destination),
+                count);
 
         /// <summary>
         /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
@@ -514,7 +518,8 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(text source, char[] destination, int count)
 #if NET5_0_OR_GREATER
-            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source),
+                ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
 #else
         {
             CopyCharBlock(
@@ -538,7 +543,8 @@ public static unsafe class Notsafe
         /// </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(text source, Span<char> destination, int count)
-            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetReference<char>(destination), count);
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetReference<char>(destination),
+                count);
 
         /// <summary>
         /// Copies a block of <see cref="char">characters</see> from <paramref name="source"/> to <paramref name="destination"/>
@@ -580,7 +586,8 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(string source, char[] destination, int count)
 #if NET5_0_OR_GREATER
-            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source),
+                ref MemoryMarshal.GetArrayDataReference<char>(destination), count);
 #else
         {
             CopyCharBlock(
@@ -605,7 +612,8 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(string source, Span<char> destination, int count)
 #if NET5_0_OR_GREATER
-            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetReference<char>(destination), count);
+            => CopyCharBlock(in MemoryMarshal.GetReference<char>(source), ref MemoryMarshal.GetReference<char>(destination),
+                count);
 #else
         {
             CopyCharBlock(
@@ -619,6 +627,9 @@ public static unsafe class Notsafe
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNullRef<T>([NotNullWhen(false)] ref readonly T source)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Emit.Ldarg_0();
         Emit.Ldc_I4_0();
@@ -629,6 +640,9 @@ public static unsafe class Notsafe
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNonNullRef<T>([NotNullWhen(true)] ref readonly T source)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Emit.Ldarg_0();
         Emit.Ldc_I4_0();
@@ -644,6 +658,9 @@ public static unsafe class Notsafe
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T NullRef<T>()
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Emit.Ldc_I4_0();
         Emit.Conv_U();
@@ -652,7 +669,9 @@ public static unsafe class Notsafe
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int SizeOf<T>()
-        //where T : struct
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Emit.Sizeof<T>();
         return Return<int>();
@@ -660,7 +679,6 @@ public static unsafe class Notsafe
 
 
 #region Referencing
-
     /************************************
      * Roughly:
      * void*, T*, in T, ref T
@@ -675,6 +693,9 @@ public static unsafe class Notsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* VoidPtrAsPtr<T>(void* voidPointer)
         where T : unmanaged
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(voidPointer));
         return ReturnPointer<T>();
@@ -685,6 +706,9 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T VoidPtrAsRef<T>(void* voidPointer)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(voidPointer));
         return ref ReturnRef<T>();
@@ -695,6 +719,9 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly T VoidPtrAsIn<T>(void* voidPointer)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(voidPointer));
         return ref ReturnRef<T>();
@@ -708,6 +735,9 @@ public static unsafe class Notsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void* PtrAsVoidPtr<T>(T* sourcePointer)
         where T : unmanaged
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(sourcePointer));
         return ReturnPointer();
@@ -719,6 +749,9 @@ public static unsafe class Notsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T PtrAsRef<T>(T* sourcePointer)
         where T : unmanaged
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(sourcePointer));
         return ref ReturnRef<T>();
@@ -730,6 +763,9 @@ public static unsafe class Notsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly T PtrAsIn<T>(T* sourcePointer)
         where T : unmanaged
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(sourcePointer));
         return ref ReturnRef<T>();
@@ -742,6 +778,9 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void* InAsVoidPtr<T>(in T inValue)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(inValue));
         return ReturnPointer();
@@ -753,6 +792,9 @@ public static unsafe class Notsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* InAsPtr<T>(in T inValue)
         where T : unmanaged
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(inValue));
         return ReturnPointer<T>();
@@ -763,6 +805,9 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T InAsRef<T>(in T inValue)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(inValue));
         return ref ReturnRef<T>();
@@ -775,8 +820,12 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void* RefAsVoidPtr<T>(ref T inValue)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(inValue));
+        Emit.Conv_U();
         return ReturnPointer();
     }
 
@@ -786,6 +835,9 @@ public static unsafe class Notsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* RefAsPtr<T>(ref T inValue)
         where T : unmanaged
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(inValue));
         return ReturnPointer<T>();
@@ -796,15 +848,16 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly T RefAsIn<T>(ref T inValue)
+#if NET9_0_OR_GREATER
+        where T: allows ref struct
+#endif
     {
         Emit.Ldarg(nameof(inValue));
         return ref ReturnRef<T>();
     }
-
 #endregion
 
 #region Casting
-
     // object -> ?
 
     /// <summary>
@@ -859,16 +912,15 @@ public static unsafe class Notsafe
     }
 
     /// <summary>
-    /// Uses an <see cref="object"/> <b>as</b> a <typeparamref name="T"/>
+    /// Casts the given object to the specified type, performs no dynamic type checking.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: NotNullIfNotNull(nameof(obj))]
     public static T As<T>(object? obj)
-        //where T : class?
+        where T : class?
     {
         Emit.Ldarg(nameof(obj));
-        Emit.Ret();
-        throw Unreachable();
+        return Return<T>();
     }
 
 
@@ -881,22 +933,26 @@ public static unsafe class Notsafe
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TOut As<TIn, TOut>(TIn input)
+#if NET9_0_OR_GREATER
+        where TIn : allows ref struct
+        where TOut : allows ref struct
+#endif
     {
-        Emit.Ldarg_0();
+        Emit.Ldarg(nameof(input));
         return Return<TOut>();
     }
 
     /// <summary>
-    /// Interpret the <c>ref </c><typeparamref name="TIn"/> <paramref name="input"/> as a <c>ref </c><typeparamref name="TOut"/>
+    /// Reinterprets the given <typeparamref name="TIn"/> reference as a reference to a <typeparamref name="TOut"/> value
     /// </summary>
-    /// <remarks>
-    /// Unless <typeparamref name="TIn"/> and <typeparamref name="TOut"/> have the same size and layout,
-    /// exceptions can be thrown and possible memory corruption
-    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref TOut As<TIn, TOut>(ref TIn input)
+#if NET9_0_OR_GREATER
+        where TIn : allows ref struct
+        where TOut : allows ref struct
+#endif
     {
-        Emit.Ldarg_0();
+        Emit.Ldarg(nameof(input));
         return ref ReturnRef<TOut>();
     }
 
@@ -929,7 +985,6 @@ public static unsafe class Notsafe
             pointer: InAsVoidPtr(in input.GetPinnableReference()),
             length: input.Length);
     }
-
 #endregion
 
     // crazy stuff below
@@ -961,4 +1016,91 @@ public static unsafe class Notsafe
         Emit.Ret();
         throw Unreachable();
     }
+
+
+#region Reference Offsetting
+    /// <summary>
+    /// Adds an element offset to the given reference.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T Add<T>(ref T source, int elementOffset)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(source));
+        Emit.Ldarg(nameof(elementOffset));
+        Emit.Sizeof(typeof(T));
+        Emit.Conv_I();
+        Emit.Mul();
+        Emit.Add();
+        return ref ReturnRef<T>();
+    }
+
+    /// <summary>
+    /// Adds an element offset to the given reference.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T Add<T>(ref T source, nuint elementOffset)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(source));
+        Emit.Ldarg(nameof(elementOffset));
+        Emit.Sizeof<T>();
+        Emit.Mul();
+        Emit.Add();
+        return ref ReturnRef<T>();
+    }
+
+    /// <summary>
+    /// Adds an element offset to the given reference.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T Add<T>(ref T source, nint elementOffset)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(source));
+        Emit.Ldarg(nameof(elementOffset));
+        Emit.Sizeof(typeof(T));
+        Emit.Mul();
+        Emit.Add();
+        return ref ReturnRef<T>();
+    }
+
+    /// <summary>
+    /// Adds a byte offset to the given reference.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T AddByteOffset<T>(ref T source, nuint byteOffset)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(source));
+        Emit.Ldarg(nameof(byteOffset));
+        IL.Emit.Add();
+        return ref IL.ReturnRef<T>();
+    }
+#endregion
+
+#region Comparison
+    /// <summary>
+    /// Determines whether the specified references point to the same location.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool AreSame<T>([AllowNull] ref readonly T left, [AllowNull] ref readonly T right)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(left));
+        Emit.Ldarg(nameof(right));
+        Emit.Ceq();
+        return IL.Return<bool>();
+    }
+#endregion
 }

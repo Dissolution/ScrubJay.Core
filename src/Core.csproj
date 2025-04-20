@@ -48,7 +48,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>ScrubJay.Core</PackageId>
         <Title>ScrubJay - Core</Title>
-        <Version>0.41.2-alpha</Version>
+        <Version>0.42.0-alpha</Version>
         <Authors>Dissolution</Authors>
 
         <Description>
@@ -98,6 +98,7 @@
         <Using Include="JetBrains.Annotations"/>
 
         <!-- Recommendations for downstream too -->
+        <Using Include="ScrubJay.Building"/>        
         <Using Include="ScrubJay.Functional"/>
         <Using Include="ScrubJay.Functional.Prelude" Static="true"/>
         <Using Include="ScrubJay.Collections"/>

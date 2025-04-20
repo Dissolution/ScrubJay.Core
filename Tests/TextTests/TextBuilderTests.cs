@@ -1,5 +1,6 @@
 ﻿using ScrubJay.Text;
 using ScrubJay.Utilities;
+using ScrubJay.Building;
 // ReSharper disable CollectionNeverUpdated.Local
 
 namespace ScrubJay.Tests.TextTests;
@@ -197,12 +198,12 @@ public class TextBuilderTests
         using var text = new TextBuilder();
 
         IEnumerable<char> values = SHORT_STRING.ToCharArray();
-        text.Enumerate<char>(values, static (tb, ch) => tb.Append(ch).Append('_'));
+        text.Enumerate(values, static (tb, ch) => tb.Append(ch).Append('_'));
         Assert.Equal("T_R_J_", text.ToString());
         text.Clear();
 
         ReadOnlySpan<char> span = SHORT_STRING.AsSpan();
-        text.Enumerate<char>(span, static (tb,ch) => tb.Append(ch).Append('_'));
+        text.Enumerate(span, static (tb,ch) => tb.Append(ch).Append('_'));
         Assert.Equal("T_R_J_", text.ToString());
     }
 
@@ -212,12 +213,12 @@ public class TextBuilderTests
         using var text = new TextBuilder();
 
         IEnumerable<char> values = SHORT_STRING.ToCharArray();
-        text.Iterate<char>(values, static (tb, ch, i) => tb.Append(i).Append(ch));
+        text.Iterate(values, static (tb, ch, i) => tb.Append(i).Append(ch));
         Assert.Equal("0T1R2J", text.ToString());
         text.Clear();
 
         ReadOnlySpan<char> span = SHORT_STRING.AsSpan();
-        text.Iterate<char>(span, static (tb, ch, i) => tb.Append(i).Append(ch));
+        text.Iterate(span, static (tb, ch, i) => tb.Append(i).Append(ch));
         Assert.Equal("0T1R2J", text.ToString());
     }
 

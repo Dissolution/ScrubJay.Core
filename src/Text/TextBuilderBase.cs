@@ -1,5 +1,4 @@
-﻿using ScrubJay.Building;
-using ScrubJay.Maths;
+﻿using ScrubJay.Maths;
 #pragma warning disable S3247, S4136, RCS1220
 #pragma warning disable IDE1006, IDE0060
 #pragma warning disable CA1033, CA1045, CA1710, CA1715
@@ -509,54 +508,14 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
 
 #region Enumeration
 
-    public B Enumerate<T>(ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
-    {
-        foreach (var t in values)
-        {
-            onBuilderValue(_builder, t);
-        }
-
-        return _builder;
-    }
-
-    public B Enumerate<T>(IEnumerable<T> values, Action<B, T> onBuilderValue)
-    {
-        foreach (var value in values)
-        {
-            onBuilderValue(_builder, value);
-        }
-
-        return _builder;
-    }
-
     public B EnumerateAppend<T>(ReadOnlySpan<T> values)
-        => Enumerate(values, static (tb, value) => tb.Append(value));
+    => _builder.Enumerate(values, static (tb, value) => tb.Append(value));
 
     public B EnumerateAppend<T>(IEnumerable<T> values)
-        => Enumerate(values, static (tb, value) => tb.Append(value));
+        => _builder.Enumerate(values, static (tb, value) => tb.Append(value));
 
 
-    public B Iterate<T>(ReadOnlySpan<T> values, Action<B, T, int> onBuilderValueIndex)
-    {
-        for (int i = 0; i < values.Length; i++)
-        {
-            onBuilderValueIndex(_builder, values[i], i);
-        }
 
-        return _builder;
-    }
-
-    public B Iterate<T>(IEnumerable<T> values, Action<B, T, int> onBuilderValueIndex)
-    {
-        int index = 0;
-        foreach (var value in values)
-        {
-            onBuilderValueIndex(_builder, value, index);
-            index++;
-        }
-
-        return _builder;
-    }
 
 #region Delimit
 
@@ -583,7 +542,7 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
     public B Delimit<T>(scoped text delimiter, ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
     {
         if (delimiter.Length == 0)
-            return Enumerate(values, onBuilderValue);
+            return _builder.Enumerate(values, onBuilderValue);
         int len = values.Length;
         if (len == 0)
             return _builder;
@@ -666,7 +625,7 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
         if (values is null)
             return _builder;
         if (delimiter.Length == 0)
-            return Enumerate(values.AsSpan(), onBuilderValue);
+            return _builder.Enumerate(values.AsSpan(), onBuilderValue);
         int len = values.Length;
         if (len == 0)
             return _builder;
@@ -760,7 +719,7 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
         if (values is null)
             return builder;
         if (delimiter.Length == 0)
-            return Enumerate(values, onBuilderValue);
+            return _builder.Enumerate(values, onBuilderValue);
         using var e = values.GetEnumerator();
         if (!e.MoveNext())
             return builder;

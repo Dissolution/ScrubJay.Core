@@ -200,21 +200,6 @@ public readonly struct Result<T, E> :
         return default(T);
     }
 
-
-    public bool HasOkOrError([MaybeNullWhen(false)] out T ok, [MaybeNullWhen(true)] out E error)
-    {
-        if (_isOk)
-        {
-            ok = _value!;
-            error = _error;
-            return true;
-        }
-
-        ok = _value;
-        error = _error!;
-        return false;
-    }
-
     /// <summary>
     ///
     /// </summary>

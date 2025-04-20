@@ -2,6 +2,7 @@
 
 namespace ScrubJay.Utilities;
 
+[PublicAPI]
 [InterpolatedStringHandler]
 public ref struct PairBuilder<TKey, TValue>
 {
