@@ -5,6 +5,7 @@
 // ReSharper disable ArrangeMethodOrOperatorBody
 // ReSharper disable InvokeAsExtensionMethod
 
+using ScrubJay.Maths;
 using static ScrubJay.Utilities.Notsafe.Text;
 
 namespace ScrubJay.Text;
@@ -16,7 +17,6 @@ namespace ScrubJay.Text;
 public static class TextHelper
 {
 #region TryCopyTo
-
     /* All *Copy methods validate inputs before calling Notsafe.Text.CopyBlock
      * Source Types: char, string?, ReadOnlySpan<char>, Span<char>, char[]?
      * Dest.  Types: Span<char>, char[]?
@@ -141,7 +141,6 @@ public static class TextHelper
         }
         return false;
     }
-
 #endregion
 
     /* Compare + Equate get the same rotation of types:
@@ -149,9 +148,7 @@ public static class TextHelper
      */
 
 #region Compare
-
 #region Ordinal
-
     public static int Compare(char left, char right)
         => left.CompareTo(right);
 
@@ -200,11 +197,9 @@ public static class TextHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Compare(text left, text right)
         => MemoryExtensions.SequenceCompareTo<char>(left, right);
-
 #endregion
 
 #region with StringComparison
-
     public static int Compare(char left, char right, StringComparison comparison)
         => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
@@ -253,15 +248,11 @@ public static class TextHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Compare(text left, text right, StringComparison comparison)
         => MemoryExtensions.CompareTo(left, right, comparison);
-
 #endregion
-
 #endregion
 
 #region Equate
-
 #region Ordinal
-
     public static bool Equate(char left, char right)
         => left.Equals(right);
 
@@ -310,11 +301,9 @@ public static class TextHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Equate(text left, text right)
         => MemoryExtensions.SequenceEqual<char>(left, right);
-
 #endregion
 
 #region with StringComparison
-
     public static bool Equate(char left, char right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
@@ -363,13 +352,10 @@ public static class TextHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Equate(text left, text right, StringComparison comparison)
         => MemoryExtensions.Equals(left, right, comparison);
-
 #endregion
-
 #endregion
 
 #region Contains
-
     public static bool Contains(string? str, char match, StringComparison comparison = StringComparison.Ordinal)
     {
         if (str is null)
@@ -407,11 +393,9 @@ public static class TextHelper
     {
         return MemoryExtensions.Contains(text, match, comparison);
     }
-
 #endregion
 
 #region StartsWith
-
     public static bool StartsWith(string? str, string? match, StringComparison comparison = StringComparison.Ordinal)
     {
         if (str is null || match is null)
@@ -437,11 +421,9 @@ public static class TextHelper
     {
         return MemoryExtensions.StartsWith(text, match, comparison);
     }
-
 #endregion
 
 #region EndsWith
-
     public static bool EndsWith(string? str, string? match, StringComparison comparison = StringComparison.Ordinal)
     {
         if (str is null || match is null)
@@ -467,12 +449,10 @@ public static class TextHelper
     {
         return MemoryExtensions.EndsWith(text, match, comparison);
     }
-
 #endregion
 
 
 #region Misc.
-
     public static string Repeat(int count, char ch)
     {
         if (count < 0)
@@ -496,9 +476,6 @@ public static class TextHelper
         return buffer.AsString();
     }
 
-#endregion
-
-
     public static bool TryUnboxText(object? obj, out text text)
     {
         if (obj is char)
@@ -520,5 +497,83 @@ public static class TextHelper
 
         text = default;
         return false;
+    }
+#endregion
+
+    public static int LevenshteinDistance(text source, text target)
+    {
+        int sourceLen = source.Length;
+        int targetLen = target.Length;
+
+        // Fast check for either being empty
+        if (sourceLen == 0)
+            return targetLen;
+        if (targetLen == 0)
+            return sourceLen;
+
+//        // remove any common starting ending characters
+//        var startIndex = 0;
+//        while (startIndex < sourceLen &&
+//            startIndex < targetLen &&
+//            source[startIndex] == target[startIndex])
+//        {
+//            startIndex++;
+//        }
+//
+//        // fast check for ending
+//        if (startIndex >= sourceLen || startIndex >= targetLen)
+//        {
+//            return Math.Abs(sourceLen - targetLen);
+//        }
+//
+//        // remove any common ending characters
+//        while (startIndex < sourceLen &&
+//            startIndex < targetLen &&
+//            source[sourceLen - 1] == target[targetLen - 1])
+//        {
+//            sourceLen--;
+//            targetLen--;
+//        }
+//
+//        if (sourceLen)
+//
+//        var sourceLength = sourceLen - startIndex;
+//        var targetLength = targetLen - startIndex;
+//
+//        source = source.Slice(startIndex, sourceLength);
+//        target = target.Slice(startIndex, targetLength);
+
+        Span<int> previousRow = stackalloc int[target.Length + 1];
+
+        for (int i = 1; i <= targetLen; ++i)
+        {
+            previousRow[i] = i;
+        }
+
+        for (int i = 1; i <= sourceLen; ++i)
+        {
+            int previousDiagonal = previousRow[0];
+            int previousColumn = previousRow[0]++;
+            char sourceChar = source[i - 1];
+
+            for (int j = 1; j <= targetLen; ++j)
+            {
+                int localCost = previousDiagonal;
+                int deletionCost = previousRow[j];
+                if (sourceChar != target[j - 1])
+                {
+                    // The conditional jumps associated with Math.Min only execute
+                    // if the source character is not equal to the target character.
+                    localCost = Math.Min(previousColumn, localCost);
+                    localCost = Math.Min(deletionCost, localCost);
+                    localCost++;
+                }
+                previousColumn = localCost;
+                previousRow[j] = localCost;
+                previousDiagonal = deletionCost;
+            }
+        }
+
+        return previousRow[target.Length];
     }
 }

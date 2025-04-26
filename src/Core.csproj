@@ -48,7 +48,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>ScrubJay.Core</PackageId>
         <Title>ScrubJay - Core</Title>
-        <Version>0.42.0-alpha</Version>
+        <Version>0.42.2-alpha</Version>
         <Authors>Dissolution</Authors>
 
         <Description>
@@ -98,7 +98,7 @@
         <Using Include="JetBrains.Annotations"/>
 
         <!-- Recommendations for downstream too -->
-        <Using Include="ScrubJay.Building"/>        
+        <Using Include="ScrubJay.Building"/>
         <Using Include="ScrubJay.Functional"/>
         <Using Include="ScrubJay.Functional.Prelude" Static="true"/>
         <Using Include="ScrubJay.Collections"/>
@@ -124,7 +124,7 @@
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Polyfill" Version="7.23.0">
+        <PackageReference Include="Polyfill" Version="7.27.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

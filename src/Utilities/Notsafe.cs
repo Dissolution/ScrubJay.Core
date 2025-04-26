@@ -644,16 +644,13 @@ public static unsafe class Notsafe
         where T : allows ref struct
 #endif
     {
+        Emit.Ldc_I4_0();
         Emit.Ldarg_0();
         Emit.Ldc_I4_0();
         Emit.Conv_U();
-        Emit.Beq_S("is_null");
-        Emit.Ldc_I4_1();
-        Emit.Ret();
-        MarkLabel("is_null");
-        Emit.Ldc_I4_0();
-        Emit.Ret();
-        throw Unreachable();
+        Emit.Ceq();
+        Emit.Ceq();
+        return Return<bool>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

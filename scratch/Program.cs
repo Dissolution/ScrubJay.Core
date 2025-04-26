@@ -18,11 +18,14 @@ using ScrubJay.Text;
 using static InlineIL.IL;
 
 
-// Usage
-var done = ScrubJay.Scratch.Util_2.parseDivideAsync("abc", "13");
+char[] array = ['a', 'b', 'c', 'd', 'e', 'f'];
+var opt = MutOption<char[]>.None();
+opt.Match((ref char[] arr) => arr = null!, () => { });
 
+Debugger.Break();
 
-Console.WriteLine((object)done);
+bool boolean = (bool)(object?)true!;
+var not = !boolean;
 
 return 0;
 

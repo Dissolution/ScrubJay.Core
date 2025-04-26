@@ -93,4 +93,30 @@ Commented Aug 27, 2017 at 10:08
         Emit.Shl();
         return Return<int>();
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int Min(int a, int b, int c)
+    {
+        if (a <= b)
+        {
+            if (a <= c)
+            {
+                // no assumptions about b ?? c
+                return a;
+            }
+        }
+        else
+        {
+            Debug.Assert(b < a);
+            if (b <= c)
+            {
+                // no assumptions about a ?? c
+                return b;
+            }
+        }
+
+        Debug.Assert(c < b);
+        Debug.Assert(c < a);
+        return c;
+    }
 }

@@ -8,7 +8,7 @@
 /// </typeparam>
 [PublicAPI]
 public abstract class BuilderBase<B> : IBuilder<B>
-    where B : BuilderBase<B>
+    where B : IBuilder<B>
 {
     /// <summary>
     /// Stores a reference to this builder instance as a <typeparamref name="B"/>
@@ -20,7 +20,7 @@ public abstract class BuilderBase<B> : IBuilder<B>
     /// </summary>
     protected BuilderBase()
     {
-        _builder = (B)this;
+        _builder = (B)(IBuilder<B>)this;
     }
 
     public virtual B Invoke(Action<B>? instanceAction)

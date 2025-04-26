@@ -22,4 +22,11 @@ public static class Reference
         location = value;
         return original;
     }
+
+    public static void Exchange<T>(ref Span<T> left, ref Span<T> right)
+    {
+        Span<T> temp = left;
+        left = right;
+        right = temp;
+    }
 }

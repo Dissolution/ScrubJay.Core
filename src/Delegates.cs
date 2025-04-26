@@ -181,22 +181,29 @@ public delegate TReturn Fn<in T1, in T2, in T3, in T4, in T5, in T6, in T7, in T
 
 
 /// <summary>
-/// Action&lt;ref T&gt;
+/// <see cref="Action{T}">Action&lt;ref T&gt;</see>
 /// </summary>
-/// <typeparam name="T">
-/// The <see cref="Type"/> of value being referenced
-/// </typeparam>
-/// <param name="ref1">
-/// The value passed by reference as the first argument to this Action
-/// </param>
 [PublicAPI]
 public delegate void ActionRef<T>(ref T ref1);
 
 /// <summary>
-/// Action&lt;ref T1, in T2&gt;
+/// <see cref="Action{T1,T2}">Action&lt;ref T1, in T2&gt;</see>
 /// </summary>
 [PublicAPI]
 public delegate void ActionRef<T1, in T2>(ref T1 ref1, T2 arg2);
+
+
+/// <summary>
+/// <see cref="Func{T,R}">Func&lt;ref T, out R&gt;</see>
+/// </summary>
+[PublicAPI]
+public delegate R FuncRef<T, out R>(ref T ref1);
+
+/// <summary>
+/// <see cref="Func{T1,T2,R}">Func&lt;ref T1, in T2, out R&gt;</see>
+/// </summary>
+[PublicAPI]
+public delegate R FuncRef<T1, in T2, out R>(ref T1 ref1, T2 arg2);
 
 
 
