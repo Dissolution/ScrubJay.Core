@@ -15,14 +15,13 @@ namespace ScrubJay.Text;
 /// </typeparam>
 [PublicAPI]
 [MustDisposeResource]
-public abstract class TextBuilderBase<B> : BuilderBase<B>,
+public abstract class TextBuilderBase<B> : PooledList<char>,
     IList<char>,
     IReadOnlyList<char>,
     ICollection<char>,
     IReadOnlyCollection<char>,
     IEnumerable<char>,
-    IDisposable
-    where B : TextBuilderBase<B>
+    IDisposable, ITextBuilder<B> where B : TextBuilderBase<B>
 {
     // This manages all the actual writing
     protected readonly PooledList<char> _text;

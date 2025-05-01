@@ -4,9 +4,10 @@
 /// Indicates the alignment of text within a space
 /// </summary>
 /// <remarks>
-/// This is a <see cref="FlagsAttribute"/> <see cref="Enum"/> so that a bias can be indicated for centering operations<br/>
-/// <i>e.g.</i> <c>Left | Center</c> is a left-bias when there is an uneven amount of spacing<br/>
-/// <c>Left | Right</c> is considered an invalid <see cref="Alignment"/>
+/// <see cref="Alignment"/> has <c>[Flags]</c> so that a bias can be indicated for <see cref="Center"/> operations<br/>
+/// <i>e.g.</i> <c>Left | Center</c> for 'x' in width 4 results in "_x__"<br/>
+/// whereas <c>Right | Center</c> for 'x' in width 4 results in "__x_"<br/>
+/// <c>Left | Right</c> is treated the same as <see cref="Center"/>
 /// </remarks>
 [PublicAPI]
 [Flags]
