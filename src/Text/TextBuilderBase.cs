@@ -74,6 +74,11 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
         _text = new(minCapacity);
     }
 
+    protected TextBuilderBase(PooledList<char> text)
+    {
+        _text = text;
+    }
+
     void ICollection<char>.Add(char item) => Append(item);
 
     protected internal virtual void InterpolatedExecute(Action<B> build) => build(_builder);
@@ -912,6 +917,18 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
         _ = _text.TryCopyTo(array.AsSpan(arrayIndex));
     }
 
+    public B AsIndentTextBuilder(Action<IndentTextBuilder> indented)
+    {
+        // Empty my pool to get an array to pass along
+        var (array,pos) = _text.Empty();
+
+        var itb = new IndentTextBuilder(new PooledList<char>(array, pos));
+        indented(itb);
+        var (newArray, newPos) = itb._text.Empty();
+        itb.Dispose(); // does nothing
+        _text.Replace(newArray, newPos);
+        return _builder;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public text AsText() => _text.Written;

@@ -123,6 +123,12 @@ public sealed class PooledList<T> : PooledArray<T>,
         }
     }
 
+    internal PooledList(T[] array, int position)
+    {
+        _array = array;
+        _position = position;
+    }
+
     /// <summary>
     /// Create an unallocated, empty <see cref="PooledList{T}"/>
     /// </summary>
@@ -1064,6 +1070,22 @@ public sealed class PooledList<T> : PooledArray<T>,
     {
         _version++;
         _position = 0;
+    }
+
+    public (T[], int) Empty()
+    {
+        T[] array = Interlocked.Exchange<T[]>(ref _array, []);
+        int count = _position;
+        _position = 0;
+        return (array, count);
+    }
+
+    public (T[], int) Replace(T[] array, int count)
+    {
+        var oldArray = Interlocked.Exchange<T[]>(ref _array, array);
+        var oldPos = _position;
+        _position = count;
+        return (oldArray, oldPos);
     }
 
     public bool SequenceEqual(ReadOnlySpan<T> items) => Sequence.Equal(Written, items);

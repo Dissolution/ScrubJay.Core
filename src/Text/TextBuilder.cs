@@ -27,6 +27,11 @@ public sealed class TextBuilder : TextBuilderBase<TextBuilder>, IDisposable
     /// </returns>
     public static string Build(Action<TextBuilder>? build) => New.Invoke(build).ToStringAndDispose();
 
+
+    internal TextBuilder(PooledList<char> text) : base(text)
+    {
+    }
+
     /// <summary>
     /// Construct a new, empty <see cref="TextBuilder"/>
     /// </summary>

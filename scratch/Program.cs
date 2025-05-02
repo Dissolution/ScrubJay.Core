@@ -15,17 +15,17 @@ using ScrubJay.Extensions;
 using ScrubJay.Memory;
 using ScrubJay.Validation;
 using ScrubJay.Text;
+using ScrubJay.Text.Rendering;
 using static InlineIL.IL;
 
 
-char[] array = ['a', 'b', 'c', 'd', 'e', 'f'];
-var opt = MutOption<char[]>.None();
-opt.Match((ref char[] arr) => arr = null!, () => { });
+var text = TextBuilder.New.Render(Guid.NewGuid()).NewLine()
+    .Render("eat at joes").NewLine()
+    .Render(new InvalidOperationException("yo dawg"))
+    .ToStringAndDispose();
 
 Debugger.Break();
 
-bool boolean = (bool)(object?)true!;
-var not = !boolean;
 
 return 0;
 

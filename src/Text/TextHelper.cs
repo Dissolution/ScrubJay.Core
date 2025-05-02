@@ -5,7 +5,6 @@
 // ReSharper disable ArrangeMethodOrOperatorBody
 // ReSharper disable InvokeAsExtensionMethod
 
-using ScrubJay.Maths;
 using static ScrubJay.Utilities.Notsafe.Text;
 
 namespace ScrubJay.Text;
@@ -498,6 +497,7 @@ public static class TextHelper
         text = default;
         return false;
     }
+
 #endregion
 
     public static int LevenshteinDistance(text source, text target)

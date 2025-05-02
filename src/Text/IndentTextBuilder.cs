@@ -12,12 +12,25 @@ public sealed class IndentTextBuilder : FluentIndentTextBuilder<IndentTextBuilde
         [MustDisposeResource]
         get => new();
     }
+
+    public IndentTextBuilder() : base() { }
+
+    internal IndentTextBuilder(PooledList<char> list)
+        : base(list)
+    {
+
+    }
 }
 
 public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
     where B : FluentIndentTextBuilder<B>
 {
     private Whitespace _whitespace = new();
+
+    protected FluentIndentTextBuilder(PooledList<char> text) : base(text)
+    {
+
+    }
 
     public FluentIndentTextBuilder() : base() { }
 
