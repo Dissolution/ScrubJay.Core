@@ -127,6 +127,14 @@ public static class CSharpTypeNaming
         Debug.Assert(argCount > 0);
 
         return text.Append('<')
+            .EnumerateAndDelimit(argTypes,
+                static (tb, argType) => tb.Append(NameOf(argType)),
+                static tb => tb.Append(", "))
+            .Append('>')
+            .ToString();
+
+
+        return text.Append('<')
             .Delimit(", ", argTypes, static (tb, argType) => tb.Append(NameOf(argType)))
             .Append('>')
             .ToString();

@@ -131,4 +131,43 @@ public static class Renderers
     {
         return RenderValueTo(value, builder);
     }
+
+    public static B Render<B, T>(this B builder, T[]? array)
+        where B : TextBuilderBase<B>
+    {
+        if (array is null)
+            return builder.Append("`null`");
+
+        return builder.Append('[')
+            .EnumerateAndDelimit(array,
+                (tb, item) => RenderValueTo(item, tb),
+                tb => tb.Append(", "))
+            .Append(']');
+    }
+
+    public static B Render<B>(this B builder, text text)
+        where B : TextBuilderBase<B>
+    {
+        return builder.Append('"').Append(text).Append('"');
+    }
+
+    public static B Render<B, T>(this B builder, ReadOnlySpan<T> span)
+        where B : TextBuilderBase<B>
+    {
+        return builder.Append('[')
+            .EnumerateAndDelimit(span,
+                (tb, item) => RenderValueTo(item, tb),
+                tb => tb.Append(", "))
+            .Append(']');
+    }
+
+    public static B Render<B, T>(this B builder, Span<T> span)
+        where B : TextBuilderBase<B>
+    {
+        return builder.Append('[')
+            .EnumerateAndDelimit((ReadOnlySpan<T>)span,
+                (tb, item) => RenderValueTo(item, tb),
+                tb => tb.Append(", "))
+            .Append(']');
+    }
 }

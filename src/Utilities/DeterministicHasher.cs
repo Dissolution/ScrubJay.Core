@@ -39,8 +39,6 @@ https://raw.githubusercontent.com/Cyan4973/xxHash/5c174cfa4e45a42f94082dc0d4539b
 
 #pragma warning disable CS0809
 
-using System.Security.Cryptography;
-
 namespace ScrubJay.Utilities;
 
 /// <summary>
@@ -48,7 +46,7 @@ namespace ScrubJay.Utilities;
 /// </summary>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public ref struct Hasher : IHasher
+public ref struct DeterministicHasher : IHasher
 {
     #region Static
 
@@ -61,48 +59,29 @@ public ref struct Hasher : IHasher
     /// <summary>
     /// The seed for this Hasher
     /// </summary>
-    private static readonly uint _seed = CreateSeed();
+    private const uint SEED = 147U;
 
     /// <summary>
     /// The current hashcode for no value
     /// </summary>
-    public static int EmptyHash { get; } = new Hasher().ToHashCode();
+    public static int EmptyHash { get; } = new DeterministicHasher().ToHashCode();
 
     /// <summary>
     /// The current hashcode for <c>null</c>
     /// </summary>
-    public static int NullHash { get; } = Hash<object?>(null);
+    public static int NullHash { get;  } = Hash<object?>(null);
 
-
-    /// <summary>
-    /// Creates a random initial seed for <see cref="Hasher"/>
-    /// </summary>
-    private static uint CreateSeed()
-    {
-#if NETFRAMEWORK || NETSTANDARD2_0
-        using var rng = RandomNumberGenerator.Create();
-        byte[] bytes = new byte[sizeof(uint)];
-        rng.GetBytes(bytes);
-        return BitConverter.ToUInt32(bytes, 0);
-#else
-        Span<byte> bytes = stackalloc byte[sizeof(uint)];
-        RandomNumberGenerator.Fill(bytes);
-        return Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(bytes));
-#endif
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint StartHash() => _seed + PRIME5;
+    private const uint START_HASH = SEED + PRIME5;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void StartingStates(out uint state1, out uint state2, out uint state3, out uint state4)
     {
         unchecked
         {
-            state1 = _seed + PRIME1 + PRIME2;
-            state2 = _seed + PRIME2;
-            state3 = _seed;
-            state4 = _seed - PRIME1;
+            state1 = SEED + PRIME1 + PRIME2;
+            state2 = SEED + PRIME2;
+            state3 = SEED;
+            state4 = SEED - PRIME1;
         }
     }
 
@@ -151,7 +130,7 @@ public ref struct Hasher : IHasher
     {
         uint hc1 = (uint)(value?.GetHashCode() ?? 0);
 
-        uint hash = StartHash();
+        uint hash = START_HASH;
         hash += 4;
 
         hash = HashAdd(hash, hc1);
@@ -164,7 +143,7 @@ public ref struct Hasher : IHasher
     /// </summary>
     public static int Hash<T>(T? value, IEqualityComparer<T>? comparer)
     {
-        var hasher = new Hasher();
+        var hasher = new DeterministicHasher();
         hasher.Add(value, comparer);
         return hasher.ToHashCode();
     }
@@ -177,7 +156,7 @@ public ref struct Hasher : IHasher
         uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
         uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
 
-        uint hash = StartHash();
+        uint hash = START_HASH;
         hash += 8;
 
         hash = HashAdd(hash, hc1);
@@ -196,7 +175,7 @@ public ref struct Hasher : IHasher
         uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
         uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
 
-        uint hash = StartHash();
+        uint hash = START_HASH;
         hash += 12;
 
         hash = HashAdd(hash, hc1);
@@ -373,7 +352,7 @@ public ref struct Hasher : IHasher
             case 8: return HashMany(span[0], span[1], span[2], span[3], span[4], span[5], span[6], span[7]);
             default:
             {
-                var hasher = new Hasher();
+                var hasher = new DeterministicHasher();
                 hasher.AddMany<T>(span);
                 return hasher.ToHashCode();
             }
@@ -398,7 +377,7 @@ public ref struct Hasher : IHasher
             case 8: return HashMany(span[0], span[1], span[2], span[3], span[4], span[5], span[6], span[7]);
             default:
             {
-                var hasher = new Hasher();
+                var hasher = new DeterministicHasher();
                 hasher.AddMany<T>(span);
                 return hasher.ToHashCode();
             }
@@ -410,7 +389,7 @@ public ref struct Hasher : IHasher
     /// </summary>
     public static int HashMany<T>(scoped Span<T> span, IEqualityComparer<T>? comparer)
     {
-        var hasher = new Hasher();
+        var hasher = new DeterministicHasher();
         hasher.AddMany<T>(span, comparer);
         return hasher.ToHashCode();
     }
@@ -420,7 +399,7 @@ public ref struct Hasher : IHasher
     /// </summary>
     public static int HashMany<T>(scoped ReadOnlySpan<T> span, IEqualityComparer<T>? comparer)
     {
-        var hasher = new Hasher();
+        var hasher = new DeterministicHasher();
         hasher.AddMany<T>(span, comparer);
         return hasher.ToHashCode();
     }
@@ -445,7 +424,7 @@ public ref struct Hasher : IHasher
             case 8: return HashMany(array[0], array[1], array[2], array[3], array[4], array[5], array[6], array[7]);
             default:
             {
-                var hasher = new Hasher();
+                var hasher = new DeterministicHasher();
                 hasher.AddMany<T>(array);
                 return hasher.ToHashCode();
             }
@@ -459,7 +438,7 @@ public ref struct Hasher : IHasher
     {
         if (array is null)
             return NullHash;
-        var hasher = new Hasher();
+        var hasher = new DeterministicHasher();
         hasher.AddMany<T>(array, comparer);
         return hasher.ToHashCode();
     }
@@ -471,7 +450,7 @@ public ref struct Hasher : IHasher
     {
         if (enumerable is null)
             return NullHash;
-        var hasher = new Hasher();
+        var hasher = new DeterministicHasher();
         hasher.AddMany<T>(enumerable);
         return hasher.ToHashCode();
     }
@@ -483,7 +462,7 @@ public ref struct Hasher : IHasher
     {
         if (enumerable is null)
             return NullHash;
-        var hasher = new Hasher();
+        var hasher = new DeterministicHasher();
         hasher.AddMany<T>(enumerable, comparer);
         return hasher.ToHashCode();
     }
@@ -674,7 +653,7 @@ public ref struct Hasher : IHasher
         uint hash;
         if (length < 4)
         {
-            hash = StartHash();
+            hash = START_HASH;
         }
         else
         {
@@ -703,16 +682,16 @@ public ref struct Hasher : IHasher
         return (int)hash;
     }
 
-    [Obsolete("Use ToHashCode() to get the hash generated by this Hasher", true)]
+    [Obsolete("Use ToHashCode() to get the hash generated by this DeterministicHasher", true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override readonly int GetHashCode() => ToHashCode();
 
-    [Obsolete("Hasher cannot equate to any value", true)]
+    [Obsolete("DeterministicHasher cannot equate to any value", true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override readonly bool Equals(object? obj) => false;
 
     public override readonly string ToString()
     {
-        return $"{nameof(Hasher)} #{ToHashCode():X}";
+        return $"{nameof(DeterministicHasher)} #{ToHashCode():X}";
     }
 }

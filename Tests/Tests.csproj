@@ -5,7 +5,7 @@
         <AssemblyName>ScrubJay.Tests</AssemblyName>
 
         <TargetFrameworks>
-            net9.0;net8.0;net7.0;net481;
+            net9.0;net8.0;
         </TargetFrameworks>
         <CheckEolTargetFramework>false</CheckEolTargetFramework>
         <LangVersion>latest</LangVersion>

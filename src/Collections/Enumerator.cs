@@ -25,5 +25,5 @@ public static class Enumerator
     /// Gets an <see cref="IEnumerator{T}"/> that enumerates over a single <paramref name="value"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerator<T> One<T>(T value) => new SingleValueEnumerator<T>(value);
+    public static IEnumerator<T> One<T>(T value) => new SingleEnumerable<T>(value);
 }

@@ -11,10 +11,11 @@ public sealed class DelegatedEqualityComparer<T> : IEqualityComparer<T>, IEquali
     where T : allows ref struct
 #endif
 {
-    private static readonly Fn<T, int> _throwCannotHash = _ => throw new InvalidOperationException($"{typeof(T).NameOf()} values cannot be hashed");
+    private static readonly Fn<T?, int> _throwCannotHash =
+        _ => throw new InvalidOperationException($"{typeof(T).NameOf()} values cannot be hashed");
 
-    private readonly Fn<T?,T?,bool> _equals;
-    private readonly Fn<T,int> _getHashCode;
+    private readonly Fn<T?, T?, bool> _equals;
+    private readonly Fn<T?, int> _getHashCode;
 
     public DelegatedEqualityComparer(Fn<T?, T?, bool> equals)
     {
@@ -22,7 +23,7 @@ public sealed class DelegatedEqualityComparer<T> : IEqualityComparer<T>, IEquali
         _getHashCode = _throwCannotHash;
     }
 
-    public DelegatedEqualityComparer(Fn<T?, T?, bool> equals, Fn<T, int> getHashCode)
+    public DelegatedEqualityComparer(Fn<T?, T?, bool> equals, Fn<T?, int> getHashCode)
     {
         _equals = equals;
         _getHashCode = getHashCode;
@@ -37,10 +38,17 @@ public sealed class DelegatedEqualityComparer<T> : IEqualityComparer<T>, IEquali
 
     int IEqualityComparer.GetHashCode(object? obj)
     {
-        if (obj is null)
-            return Hasher.NullHash;
         if (obj is T value)
             return _getHashCode(value);
+
+        if (obj is null)
+        {
+            if (typeof(T).CanContainNull())
+                return _getHashCode(default!);
+            else
+                return Hasher.NullHash;
+        }
+
         throw new ArgumentException($"Object was not a {typeof(T).NameOf()}", nameof(obj));
     }
 
@@ -48,8 +56,6 @@ public sealed class DelegatedEqualityComparer<T> : IEqualityComparer<T>, IEquali
 
     public int GetHashCode(T? value)
     {
-        if (value is null)
-            return Hasher.NullHash;
         return _getHashCode(value);
     }
 }

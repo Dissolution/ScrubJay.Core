@@ -1,23 +1,32 @@
-﻿namespace ScrubJay.Collections;
+﻿#pragma warning disable CA1710
+
+namespace ScrubJay.Collections;
 
 /// <summary>
 /// An <see cref="IEnumerator{T}"/> that yields a single value
 /// </summary>
 [PublicAPI]
 [MustDisposeResource(false)]
-public sealed class SingleValueEnumerator<T> : IEnumerator<T>, IEnumerator, IDisposable
+public sealed class SingleEnumerable<T> :
+    IEnumerable<T>, IEnumerable,
+    IEnumerator<T>, IEnumerator, IDisposable
 {
     private readonly T _value;
     private bool _canYield;
 
     object? IEnumerator.Current => _value;
+
     public T Current => _value;
 
-    public SingleValueEnumerator(T value)
+    public SingleEnumerable(T value)
     {
         _value = value;
         _canYield = true;
     }
+
+    IEnumerator IEnumerable.GetEnumerator() => this;
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => this;
+    void IDisposable.Dispose() { /* Do Nothing */ }
 
     public bool MoveNext()
     {
@@ -29,5 +38,5 @@ public sealed class SingleValueEnumerator<T> : IEnumerator<T>, IEnumerator, IDis
 
     public void Reset() => _canYield = true;
 
-    void IDisposable.Dispose() { /* Do Nothing */ }
+    public SingleEnumerable<T> GetEnumerator() => this;
 }

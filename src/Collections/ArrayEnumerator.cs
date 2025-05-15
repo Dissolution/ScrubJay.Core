@@ -121,7 +121,7 @@ public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator
     public bool MoveNext()
     {
         if (_getCurrentVersion is not null)
-            Throw.IfEnumerationSourceHasChanged(_getCurrentVersion() != _version);
+            Throw.IfBadEnumerationVersion(_getCurrentVersion() != _version);
 
         int newIndex = _index + _step;
         if ((newIndex < _minIndex) || (newIndex > _maxIndex))
@@ -145,7 +145,7 @@ public sealed class ArrayEnumerator<T> : IEnumerator<T>, IEnumerator
     public void Reset()
     {
         if (_getCurrentVersion is not null)
-            Throw.IfEnumerationSourceHasChanged(_getCurrentVersion() != _version);
+            Throw.IfBadEnumerationVersion(_getCurrentVersion() != _version);
 
         if (_step == +1)
         {

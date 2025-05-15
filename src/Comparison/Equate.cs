@@ -155,7 +155,7 @@ public static class Equate
         => GetEqualityComparer<T>();
 
 
-    public static IEqualityComparer<T> CreateEqualityComparer<T>(Fn<T?, T?, bool> equals, Fn<T, int> getHashCode)
+    public static IEqualityComparer<T> CreateEqualityComparer<T>(Fn<T?, T?, bool> equals, Fn<T?, int> getHashCode)
         => new DelegatedEqualityComparer<T>(equals, getHashCode);
 
 
