@@ -132,12 +132,6 @@ public static class CSharpTypeNaming
                 static tb => tb.Append(", "))
             .Append('>')
             .ToString();
-
-
-        return text.Append('<')
-            .Delimit(", ", argTypes, static (tb, argType) => tb.Append(NameOf(argType)))
-            .Append('>')
-            .ToString();
     }
 
 

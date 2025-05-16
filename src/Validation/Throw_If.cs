@@ -1,10 +1,7 @@
-﻿// CA1716: Prefix generic type with 'T'
+﻿#pragma warning disable CA1715, CA1716
 
 using ScrubJay.Text.Rendering;
 
-#pragma warning disable CA1715
-// CA1716: Identifiers should not match keywords
-#pragma warning disable CA1716
 
 namespace ScrubJay.Validation;
 

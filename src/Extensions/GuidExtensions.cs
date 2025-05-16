@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿#pragma warning disable CA1720
+
+using System.Globalization;
 
 namespace ScrubJay.Extensions;
 
@@ -9,7 +11,7 @@ public static class GuidExtensions
     {
 #if NETFRAMEWORK || NETSTANDARD2_0
         string str = guid.ToString("N");
-        str = str.ToUpper();
+        str = str.ToUpper(CultureInfo.InvariantCulture);
         return str;
 #else
         Span<char> buffer = stackalloc char[32];
