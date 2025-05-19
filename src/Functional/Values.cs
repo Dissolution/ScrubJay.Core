@@ -195,7 +195,7 @@ public readonly struct Values<T> :
         if (_obj is T val)
             return new(val, value);
 
-        T[] vals = Notsafe.As<T[]>(_obj);
+        T[] vals = Notsafe.As<object, T[]>(_obj);
         return new([..vals, value,]);
     }
 
@@ -254,7 +254,7 @@ public readonly struct Values<T> :
         else
         {
             Debug.Assert(obj is T[]);
-            T[] values = Notsafe.As<T[]>(obj);
+            T[] values = Notsafe.As<object, T[]>(obj);
             Sequence.CopyTo(values, span);
         }
     }
@@ -274,7 +274,7 @@ public readonly struct Values<T> :
             return Ok(1);
         }
 
-        var values = Notsafe.As<T[]>(obj);
+        var values = Notsafe.As<object, T[]>(obj);
         if (span.Length < values.Length)
             return new ArgumentException(default, nameof(span));
         Sequence.CopyTo(values, span);
@@ -289,7 +289,7 @@ public readonly struct Values<T> :
         if (obj is T)
             return Notsafe.AsReadOnlySpan<T>(obj);
         Debug.Assert(obj is T[]);
-        return new(Notsafe.As<T[]>(obj));
+        return new(Notsafe.As<object, T[]>(obj));
     }
 
     public T[] ToArray() => Match(static () => [], static value => [value, ], static values => values);
@@ -309,7 +309,7 @@ public readonly struct Values<T> :
         else
         {
             Debug.Assert(obj is T[]);
-            onValues(Notsafe.As<T[]>(obj));
+            onValues(Notsafe.As<object, T[]>(obj));
         }
     }
 

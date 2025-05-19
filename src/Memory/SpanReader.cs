@@ -560,7 +560,7 @@ public ref struct SpanReader<T>
         var text = new TextBuffer();
 
         int index = _position;
-        text chars = Notsafe.As<T, char>(_span);
+        text chars = Notsafe.SpanAs<T, char>(_span);
 
         const int CAPTURE_COUNT = 32;
 

@@ -909,24 +909,11 @@ public static unsafe class Notsafe
     }
 
     /// <summary>
-    /// Casts the given object to the specified type, performs no dynamic type checking.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [return: NotNullIfNotNull(nameof(obj))]
-    public static T As<T>(object? obj)
-        where T : class?
-    {
-        Emit.Ldarg(nameof(obj));
-        return Return<T>();
-    }
-
-
-    /// <summary>
-    /// Interpret the <typeparamref name="TIn"/> <paramref name="input"/> as a <typeparamref name="TOut"/>
+    /// Returns the <typeparamref name="TIn"/> <paramref name="input"/> as a <typeparamref name="TOut"/> with no type checking
     /// </summary>
     /// <remarks>
-    /// Unless <typeparamref name="TIn"/> and <typeparamref name="TOut"/> have the same size and layout,
-    /// exceptions can be thrown and possible memory corruption
+    /// If <typeparamref name="TIn"/> and <typeparamref name="TOut"/> do not have the same size and layout,
+    /// memory corruption, undefined behavior, and Exceptions may occur
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TOut As<TIn, TOut>(TIn input)
@@ -940,10 +927,32 @@ public static unsafe class Notsafe
     }
 
     /// <summary>
-    /// Reinterprets the given <typeparamref name="TIn"/> reference as a reference to a <typeparamref name="TOut"/> value
+    /// Returns the <typeparamref name="TIn"/> <c>in</c> <paramref name="input"/> as a <c>ref readonly</c> <typeparamref name="TOut"/> with no type checking
     /// </summary>
+    /// <remarks>
+    /// If <typeparamref name="TIn"/> and <typeparamref name="TOut"/> do not have the same size and layout,
+    /// memory corruption, undefined behavior, and Exceptions may occur
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref TOut As<TIn, TOut>(ref TIn input)
+    public static ref readonly TOut InAs<TIn, TOut>(in TIn input)
+#if NET9_0_OR_GREATER
+        where TIn : allows ref struct
+        where TOut : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(input));
+        return ref ReturnRef<TOut>();
+    }
+
+    /// <summary>
+    /// Returns the <typeparamref name="TIn"/> <c>ref</c> <paramref name="input"/> as a <c>ref</c> <typeparamref name="TOut"/> with no type checking
+    /// </summary>
+    /// <remarks>
+    /// If <typeparamref name="TIn"/> and <typeparamref name="TOut"/> do not have the same size and layout,
+    /// memory corruption, undefined behavior, and Exceptions may occur
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref TOut RefAs<TIn, TOut>(ref TIn input)
 #if NET9_0_OR_GREATER
         where TIn : allows ref struct
         where TOut : allows ref struct
@@ -961,7 +970,7 @@ public static unsafe class Notsafe
     /// exceptions can be thrown and possible memory corruption
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<TOut> As<TIn, TOut>(Span<TIn> input)
+    public static Span<TOut> SpanAs<TIn, TOut>(Span<TIn> input)
     {
         return new Span<TOut>(
             pointer: RefAsVoidPtr(ref input.GetPinnableReference()),
@@ -976,7 +985,7 @@ public static unsafe class Notsafe
     /// exceptions can be thrown and possible memory corruption
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<TOut> As<TIn, TOut>(ReadOnlySpan<TIn> input)
+    public static ReadOnlySpan<TOut> SpanAs<TIn, TOut>(ReadOnlySpan<TIn> input)
     {
         return new ReadOnlySpan<TOut>(
             pointer: InAsVoidPtr(in input.GetPinnableReference()),

@@ -46,7 +46,7 @@ namespace ScrubJay.Utilities;
 /// </summary>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public ref struct DeterministicHasher : IHasher
+public ref struct DeterministicHasher
 {
     #region Static
 
@@ -69,7 +69,7 @@ public ref struct DeterministicHasher : IHasher
     /// <summary>
     /// The current hashcode for <c>null</c>
     /// </summary>
-    public static int NullHash { get;  } = Hash<object?>(null);
+    public static int NullHash { get; } = Hash<object?>(null);
 
     private const uint START_HASH = SEED + PRIME5;
 
@@ -119,354 +119,6 @@ public ref struct DeterministicHasher : IHasher
         return hash;
     }
 
-
-    /// <summary>
-    /// Gets the hashcode for a single <paramref name="value"/>
-    /// </summary>
-    /// <param name="value">
-    /// The value to get a hashcode for (may be <c>null</c>)
-    /// </param>
-    public static int Hash<T>(T? value)
-    {
-        uint hc1 = (uint)(value?.GetHashCode() ?? 0);
-
-        uint hash = START_HASH;
-        hash += 4;
-
-        hash = HashAdd(hash, hc1);
-        hash = HashFinalize(hash);
-        return (int)hash;
-    }
-
-    /// <summary>
-    /// Gets the hashcode for a single <paramref name="value"/> using an <see cref="IEqualityComparer{T}"/>
-    /// </summary>
-    public static int Hash<T>(T? value, IEqualityComparer<T>? comparer)
-    {
-        var hasher = new DeterministicHasher();
-        hasher.Add(value, comparer);
-        return hasher.ToHashCode();
-    }
-
-    /// <summary>
-    /// Gets a hashcode for many values
-    /// </summary>
-    public static int HashMany<T1, T2>(T1? value1, T2? value2)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-
-        uint hash = START_HASH;
-        hash += 8;
-
-        hash = HashAdd(hash, hc1);
-        hash = HashAdd(hash, hc2);
-
-        hash = HashFinalize(hash);
-        return (int)hash;
-    }
-
-    /// <summary>
-    /// Gets a hashcode for many values
-    /// </summary>
-    public static int HashMany<T1, T2, T3>(T1? value1, T2? value2, T3? value3)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-
-        uint hash = START_HASH;
-        hash += 12;
-
-        hash = HashAdd(hash, hc1);
-        hash = HashAdd(hash, hc2);
-        hash = HashAdd(hash, hc3);
-
-        hash = HashFinalize(hash);
-        return (int)hash;
-    }
-
-    /// <summary>
-    /// Gets a hashcode for many values
-    /// </summary>
-    public static int HashMany<T1, T2, T3, T4>(T1? value1, T2? value2, T3? value3, T4? value4)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-
-        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
-
-        state1 = StateAdd(state1, hc1);
-        state2 = StateAdd(state2, hc2);
-        state3 = StateAdd(state3, hc3);
-        state4 = StateAdd(state4, hc4);
-
-        uint hash = StateToHash(state1, state2, state3, state4);
-        hash += 16;
-
-        hash = HashFinalize(hash);
-        return (int)hash;
-    }
-
-    /// <summary>
-    /// Gets a hashcode for many values
-    /// </summary>
-    public static int HashMany<T1, T2, T3, T4, T5>(
-        T1? value1, T2? value2, T3? value3, T4? value4, T5? value5)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-
-        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
-
-        state1 = StateAdd(state1, hc1);
-        state2 = StateAdd(state2, hc2);
-        state3 = StateAdd(state3, hc3);
-        state4 = StateAdd(state4, hc4);
-
-        uint hash = StateToHash(state1, state2, state3, state4);
-        hash += 20;
-
-        hash = HashAdd(hash, hc5);
-
-        hash = HashFinalize(hash);
-        return (int)hash;
-    }
-
-    /// <summary>
-    /// Gets a hashcode for many values
-    /// </summary>
-    public static int HashMany<T1, T2, T3, T4, T5, T6>(
-        T1? value1, T2? value2, T3? value3, T4? value4, T5? value5, T6? value6)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
-
-        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
-
-        state1 = StateAdd(state1, hc1);
-        state2 = StateAdd(state2, hc2);
-        state3 = StateAdd(state3, hc3);
-        state4 = StateAdd(state4, hc4);
-
-        uint hash = StateToHash(state1, state2, state3, state4);
-        hash += 24;
-
-        hash = HashAdd(hash, hc5);
-        hash = HashAdd(hash, hc6);
-
-        hash = HashFinalize(hash);
-        return (int)hash;
-    }
-
-    /// <summary>
-    /// Gets a hashcode for many values
-    /// </summary>
-    public static int HashMany<T1, T2, T3, T4, T5, T6, T7>(
-        T1? value1, T2? value2, T3? value3, T4? value4, T5? value5, T6? value6, T7? value7)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
-        uint hc7 = (uint)(value7?.GetHashCode() ?? 0);
-
-        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
-
-        state1 = StateAdd(state1, hc1);
-        state2 = StateAdd(state2, hc2);
-        state3 = StateAdd(state3, hc3);
-        state4 = StateAdd(state4, hc4);
-
-        uint hash = StateToHash(state1, state2, state3, state4);
-        hash += 28;
-
-        hash = HashAdd(hash, hc5);
-        hash = HashAdd(hash, hc6);
-        hash = HashAdd(hash, hc7);
-
-        hash = HashFinalize(hash);
-        return (int)hash;
-    }
-
-    /// <summary>
-    /// Gets a hashcode for many values
-    /// </summary>
-    public static int HashMany<T1, T2, T3, T4, T5, T6, T7, T8>(
-        T1? value1, T2? value2, T3? value3, T4? value4, T5? value5, T6? value6, T7? value7, T8? value8)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
-        uint hc7 = (uint)(value7?.GetHashCode() ?? 0);
-        uint hc8 = (uint)(value8?.GetHashCode() ?? 0);
-
-        StartingStates(out uint state1, out uint state2, out uint state3, out uint state4);
-
-        state1 = StateAdd(state1, hc1);
-        state2 = StateAdd(state2, hc2);
-        state3 = StateAdd(state3, hc3);
-        state4 = StateAdd(state4, hc4);
-
-        state1 = StateAdd(state1, hc5);
-        state2 = StateAdd(state2, hc6);
-        state3 = StateAdd(state3, hc7);
-        state4 = StateAdd(state4, hc8);
-
-        uint hash = StateToHash(state1, state2, state3, state4);
-        hash += 32;
-
-        hash = HashFinalize(hash);
-        return (int)hash;
-    }
-
-    /// <summary>
-    /// Gets a hashcode generated from all the items in a <see cref="Span{T}"/>
-    /// </summary>
-    public static int HashMany<T>(scoped Span<T> span)
-    {
-        switch (span.Length)
-        {
-            case 0: return EmptyHash;
-            case 1: return Hash(span[0]);
-            case 2: return HashMany(span[0], span[1]);
-            case 3: return HashMany(span[0], span[1], span[2]);
-            case 4: return HashMany(span[0], span[1], span[2], span[3]);
-            case 5: return HashMany(span[0], span[1], span[2], span[3], span[4]);
-            case 6: return HashMany(span[0], span[1], span[2], span[3], span[4], span[5]);
-            case 7: return HashMany(span[0], span[1], span[2], span[3], span[4], span[5], span[6]);
-            case 8: return HashMany(span[0], span[1], span[2], span[3], span[4], span[5], span[6], span[7]);
-            default:
-            {
-                var hasher = new DeterministicHasher();
-                hasher.AddMany<T>(span);
-                return hasher.ToHashCode();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets a hashcode generated from all the items in a <see cref="ReadOnlySpan{T}"/>
-    /// </summary>
-    public static int HashMany<T>(scoped ReadOnlySpan<T> span)
-    {
-        switch (span.Length)
-        {
-            case 0: return EmptyHash;
-            case 1: return Hash(span[0]);
-            case 2: return HashMany(span[0], span[1]);
-            case 3: return HashMany(span[0], span[1], span[2]);
-            case 4: return HashMany(span[0], span[1], span[2], span[3]);
-            case 5: return HashMany(span[0], span[1], span[2], span[3], span[4]);
-            case 6: return HashMany(span[0], span[1], span[2], span[3], span[4], span[5]);
-            case 7: return HashMany(span[0], span[1], span[2], span[3], span[4], span[5], span[6]);
-            case 8: return HashMany(span[0], span[1], span[2], span[3], span[4], span[5], span[6], span[7]);
-            default:
-            {
-                var hasher = new DeterministicHasher();
-                hasher.AddMany<T>(span);
-                return hasher.ToHashCode();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets a hashcode generated from all the items in a <see cref="ReadOnlySpan{T}"/> using a <see cref="IEqualityComparer{T}"/>
-    /// </summary>
-    public static int HashMany<T>(scoped Span<T> span, IEqualityComparer<T>? comparer)
-    {
-        var hasher = new DeterministicHasher();
-        hasher.AddMany<T>(span, comparer);
-        return hasher.ToHashCode();
-    }
-
-    /// <summary>
-    /// Gets a hashcode generated from all the items in a <see cref="ReadOnlySpan{T}"/> using a <see cref="IEqualityComparer{T}"/>
-    /// </summary>
-    public static int HashMany<T>(scoped ReadOnlySpan<T> span, IEqualityComparer<T>? comparer)
-    {
-        var hasher = new DeterministicHasher();
-        hasher.AddMany<T>(span, comparer);
-        return hasher.ToHashCode();
-    }
-
-    /// <summary>
-    /// Gets a hashcode generated from all the items in a <see cref="Array">T[]</see>
-    /// </summary>
-    public static int HashMany<T>(T[]? array)
-    {
-        if (array is null)
-            return NullHash;
-        switch (array.Length)
-        {
-            case 0: return EmptyHash;
-            case 1: return Hash(array[0]);
-            case 2: return HashMany(array[0], array[1]);
-            case 3: return HashMany(array[0], array[1], array[2]);
-            case 4: return HashMany(array[0], array[1], array[2], array[3]);
-            case 5: return HashMany(array[0], array[1], array[2], array[3], array[4]);
-            case 6: return HashMany(array[0], array[1], array[2], array[3], array[4], array[5]);
-            case 7: return HashMany(array[0], array[1], array[2], array[3], array[4], array[5], array[6]);
-            case 8: return HashMany(array[0], array[1], array[2], array[3], array[4], array[5], array[6], array[7]);
-            default:
-            {
-                var hasher = new DeterministicHasher();
-                hasher.AddMany<T>(array);
-                return hasher.ToHashCode();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets a hashcode generated by <paramref name="comparer"/> from all the items in the given <paramref name="array"/>
-    /// </summary>
-    public static int HashMany<T>(T[]? array, IEqualityComparer<T>? comparer)
-    {
-        if (array is null)
-            return NullHash;
-        var hasher = new DeterministicHasher();
-        hasher.AddMany<T>(array, comparer);
-        return hasher.ToHashCode();
-    }
-
-    /// <summary>
-    /// Gets a hashcode generated from all the items in the given <paramref name="enumerable"/>
-    /// </summary>
-    public static int HashMany<T>(IEnumerable<T>? enumerable)
-    {
-        if (enumerable is null)
-            return NullHash;
-        var hasher = new DeterministicHasher();
-        hasher.AddMany<T>(enumerable);
-        return hasher.ToHashCode();
-    }
-
-    /// <summary>
-    /// Gets a hashcode generated by <paramref name="comparer"/> from all the items in the given <paramref name="enumerable"/>
-    /// </summary>
-    public static int HashMany<T>(IEnumerable<T>? enumerable, IEqualityComparer<T>? comparer)
-    {
-        if (enumerable is null)
-            return NullHash;
-        var hasher = new DeterministicHasher();
-        hasher.AddMany<T>(enumerable, comparer);
-        return hasher.ToHashCode();
-    }
-
     #endregion
 
     // current hasher states
@@ -484,9 +136,18 @@ public ref struct DeterministicHasher : IHasher
 
     private uint _length;
 
-    private void AddHash(int value)
+    public void AddHash(byte u8) => AddHash((uint)u8);
+
+    public void AddHash(sbyte i8) => AddHash((uint)i8);
+
+    public void AddHash(short i16) => AddHash((uint)i16);
+
+    public void AddHash(ushort u16) => AddHash((uint)u16);
+
+    public void AddHash(int i32) => AddHash((uint)i32);
+
+    public void AddHash(uint u32)
     {
-        uint uvalue = (uint)value;
         uint previousLength = _length++;
         uint position = previousLength % 4;
 
@@ -494,15 +155,15 @@ public ref struct DeterministicHasher : IHasher
         // ReSharper disable once ConvertIfStatementToSwitchStatement
         if (position == 0)
         {
-            _queue1 = uvalue;
+            _queue1 = u32;
         }
         else if (position == 1)
         {
-            _queue2 = uvalue;
+            _queue2 = u32;
         }
         else if (position == 2)
         {
-            _queue3 = uvalue;
+            _queue3 = u32;
         }
         else // position == 3
         {
@@ -514,41 +175,30 @@ public ref struct DeterministicHasher : IHasher
             _state1 = StateAdd(_state1, _queue1);
             _state2 = StateAdd(_state2, _queue2);
             _state3 = StateAdd(_state3, _queue3);
-            _state4 = StateAdd(_state4, uvalue);
+            _state4 = StateAdd(_state4, u32);
         }
     }
 
-    /// <summary>
-    /// Adds the hashcode for the given <paramref name="value"/> to this <see cref="Hasher"/>
-    /// </summary>
-    public void Add<T>(T? value)
+    public void AddHash(long i64)
     {
-        if (value is null)
-        {
-            AddHash(0);
-        }
-        else
-        {
-            AddHash(value.GetHashCode());
-        }
+        AddHash((uint)i64); // low bits
+        AddHash((uint)(i64 >> 32)); // high bits
     }
 
-    /// <summary>
-    /// Adds the hashcode generated by a <paramref name="comparer"/> for the given <paramref name="value"/> to this <see cref="Hasher"/>
-    /// </summary>
-    public void Add<T>(T? value, IEqualityComparer<T>? comparer)
+    public void AddHash(ulong u64)
     {
-        if (value is null)
+        AddHash((uint)u64); // low bits
+        AddHash((uint)(u64 >> 32)); // high bits
+    }
+
+    public void AddHash<U>(U value)
+        where U : unmanaged
+    {
+        unsafe
         {
-            AddHash(0);
-        }
-        else if (comparer is not null)
-        {
-            AddHash(comparer.GetHashCode(value));
-        }
-        else
-        {
-            AddHash(value.GetHashCode());
+            var span  = new ReadOnlySpan<byte>(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
+            Random r = default!;
+            r.NextBytes();
         }
     }
 
