@@ -119,4 +119,83 @@ Commented Aug 27, 2017 at 10:08
         Debug.Assert(c < a);
         return c;
     }
+
+        /// <summary>
+    /// Rotates the specified value left by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROL.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..31] is treated as congruent mod 32.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint RotateLeft(uint value, int offset)
+        => (value << offset) | (value >> (32 - offset));
+
+    /// <summary>
+    /// Rotates the specified value left by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROL.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..63] is treated as congruent mod 64.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ulong RotateLeft(ulong value, int offset)
+        => (value << offset) | (value >> (64 - offset));
+
+    /// <summary>
+    /// Rotates the specified value right by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROR.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..31] is treated as congruent mod 32.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint RotateRight(uint value, int offset)
+        => (value >> offset) | (value << (32 - offset));
+
+    /// <summary>
+    /// Rotates the specified value right by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROR.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..63] is treated as congruent mod 64.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ulong RotateRight(ulong value, int offset)
+        => (value >> offset) | (value << (64 - offset));
+
+
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ulong BigMul(ulong a, ulong b, out ulong low)
+    {
+#if NET5_0_OR_GREATER
+        return Math.BigMul(a, b, out low);
+#else
+        // Adaptation of algorithm for multiplication
+        // of 32-bit unsigned integers described
+        // in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
+        // Basically, it's an optimized version of FOIL method applied to
+        // low and high dwords of each operand
+
+        // Use 32-bit uints to optimize the fallback for 32-bit platforms.
+        uint al = (uint)a;
+        uint ah = (uint)(a >> 32);
+        uint bl = (uint)b;
+        uint bh = (uint)(b >> 32);
+
+        ulong mull = ((ulong)al) * bl;
+        ulong t = ((ulong)ah) * bl + (mull >> 32);
+        ulong tl = ((ulong)al) * bh + (uint)t;
+
+        low = tl << 32 | (uint)mull;
+
+        return ((ulong)ah) * bh + (t >> 32) + (tl >> 32);
+#endif
+    }
 }

@@ -41,6 +41,7 @@ public static class Renderers
             else
             {
                 typedRenderer = renderer as IRenderer<T>;
+                Debugger.Break();
                 throw new InvalidOperationException();
             }
         }

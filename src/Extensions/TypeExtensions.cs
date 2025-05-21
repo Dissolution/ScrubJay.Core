@@ -81,8 +81,6 @@ public static class TypeExtensions
                 if (baseType == checkType)
                     return true;
             }
-
-            return false;
         }
         else
         {

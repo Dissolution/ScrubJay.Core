@@ -21,6 +21,6 @@ public readonly struct Ok<T>
 
     public void Deconstruct(out T value)
     {
-        value = this.Value;
+        value = Value;
     }
 }

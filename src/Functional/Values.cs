@@ -321,7 +321,7 @@ public readonly struct Values<T> :
         if (obj is T value)
             return onValue(value);
         Debug.Assert(obj is T[]);
-        return onValues(Notsafe.As<T[]>(obj));
+        return onValues(Notsafe.As<object, T[]>(obj));
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -354,7 +354,7 @@ public readonly struct Values<T> :
         else
         {
             Debug.Assert(obj is T[]);
-            var myValues = Notsafe.As<T[]>(obj);
+            var myValues = Notsafe.As<object, T[]>(obj);
             return values.TryGetValues(out var otherValues) &&
                 Sequence.Equal(myValues, otherValues);
         }

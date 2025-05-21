@@ -24,7 +24,7 @@ public sealed record class StringMatch
 
     public StringMatch(StringComparison comparison)
     {
-        this.StringComparison = comparison;
+        StringComparison = comparison;
     }
 }
 

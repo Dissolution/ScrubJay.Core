@@ -97,8 +97,7 @@ public static partial class Throw
             throw new ArgumentNullException(nullableName, message);
     }
 
-    #region Equatable
-
+#region Equatable
     public static void IfEqual<T>(T? value, T? other,
         string? info = null,
         IEqualityComparer<T>? comparer = null,
@@ -136,11 +135,9 @@ public static partial class Throw
 
         throw new ArgumentOutOfRangeException(valueName, value, message);
     }
+#endregion
 
-    #endregion
-
-    #region Comparable
-
+#region Comparable
     public static void IfLessThan<T>(T value, T other,
         string? info = null,
         IComparer<T>? comparer = null,
@@ -220,14 +217,27 @@ public static partial class Throw
 
         throw new ArgumentOutOfRangeException(valueName, value, message);
     }
+#endregion
 
-    #endregion
 
 
-#if NET7_0_OR_GREATER
 
-    #region Numeric Types
+#region Numeric Types
+#if !NET7_0_OR_GREATER
+    public static void IfZero<U>(U value,
+        string? info = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+        where U : unmanaged
+    {
+        if (Notsafe.Unmanaged.IsZero(value))
+        {
+            string message = GetMessage(value, info, valueName, "must be non-zero");
+            throw new ArgumentOutOfRangeException(valueName, value, message);
+        }
+    }
 
+#else
     public static void IfZero<N>(
         N number,
         string? info = null,
@@ -297,13 +307,10 @@ public static partial class Throw
 
         throw new ArgumentOutOfRangeException(argumentName, number, message);
     }
-
-    #endregion
-
 #endif
+#endregion
 
-    #region Collections
-
+#region Collections
     public static void IfEmpty<T>([NotNull] T[]? array,
         string? info = null,
         [CallerArgumentExpression(nameof(array))]
@@ -355,11 +362,9 @@ public static partial class Throw
 
         throw new ArgumentOutOfRangeException(collectionName, collection, message);
     }
+#endregion
 
-    #endregion
-
-    #region Text
-
+#region Text
     public static void IfEmpty([NotNull] string? str,
         string? info = null,
         [CallerArgumentExpression(nameof(str))]
@@ -425,11 +430,9 @@ public static partial class Throw
         throw new ArgumentOutOfRangeException(textName, text.AsString(),
             info ?? "Argument must contain at least one non-whitespace character");
     }
+#endregion
 
-    #endregion
-
-    #region If Bad
-
+#region If Bad
     public static int IfBadIndex(int index, int available,
         string? info = null,
         [CallerArgumentExpression(nameof(index))]
@@ -513,7 +516,7 @@ public static partial class Throw
         [CallerArgumentExpression(nameof(length))]
         string? lengthName = null)
     {
-        int i = IfBadInsertIndex(index, available, info, indexName);
+        IfBadInsertIndex(index, available, info, indexName);
         IfLessOrEqualThan(length, 0, info, valueName: lengthName);
 
         if ((index + length) <= available)
@@ -561,8 +564,7 @@ public static partial class Throw
 
         throw new ArgumentOutOfRangeException(rangeName, range, message);
     }
-
-    #endregion
+#endregion
 
     public static void IfNotBetween<T>(T argument,
         T lowerBound,
@@ -637,8 +639,7 @@ public static partial class Throw
         }
     }
 
-    #region Enumeration
-
+#region Enumeration
     /// <summary>
     /// Throws an <see cref="InvalidOperationException"/> that indicates an <see cref="IEnumerator{T}"/> has deviated from its source
     /// </summary>
@@ -681,6 +682,5 @@ public static partial class Throw
         if (hasFinished)
             throw new InvalidOperationException("Enumeration has finished");
     }
-
-    #endregion
+#endregion
 }

@@ -37,7 +37,8 @@ https://raw.githubusercontent.com/Cyan4973/xxHash/5c174cfa4e45a42f94082dc0d4539b
 
 */
 
-#pragma warning disable CS0809
+using ScrubJay.Maths;
+#pragma warning disable CS0809, CA1720
 
 namespace ScrubJay.Utilities;
 
@@ -48,30 +49,37 @@ namespace ScrubJay.Utilities;
 [StructLayout(LayoutKind.Auto)]
 public ref struct DeterministicHasher
 {
-    #region Static
-
+#region Static
     private const uint PRIME1 = 0x9E3779B1U;
     private const uint PRIME2 = 0x85EBCA77U;
     private const uint PRIME3 = 0xC2B2AE3DU;
     private const uint PRIME4 = 0x27D4EB2FU;
     private const uint PRIME5 = 0x165667B1U;
+    private const uint START_HASH = SEED + PRIME5;
 
     /// <summary>
     /// The seed for this Hasher
     /// </summary>
-    private const uint SEED = 147U;
+    private const uint SEED = 0xDEADBEEFU;
 
     /// <summary>
     /// The current hashcode for no value
     /// </summary>
-    public static int EmptyHash { get; } = new DeterministicHasher().ToHashCode();
+    public static int EmptyHash { get; }
 
     /// <summary>
     /// The current hashcode for <c>null</c>
     /// </summary>
-    public static int NullHash { get; } = Hash<object?>(null);
+    public static int NullHash { get; }
 
-    private const uint START_HASH = SEED + PRIME5;
+    static DeterministicHasher()
+    {
+        var hasher = new DeterministicHasher();
+        EmptyHash = hasher.ToHashCode();
+        hasher.AddNull();
+        NullHash = hasher.ToHashCode();
+    }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void StartingStates(out uint state1, out uint state2, out uint state3, out uint state4)
@@ -87,26 +95,17 @@ public ref struct DeterministicHasher
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint RotateLeft(uint value, int offset)
-    {
-#if NET6_0_OR_GREATER
-        return BitOperations.RotateLeft(value, offset);
-#else
-        return (value << offset) | (value >> (32 - offset));
-#endif
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateAdd(uint hash, uint input)
-        => RotateLeft(hash + (input * PRIME2), 13) * PRIME1;
+        => MathHelper.RotateLeft(hash + (input * PRIME2), 13) * PRIME1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashAdd(uint hash, uint queuedValue)
-        => RotateLeft(hash + (queuedValue * PRIME3), 17) * PRIME4;
+        => MathHelper.RotateLeft(hash + (queuedValue * PRIME3), 17) * PRIME4;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateToHash(uint value1, uint value2, uint value3, uint value4)
-        => RotateLeft(value1, 1) + RotateLeft(value2, 7) + RotateLeft(value3, 12) + RotateLeft(value4, 18);
+        => MathHelper.RotateLeft(value1, 1) + MathHelper.RotateLeft(value2, 7) + MathHelper.RotateLeft(value3, 12)
+            + MathHelper.RotateLeft(value4, 18);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashFinalize(uint hash)
@@ -118,8 +117,7 @@ public ref struct DeterministicHasher
         hash ^= (hash >> 16);
         return hash;
     }
-
-    #endregion
+#endregion
 
     // current hasher states
 
@@ -136,17 +134,17 @@ public ref struct DeterministicHasher
 
     private uint _length;
 
-    public void AddHash(byte u8) => AddHash((uint)u8);
+    public void Add(byte u8) => Add((uint)u8);
 
-    public void AddHash(sbyte i8) => AddHash((uint)i8);
+    public void Add(sbyte i8) => Add((uint)i8);
 
-    public void AddHash(short i16) => AddHash((uint)i16);
+    public void Add(short i16) => Add((uint)i16);
 
-    public void AddHash(ushort u16) => AddHash((uint)u16);
+    public void Add(ushort u16) => Add((uint)u16);
 
-    public void AddHash(int i32) => AddHash((uint)i32);
+    public void Add(int i32) => Add((uint)i32);
 
-    public void AddHash(uint u32)
+    public void Add(uint u32)
     {
         uint previousLength = _length++;
         uint position = previousLength % 4;
@@ -179,112 +177,116 @@ public ref struct DeterministicHasher
         }
     }
 
-    public void AddHash(long i64)
+    public void Add(long i64)
     {
-        AddHash((uint)i64); // low bits
-        AddHash((uint)(i64 >> 32)); // high bits
+        Add((uint)i64); // low bits
+        Add((uint)(i64 >> 32)); // high bits
     }
 
-    public void AddHash(ulong u64)
+    public void Add(ulong u64)
     {
-        AddHash((uint)u64); // low bits
-        AddHash((uint)(u64 >> 32)); // high bits
+        Add((uint)u64); // low bits
+        Add((uint)(u64 >> 32)); // high bits
     }
 
-    public void AddHash<U>(U value)
+    public void Add(char ch)
+    {
+        Add((uint)ch);
+    }
+
+    public void Add(text text)
+    {
+        Add(MemoryMarshal.Cast<char, byte>(text));
+    }
+
+    public void Add(string? str)
+    {
+        if (str is null)
+        {
+            AddNull();
+        }
+        else
+        {
+            Add(MemoryMarshal.Cast<char, byte>(str.AsSpan()));
+        }
+    }
+
+    public void Add(Guid guid)
+    {
+#if NETFRAMEWORK || NETSTANDARD2_0
+        var buffer = guid.ToByteArray();
+#else
+        Span<byte> buffer = stackalloc byte[16];
+        guid.TryWriteBytes(buffer);
+#endif
+        Add(buffer);
+    }
+
+    public void Add(TimeSpan timeSpan)
+    {
+        Add(timeSpan.Ticks);
+    }
+
+    public void Add(DateTime dateTime)
+    {
+        Add(dateTime.Ticks);
+        AddUnmanaged(dateTime.Kind);
+    }
+
+    public void Add(scoped ReadOnlySpan<byte> bytes)
+    {
+        var leftoverBytes = bytes.Length % sizeof(uint);
+
+        switch (leftoverBytes)
+        {
+            case 1:
+                Add(bytes[0]);
+                bytes = bytes[1..];
+                break;
+            case 2:
+                Add(MemoryMarshal.Read<ushort>(bytes[..2]));
+                bytes = bytes[2..];
+                break;
+            case 3:
+                var u32 = MemoryMarshal.Read<uint>(bytes[..4]); // cannot only read 3 bytes
+                u32 >>= 8; // but we shift out the third byte
+                Add(u32);
+                bytes = bytes[3..]; // and we still use the fourth here
+                break;
+            default:
+                Debug.Assert(leftoverBytes == 0);
+                break;
+        }
+
+        var hashes = MemoryMarshal.Cast<byte, uint>(bytes);
+        foreach (var hash in hashes)
+        {
+            Add(hash);
+        }
+    }
+
+    public void Add<U>(scoped ReadOnlySpan<U> values)
         where U : unmanaged
     {
+        Add(MemoryMarshal.Cast<U, byte>(values));
+    }
+
+    public void AddNull()
+    {
+        Add(0);
+    }
+
+    public void AddUnmanaged<U>(U value)
+        where U : unmanaged
+    {
+        ReadOnlySpan<byte> span;
+
         unsafe
         {
-            var span  = new ReadOnlySpan<byte>(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
-            Random r = default!;
-            r.NextBytes();
+            span = new ReadOnlySpan<byte>(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
         }
-    }
 
-    /// <summary>
-    /// Adds the hashcodes of the items in a <see cref="Span{T}"/>
-    /// </summary>
-    public void AddMany<T>(scoped Span<T> values)
-    {
-        for (int i = 0; i < values.Length; i++)
-        {
-            Add<T>(values[i]);
-        }
-    }
-
-    /// <summary>
-    /// Adds the hashcodes of the items in a <see cref="ReadOnlySpan{T}"/>
-    /// </summary>
-    public void AddMany<T>(scoped ReadOnlySpan<T> values)
-    {
-        for (int i = 0; i < values.Length; i++)
-        {
-            Add<T>(values[i]);
-        }
-    }
-
-    /// <summary>
-    /// Adds the hashcodes generated by a <paramref name="comparer"/> for the given <paramref name="values"/> to this <see cref="Hasher"/>
-    /// </summary>
-    public void AddMany<T>(scoped ReadOnlySpan<T> values, IEqualityComparer<T>? comparer)
-    {
-        for (int i = 0; i < values.Length; i++)
-        {
-            Add<T>(values[i], comparer);
-        }
-    }
-
-    /// <summary>
-    /// Adds the hashcodes generated for the given <paramref name="values"/> to this <see cref="Hasher"/>
-    /// </summary>
-    public void AddMany<T>(params T[]? values)
-    {
-        if (values is null)
-            return;
-        for (int i = 0; i < values.Length; i++)
-        {
-            Add<T>(values[i]);
-        }
-    }
-
-    /// <summary>
-    /// Adds the hashcodes generated by a <paramref name="comparer"/> for the given <paramref name="values"/> to this <see cref="Hasher"/>
-    /// </summary>
-    public void AddMany<T>(T[]? values, IEqualityComparer<T>? comparer)
-    {
-        if (values is null)
-            return;
-        for (int i = 0; i < values.Length; i++)
-        {
-            Add<T>(values[i], comparer);
-        }
-    }
-
-    /// <summary>
-    /// Adds the hashcodes generated for the given <paramref name="values"/> to this <see cref="Hasher"/>
-    /// </summary>
-    public void AddMany<T>(IEnumerable<T>? values)
-    {
-        if (values is null)
-            return;
-        foreach (var value in values)
-        {
-            Add<T>(value);
-        }
-    }
-
-    /// <summary>
-    /// Adds the hashcodes generated by a <paramref name="comparer"/> for the given <paramref name="values"/> to this <see cref="Hasher"/>
-    /// </summary>
-    public void AddMany<T>(IEnumerable<T>? values, IEqualityComparer<T>? comparer)
-    {
-        if (values is null)
-            return;
-        foreach (var value in values)
-        {
-            Add<T>(value, comparer);
-        }
+        Add(span);
     }
 
     /// <summary>

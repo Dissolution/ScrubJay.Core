@@ -207,7 +207,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
     /// <returns></returns>
     public B Block(string indent, Action<B> block)
     {
-        return this.AddIndent(indent)
+        return AddIndent(indent)
             .If(IsOnStartOfNewLine(), tb => tb.Append(indent), tb => tb.NewLine())
             .Invoke(block)
             .If(IsOnStartOfNewLine(),

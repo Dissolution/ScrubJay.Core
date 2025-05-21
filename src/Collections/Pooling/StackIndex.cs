@@ -13,7 +13,8 @@ public readonly struct StackIndex :
     public static bool operator !=(StackIndex left, StackIndex right) => !left.Equals(right);
 
     private readonly int _index;
-    private readonly bool _inArrayOrder; // this instead of _popOrder because we want default(StackIndex) to indicate PopOrder = true!
+    private readonly bool
+        _inArrayOrder; // this instead of _popOrder because we want default(StackIndex) to indicate PopOrder = true!
 
     public bool IsFromEnd => _index < 0;
     public bool InPopOrder => !_inArrayOrder;
@@ -82,8 +83,12 @@ public readonly struct StackIndex :
             buffer.Write('^');
         }
 
+#if DEBUG
         bool formatted = ((uint)_index).TryFormat(buffer.Available, out int charsWritten);
         Debug.Assert(formatted);
+#else
+        ((uint)_index).TryFormat(buffer.Available, out int charsWritten);
+#endif
         buffer.Count += charsWritten;
 
         return buffer.ToStringAndDispose();

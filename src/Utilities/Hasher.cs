@@ -40,6 +40,7 @@ https://raw.githubusercontent.com/Cyan4973/xxHash/5c174cfa4e45a42f94082dc0d4539b
 #pragma warning disable CS0809
 
 using System.Security.Cryptography;
+using ScrubJay.Maths;
 
 namespace ScrubJay.Utilities;
 
@@ -108,26 +109,16 @@ public ref struct Hasher : IHasher
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint RotateLeft(uint value, int offset)
-    {
-#if NET6_0_OR_GREATER
-        return BitOperations.RotateLeft(value, offset);
-#else
-        return (value << offset) | (value >> (32 - offset));
-#endif
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateAdd(uint hash, uint input)
-        => RotateLeft(hash + (input * PRIME2), 13) * PRIME1;
+        => MathHelper.RotateLeft(hash + (input * PRIME2), 13) * PRIME1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashAdd(uint hash, uint queuedValue)
-        => RotateLeft(hash + (queuedValue * PRIME3), 17) * PRIME4;
+        => MathHelper.RotateLeft(hash + (queuedValue * PRIME3), 17) * PRIME4;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateToHash(uint value1, uint value2, uint value3, uint value4)
-        => RotateLeft(value1, 1) + RotateLeft(value2, 7) + RotateLeft(value3, 12) + RotateLeft(value4, 18);
+        => MathHelper.RotateLeft(value1, 1) + MathHelper.RotateLeft(value2, 7) + MathHelper.RotateLeft(value3, 12) + MathHelper.RotateLeft(value4, 18);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashFinalize(uint hash)

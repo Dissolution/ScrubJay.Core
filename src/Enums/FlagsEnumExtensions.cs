@@ -150,7 +150,7 @@ public static class FlagsEnumExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool HasMultipleFlags<TEnum>(this TEnum @enum)
         where TEnum : struct, Enum
-        => !HasOneFlag(@enum) && !EnumExtensions.IsDefault(@enum);
+        => !HasOneFlag(@enum) && !@enum.IsDefault();
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

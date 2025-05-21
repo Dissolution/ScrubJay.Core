@@ -159,6 +159,16 @@ public static unsafe class Notsafe
             CopyBlock(in PtrAsIn(src), ref PtrAsRef(dst), size * sizeof(T));
         }
 #endregion
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsZero<U>(U value)
+            where U : unmanaged
+        {
+            Emit.Ldarg(nameof(value));
+            Emit.Ldc_I4_0();
+            Emit.Ceq();
+            return Return<bool>();
+        }
     }
 
     /// <summary>
@@ -166,6 +176,7 @@ public static unsafe class Notsafe
     /// </summary>
     public static class Bytes
     {
+#region Copy
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyByteBlock(in byte source, ref byte destination, int count)
         {
@@ -239,7 +250,15 @@ public static unsafe class Notsafe
                 in MemoryMarshal.GetReference(source),
                 ref MemoryMarshal.GetReference(destination),
                 count);
+#endregion
+
+
+
+
+
     }
+
+
 
     /// <summary>
     /// <c>unsafe</c> methods on textual types
@@ -1088,8 +1107,8 @@ public static unsafe class Notsafe
     {
         Emit.Ldarg(nameof(source));
         Emit.Ldarg(nameof(byteOffset));
-        IL.Emit.Add();
-        return ref IL.ReturnRef<T>();
+        Emit.Add();
+        return ref ReturnRef<T>();
     }
 #endregion
 
@@ -1106,7 +1125,7 @@ public static unsafe class Notsafe
         Emit.Ldarg(nameof(left));
         Emit.Ldarg(nameof(right));
         Emit.Ceq();
-        return IL.Return<bool>();
+        return Return<bool>();
     }
 #endregion
 }

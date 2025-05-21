@@ -31,7 +31,7 @@ public abstract class PooledArray<T> : IDisposable
     [HandlesResourceDisposal]
     ~PooledArray()
     {
-        this.Dispose();
+        Dispose();
     }
 
     protected virtual void CopyToNewArray(T[] newArray) => Sequence.CopyTo(_array, newArray);

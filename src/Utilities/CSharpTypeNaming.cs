@@ -123,8 +123,7 @@ public static class CSharpTypeNaming
 
         // Add our generic types to finish
         var argTypes = type.GetGenericArguments();
-        int argCount = argTypes.Length;
-        Debug.Assert(argCount > 0);
+        Debug.Assert(argTypes.Length > 0);
 
         return text.Append('<')
             .EnumerateAndDelimit(argTypes,
