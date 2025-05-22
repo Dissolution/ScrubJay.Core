@@ -367,7 +367,7 @@ internal static class LevenshteinImplementations
     {
         var costMatrix = Enumerable
             .Range(0, source.Length + 1)
-            .Select(line => new int[target.Length + 1])
+            .Select(_ => new int[target.Length + 1])
             .ToArray();
 
         for (var i = 1; i <= source.Length; ++i)
@@ -399,7 +399,7 @@ internal static class LevenshteinImplementations
     {
         var costMatrix = Enumerable
             .Range(0, 2)
-            .Select(line => new int[target.Length + 1])
+            .Select(_ => new int[target.Length + 1])
             .ToArray();
 
         for (var i = 1; i <= target.Length; ++i)
