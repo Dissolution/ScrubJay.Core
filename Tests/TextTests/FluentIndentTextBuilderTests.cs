@@ -120,7 +120,7 @@ public class FluentIndentTextBuilderTests
 
     private static void WriteBody(IndentTextBuilder builder)
     {
-        builder.Delimit(static b => b.NewLine(), Enumerable.Range(0, 10), static (b, i) => b.Append(i));
+        builder.EnumerateAndLineDelimit(Enumerable.Range(0,10), (tb, i) => tb.Append(i));
     }
 
     [Fact]

@@ -15,7 +15,7 @@ public sealed class RomuTrio : RomuPrng
     private ulong _yState;
     private ulong _zState;
 
-    public RomuTrio(PrngSeed seed) : base(seed)
+    public RomuTrio(RandSeed seed) : base(seed)
     {
         // We require three seeds
         this.Seed.GetSeeds(out _xState, out _yState, out _zState);

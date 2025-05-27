@@ -21,7 +21,9 @@ public sealed class ExceptionRenderer : Renderer<Exception>
         }
         text.Append(method.Name)
             .Append('(')
-            .Delimit(", ", method.GetParameters(), (tb, p) => tb.Append(p.ParameterType.NameOf()))
+            .EnumerateAndDelimit(method.GetParameters(),
+                static (tb, param) => tb.Append(param.ParameterType.NameOf()),
+                ", ")
             .Append(')');
 
         return text;

@@ -16,7 +16,7 @@ public sealed class RomuQuad : RomuPrng
     private ulong _yState;
     private ulong _zState;
 
-    public RomuQuad(PrngSeed seed) : base(seed)
+    public RomuQuad(RandSeed seed) : base(seed)
     {
         // We require four seeds
         this.Seed.GetSeeds(out _wState, out _xState, out _yState, out _zState);

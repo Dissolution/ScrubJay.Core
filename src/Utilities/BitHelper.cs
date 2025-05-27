@@ -35,15 +35,9 @@ public static class BitHelper
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static U FastRead<U>(bytes bytes)
+    public static unsafe U ReadUnsafe<U>(bytes bytes)
         where U : unmanaged
     {
-        // ldarg.0
-        // unaligned. 0x1
-        // ldobj !!T
-        // ret
-
         Emit.Ldarg(nameof(bytes));
         Emit.Unaligned(0x1);
         Emit.Ldobj<U>();

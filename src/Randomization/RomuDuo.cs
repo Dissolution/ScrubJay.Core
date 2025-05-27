@@ -15,7 +15,7 @@ public sealed class RomuDuo : RomuPrng
     private ulong _xState;
     private ulong _yState;
 
-    public RomuDuo(PrngSeed seed) : base(seed)
+    public RomuDuo(RandSeed seed) : base(seed)
     {
         // We require two seeds
         this.Seed.GetSeeds(out _xState, out _yState);

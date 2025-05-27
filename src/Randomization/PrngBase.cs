@@ -8,23 +8,9 @@ namespace ScrubJay.Randomization;
 [PublicAPI]
 public abstract class PrngBase : IPrng
 {
-    public static ulong CreateU64Seed()
-    {
-#if NETFRAMEWORK || NETSTANDARD2_0
-        using var rng = RandomNumberGenerator.Create();
-        byte[] bytes = new byte[sizeof(ulong)];
-        rng.GetBytes(bytes);
-        return BitHelper.FastRead<ulong>(bytes);
-#else
-        Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-        RandomNumberGenerator.Fill(bytes);
-        return BitHelper.FastRead<ulong>(bytes);
-#endif
-    }
+    public RandSeed Seed { get; }
 
-    public PrngSeed Seed { get; }
-
-    protected PrngBase(PrngSeed seed)
+    protected PrngBase(RandSeed seed)
     {
         this.Seed = seed;
     }
@@ -161,7 +147,7 @@ public abstract class PrngBase : IPrng
         {
             Span<byte> buffer = stackalloc byte[sizeof(U)];
             Fill(buffer);
-            return BitHelper.FastRead<U>(buffer);
+            return BitHelper.Read<U>(buffer);
         }
     }
 
@@ -361,7 +347,7 @@ public abstract class PrngBase : IPrng
 
     public override string ToString()
     {
-        if (Seed.Known)
+        if (Seed.IsStable)
         {
             return $"{GetType().NameOf()} w/Seed {Seed}";
         }

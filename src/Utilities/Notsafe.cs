@@ -871,6 +871,20 @@ public static unsafe class Notsafe
         Emit.Ldarg(nameof(inValue));
         return ref ReturnRef<T>();
     }
+
+    // out T -> ?
+    // everything in here is so very, very dangerous
+
+    public static ref T OutAsRef<T>(out T outValue)
+#if NET9_0_OR_GREATER
+        where T: allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(outValue));
+        Emit.Ret();
+        throw Unreachable();
+    }
+
 #endregion
 
 #region Casting

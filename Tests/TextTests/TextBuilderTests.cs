@@ -228,24 +228,24 @@ public class TextBuilderTests
         using var text = new TextBuilder();
 
         IEnumerable<char> values = SHORT_STRING.ToCharArray();
-        text.Delimit<char>(',', values, static (tb, ch) => tb.Append(ch));
+        text.EnumerateAndDelimit(values, static (tb, ch) => tb.Append(ch), ',');
         Assert.Equal("T,R,J", text.ToString());
         text.Clear();
-        text.Delimit<char>(", ", values, static (tb, ch) => tb.Append(ch));
+        text.EnumerateAndDelimit(values, static (tb, ch) => tb.Append(ch), ", ");
         Assert.Equal("T, R, J", text.ToString());
         text.Clear();
-        text.Delimit<char>(static tb => tb.Append('-'), values, static (tb, ch) => tb.Append(ch));
+        text.EnumerateAndDelimit(values, static (tb, ch) => tb.Append(ch), static tb => tb.Append('-'));
         Assert.Equal("T-R-J", text.ToString());
         text.Clear();
 
         ReadOnlySpan<char> span = SHORT_STRING.AsSpan();
-        text.Delimit<char>(',', span, static (tb, ch) => tb.Append(ch));
+        text.EnumerateAndDelimit(values, static (tb, ch) => tb.Append(ch), ',');
         Assert.Equal("T,R,J", text.ToString());
         text.Clear();
-        text.Delimit<char>(", ", span, static (tb, ch) => tb.Append(ch));
+        text.EnumerateAndDelimit(values, static (tb, ch) => tb.Append(ch), ", ");
         Assert.Equal("T, R, J", text.ToString());
         text.Clear();
-        text.Delimit<char>(static tb => tb.Append('-'), span, static (tb, ch) => tb.Append(ch));
+        text.EnumerateAndDelimit(values, static (tb, ch) => tb.Append(ch), static tb => tb.Append('-'));
         Assert.Equal("T-R-J", text.ToString());
         text.Clear();
 

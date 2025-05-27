@@ -383,7 +383,9 @@ public readonly struct Values<T> :
         return TextBuilder.New
             .Append('[')
             .AppendIf(_obj.Is<T>(), format, provider)
-            .If(_obj.Is<T[]>(), (tb, vals) => tb.DelimitAppend<T>(',', vals, format, provider))
+            .If(_obj.Is<T[]>(), (tb, vals) => tb.EnumerateAndDelimit(vals,
+                (t, value) => t.Append(value, format, provider),
+                static t => t.Append(", ")))
             .Append(']')
             .ToStringAndDispose();
     }

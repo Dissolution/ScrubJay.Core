@@ -13,21 +13,42 @@ using InlineIL;
 using ScrubJay.Debugging;
 using ScrubJay.Extensions;
 using ScrubJay.Memory;
+using ScrubJay.Randomization.Seeding;
 using ScrubJay.Validation;
 using ScrubJay.Text;
 using ScrubJay.Text.Rendering;
 using static InlineIL.IL;
 
+var seed = new PhraseSeed("Hello, how are you?");
+var seeds = seed.GetSeeds(4);
+var str = seed.ToString();
 
-var text = TextBuilder.New.Render(Guid.NewGuid()).NewLine()
-    .Render("eat at joes").NewLine()
-    .Render(new InvalidOperationException("yo dawg"))
-    .ToStringAndDispose();
 
 Debugger.Break();
+return;
 
 
-return 0;
+
+[StructLayout(LayoutKind.Explicit, Size = 3)]
+public readonly struct RGB
+{
+    [FieldOffset(2)]
+    public readonly byte Red;
+
+    [FieldOffset(1)]
+    public readonly byte Green;
+
+    [FieldOffset(0)]
+    public readonly byte Blue;
+
+    public RGB(byte red, byte green, byte blue)
+    {
+        Red = red;
+        Green = green;
+        Blue = blue;
+    }
+}
+
 
 
 

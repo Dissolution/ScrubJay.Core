@@ -307,6 +307,7 @@ public static class BuilderExtensions
         return builder;
     }
 #endregion
+
 #region Enumeration + Iteration
     public static B Enumerate<B, T>(this B builder, scoped ReadOnlySpan<T> values, Action<B, T> onBuilderValue)
         where B : IBuilder<B>

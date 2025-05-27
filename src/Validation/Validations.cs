@@ -151,7 +151,7 @@ public class Validations<TError> : IReadOnlyCollection<TError>
             .Append(_errors.Count)
             .Append(" validations failed:")
             .NewLine()
-            .DelimitAppend(static tb => tb.NewLine(), _errors)
+            .EnumerateAppendAndLineDelimit(_errors)
             .ToStringAndDispose();
         throw new InvalidOperationException(message);
     }

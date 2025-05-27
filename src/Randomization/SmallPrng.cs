@@ -19,10 +19,10 @@ public sealed class SmallPrng : PrngBase
     private ulong _stateD;
 
     /// <summary>
-    /// Creates a new <see cref="SmallPrng"/> with the specified <seealso cref="U64PrngSeed"/>
+    /// Creates a new <see cref="SmallPrng"/> with the specified <seealso cref="RandSeed"/>
     /// </summary>
-    /// <param name="prngSeed"></param>
-    public SmallPrng(PrngSeed prngSeed) : base(prngSeed)
+    /// <param name="randSeed"></param>
+    public SmallPrng(RandSeed randSeed) : base(randSeed)
     {
         /* void raninit( ranctx *x, u8 seed ) {
          *     u8 i;
@@ -33,7 +33,7 @@ public sealed class SmallPrng : PrngBase
          * }
          */
 
-        prngSeed.GetSeed(out var seed);
+        randSeed.GetSeed(out var seed);
 
         _stateA = 0xF1EA5EED;
         _stateB = seed;

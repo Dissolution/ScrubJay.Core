@@ -46,8 +46,4 @@
         </PackageReference>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Playground\" />
-    </ItemGroup>
-
 </Project>

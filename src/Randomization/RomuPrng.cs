@@ -12,7 +12,7 @@ namespace ScrubJay.Randomization;
 [PublicAPI]
 public abstract class RomuPrng : PrngBase
 {
-    protected RomuPrng(PrngSeed seed) : base(seed) { }
+    protected RomuPrng(RandSeed seed) : base(seed) { }
 
     public override string ToString() => GetType().NameOf();
 }
