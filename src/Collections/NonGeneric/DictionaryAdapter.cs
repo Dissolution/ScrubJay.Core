@@ -1,4 +1,7 @@
 ﻿// Identifiers should have correct suffix
+
+using ScrubJay.Text.Rendering;
+
 #pragma warning disable CA1710
 // Properties should not copy collections
 #pragma warning disable S2365
@@ -27,7 +30,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objKey.Is<K>(out var key))
             return key;
-        throw new ArgumentException($"Invalid Key - '{objKey}' is not a {typeof(K).NameOf()}", keyName);
+        throw new ArgumentException($"Invalid Key - '{objKey}' is not a {typeof(K).Render()}", keyName);
     }
 
     [return: NotNullIfNotNull(nameof(objValue))]
@@ -37,7 +40,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objValue.As<V>(out var value))
             return value;
-        throw new ArgumentException($"Invalid Value - '{objValue}' is not a {typeof(V).NameOf()}", valueName);
+        throw new ArgumentException($"Invalid Value - '{objValue}' is not a {typeof(V).Render()}", valueName);
     }
 
     private sealed class KeyCollection : IReadOnlyCollection<K>, ICollection<K>, ICollection

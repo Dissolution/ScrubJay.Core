@@ -2,6 +2,8 @@
 #pragma warning disable CA1000, CA1045
 // ReSharper disable ArrangeThisQualifier
 
+
+using ScrubJay.Text.Rendering;
 #if NET7_0_OR_GREATER
 using ScrubJay.Parsing;
 #endif
@@ -59,7 +61,7 @@ public static class Pair
         {
             return ParseException.Create<Pair<TKey, TValue>>(
                 text,
-                $"Expected `({typeof(TKey).NameOf()}, {typeof(TValue).NameOf()})`",
+                $"Expected `({typeof(TKey).Render()}, {typeof(TValue).Render()})`",
                 innerEx);
         }
     }
@@ -84,7 +86,7 @@ public readonly struct Pair<TKey, TValue> :
 #endif
     IEquatable<Pair<TKey, TValue>>,
     IComparable<Pair<TKey, TValue>>,
-#if !NETSTANDARD2_1
+#if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
     IFormattable

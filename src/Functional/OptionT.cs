@@ -39,7 +39,7 @@ public readonly struct Option<T> :
     //IComparable<T>,
     IEnumerable<T>,
     IEnumerable,
-#if !NETSTANDARD2_1
+#if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
     IFormattable

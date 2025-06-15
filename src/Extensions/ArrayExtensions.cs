@@ -1,14 +1,12 @@
-// extract assignment from expression
-
-#pragma warning disable S1121
-
 namespace ScrubJay.Extensions;
+
+
 
 /// <summary>
 /// Extensions on 2D Arrays
 /// </summary>
 [PublicAPI]
-public static class ArrayExtensions
+public static partial class ArrayExtensions
 {
 #if NETFRAMEWORK || NETSTANDARD2_0
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,9 +95,9 @@ public static class ArrayExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] Slice<T>(this T[] array, Range range) => array[range];
 
+#if !NET10_0_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Reverse<T>(this T[] array) => Array.Reverse<T>(array);
 #endif
-
-
+#endif
 }

@@ -1,5 +1,4 @@
 ﻿global using text = System.ReadOnlySpan<char>;
-global using NotNull = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 #pragma warning disable CA1715
 

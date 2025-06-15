@@ -50,7 +50,7 @@ public static class Renderers
         switch (value)
         {
             case null:
-                return builder.Append("`null`");
+                return builder.Append("null");
             case DBNull:
                 return builder.Append(nameof(DBNull));
             case bool b:
@@ -126,7 +126,7 @@ public static class Renderers
         return builder.Append(value);
     }
 
-
+#region TextBuilderBase Extensions
     public static B Render<B, T>(this B builder, T? value)
         where B : TextBuilderBase<B>
     {
@@ -171,4 +171,20 @@ public static class Renderers
                 tb => tb.Append(", "))
             .Append(']');
     }
+ #endregion
+
+    #region T Extensions
+
+    public static string Render<T>(this T? value)
+    {
+        return TextBuilder.Build(tb => Render(tb, value));
+    }
+
+    public static string RenderType<T>(this T? instance)
+    {
+        Type type = instance?.GetType() ?? typeof(T);
+        return TextBuilder.Build(tb => Render(tb, type));
+    }
+    #endregion
+
 }

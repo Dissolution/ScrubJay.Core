@@ -30,7 +30,7 @@ public readonly struct Result<T, E> :
     // IEquatable<T>,
     // IEquatable<E>,
     IFormattable,
-#if !NETSTANDARD2_1
+#if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
     IEnumerable<T>

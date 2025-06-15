@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Functional;
+﻿using ScrubJay.Text.Rendering;
+
+namespace ScrubJay.Functional;
 
 public static class OneOf { }
 
@@ -115,12 +117,12 @@ public readonly struct OneOf<T1> :
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         var buffer = new TextBuffer();
-        buffer.Write(GetType().NameOf());
+        buffer.Write(GetType().Render());
         buffer.Write('.');
 
         if (_arg == 1)
         {
-            buffer.Write(_first?.GetType().NameOf());
+            buffer.Write(_first?.GetType().Render());
             buffer.Write('(');
             buffer.Write(_first, format, provider);
             buffer.Write(')');
@@ -275,19 +277,19 @@ public readonly struct OneOf<T1, T2> :
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         var buffer = new TextBuffer();
-        buffer.Write(GetType().NameOf());
+        buffer.Write(GetType().Render());
         buffer.Write('.');
 
         switch (_arg)
         {
             case 1:
-                buffer.Write(_first?.GetType().NameOf());
+                buffer.Write(_first?.GetType().Render());
                 buffer.Write('(');
                 buffer.Write(_first, format, provider);
                 buffer.Write(')');
                 break;
             case 2:
-                buffer.Write(_second?.GetType().NameOf());
+                buffer.Write(_second?.GetType().Render());
                 buffer.Write('(');
                 buffer.Write(_second, format, provider);
                 buffer.Write(')');
@@ -481,25 +483,25 @@ public readonly struct OneOf<T1, T2, T3> :
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         var buffer = new TextBuffer();
-        buffer.Write(GetType().NameOf());
+        buffer.Write(GetType().Render());
         buffer.Write('.');
 
         switch (_arg)
         {
             case 1:
-                buffer.Write(_first?.GetType().NameOf());
+                buffer.Write(_first?.GetType().Render());
                 buffer.Write('(');
                 buffer.Write(_first, format, provider);
                 buffer.Write(')');
                 break;
             case 2:
-                buffer.Write(_second?.GetType().NameOf());
+                buffer.Write(_second?.GetType().Render());
                 buffer.Write('(');
                 buffer.Write(_second, format, provider);
                 buffer.Write(')');
                 break;
             case 3:
-                buffer.Write(_third?.GetType().NameOf());
+                buffer.Write(_third?.GetType().Render());
                 buffer.Write('(');
                 buffer.Write(_third, format, provider);
                 buffer.Write(')');

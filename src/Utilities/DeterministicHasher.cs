@@ -38,6 +38,7 @@ https://raw.githubusercontent.com/Cyan4973/xxHash/5c174cfa4e45a42f94082dc0d4539b
 */
 
 using ScrubJay.Maths;
+
 #pragma warning disable CS0809, CA1720
 
 namespace ScrubJay.Utilities;
@@ -50,6 +51,7 @@ namespace ScrubJay.Utilities;
 public ref struct DeterministicHasher
 {
 #region Static
+
     private const uint PRIME1 = 0x9E3779B1U;
     private const uint PRIME2 = 0x85EBCA77U;
     private const uint PRIME3 = 0xC2B2AE3DU;
@@ -104,8 +106,10 @@ public ref struct DeterministicHasher
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateToHash(uint value1, uint value2, uint value3, uint value4)
-        => MathHelper.RotateLeft(value1, 1) + MathHelper.RotateLeft(value2, 7) + MathHelper.RotateLeft(value3, 12)
-            + MathHelper.RotateLeft(value4, 18);
+        => MathHelper.RotateLeft(value1, 1) +
+           MathHelper.RotateLeft(value2, 7) +
+           MathHelper.RotateLeft(value3, 12) +
+           MathHelper.RotateLeft(value4, 18);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashFinalize(uint hash)
@@ -117,6 +121,7 @@ public ref struct DeterministicHasher
         hash ^= (hash >> 16);
         return hash;
     }
+
 #endregion
 
     // current hasher states

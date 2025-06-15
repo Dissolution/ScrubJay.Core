@@ -1,4 +1,7 @@
 // Identifiers should have correct suffix
+
+using ScrubJay.Text.Rendering;
+
 #pragma warning disable CA1710
 // Remove unnecessary cast (IDE0004)
 #pragma warning disable IDE0004
@@ -31,7 +34,7 @@ public sealed class ArrayAdapter<T> :
     {
         if (objValue.As<T>(out var value))
             return value;
-        throw new ArgumentException($"Value '{objValue}' is not a '{typeof(T).NameOf()}'", valueName);
+        throw new ArgumentException($"Value '{objValue}' is not a '{typeof(T).Render()}'", valueName);
     }
 
     public T this[int index]

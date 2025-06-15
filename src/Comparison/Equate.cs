@@ -2,6 +2,7 @@
 
 using System.Reflection;
 using ScrubJay.Expressions;
+using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Comparison;
 
@@ -40,7 +41,7 @@ public static class Equate
         var defaultEqualityComparer = typeof(EqualityComparer<>)
             .MakeGenericType(type)
             .GetMethod("get_Default", BindingFlags.NonPublic | BindingFlags.Static)
-            .ThrowIfNull($"Could not find 'get_Default' method on EqualityComparer<{type.NameOf()}>")
+            .ThrowIfNull($"Could not find 'get_Default' method on EqualityComparer<{type.Render()}>")
             .Invoke(null, null)
             .ThrowIfNot<IEqualityComparer>();
         return Ok<object>(defaultEqualityComparer);

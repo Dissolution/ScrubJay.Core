@@ -1,5 +1,7 @@
 #pragma warning disable MA0025
 
+using Polyfills;
+
 namespace ScrubJay.Utilities;
 
 [PublicAPI]

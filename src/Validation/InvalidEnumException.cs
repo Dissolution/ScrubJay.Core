@@ -1,4 +1,6 @@
-﻿#pragma warning disable CA1715, CA1032
+﻿using ScrubJay.Text.Rendering;
+
+#pragma warning disable CA1715, CA1032
 
 namespace ScrubJay.Validation;
 
@@ -10,7 +12,7 @@ public class InvalidEnumException : ArgumentOutOfRangeException
 {
     private static string GetMessage<E>(E e)
         where E : struct, Enum
-        => $"Invalid {typeof(E).NameOf()} enum: {e}";
+        => $"Invalid {typeof(E).Render()} enum: {e}";
 
     public static InvalidEnumException Create<E>(
         E @enum,

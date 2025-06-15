@@ -41,7 +41,7 @@ public readonly struct Rational :
     IAlgebraic<Rational, double>,
     IAlgebraic<Rational, BigInteger>,
     IAlgebraic<Rational, long>,
-#if !NETSTANDARD2_1
+#if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
     IFormattable

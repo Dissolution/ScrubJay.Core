@@ -25,8 +25,23 @@ public sealed class TextBuilder : TextBuilderBase<TextBuilder>, IDisposable
     /// <returns>
     /// The <see cref="string"/> returned from the <see cref="TextBuilder"/> instance before it is returned
     /// </returns>
-    public static string Build(Action<TextBuilder>? build) => New.Invoke(build).ToStringAndDispose();
+    public static string Build(Action<TextBuilder>? build)
+    {
+        if (build is null)
+            return string.Empty;
+        using var builder = new TextBuilder();
+        build(builder);
+        return builder.ToString();
+    }
 
+    public static string Build<S>(S state, Action<S, TextBuilder>? build)
+    {
+        if (build is null)
+            return string.Empty;
+        using var builder = new TextBuilder();
+        build(state, builder);
+        return builder.ToString();
+    }
 
     internal TextBuilder(PooledList<char> text) : base(text)
     {
@@ -35,7 +50,9 @@ public sealed class TextBuilder : TextBuilderBase<TextBuilder>, IDisposable
     /// <summary>
     /// Construct a new, empty <see cref="TextBuilder"/>
     /// </summary>
-    public TextBuilder() : base() { }
+    public TextBuilder() : base()
+    {
+    }
 
     /// <summary>
     /// Construct a new, empty <see cref="TextBuilder"/> with a minimum starting capacity
@@ -43,6 +60,5 @@ public sealed class TextBuilder : TextBuilderBase<TextBuilder>, IDisposable
     /// <param name="minCapacity"></param>
     public TextBuilder(int minCapacity) : base(minCapacity)
     {
-
     }
 }

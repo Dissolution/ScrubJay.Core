@@ -2,6 +2,8 @@
 // Do not declare static methods on generic types
 // Do not catch Exception
 
+using ScrubJay.Text.Rendering;
+
 #pragma warning disable CA1715, CA1000, CA1031
 
 
@@ -40,7 +42,7 @@ public readonly struct Result<T> :
     IEquatable<Compat.Ok<T>>,
     //IEquatable<bool>,
     IFormattable,
-#if !NETSTANDARD2_1
+#if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
     IEnumerable<T>
@@ -372,7 +374,7 @@ public readonly struct Result<T> :
         }
         else
         {
-            text.Write(_error.NameOfType());
+            text.Write(_error.RenderType());
             text.Write('(');
             text.Write(_error?.Message);
             text.Write(')');
@@ -400,7 +402,7 @@ public readonly struct Result<T> :
 
         return new TryFormatWriter(destination)
         {
-            _error.NameOfType(),
+            _error.RenderType(),
             '(',
             _error?.Message,
             ')',

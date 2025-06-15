@@ -18,7 +18,7 @@ public readonly struct Values<T> :
     IAdditionOperators<Values<T>, T[], Values<T>>,
     IAdditionOperators<Values<T>, T, Values<T>>,
 #endif
-#if !NETSTANDARD2_1
+#if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
     IReadOnlyList<T>,

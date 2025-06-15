@@ -18,7 +18,7 @@ public readonly struct Unit :
     IEqualityOperators<Unit, Unit, bool>,
     IComparisonOperators<Unit, Unit, bool>,
 #endif
-#if !NETSTANDARD2_1
+#if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
     IEquatable<Unit>,

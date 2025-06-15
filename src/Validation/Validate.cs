@@ -1,5 +1,6 @@
 ﻿#pragma warning disable S907, S3236, S3247
 
+using ScrubJay.Text.Rendering;
 using ArgumentNullException = System.ArgumentNullException;
 
 
@@ -606,7 +607,7 @@ public static class Validate
         if (type is null)
             return new ArgumentNullException(typeName);
         if (!type.Implements(subType))
-            return new ArgumentException($"Type `{type.NameOf()}` does not implement `{subType.NameOf()}`", typeName);
+            return new ArgumentException($"Type `{type.Render()}` does not implement `{subType.Render()}`", typeName);
         return Ok(type);
     }
 }

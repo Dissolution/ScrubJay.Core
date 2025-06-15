@@ -1,4 +1,6 @@
-﻿#pragma warning disable CA1716
+﻿using ScrubJay.Text.Rendering;
+
+#pragma warning disable CA1716
 
 namespace ScrubJay.Validation;
 
@@ -12,7 +14,7 @@ static partial class Throw
         string? instanceName = null)
     {
         TextBuffer buffer = stackalloc char[256];
-        buffer.Write(typeof(T).NameOf());
+        buffer.Write(typeof(T).Render());
         buffer.Write(" `");
         buffer.Write(instance);
         buffer.Write("` is read-only");

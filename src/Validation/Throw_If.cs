@@ -8,432 +8,553 @@ namespace ScrubJay.Validation;
 /// <summary>
 /// Methods that throw an <seealso cref="Exception"/> if certain conditions are met
 /// </summary>
+/// <remarks>
+/// All methods follow a similar pattern:<br/>
+/// (void | T)  - Return type, will be a T if T was expensive to construct<br/>
+/// IfXXX       - Method name, will describe the <em>final</em> validation performed<br/>
+/// T instance  - The instance | argument being validated<br/>
+/// N (0+)      - Additional arguments needed for validation, they <em>will not</em> be validated<br/>
+/// <c>string? info = null</c> - Additional information that can be provided to any thrown <see cref="Exception"/>'s <see cref="Exception.Message"/><br/>
+/// <c>[CallerArgumentExpression(nameof(instance))] string? instanceName = null</c> - Automatically captured name of the instance being validated
+/// </remarks>
 [PublicAPI]
 [StackTraceHidden]
 public static partial class Throw
 {
-    private static string GetMessage<T>(
-        T instance,
+    private static string GetArgumentExceptionMessage<T>(
+        T? argument,
         string? info,
-        string? instanceName,
-        string message)
+        string? argumentName,
+        Action<TextBuilder>? buildBaseMessage)
     {
+        /* Examples:
+         * int "index" `-1` is out of range: must be zero or greater
+         * --
+         * typeof(T) = System.Int32
+         * buildArgument = tb => tb.Append(-1)
+         * info = "must be zero or greater"
+         * argumentName = "index"
+         * buildBaseMessage = tb => tb.Append("is out of range")
+         */
+
         return TextBuilder.New
+            .Append("Argument `")
             .Render(typeof(T))
-            .Append(" '")
-            .Append(instanceName)
-            .Append("' `")
-            .Render(instance)
-            .Append("` ")
-            .Append(message)
-            .IfNotNull(info,
-                static (tb, nfo) => tb.Append(": ").Append(nfo))
+            .Append(' ')
+            .Append(argumentName)
+            .Append(" = ")
+            .Render(argument)
+            .Append('`')
+            .IfNotNull(buildBaseMessage, static (tb, act) => tb.Append(' ').Invoke(act))
+            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(nfo))
             .ToStringAndDispose();
     }
 
-    private static string GetMessage<T>(
-        ReadOnlySpan<T> span,
+    private static string GetArgumentExceptionMessage<T>(
+        T? argument,
         string? info,
-        string? instanceName,
-        string message)
+        string? argumentName,
+        string? baseMessage)
+        => GetArgumentExceptionMessage<T>(argument, info, argumentName, tb => tb.Append(baseMessage));
+
+    private static string GetArgumentExceptionMessage<T>(
+        Span<T> argument,
+        string? info,
+        string? argumentName,
+        Action<TextBuilder>? buildBaseMessage)
     {
         return TextBuilder.New
+            .Append("Argument `")
             .Render(typeof(T))
-            .Append(" '")
-            .Append(instanceName)
-            .Append("' `")
-            .Render(span)
-            .Append("` ")
-            .Append(message)
-            .IfNotNull(info,
-                static (tb, nfo) => tb.Append(": ").Append(nfo))
+            .Append(' ')
+            .Append(argumentName)
+            .Append(" = ")
+            .Render(argument)
+            .Append('`')
+            .IfNotNull(buildBaseMessage, static (tb, act) => tb.Append(' ').Invoke(act))
+            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(nfo))
             .ToStringAndDispose();
     }
 
-    private static string GetMessage<T>(
-        T instance,
+    private static string GetArgumentExceptionMessage<T>(
+        Span<T> argument,
         string? info,
-        string? instanceName,
-        Action<TextBuilder> appendMessage)
+        string? argumentName,
+        string? baseMessage)
+        => GetArgumentExceptionMessage<T>(argument, info, argumentName, tb => tb.Append(baseMessage));
+
+    private static string GetArgumentExceptionMessage<T>(
+        ReadOnlySpan<T> argument,
+        string? info,
+        string? argumentName,
+        Action<TextBuilder>? buildBaseMessage)
     {
         return TextBuilder.New
+            .Append("Argument `")
             .Render(typeof(T))
-            .Append(" '")
-            .Append(instanceName)
-            .Append("' `")
-            .Render(instance)
-            .Append("` ")
-            .Invoke(appendMessage)
-            .IfNotNull(info,
-                static (tb, nfo) => tb.Append(": ").Append(nfo))
+            .Append(' ')
+            .Append(argumentName)
+            .Append(" = ")
+            .Render(argument)
+            .Append('`')
+            .IfNotNull(buildBaseMessage, static (tb, act) => tb.Append(' ').Invoke(act))
+            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(nfo))
             .ToStringAndDispose();
     }
 
+    private static string GetArgumentExceptionMessage<T>(
+        ReadOnlySpan<T> argument,
+        string? info,
+        string? argumentName,
+        string? baseMessage)
+        => GetArgumentExceptionMessage<T>(argument, info, argumentName, tb => tb.Append(baseMessage));
+
+#region IfNull
 
     /// <summary>
-    /// Throw an <see cref="ArgumentNullException"/> if <paramref name="value"/> is <c>null</c>
+    /// Throw an <see cref="ArgumentNullException"/> if <paramref name="argument"/> is <c>null</c>
     /// </summary>
-    [StackTraceHidden]
     public static void IfNull<T>(
-        [NotNull, NoEnumeration] T? value,
-        string? message = null,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
+        [NotNull, NoEnumeration] T? argument,
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
         where T : class?
     {
-        if (value is null)
-            throw new ArgumentNullException(valueName, message);
+        if (argument is null)
+            throw new ArgumentNullException(argumentName,
+                GetArgumentExceptionMessage(argument, info, argumentName, "must not be null"));
     }
 
+    /// <summary>
+    /// Throw an <see cref="ArgumentNullException"/> if <paramref name="argument"/> is <c>null</c>
+    /// </summary>
     public static void IfNull<T>(
         // ReSharper disable once ConvertNullableToShortForm
-        [NotNull] Nullable<T> nullable,
-        string? message = null,
-        [CallerArgumentExpression(nameof(nullable))]
-        string? nullableName = null)
+        [NotNull] Nullable<T> argument,
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
         where T : struct
     {
-        if (!nullable.HasValue)
-            throw new ArgumentNullException(nullableName, message);
+        if (!argument.HasValue)
+            throw new ArgumentNullException(argumentName,
+                GetArgumentExceptionMessage(argument, info, argumentName, "must not be null"));
     }
+
+#endregion
 
 #region Equatable
-    public static void IfEqual<T>(T? value, T? other,
-        string? info = null,
+
+    public static void IfEqual<T>(T? argument, T? other,
         IEqualityComparer<T>? comparer = null,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        comparer ??= EqualityComparer<T>.Default;
-        if (!comparer.Equals(value!, other!)) return;
+        if (!Equate.Values(argument, other, comparer))
+            return;
 
-        string message = GetMessage(value, info, valueName, tb =>
-        {
-            tb.Append("must not be equal to `")
-                .Render(other)
-                .Append('`');
-        });
+        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+            tb => tb.Append($"must not be equal to `{other:@}`"));
 
-        throw new ArgumentOutOfRangeException(valueName, value, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
-    public static void IfNotEqual<T>(T? value, T? other,
-        string? info = null,
+    public static void IfNotEqual<T>(T? argument, T? other,
         IEqualityComparer<T>? comparer = null,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        comparer ??= EqualityComparer<T>.Default;
-        if (comparer.Equals(value!, other!)) return;
+        if (Equate.Values(argument, other, comparer))
+            return;
 
-        string message = GetMessage(value, info, valueName, tb =>
-        {
-            tb.Append("must be equal to `")
-                .Render(other)
-                .Append('`');
-        });
+        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+            tb => tb.Append($"must be equal to `{other:@}`"));
 
-        throw new ArgumentOutOfRangeException(valueName, value, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
+
 #endregion
 
 #region Comparable
-    public static void IfLessThan<T>(T value, T other,
-        string? info = null,
+
+    public static void IfLessThan<T>(T argument, T other,
         IComparer<T>? comparer = null,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        comparer ??= Comparer<T>.Default;
-        int c = comparer.Compare(value, other);
-        if (c >= 0) return;
+        if (Compare.Values(argument, other, comparer) >= 0)
+            return;
 
-        string message = GetMessage(value, info, valueName, tb =>
-        {
-            tb.Append("must be greater than or equal to `")
-                .Render(other)
-                .Append('`');
-        });
+        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+            tb => tb.Append($"must be >= {other:@}"));
 
-        throw new ArgumentOutOfRangeException(valueName, value, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
-    public static void IfLessOrEqualThan<T>(T value, T other,
-        string? info = null,
+    public static void IfLessOrEqualThan<T>(T argument, T other,
         IComparer<T>? comparer = null,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        comparer ??= Comparer<T>.Default;
-        int c = comparer.Compare(value, other);
-        if (c > 0) return;
+        if (Compare.Values(argument, other, comparer) > 0)
+            return;
 
-        string message = GetMessage(value, info, valueName, tb =>
-        {
-            tb.Append("must be greater than `")
-                .Render(other)
-                .Append('`');
-        });
+        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+            tb => tb.Append($"must be <= {other:@}"));
 
-        throw new ArgumentOutOfRangeException(valueName, value, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
-    public static void IfGreaterThan<T>(T value, T other,
-        string? info = null,
+    public static void IfGreaterThan<T>(T argument, T other,
         IComparer<T>? comparer = null,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        comparer ??= Comparer<T>.Default;
-        int c = comparer.Compare(value, other);
-        if (c <= 0) return;
+        if (Compare.Values(argument, other, comparer) <= 0)
+            return;
 
-        string message = GetMessage(value, info, valueName, tb =>
-        {
-            tb.Append("must be less than or equal to `")
-                .Render(other)
-                .Append('`');
-        });
+        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+            tb => tb.Append($"must be > {other:@}"));
 
-        throw new ArgumentOutOfRangeException(valueName, value, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
-    public static void IfGreaterOrEqualThan<T>(T value, T other,
-        string? info = null,
+    public static void IfGreaterOrEqualThan<T>(T argument, T other,
         IComparer<T>? comparer = null,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        comparer ??= Comparer<T>.Default;
-        int c = comparer.Compare(value, other);
-        if (c < 0) return;
+        if (Compare.Values(argument, other, comparer) < 0)
+            return;
 
-        string message = GetMessage(value, info, valueName, tb =>
-        {
-            tb.Append("must be less than `")
-                .Render(other)
-                .Append('`');
-        });
+        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+            tb => tb.Append($"must be >= {other:@}"));
 
-        throw new ArgumentOutOfRangeException(valueName, value, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
+
 #endregion
 
-
-
-
 #region Numeric Types
+
 #if !NET7_0_OR_GREATER
-    public static void IfZero<U>(U value,
+    public static void IfZero<U>(U argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(value))]
-        string? valueName = null)
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
         where U : unmanaged
     {
-        if (Notsafe.Unmanaged.IsZero(value))
+        if (Notsafe.Unmanaged.IsZero(argument))
         {
-            string message = GetMessage(value, info, valueName, "must be non-zero");
-            throw new ArgumentOutOfRangeException(valueName, value, message);
+            string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be non-zero");
+            throw new ArgumentOutOfRangeException(argumentName, argument, message);
         }
     }
 
 #else
     public static void IfZero<N>(
-        N number,
+        N argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(number))]
+        [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
         where N : INumberBase<N>
     {
-        if (!N.IsZero(number)) return;
+        if (!N.IsZero(argument)) return;
 
-        string message = GetMessage(number, info, argumentName, "must be non-zero");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be non-zero");
 
-        throw new ArgumentOutOfRangeException(argumentName, number, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
     public static void IfNegative<N>(
-        N number,
+        N argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(number))]
+        [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
         where N : INumberBase<N>
     {
-        if (!N.IsNegative(number)) return;
+        if (!N.IsNegative(argument)) return;
 
-        string message = GetMessage(number, info, argumentName, "must be positive");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be positive");
 
-        throw new ArgumentOutOfRangeException(argumentName, number, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
     public static void IfNegativeOrZero<N>(
-        N number,
+        N argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(number))]
+        [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
         where N : INumberBase<N>
     {
-        if (!N.IsNegative(number) && !N.IsZero(number)) return;
+        if (!N.IsNegative(argument) && !N.IsZero(argument)) return;
 
-        string message = GetMessage(number, info, argumentName, "must be positive and non-zero");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be positive and non-zero");
 
-        throw new ArgumentOutOfRangeException(argumentName, number, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
     public static void IfPositive<N>(
-        N number,
+        N argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(number))]
+        [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
         where N : INumberBase<N>
     {
-        if (!N.IsPositive(number)) return;
+        if (!N.IsPositive(argument)) return;
 
-        string message = GetMessage(number, info, argumentName, "must be negative");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be negative");
 
-        throw new ArgumentOutOfRangeException(argumentName, number, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
     public static void IfPositiveOrZero<N>(
-        N number,
+        N argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(number))]
+        [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
         where N : INumberBase<N>
     {
-        if (!N.IsPositive(number) && !N.IsZero(number)) return;
+        if (!N.IsPositive(argument) && !N.IsZero(argument)) return;
 
-        string message = GetMessage(number, info, argumentName, "must be negative and non-zero");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be negative and non-zero");
 
-        throw new ArgumentOutOfRangeException(argumentName, number, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 #endif
+
 #endregion
 
 #region Collections
-    public static void IfEmpty<T>([NotNull] T[]? array,
+
+#region IfEmpty
+
+    public static void IfEmpty<T>([NotNull] T[]? argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(array))]
-        string? arrayName = null)
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        IfNull(array, info, arrayName);
+        IfNull(argument, info, argumentName);
 
-        if (array.Length > 0) return;
+        if (argument.Length > 0) return;
 
-        string message = GetMessage(array, info, arrayName, "must not be empty");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
 
-        throw new ArgumentOutOfRangeException(arrayName, array, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
-    public static void IfEmpty<T>(ReadOnlySpan<T> span,
+    public static void IfEmpty<T>(ReadOnlySpan<T> argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(span))]
-        string? spanName = null)
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        if (span.Length > 0) return;
+        if (argument.Length > 0) return;
 
-        string message = GetMessage(span, info, spanName, "must not be empty");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
 
-        throw new ArgumentOutOfRangeException(spanName, typeof(ReadOnlySpan<T>).NameOf(), message);
+        throw new ArgumentOutOfRangeException(argumentName, typeof(ReadOnlySpan<T>).Render(), message);
     }
 
-    public static void IfEmpty<T>(Span<T> span,
+    public static void IfEmpty<T>(Span<T> argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(span))]
-        string? spanName = null)
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        if (span.Length > 0) return;
+        if (argument.Length > 0) return;
 
-        string message = GetMessage((ReadOnlySpan<T>)span, info, spanName, "must not be empty");
+        string message = GetArgumentExceptionMessage((ReadOnlySpan<T>)argument, info, argumentName, "must not be empty");
 
-        throw new ArgumentOutOfRangeException(spanName, typeof(Span<T>).NameOf(), message);
+        throw new ArgumentOutOfRangeException(argumentName, typeof(Span<T>).Render(), message);
     }
 
-    public static void IfEmpty<T>([NotNull] ICollection<T>? collection,
+    public static void IfEmpty<T>([NotNull] ICollection<T>? argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(collection))]
-        string? collectionName = null)
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        IfNull(collection, info, collectionName);
+        IfNull(argument, info, argumentName);
 
-        if (collection.Count > 0) return;
+        if (argument.Count > 0) return;
 
-        string message = GetMessage(collection, info, collectionName, "must not be empty");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
 
-        throw new ArgumentOutOfRangeException(collectionName, collection, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
+
+#endregion
+
+#region IfNotDistinct
+
+    public static HashSet<T> IfNotDistinct<T>(
+        ReadOnlySpan<T> argument,
+        IEqualityComparer<T>? itemComparer = null,
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+        var set = new HashSet<T>(itemComparer);
+        for (int i = argument.Length - 1; i >= 0; i--)
+        {
+            if (!set.Add(argument[i]))
+            {
+                string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
+                throw new ArgumentException(message, argumentName);
+            }
+        }
+
+        return set;
+    }
+
+    public static HashSet<T> IfNotDistinct<T>(
+        Span<T> argument,
+        IEqualityComparer<T>? itemComparer = null,
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+        var set = new HashSet<T>(itemComparer);
+        for (int i = argument.Length - 1; i >= 0; i--)
+        {
+            if (!set.Add(argument[i]))
+            {
+                string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
+                throw new ArgumentException(message, argumentName);
+            }
+        }
+
+        return set;
+    }
+
+    public static HashSet<T> IfNotDistinct<T>(
+        T[]? argument,
+        IEqualityComparer<T>? itemComparer = null,
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+        IfNull(argument, info, argumentName);
+
+        var set = new HashSet<T>(itemComparer);
+        for (int i = argument.Length - 1; i >= 0; i--)
+        {
+            if (!set.Add(argument[i]))
+            {
+                string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
+                throw new ArgumentException(message, argumentName);
+            }
+        }
+
+        return set;
+    }
+
+    public static HashSet<T> IfNotDistinct<T>(
+        IEnumerable<T> argument,
+        IEqualityComparer<T>? itemComparer = null,
+        string? info = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+        IfNull(argument, info, argumentName);
+
+        var set = new HashSet<T>(itemComparer);
+        foreach (var value in argument)
+        {
+            if (!set.Add(value))
+            {
+                string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
+                throw new ArgumentException(message, argumentName);
+            }
+        }
+
+        return set;
+    }
+
+#endregion
+
 #endregion
 
 #region Text
-    public static void IfEmpty([NotNull] string? str,
+
+    public static void IfEmpty([NotNull] string? argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(str))]
-        string? strName = null)
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        IfNull(str, info, strName);
+        IfNull(argument, info, argumentName);
 
-        if (str.Length > 0) return;
+        if (argument.Length > 0) return;
 
-        string message = GetMessage(str, info, strName, "must not be empty");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
 
-        throw new ArgumentOutOfRangeException(strName, str, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
-    public static void IfEmpty(text text,
+    public static void IfEmpty(text argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(text))]
-        string? textName = null)
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        if (text.Length != 0) return;
+        if (argument.Length != 0) return;
 
-        string message = GetMessage(text, info, textName, "must not be empty");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
 
-        throw new ArgumentOutOfRangeException(textName, text.AsString(), message);
+        throw new ArgumentOutOfRangeException(argumentName, argument.AsString(), message);
     }
 
 
-    public static void IfWhitespace([NotNull] string? str,
+    public static void IfWhitespace([NotNull] string? argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(str))]
-        string? strName = null)
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        IfNull(str, info, strName);
-        IfEmpty(str, info, strName);
+        IfNull(argument, info, argumentName);
+        IfEmpty(argument, info, argumentName);
 
-        for (int i = str.Length - 1; i >= 0; i--)
+        for (int i = argument.Length - 1; i >= 0; i--)
         {
-            if (!char.IsWhiteSpace(str[i]))
+            if (!char.IsWhiteSpace(argument[i]))
                 return;
         }
 
-        string message = GetMessage(str, info, strName, "must contain at least one non-whitespace character");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+            "must contain at least one non-whitespace character");
 
-        throw new ArgumentOutOfRangeException(strName, str, message);
+        throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
-    public static void IfWhitespace(text text,
+    public static void IfWhitespace(text argument,
         string? info = null,
-        [CallerArgumentExpression(nameof(text))]
-        string? textName = null)
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
     {
-        int len = text.Length;
-        if (len == 0)
-            throw new ArgumentOutOfRangeException(textName, text.AsString(), info ?? "Argument must not be empty");
+        IfEmpty(argument, info, argumentName);
 
-
-        for (int i = 0; i < len; i++)
+        for (int i = 0; i < argument.Length; i++)
         {
-            if (!char.IsWhiteSpace(text[i]))
+            if (!char.IsWhiteSpace(argument[i]))
                 return;
         }
 
-        throw new ArgumentOutOfRangeException(textName, text.AsString(),
-            info ?? "Argument must contain at least one non-whitespace character");
+        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+            "must contain at least one non-whitespace character");
+
+        throw new ArgumentOutOfRangeException(argumentName, argument.AsString(), message);
     }
+
 #endregion
 
-#region If Bad
-    public static int IfBadIndex(int index, int available,
+#region Bad Index/Range
+
+    public static int IfBadIndex(
+        int index,
+        int available,
         string? info = null,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
@@ -441,17 +562,15 @@ public static partial class Throw
         if ((uint)index < (uint)available)
             return index;
 
-        string message = GetMessage(index, info, indexName, tb =>
-        {
-            tb.Append("must be in [0..")
-                .Append(available)
-                .Append(')');
-        });
+        string message = GetArgumentExceptionMessage(index, info, indexName,
+            tb => tb.Append($"must be in [0..{available})"));
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
 
-    public static int IfBadIndex(Index index, int available,
+    public static int IfBadIndex(
+        Index index,
+        int available,
         string? info = null,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
@@ -461,17 +580,14 @@ public static partial class Throw
         if ((uint)offset < (uint)available)
             return offset;
 
-        string message = GetMessage(index, info, indexName, tb =>
-        {
-            tb.Append("must be in [0..")
-                .Append(available)
-                .Append(')');
-        });
+        string message = GetArgumentExceptionMessage(index, info, indexName,
+            tb => tb.Append($"must be in [0..{available})"));
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
 
-    public static int IfBadInsertIndex(int index, int available,
+    public static int IfBadInsertIndex(
+        int index, int available,
         string? info = null,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
@@ -479,17 +595,14 @@ public static partial class Throw
         if ((uint)index <= (uint)available)
             return index;
 
-        string message = GetMessage(index, info, indexName, tb =>
-        {
-            tb.Append("must be in [0..")
-                .Append(available)
-                .Append(']');
-        });
+        string message = GetArgumentExceptionMessage(index, info, indexName,
+            tb => tb.Append($"must be in [0..{available}]"));
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
 
-    public static int IfBadInsertIndex(Index index, int available,
+    public static int IfBadInsertIndex(
+        Index index, int available,
         string? info = null,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null)
@@ -499,17 +612,16 @@ public static partial class Throw
         if ((uint)offset <= (uint)available)
             return offset;
 
-        string message = GetMessage(index, info, indexName, tb =>
-        {
-            tb.Append("must be in [0..")
-                .Append(available)
-                .Append(']');
-        });
+        string message = GetArgumentExceptionMessage(index, info, indexName,
+            tb => tb.Append($"must be in [0..{available}]"));
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
 
-    public static (int Offset, int Length) IfBadRange(int index, int length, int available,
+    public static (int Offset, int Length) IfBadRange(
+        int index,
+        int length,
+        int available,
         string? info = null,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null,
@@ -517,18 +629,19 @@ public static partial class Throw
         string? lengthName = null)
     {
         IfBadInsertIndex(index, available, info, indexName);
-        IfLessOrEqualThan(length, 0, info, valueName: lengthName);
+        IfLessOrEqualThan(length, 0, info: info, argumentName: lengthName);
 
         if ((index + length) <= available)
             return (index, length);
 
-        string message = GetMessage(length, info, lengthName,
-            tb => { tb.Append($"+ '{indexName}' `{index}` must be in [0..{available}]"); });
+        string message = GetArgumentExceptionMessage(index, info, indexName,
+            tb => tb.Append($"must be in [0..{available}]"));
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
 
-    public static (int Offset, int Length) IfBadRange(Index index, int length, int available,
+    public static (int Offset, int Length) IfBadRange(
+        Index index, int length, int available,
         string? info = null,
         [CallerArgumentExpression(nameof(index))]
         string? indexName = null,
@@ -536,18 +649,19 @@ public static partial class Throw
         string? lengthName = null)
     {
         int offset = IfBadInsertIndex(index, available, info, indexName);
-        IfLessOrEqualThan(length, 0, info, valueName: lengthName);
+        IfLessOrEqualThan(length, 0, info: info, argumentName: lengthName);
 
         if ((offset + length) <= available)
             return (offset, length);
 
-        string message = GetMessage(length, info, lengthName,
-            tb => { tb.Append($"+ '{indexName}' `{index}` must be in [0..{available}]"); });
+        string message = GetArgumentExceptionMessage(length, info, lengthName,
+            tb => tb.Append($"must be in [0..{available}]"));
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
 
-    public static (int Offset, int Length) IfBadRange(Range range, int available,
+    public static (int Offset, int Length) IfBadRange(
+        Range range, int available,
         string? info = null,
         [CallerArgumentExpression(nameof(range))]
         string? rangeName = null)
@@ -559,19 +673,20 @@ public static partial class Throw
         if ((end >= s) && (end <= available))
             return (s, end - s);
 
-        string message = GetMessage(range, info, rangeName,
-            tb => { tb.Append($"must be in [0..{available})"); });
+        string message = GetArgumentExceptionMessage(range, info, rangeName,
+            tb => tb.Append($"must be in [0..{available})"));
 
         throw new ArgumentOutOfRangeException(rangeName, range, message);
     }
+
 #endregion
 
     public static void IfNotBetween<T>(T argument,
         T lowerBound,
         T upperBound,
-        string? info = null,
         bool lowerBoundIsInclusive = true,
         bool upperBoundIsInclusive = false,
+        string? info = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
         where T : IComparable<T>
@@ -604,7 +719,7 @@ public static partial class Throw
 
         FAIL:
 
-        string message = GetMessage(argument, info, argumentName, tb =>
+        string message = GetArgumentExceptionMessage(argument, info, argumentName, tb =>
         {
             tb.Append("must be in ")
                 .AppendIf(lowerBoundIsInclusive, '[', '(')
@@ -618,21 +733,21 @@ public static partial class Throw
 
 
     /// <summary>
-    /// Throw a <see cref="ObjectDisposedException"/> if a <paramref name="condition"/> indicates disposal of an <paramref name="instance"/>
+    /// Throw a <see cref="ObjectDisposedException"/> if a <paramref name="condition"/> indicates disposal of an <paramref name="argument"/>
     /// </summary>
     [StackTraceHidden]
-    public static void IfDisposed<T>([DoesNotReturnIf(true)] bool condition, T? instance)
+    public static void IfDisposed<T>([DoesNotReturnIf(true)] bool condition, T? argument)
     {
         if (condition)
         {
             string? objectName;
-            if (instance is null)
+            if (argument is null)
             {
-                objectName = $"({typeof(T).NameOf()})null";
+                objectName = $"({typeof(T).Render()})null";
             }
             else
             {
-                objectName = instance.GetType().NameOf();
+                objectName = argument.GetType().Render();
             }
 
             throw new ObjectDisposedException(objectName);
@@ -640,6 +755,7 @@ public static partial class Throw
     }
 
 #region Enumeration
+
     /// <summary>
     /// Throws an <see cref="InvalidOperationException"/> that indicates an <see cref="IEnumerator{T}"/> has deviated from its source
     /// </summary>
@@ -682,5 +798,6 @@ public static partial class Throw
         if (hasFinished)
             throw new InvalidOperationException("Enumeration has finished");
     }
+
 #endregion
 }

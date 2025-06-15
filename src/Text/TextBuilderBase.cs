@@ -1,4 +1,5 @@
 ﻿using ScrubJay.Maths;
+using ScrubJay.Text.Rendering;
 
 #pragma warning disable S3247, S4136, RCS1220
 #pragma warning disable IDE1006, IDE0060
@@ -213,6 +214,11 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
             return _builder;
         }
 
+        if (format == "@")
+        {
+            return _builder.Render(value);
+        }
+
         if (value is IFormattable)
         {
             if (value is ISpanFormattable)
@@ -253,6 +259,11 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
         if (value is null)
         {
             return _builder;
+        }
+
+        if (TextHelper.Equate(format, "@"))
+        {
+            return _builder.Render(value);
         }
 
         if (value is IFormattable)
@@ -514,6 +525,26 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
         return Insert(start, TextHelper.Repeat(pre, paddingChar))
             .Repeat(post, paddingChar);
     }
+
+#endregion
+
+#region Wrap
+
+    public B Wrap(char wrapChar, Action<B> build) => Append(wrapChar).Invoke(build).Append(wrapChar);
+
+    public B Wrap(char preChar, char postChar, Action<B> build) => Append(preChar).Invoke(build).Append(postChar);
+
+    public B Wrap(text wrapText, Action<B> build) => Append(wrapText).Invoke(build).Append(wrapText);
+
+    public B Wrap(text preText, text postText, Action<B> build) => Append(preText).Invoke(build).Append(postText);
+
+    public B Wrap(string? wrapStr, Action<B> build) => Append(wrapStr).Invoke(build).Append(wrapStr);
+
+    public B Wrap(string? preStr, string? postStr, Action<B>? build) => Append(preStr).Invoke(build).Append(postStr);
+
+    public B Wrap(Action<B> wrapBuild, Action<B> build) => Invoke(wrapBuild).Invoke(build).Invoke(wrapBuild);
+
+    public B Wrap(Action<B> preBuild, Action<B> postBuild, Action<B> build) => Invoke(preBuild).Invoke(build).Invoke(postBuild);
 
 #endregion
 

@@ -1,4 +1,6 @@
-﻿#pragma warning disable CA1032, CA1710, CA1010
+﻿using ScrubJay.Text.Rendering;
+
+#pragma warning disable CA1032, CA1710, CA1010
 
 namespace ScrubJay.Parsing;
 
@@ -28,7 +30,7 @@ public class ParseException : InvalidOperationException, IEnumerable
     private static string GetMessage(text input, Type? destType, string? info)
     {
         return TextBuilder.New
-            .Append($"Could not parse \"{input}\" into a {destType.NameOf()}")
+            .Append($"Could not parse \"{input}\" into a {destType.Render()}")
             .If(Validate.IsNotEmpty(info),
                 static (tb, nfo) => tb.Append(": ").Append(nfo))
             .ToStringAndDispose();
@@ -42,7 +44,7 @@ public class ParseException : InvalidOperationException, IEnumerable
                 static (tb, n) => tb.Append('"').Append(n).Append('"'),
                 static (tb, _) => tb.Append("null"))
             .Append(" into a ")
-            .Append(destType.NameOf())
+            .Append(destType.Render())
             .If(Validate.IsNotEmpty(info),
                 static (tb, nfo) => tb.Append(": ").Append(nfo))
             .ToStringAndDispose();

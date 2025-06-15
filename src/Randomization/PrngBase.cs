@@ -1,6 +1,7 @@
-﻿using System.Security.Cryptography;
-using ScrubJay.Maths;
+﻿using ScrubJay.Maths;
 using ScrubJay.Randomization.Seeding;
+using ScrubJay.Text.Rendering;
+
 // ReSharper disable InconsistentNaming
 
 namespace ScrubJay.Randomization;
@@ -349,11 +350,11 @@ public abstract class PrngBase : IPrng
     {
         if (Seed.IsStable)
         {
-            return $"{GetType().NameOf()} w/Seed {Seed}";
+            return $"{GetType().Render()} w/Seed {Seed}";
         }
         else
         {
-            return GetType().NameOf();
+            return GetType().Render();
         }
     }
 }

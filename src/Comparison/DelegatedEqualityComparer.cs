@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Comparison;
+﻿using ScrubJay.Text.Rendering;
+
+namespace ScrubJay.Comparison;
 
 /// <summary>
 /// An <see cref="IEqualityComparer{T}"/> and <see cref="IEqualityComparer"/> implementation
@@ -12,7 +14,7 @@ public sealed class DelegatedEqualityComparer<T> : IEqualityComparer<T>, IEquali
 #endif
 {
     private static readonly Fn<T?, int> _throwCannotHash =
-        _ => throw new InvalidOperationException($"{typeof(T).NameOf()} values cannot be hashed");
+        _ => throw new InvalidOperationException($"{typeof(T).Render()} values cannot be hashed");
 
     private readonly Fn<T?, T?, bool> _equals;
     private readonly Fn<T?, int> _getHashCode;
@@ -49,7 +51,7 @@ public sealed class DelegatedEqualityComparer<T> : IEqualityComparer<T>, IEquali
                 return Hasher.NullHash;
         }
 
-        throw new ArgumentException($"Object was not a {typeof(T).NameOf()}", nameof(obj));
+        throw new ArgumentException($"Object was not a {typeof(T).Render()}", nameof(obj));
     }
 
     public bool Equals(T? x, T? y) => _equals(x, y);

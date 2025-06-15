@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Validation;
+﻿using ScrubJay.Text.Rendering;
+
+namespace ScrubJay.Validation;
 
 /// <summary>
 /// Extensions related to validation
@@ -66,7 +68,7 @@ public static class ValidationExtensions
         {
             null => throw new ArgumentNullException(objName),
             TOut output => output,
-            _ => throw new ArgumentException($"The given {obj.GetType().NameOf()} value is not a valid {typeof(TOut).NameOf()} instance", objName)
+            _ => throw new ArgumentException($"The given {obj.GetType().Render()} value is not a valid {typeof(TOut).Render()} instance", objName)
         };
     }
 
@@ -78,6 +80,6 @@ public static class ValidationExtensions
     {
         if (obj.As<TOut?>(out TOut? output))
             return output;
-        throw new ArgumentException($"The given {obj?.GetType().NameOf()} value is not a valid {typeof(TOut).NameOf()} instance", objName);
+        throw new ArgumentException($"The given {obj?.GetType().Render()} value is not a valid {typeof(TOut).Render()} instance", objName);
     }
 }

@@ -1,6 +1,7 @@
 ﻿#pragma warning disable CA1034
 
 using ScrubJay.Randomization.Seeding;
+using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Randomization;
 
@@ -14,5 +15,5 @@ public abstract class RomuPrng : PrngBase
 {
     protected RomuPrng(RandSeed seed) : base(seed) { }
 
-    public override string ToString() => GetType().NameOf();
+    public override string ToString() => GetType().Render();
 }

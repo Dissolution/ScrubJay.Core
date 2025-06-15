@@ -16,13 +16,13 @@ public sealed class ExceptionRenderer : Renderer<Exception>
 
         if (method is MethodInfo methodInfo)
         {
-            text.Append(methodInfo.ReturnType.NameOf())
+            text.Append(methodInfo.ReturnType.Render())
                 .Append(' ');
         }
         text.Append(method.Name)
             .Append('(')
             .EnumerateAndDelimit(method.GetParameters(),
-                static (tb, param) => tb.Append(param.ParameterType.NameOf()),
+                static (tb, param) => tb.Append(param.ParameterType.Render()),
                 ", ")
             .Append(')');
 
@@ -37,7 +37,7 @@ public sealed class ExceptionRenderer : Renderer<Exception>
             return;
         }
 
-        text.Append(exception.GetType().NameOf())
+        text.Append(exception.GetType().Render())
             .Append(':')
             .AsIndentTextBuilder(itb => itb
                 .Block(INDENT, exBlock =>

@@ -7,7 +7,6 @@ using InlineIL;
 
 using static InlineIL.IL;
 
-
 namespace ScrubJay.Enums;
 
 /// <summary>
@@ -24,11 +23,11 @@ public static class FlagsEnumExtensions
     /// Returns the <see cref="ulong"/> representation of <c>this</c> <see cref="FlagsAttribute">flagged</see> <see cref="Enum">enum</see>
     /// </summary>
     /// <param name="enum"></param>
-    /// <typeparam name="TEnum"></typeparam>
+    /// <typeparam name="E"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong ToUInt64<TEnum>(this TEnum @enum)
-        where TEnum : struct, Enum
+    public static ulong ToUInt64<E>(this E @enum)
+        where E : struct, Enum
     {
         Emit.Ldarg(nameof(@enum));
         Emit.Conv_U8();
@@ -39,8 +38,8 @@ public static class FlagsEnumExtensions
     /// Returns a <see cref="long"/> representation of this <see cref="Enum"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long ToInt64<TEnum>(this TEnum @enum)
-        where TEnum : struct, Enum
+    public static long ToInt64<E>(this E @enum)
+        where E : struct, Enum
     {
         Emit.Ldarg(nameof(@enum));
         Emit.Conv_I8();
@@ -48,11 +47,11 @@ public static class FlagsEnumExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum FromUInt64<TEnum>(ulong value)
-        where TEnum : struct, Enum
+    public static E FromUInt64<E>(ulong value)
+        where E : struct, Enum
     {
         Emit.Ldarg(nameof(value));
-        return Return<TEnum>();
+        return Return<E>();
     }
 
     /// <summary>
@@ -62,77 +61,77 @@ public static class FlagsEnumExtensions
     /// Also known as the inverse or bitwise complement
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum BitwiseComplement<TEnum>(this TEnum @enum)
-        where TEnum : struct, Enum
+    public static E BitwiseComplement<E>(this E @enum)
+        where E : struct, Enum
     {
         Emit.Ldarg(nameof(@enum));
         Emit.Not();
-        return Return<TEnum>();
+        return Return<E>();
     }
 
     /// <summary>
     /// Returns a bitwise AND (<c>&amp;</c>) of the <paramref name="enum"/> and the <paramref name="flag"/>
     /// </summary>
-    /// <typeparam name="TEnum">The <see cref="Type"/> of <see langword="enum"/> being AND'd</typeparam>
-    /// <param name="enum">The first <typeparamref name="TEnum"/> to AND</param>
-    /// <param name="flag">The second <typeparamref name="TEnum"/> to AND</param>
+    /// <typeparam name="E">The <see cref="Type"/> of <see langword="enum"/> being AND'd</typeparam>
+    /// <param name="enum">The first <typeparamref name="E"/> to AND</param>
+    /// <param name="flag">The second <typeparamref name="E"/> to AND</param>
     /// <returns>The two <see langword="enum"/>s AND'd together</returns>
     /// <remarks>
     /// <c>return (<paramref name="enum"/> &amp; <paramref name="flag"/>);</c>
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum And<TEnum>(this TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static E And<E>(this E @enum, E flag)
+        where E : struct, Enum
     {
         Emit.Ldarg(nameof(@enum));
         Emit.Ldarg(nameof(flag));
         Emit.And();
-        return Return<TEnum>();
+        return Return<E>();
     }
 
     /// <summary>
     /// Returns a bitwise OR (<c>|</c>) of the <paramref name="enum"/> and the <paramref name="flag"/>
     /// </summary>
-    /// <typeparam name="TEnum">The <see cref="Type"/> of <see langword="enum"/> being OR'd</typeparam>
-    /// <param name="enum">The first <typeparamref name="TEnum"/> to OR</param>
-    /// <param name="flag">The second <typeparamref name="TEnum"/> to OR</param>
+    /// <typeparam name="E">The <see cref="Type"/> of <see langword="enum"/> being OR'd</typeparam>
+    /// <param name="enum">The first <typeparamref name="E"/> to OR</param>
+    /// <param name="flag">The second <typeparamref name="E"/> to OR</param>
     /// <returns>The two <see langword="enum"/>s OR'd together</returns>
     /// <remarks>
     /// <c>return (<paramref name="enum"/> | <paramref name="flag"/>);</c>
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum Or<TEnum>(this TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static E Or<E>(this E @enum, E flag)
+        where E : struct, Enum
     {
         Emit.Ldarg(nameof(@enum));
         Emit.Ldarg(nameof(flag));
         Emit.Or();
-        return Return<TEnum>();
+        return Return<E>();
     }
 
     /// <summary>
     /// Returns a bitwise XOR (<c>^</c>) of the <paramref name="enum"/> and the <paramref name="flag"/>
     /// </summary>
-    /// <typeparam name="TEnum">The <see cref="Type"/> of <see langword="enum"/> being XOR'd</typeparam>
-    /// <param name="enum">The first <typeparamref name="TEnum"/> to XOR</param>
-    /// <param name="flag">The second <typeparamref name="TEnum"/> to XOR</param>
+    /// <typeparam name="E">The <see cref="Type"/> of <see langword="enum"/> being XOR'd</typeparam>
+    /// <param name="enum">The first <typeparamref name="E"/> to XOR</param>
+    /// <param name="flag">The second <typeparamref name="E"/> to XOR</param>
     /// <returns>The two <see langword="enum"/>s XOR'd together</returns>
     /// <remarks>
     /// <c>return (<paramref name="enum"/> ^ <paramref name="flag"/>);</c>
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum Xor<TEnum>(this TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static E Xor<E>(this E @enum, E flag)
+        where E : struct, Enum
     {
         Emit.Ldarg(nameof(@enum));
         Emit.Ldarg(nameof(flag));
         Emit.Xor();
-        return Return<TEnum>();
+        return Return<E>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasOneFlag<TEnum>(this TEnum @enum)
-        where TEnum : struct, Enum
+    public static bool HasOneFlag<E>(this E @enum)
+        where E : struct, Enum
     {
         // is power of 2
         // return (x & (x - 1)) == 0
@@ -148,14 +147,14 @@ public static class FlagsEnumExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasMultipleFlags<TEnum>(this TEnum @enum)
-        where TEnum : struct, Enum
+    public static bool HasMultipleFlags<E>(this E @enum)
+        where E : struct, Enum
         => !HasOneFlag(@enum) && !@enum.IsDefault();
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int FlagCount<TEnum>(this TEnum @enum)
-        where TEnum : struct, Enum
+    public static int FlagCount<E>(this E @enum)
+        where E : struct, Enum
     {
 #if NET6_0_OR_GREATER
         Emit.Ldarg(nameof(@enum));
@@ -168,7 +167,7 @@ public static class FlagsEnumExtensions
         const ulong MASK3 = 0b0001111000011110000111100001111_00001111000011110000111100001111UL;
         const ulong MASK4 = 0b0000001000000010000000100000001_00000001000000010000000100000001UL;
 
-        ulong value = ToUInt64<TEnum>(@enum);
+        ulong value = ToUInt64<E>(@enum);
         value -= (value >> 1) & MASK1;
         value = (value & MASK2) + ((value >> 2) & MASK2);
         value = (((value + (value >> 4)) & MASK3) * MASK4) >> 56;
@@ -176,20 +175,20 @@ public static class FlagsEnumExtensions
 #endif
     }
 
-    public static TEnum[] GetFlags<TEnum>(this TEnum @enum)
-        where TEnum : struct, Enum
+    public static E[] GetFlags<E>(this E @enum)
+        where E : struct, Enum
     {
         int flagCount = FlagCount(@enum);
-        var flags = new TEnum[flagCount];
+        var flags = new E[flagCount];
         int f = 0;
-        int maxBits = Unsafe.SizeOf<TEnum>() * 8;
+        int maxBits = Unsafe.SizeOf<E>() * 8;
         ulong enumValue = ToUInt64(@enum);
         for (int shift = 0; shift < maxBits; shift++)
         {
             ulong mask = 1UL << shift;
             if ((enumValue & mask) != 0UL)
             {
-                var flag = FromUInt64<TEnum>(mask);
+                var flag = FromUInt64<E>(mask);
                 flags[f++] = flag;
             }
         }
@@ -201,8 +200,8 @@ public static class FlagsEnumExtensions
     /// Adds the <paramref name="flag"/> to this <paramref name="enum"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void AddFlag<TEnum>(this ref TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static void AddFlag<E>(this ref E @enum, E flag)
+        where E : struct, Enum
         => @enum = Or(@enum, flag);
 
     /// <summary>
@@ -212,62 +211,62 @@ public static class FlagsEnumExtensions
     /// <c>return</c> <paramref name="enum"/> <c>|</c> <paramref name="flag"/>
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum WithFlag<TEnum>(this TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static E WithFlag<E>(this E @enum, E flag)
+        where E : struct, Enum
         => Or(@enum, flag);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void RemoveFlag<TEnum>(this ref TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static void RemoveFlag<E>(this ref E @enum, E flag)
+        where E : struct, Enum
         => @enum = And(@enum, BitwiseComplement(flag));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TEnum WithoutFlag<TEnum>(this TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static E WithoutFlag<E>(this E @enum, E flag)
+        where E : struct, Enum
         => And(@enum, BitwiseComplement(flag));
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasFlag<TEnum>(this TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static bool HasFlag<E>(this E @enum, E flag)
+        where E : struct, Enum
     {
         return @enum.And(flag)
             .NotEqual(default);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasFlags<TEnum>(this TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static bool HasFlags<E>(this E @enum, E flag)
+        where E : struct, Enum
     {
         return @enum.And(flag)
             .NotEqual(default);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasAnyFlags<TEnum>(this TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static bool HasAnyFlags<E>(this E @enum, E flag)
+        where E : struct, Enum
     {
         return @enum.And(flag)
             .NotEqual(default);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasAnyFlags<TEnum>(this TEnum @enum, TEnum flag1, TEnum flag2)
-        where TEnum : struct, Enum
+    public static bool HasAnyFlags<E>(this E @enum, E flag1, E flag2)
+        where E : struct, Enum
     {
         return @enum.And(flag1.Or(flag2))
             .NotEqual(default);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasAnyFlags<TEnum>(this TEnum @enum, TEnum flag1, TEnum flag2, TEnum flag3)
-        where TEnum : struct, Enum
+    public static bool HasAnyFlags<E>(this E @enum, E flag1, E flag2, E flag3)
+        where E : struct, Enum
         => @enum.And(flag1.Or(flag2).Or(flag3)).NotEqual(default);
 
-    public static bool HasAnyFlags<TEnum>(this TEnum @enum, params TEnum[] flags)
-        where TEnum : struct, Enum
+    public static bool HasAnyFlags<E>(this E @enum, params E[] flags)
+        where E : struct, Enum
     {
-        TEnum flag = default;
+        E flag = default;
         for (int i = 0; i < flags.Length; i++)
         {
             flag.AddFlag(flags[i]);
@@ -278,36 +277,36 @@ public static class FlagsEnumExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasAllFlags<TEnum>(this TEnum @enum, TEnum flag)
-        where TEnum : struct, Enum
+    public static bool HasAllFlags<E>(this E @enum, E flag)
+        where E : struct, Enum
     {
         return @enum.And(flag)
             .IsEqual(flag);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasAllFlags<TEnum>(this TEnum @enum, TEnum flag1, TEnum flag2)
-        where TEnum : struct, Enum
+    public static bool HasAllFlags<E>(this E @enum, E flag1, E flag2)
+        where E : struct, Enum
     {
-        TEnum flag = flag1.Or(flag2);
+        E flag = flag1.Or(flag2);
         return @enum.And(flag)
             .IsEqual(flag);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasAllFlags<TEnum>(this TEnum @enum, TEnum flag1, TEnum flag2, TEnum flag3)
-        where TEnum : struct, Enum
+    public static bool HasAllFlags<E>(this E @enum, E flag1, E flag2, E flag3)
+        where E : struct, Enum
     {
-        TEnum flag = flag1.Or(flag2)
+        E flag = flag1.Or(flag2)
             .Or(flag3);
         return @enum.And(flag)
             .IsEqual(flag);
     }
 
-    public static bool HasAllFlags<TEnum>(this TEnum @enum, params TEnum[] flags)
-        where TEnum : struct, Enum
+    public static bool HasAllFlags<E>(this E @enum, params E[] flags)
+        where E : struct, Enum
     {
-        TEnum flag = default;
+        E flag = default;
         for (int i = 0; i < flags.Length; i++)
         {
             flag.AddFlag(flags[i]);

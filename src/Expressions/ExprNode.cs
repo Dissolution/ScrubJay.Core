@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Expressions;
 
@@ -49,7 +50,7 @@ public readonly struct ExprNode :
         if (_obj is ParameterExpression parameter)
         {
             var type = parameter.IsByRef ? parameter.Type.MakeByRefType() : parameter.Type;
-            return $"{type.NameOf()} {parameter.Name}";
+            return $"{type.Render()} {parameter.Name}";
         }
         return _obj?.ToString() ?? "null";
     }

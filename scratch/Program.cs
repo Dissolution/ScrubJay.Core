@@ -1,60 +1,51 @@
-﻿// ReSharper disable RedundantUsingDirective
+// ReSharper disable RedundantUsingDirective
 // ReSharper disable UnusedVariable
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
-using System.Globalization;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using InlineIL;
-using ScrubJay.Debugging;
-using ScrubJay.Extensions;
-using ScrubJay.Memory;
-using ScrubJay.Randomization.Seeding;
-using ScrubJay.Validation;
-using ScrubJay.Text;
 using ScrubJay.Text.Rendering;
-using static InlineIL.IL;
 
-var seed = new PhraseSeed("Hello, how are you?");
-var seeds = seed.GetSeeds(4);
-var str = seed.ToString();
+//using static InlineIL.IL;
+
+int i = 147;
+try
+{
+    Throw.IfLessThan(i, 999);
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex);
+    Console.WriteLine(TextBuilder.Build(tb => tb.Render(ex)));
+    Debugger.Break();
+}
 
 
 Debugger.Break();
 return;
 
-
-
-[StructLayout(LayoutKind.Explicit, Size = 3)]
-public readonly struct RGB
-{
-    [FieldOffset(2)]
-    public readonly byte Red;
-
-    [FieldOffset(1)]
-    public readonly byte Green;
-
-    [FieldOffset(0)]
-    public readonly byte Blue;
-
-    public RGB(byte red, byte green, byte blue)
-    {
-        Red = red;
-        Green = green;
-        Blue = blue;
-    }
-}
-
-
-
-
-
 namespace ScrubJay.Scratch
 {
+    [StructLayout(LayoutKind.Explicit, Size = 3)]
+    public readonly struct RGB
+    {
+        [FieldOffset(2)]
+        public readonly byte Red;
+
+        [FieldOffset(1)]
+        public readonly byte Green;
+
+        [FieldOffset(0)]
+        public readonly byte Blue;
+
+        public RGB(byte red, byte green, byte blue)
+        {
+            Red = red;
+            Green = green;
+            Blue = blue;
+        }
+    }
+
+
     public static class Util_2
     {
         private static Result<double> parse(string input) => Result.TryInvoke(() => double.Parse(input));
@@ -74,9 +65,6 @@ namespace ScrubJay.Scratch
             return await divide(x, y);
         }
     }
-}
-
-
 
 /*
 
@@ -100,15 +88,6 @@ static async AsyncResult<double> Add(string a, string b)
     return ad + bd;
 }
 */
-
-
-
-
-
-
-
-
-
 
 /*
 object obj = (decimal)147.13m;
@@ -187,3 +166,4 @@ var getter = dyn.CreateDelegate<Func<Point, int>>();
 int x3 = getter(pt);
 
 */
+}

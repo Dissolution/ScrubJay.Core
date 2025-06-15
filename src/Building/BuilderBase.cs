@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Building;
+﻿using ScrubJay.Text.Rendering;
+
+namespace ScrubJay.Building;
 
 /// <summary>
 /// A base class implementation of the Builder Pattern
@@ -32,6 +34,15 @@ public abstract class BuilderBase<B> : IBuilder<B>
         return _builder;
     }
 
+    public virtual B Invoke<S>(S state, Action<S, B>? stateInstanceAction)
+    {
+        if (stateInstanceAction is not null)
+        {
+            stateInstanceAction(state, _builder);
+        }
+        return _builder;
+    }
+
     public virtual B Invoke<R>(Func<B, R>? instanceFunc)
     {
         if (instanceFunc is not null)
@@ -41,6 +52,15 @@ public abstract class BuilderBase<B> : IBuilder<B>
         return _builder;
     }
 
+    public virtual B Invoke<S, R>(S state, Func<S, B, R>? instanceFunc)
+    {
+        if (instanceFunc is not null)
+        {
+            _ = instanceFunc(state, _builder);
+        }
+        return _builder;
+    }
+
     /// <inheritdoc/>
-    public override string ToString() => typeof(B).NameOf();
+    public override string ToString() => typeof(B).Render();
 }

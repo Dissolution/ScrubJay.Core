@@ -1,4 +1,7 @@
 ﻿// Exception to Identifiers Require Correct Suffix
+
+using ScrubJay.Text.Rendering;
+
 #pragma warning disable CA1710
 // CA1043 : Use Integral Or String Argument For Indexers
 #pragma warning disable CA1043
@@ -17,7 +20,7 @@ public sealed class ArrayWrapper<T> :
     {
         if (obj.As<T>(out var value))
             return Ok(value);
-        return new ArgumentException($"Object `{obj}` is not a {typeof(T).NameOf()}", objName);
+        return new ArgumentException($"Object `{obj}` is not a {typeof(T).Render()}", objName);
     }
 
 

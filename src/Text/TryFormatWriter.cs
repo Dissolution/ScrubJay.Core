@@ -91,7 +91,9 @@ public ref struct TryFormatWriter : IEnumerable
             return true;
         }
 
-        return AddError(new ArgumentException($"Cannot add '{ch}': 1 character is greater than remaining capacity {AvailableCount}", nameof(ch)));
+        return AddError(
+            new ArgumentException($"Cannot add '{ch}': 1 character is greater than remaining capacity {AvailableCount}",
+                nameof(ch)));
     }
 
 
@@ -108,8 +110,9 @@ public ref struct TryFormatWriter : IEnumerable
             return true;
         }
 
-        return AddError(new ArgumentException($"Cannot add \"{text}\": {text.Length} characters is greater than remaining capacity {AvailableCount}",
-                nameof(text)));
+        return AddError(new ArgumentException(
+            $"Cannot add \"{text}\": {text.Length} characters is greater than remaining capacity {AvailableCount}",
+            nameof(text)));
     }
 
     public bool Add(char[]? chars)
@@ -126,8 +129,9 @@ public ref struct TryFormatWriter : IEnumerable
             return true;
         }
 
-        return AddError(new ArgumentException($"Cannot add [{chars.AsString()}]: {chars.Length} characters is greater than remaining capacity {AvailableCount}",
-                nameof(chars)));
+        return AddError(new ArgumentException(
+            $"Cannot add [{chars.AsString()}]: {chars.Length} characters is greater than remaining capacity {AvailableCount}",
+            nameof(chars)));
     }
 
     public bool Add(IEnumerable<char>? characters)
@@ -147,13 +151,15 @@ public ref struct TryFormatWriter : IEnumerable
                 {
                     _destination[pos++] = list[i];
                 }
+
                 Debug.Assert(pos == newPos);
                 _position = newPos;
                 return true;
             }
 
-            return AddError(new ArgumentException($"Cannot add [{list.AsString()}]: {list.Count} characters is greater than remaining capacity {AvailableCount}",
-                    nameof(characters)));
+            return AddError(new ArgumentException(
+                $"Cannot add [{list.AsString()}]: {list.Count} characters is greater than remaining capacity {AvailableCount}",
+                nameof(characters)));
         }
 
         if (characters is ICollection<char> collection)
@@ -166,13 +172,15 @@ public ref struct TryFormatWriter : IEnumerable
                 {
                     _destination[pos++] = ch;
                 }
+
                 Debug.Assert(pos == newPos);
                 _position = newPos;
                 return true;
             }
 
-            return AddError(new ArgumentException($"Cannot add ({collection.AsString()}): {collection.Count} characters is greater than remaining capacity {AvailableCount}",
-                    nameof(characters)));
+            return AddError(new ArgumentException(
+                $"Cannot add ({collection.AsString()}): {collection.Count} characters is greater than remaining capacity {AvailableCount}",
+                nameof(characters)));
         }
 
         int start = pos;
@@ -180,9 +188,11 @@ public ref struct TryFormatWriter : IEnumerable
         {
             if (pos >= End)
             {
-                return AddError(new ArgumentException($"Cannot add another character from IEnumerable<char>: wrote \"{_destination[start..]}\" before remaining capacity became 0",
-                        nameof(characters)));
+                return AddError(new ArgumentException(
+                    $"Cannot add another character from IEnumerable<char>: wrote \"{_destination[start..]}\" before remaining capacity became 0",
+                    nameof(characters)));
             }
+
             _destination[pos++] = ch;
         }
 
@@ -204,8 +214,9 @@ public ref struct TryFormatWriter : IEnumerable
             return true;
         }
 
-        return AddError(new ArgumentException($"Cannot add \"{str}\": {str.Length} characters is greater than remaining capacity {AvailableCount}",
-                nameof(str)));
+        return AddError(new ArgumentException(
+            $"Cannot add \"{str}\": {str.Length} characters is greater than remaining capacity {AvailableCount}",
+            nameof(str)));
     }
 
     public bool Add<T>(T? value)
@@ -215,6 +226,7 @@ public ref struct TryFormatWriter : IEnumerable
         string? str;
         if (value is IFormattable)
         {
+#if NET6_0_OR_GREATER
             // If the value can format itself directly into our buffer, do so
             if (value is ISpanFormattable)
             {
@@ -227,6 +239,7 @@ public ref struct TryFormatWriter : IEnumerable
                 _position += charsWritten;
                 return true;
             }
+#endif
 
             str = ((IFormattable)value).ToString(null, null);
         }
@@ -252,8 +265,9 @@ public ref struct TryFormatWriter : IEnumerable
             {
                 if (!((ISpanFormattable)value).TryFormat(AvailableSpan, out int charsWritten, format.AsSpan(), provider))
                 {
-                    return AddError(new ArgumentException($"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
-                            nameof(value)));
+                    return AddError(new ArgumentException(
+                        $"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
+                        nameof(value)));
                 }
 
                 _position += charsWritten;
@@ -284,8 +298,9 @@ public ref struct TryFormatWriter : IEnumerable
             {
                 if (!((ISpanFormattable)value).TryFormat(AvailableSpan, out int charsWritten, format, provider))
                 {
-                    return AddError(new ArgumentException($"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
-                            nameof(value)));
+                    return AddError(new ArgumentException(
+                        $"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
+                        nameof(value)));
                 }
 
                 _position += charsWritten;
@@ -311,7 +326,7 @@ public ref struct TryFormatWriter : IEnumerable
     public bool Add<T>((T? Value, string? Format, IFormatProvider? Provider) valueTuple)
         => Add<T>(valueTuple.Value, valueTuple.Format, valueTuple.Provider);
 
-    public bool Add<T>(Tuple<T?, string?,IFormatProvider?> tuple)
+    public bool Add<T>(Tuple<T?, string?, IFormatProvider?> tuple)
         => Add<T>(tuple.Item1, tuple.Item2, tuple.Item3);
 
 

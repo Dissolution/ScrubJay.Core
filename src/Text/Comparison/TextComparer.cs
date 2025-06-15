@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Text.Comparison;
+﻿using ScrubJay.Text.Rendering;
+
+namespace ScrubJay.Text.Comparison;
 
 [PublicAPI]
 public abstract class TextComparer :
@@ -46,12 +48,12 @@ public abstract class TextComparer :
             }
             else
             {
-                throw new ArgumentException($"Cannot compare non-textual object containing `{x.GetType().NameOf()}`", nameof(y));
+                throw new ArgumentException($"Cannot compare non-textual object containing `{x.GetType().Render()}`", nameof(y));
             }
         }
         else
         {
-            throw new ArgumentException($"Cannot compare non-textual object containing `{y.GetType().NameOf()}`", nameof(y));
+            throw new ArgumentException($"Cannot compare non-textual object containing `{y.GetType().Render()}`", nameof(y));
         }
     }
 
@@ -70,12 +72,12 @@ public abstract class TextComparer :
             }
             else
             {
-                throw new ArgumentException($"Cannot equate non-textual object containing `{x.GetType().NameOf()}`", nameof(y));
+                throw new ArgumentException($"Cannot equate non-textual object containing `{x.GetType().Render()}`", nameof(y));
             }
         }
         else
         {
-            throw new ArgumentException($"Cannot equate non-textual object containing `{y.GetType().NameOf()}`", nameof(y));
+            throw new ArgumentException($"Cannot equate non-textual object containing `{y.GetType().Render()}`", nameof(y));
         }
     }
 
@@ -85,7 +87,7 @@ public abstract class TextComparer :
             return Hasher.NullHash;
         if (TextHelper.TryUnboxText(obj, out text text))
             return Hasher.HashMany<char>(text);
-        throw new ArgumentException($"Cannot get a hashcode for non-textual object containing `{obj.GetType().NameOf()}`", nameof(obj));
+        throw new ArgumentException($"Cannot get a hashcode for non-textual object containing `{obj.GetType().Render()}`", nameof(obj));
     }
 
 

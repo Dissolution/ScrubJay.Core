@@ -5,8 +5,8 @@
         <RootNamespace>ScrubJay.Scratch</RootNamespace>
 
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 

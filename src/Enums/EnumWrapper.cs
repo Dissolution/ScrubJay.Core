@@ -1,57 +1,57 @@
 ﻿namespace ScrubJay.Enums;
 
 [PublicAPI]
-public readonly struct EnumWrapper<TEnum> :
+public readonly struct EnumWrapper<E> :
 #if NET7_0_OR_GREATER
-    IEqualityOperators<EnumWrapper<TEnum>, TEnum, bool>,
-    IComparisonOperators<EnumWrapper<TEnum>, TEnum, bool>,
-    IBitwiseOperators<EnumWrapper<TEnum>, TEnum, TEnum>,
-    ISpanParsable<EnumWrapper<TEnum>>,
-    IParsable<EnumWrapper<TEnum>>,
+    IEqualityOperators<EnumWrapper<E>, E, bool>,
+    IComparisonOperators<EnumWrapper<E>, E, bool>,
+    IBitwiseOperators<EnumWrapper<E>, E, E>,
+    ISpanParsable<EnumWrapper<E>>,
+    IParsable<EnumWrapper<E>>,
 #endif
-#if !NETSTANDARD2_1
+#if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
-    IEquatable<EnumWrapper<TEnum>>,
-    IEquatable<TEnum>,
-    IComparable<EnumWrapper<TEnum>>,
-    IComparable<TEnum>,
+    IEquatable<EnumWrapper<E>>,
+    IEquatable<E>,
+    IComparable<EnumWrapper<E>>,
+    IComparable<E>,
     IFormattable
-    where TEnum : struct, Enum
+    where E : struct, Enum
 {
-    public static implicit operator EnumWrapper<TEnum>(TEnum @enum) => new(@enum);
-    public static implicit operator TEnum(EnumWrapper<TEnum> wrapper) => wrapper.Enum;
+    public static implicit operator EnumWrapper<E>(E @enum) => new(@enum);
+    public static implicit operator E(EnumWrapper<E> wrapper) => wrapper.Enum;
 
-    public static bool operator ==(EnumWrapper<TEnum> left, TEnum right) => left.Equals(right);
-    public static bool operator !=(EnumWrapper<TEnum> left, TEnum right) => !left.Equals(right);
+    public static bool operator ==(EnumWrapper<E> left, E right) => left.Equals(right);
+    public static bool operator !=(EnumWrapper<E> left, E right) => !left.Equals(right);
 
-    public static bool operator >(EnumWrapper<TEnum> left, TEnum right) => left.CompareTo(right) > 0;
-    public static bool operator >=(EnumWrapper<TEnum> left, TEnum right) => left.CompareTo(right) >= 0;
-    public static bool operator <(EnumWrapper<TEnum> left, TEnum right) => left.CompareTo(right) < 0;
-    public static bool operator <=(EnumWrapper<TEnum> left, TEnum right) => left.CompareTo(right) <= 0;
+    public static bool operator >(EnumWrapper<E> left, E right) => left.CompareTo(right) > 0;
+    public static bool operator >=(EnumWrapper<E> left, E right) => left.CompareTo(right) >= 0;
+    public static bool operator <(EnumWrapper<E> left, E right) => left.CompareTo(right) < 0;
+    public static bool operator <=(EnumWrapper<E> left, E right) => left.CompareTo(right) <= 0;
 
-    public static TEnum operator &(EnumWrapper<TEnum> left, TEnum right) => left.Enum.And(right);
-    public static TEnum operator |(EnumWrapper<TEnum> left, TEnum right) => left.Enum.Or(right);
-    public static TEnum operator ^(EnumWrapper<TEnum> left, TEnum right) => left.Enum.Xor(right);
-    public static TEnum operator ~(EnumWrapper<TEnum> wrapper) => wrapper.Enum.BitwiseComplement();
+    public static E operator &(EnumWrapper<E> left, E right) => left.Enum.And(right);
+    public static E operator |(EnumWrapper<E> left, E right) => left.Enum.Or(right);
+    public static E operator ^(EnumWrapper<E> left, E right) => left.Enum.Xor(right);
+    public static E operator ~(EnumWrapper<E> wrapper) => wrapper.Enum.BitwiseComplement();
 
 #region Parse
 
-    public static EnumWrapper<TEnum> Parse(string str, IFormatProvider? _ = default)
+    public static EnumWrapper<E> Parse(string str, IFormatProvider? _ = default)
     {
 #if NETFRAMEWORK || NETSTANDARD2_0
-        object obj = System.Enum.Parse(typeof(TEnum), str, true);
-        TEnum e = obj.ThrowIfNot<TEnum>();
+        object obj = System.Enum.Parse(typeof(E), str, true);
+        E e = obj.ThrowIfNot<E>();
         return new(e);
 #else
-        return System.Enum.Parse<TEnum>(str, true);
+        return System.Enum.Parse<E>(str, true);
 #endif
     }
 
-    public static EnumWrapper<TEnum> Parse(text text, IFormatProvider? _ = default)
+    public static EnumWrapper<E> Parse(text text, IFormatProvider? _ = default)
         => Parse(text.ToString());
 
-    public static bool TryParse([NotNullWhen(true)] string? str, IFormatProvider? _, out EnumWrapper<TEnum> result)
+    public static bool TryParse([NotNullWhen(true)] string? str, IFormatProvider? _, out EnumWrapper<E> result)
     {
         if (!System.Enum.TryParse(str, true, out result))
         {
@@ -62,26 +62,26 @@ public readonly struct EnumWrapper<TEnum> :
         return true;
     }
 
-    public static bool TryParse(text text, IFormatProvider? _, out EnumWrapper<TEnum> result)
+    public static bool TryParse(text text, IFormatProvider? _, out EnumWrapper<E> result)
         => TryParse(text.ToString(), _, out result);
 
 #endregion
 
 
-    public readonly TEnum Enum;
+    public readonly E Enum;
 
-    public EnumWrapper(TEnum @enum)
+    public EnumWrapper(E @enum)
     {
         Enum = @enum;
     }
 
-    public int CompareTo(TEnum other) => Comparer<TEnum>.Default.Compare(Enum, other);
+    public int CompareTo(E other) => Comparer<E>.Default.Compare(Enum, other);
 
-    public int CompareTo(EnumWrapper<TEnum> other) => Comparer<TEnum>.Default.Compare(Enum, other.Enum);
+    public int CompareTo(EnumWrapper<E> other) => Comparer<E>.Default.Compare(Enum, other.Enum);
 
-    public bool Equals(TEnum other) => Enum.IsEqual(other);
+    public bool Equals(E other) => Enum.IsEqual(other);
 
-    public bool Equals(EnumWrapper<TEnum> other) => Enum.IsEqual(other.Enum);
+    public bool Equals(EnumWrapper<E> other) => Enum.IsEqual(other.Enum);
 
     public bool Equals(long value) => Enum.ToInt64() == value;
 
@@ -91,8 +91,8 @@ public readonly struct EnumWrapper<TEnum> :
     {
         return obj switch
         {
-            TEnum @enum => Equals(@enum),
-            EnumWrapper<TEnum> wrapper => Equals(wrapper),
+            E @enum => Equals(@enum),
+            EnumWrapper<E> wrapper => Equals(wrapper),
             ulong uint64 => Equals(uint64),
             long int64 => Equals(int64),
             _ => false,

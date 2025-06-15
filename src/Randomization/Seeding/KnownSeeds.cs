@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace ScrubJay.Randomization.Seeding;
+﻿namespace ScrubJay.Randomization.Seeding;
 
 [PublicAPI]
 public sealed class KnownSeeds : RandSeed
