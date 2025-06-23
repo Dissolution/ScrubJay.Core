@@ -171,6 +171,12 @@ public static class Renderers
                 tb => tb.Append(", "))
             .Append(']');
     }
+
+    public static B RenderType<B, T>(this B builder, T? value)
+        where B : TextBuilderBase<B>
+    {
+        return RenderValueTo(value?.GetType(), builder);
+    }
  #endregion
 
     #region T Extensions

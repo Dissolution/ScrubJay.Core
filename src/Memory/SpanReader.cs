@@ -554,74 +554,35 @@ public ref struct SpanReader<T>
     public void Reset() => _position = 0;
 
 
-
-    private readonly string ToStringFromCharSpan()
-    {
-        var text = new TextBuffer();
-
-        int index = _position;
-        text chars = Notsafe.SpanAs<T, char>(_span);
-
-        const int CAPTURE_COUNT = 32;
-
-        // Previously read items
-        int startIndex = index - CAPTURE_COUNT;
-        // If we have more before this, indicate with ellipsis
-        if (startIndex > 0)
-        {
-            text.Write('…');
-            text.Write(chars[startIndex..index]);
-        }
-        // Otherwise, cap at a min zero
-        else
-        {
-            text.Write(chars[..index]);
-        }
-
-        // position indicator
-        text.Write('×');
-
-        // items yet to be read
-        int endIndex = index + CAPTURE_COUNT;
-        // Indicate further characters with ellipsis
-        if (endIndex < chars.Length)
-        {
-            text.Write(chars[index..endIndex]);
-            text.Write("…");
-        }
-        else
-        {
-            text.Write(chars[index..]);
-        }
-
-        return text.ToStringAndDispose();
-    }
-
-
-    public override readonly string ToString()
+    public readonly override string ToString()
     {
         // For debugging purposes, we want to show our position in the source span
 
-        // Special handling for reading ReadOnlySpan<char>
+        string delimiter;
+        int captureCount;
+
         if (typeof(T) == typeof(char))
-            return ToStringFromCharSpan();
+        {
+            delimiter = string.Empty;
+            captureCount = 10;
+        }
+        else
+        {
+            delimiter = ", ";
+            captureCount = 3;
+        }
 
-
-        const string DELIMITER = ", ";
-        const int CAPTURE_COUNT = 8;
-
-        var text = new TextBuffer();
+        var text = new TextBuilder();
 
         int index = _position;
         var span = _span;
 
         // Previously read items
-        int startIndex = index - CAPTURE_COUNT;
+        int startIndex = index - captureCount;
         // If we have more before this, indicate with ellipsis
         if (startIndex > 0)
         {
-            text.Write('…');
-            text.Write(DELIMITER);
+            text.Append('…').Append(delimiter);
         }
         // Otherwise, cap at a min zero
         else
@@ -629,21 +590,13 @@ public ref struct SpanReader<T>
             startIndex = 0;
         }
 
-        for (int i = startIndex; i < index; i++)
-        {
-            if (i > startIndex)
-            {
-                text.Write(DELIMITER);
-            }
-
-            text.Write<T>(span[i]);
-        }
+        text.EnumerateAppendAndDelimit(span[startIndex..index], delimiter);
 
         // position indicator
-        text.Write('×');
+        text.Append('×');
 
         // items yet to be read
-        int nextIndex = index + CAPTURE_COUNT;
+        int nextIndex = index + captureCount;
 
         // if we have more after, we're going to end with an ellipsis
         bool postpendEllipsis;
@@ -658,20 +611,11 @@ public ref struct SpanReader<T>
             nextIndex = span.Length;
         }
 
-        for (int i = index; i < nextIndex; i++)
-        {
-            if (i > index)
-            {
-                text.Write(DELIMITER);
-            }
-
-            text.Write<T>(span[i]);
-        }
+        text.EnumerateAppendAndDelimit(span[index..nextIndex], delimiter);
 
         if (postpendEllipsis)
         {
-            text.Write(DELIMITER);
-            text.Write("…");
+            text.Append(delimiter).Append('…');
         }
 
         return text.ToStringAndDispose();

@@ -26,13 +26,9 @@ public sealed class LapTimer
         if (_laps.Count == 0)
             return "LapTimer: Empty";
 
-        var buffer = new TextBuffer();
-        foreach (var lap in _laps)
-        {
-            buffer.Write(lap);
-            buffer.Write(Environment.NewLine);
-        }
-        return buffer.ToStringAndDispose();
+        return TextBuilder.New
+            .EnumerateAppendAndLineDelimit(_laps)
+            .ToStringAndDispose();
     }
 }
 

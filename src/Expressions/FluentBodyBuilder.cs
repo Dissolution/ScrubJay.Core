@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace ScrubJay.Expressions;
 
-public class FluentBodyBuilder<B> : BuilderBase<B>
+public class FluentBodyBuilder<B> : FluentBuilderBase<B>
     where B : FluentBodyBuilder<B>
 {
     public IReadOnlyList<ParameterExpression> Parameters { get; }
@@ -22,7 +22,7 @@ public class FluentBodyBuilder<B> : BuilderBase<B>
         }
         else if (paramRef.IsName.IsSome(out var name))
         {
-            var param = Parameters.OneOrDefault(p => TextHelper.Equate((string?)p.Name, name));
+            var param = Parameters.OneOrDefault(p => ((string?)p.Name).Equate(name));
             if (param is not null)
                 return param;
             throw new ArgumentException($"There is no parameter named \"{name}\"", nameof(paramRef));

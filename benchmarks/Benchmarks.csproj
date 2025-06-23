@@ -4,10 +4,12 @@
         <AssemblyName>ScrubJay.Benchmarks</AssemblyName>
         <RootNamespace>ScrubJay.Benchmarks</RootNamespace>
 
-        <!-- Multi Target -->
         <TargetFrameworks>
-            net9.0;net8.0;net7.0;net6.0;
-            netstandard2.0;netstandard2.1;net481;
+            <!-- Always supports all latest versions -->
+            <!-- https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-version -->
+            net9.0;net8.0;netstandard2.1;net481;
+            <!-- Support for .NET Standard 2.0 so source generators can consume this package -->
+            netstandard2.0;
         </TargetFrameworks>
         <CheckEolTargetFramework>false</CheckEolTargetFramework>
 

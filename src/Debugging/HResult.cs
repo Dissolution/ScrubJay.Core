@@ -72,7 +72,7 @@ public readonly struct HResult :
 
     public override int GetHashCode() => (int)_hresult;
 
-    public string ToString(string? format, IFormatProvider? provider = default)
+    public string ToString(string? format, IFormatProvider? provider = null)
     {
         return format switch
         {
@@ -86,5 +86,5 @@ public readonly struct HResult :
         };
     }
 
-    public override string ToString() => ToString(default, default);
+    public override string ToString() => ToString(null, null);
 }

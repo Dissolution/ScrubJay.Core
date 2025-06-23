@@ -364,7 +364,7 @@ public readonly ref struct OptionROS<T> :
         Span<char> destination,
         out int charsWritten,
         text format = default,
-        IFormatProvider? provider = default)
+        IFormatProvider? provider = null)
     {
         if (_isSome)
         {
@@ -382,19 +382,16 @@ public readonly ref struct OptionROS<T> :
                 }
             }
             fmt.Add(']');
-            return fmt.GetResult(out charsWritten);
+            return fmt.Wrote(out charsWritten);
         }
-
-        // None
-        if (destination.Length >= 4)
+        else
         {
-            Notsafe.Text.CopyBlock("None", destination, 4);
-            charsWritten = 4;
-            return true;
+            // None
+            return new TryFormatWriter(destination)
+            {
+                "None",
+            }.Wrote(out charsWritten);
         }
-
-        charsWritten = 0;
-        return false;
     }
 
     public string ToString(string? format, IFormatProvider? provider = null)

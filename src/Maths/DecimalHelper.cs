@@ -9,8 +9,8 @@
 {
     public override string ToString()
     {
-        var text = new TextBuffer();
-        text.Write(Mantissa);
+        var text = new Buffer<char>();
+        text.AddMany(Mantissa.ToString().AsSpan());
         if (Exponent == 0)
         {
             // fin

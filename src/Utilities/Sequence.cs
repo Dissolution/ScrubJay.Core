@@ -948,7 +948,7 @@ public static class Sequence
 
     #region no constraints w/EqualityComparer
 
-    public static bool Equal<T>(T[]? left, T[]? right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(T[]? left, T[]? right, IEqualityComparer<T>? itemComparer = null)
     {
         if (left is null)
             return right is null;
@@ -962,7 +962,7 @@ public static class Sequence
 #endif
     }
 
-    public static bool Equal<T>(T[]? left, Span<T> right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(T[]? left, Span<T> right, IEqualityComparer<T>? itemComparer = null)
     {
         if (left is null)
             return false;
@@ -974,7 +974,7 @@ public static class Sequence
     }
 
 
-    public static bool Equal<T>(T[]? left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(T[]? left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = null)
     {
         if (left is null)
             return false;
@@ -985,7 +985,7 @@ public static class Sequence
 #endif
     }
 
-    public static bool Equal<T>(T[]? left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(T[]? left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null)
     {
         if (left is null)
             return right is null;
@@ -997,7 +997,7 @@ public static class Sequence
     }
 
 
-    public static bool Equal<T>(Span<T> left, T[]? right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(Span<T> left, T[]? right, IEqualityComparer<T>? itemComparer = null)
     {
         if (right is null)
             return false;
@@ -1009,7 +1009,7 @@ public static class Sequence
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equal<T>(Span<T> left, Span<T> right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(Span<T> left, Span<T> right, IEqualityComparer<T>? itemComparer = null)
     {
 #if NET6_0_OR_GREATER
         return ((ReadOnlySpan<T>)left).SequenceEqual((ReadOnlySpan<T>)right, itemComparer);
@@ -1019,7 +1019,7 @@ public static class Sequence
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equal<T>(Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = null)
     {
 #if NET6_0_OR_GREATER
         return ((ReadOnlySpan<T>)left).SequenceEqual(right, itemComparer);
@@ -1028,7 +1028,7 @@ public static class Sequence
 #endif
     }
 
-    public static bool Equal<T>(Span<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(Span<T> left, IEnumerable<T>? right, IEqualityComparer<T>? itemComparer = null)
     {
         if (right is null)
             return false;
@@ -1036,7 +1036,7 @@ public static class Sequence
         return Equal((ReadOnlySpan<T>)left, right, itemComparer);
     }
 
-    public static bool Equal<T>(ReadOnlySpan<T> left, T[]? right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(ReadOnlySpan<T> left, T[]? right, IEqualityComparer<T>? itemComparer = null)
     {
         if (right is null)
             return false;
@@ -1048,7 +1048,7 @@ public static class Sequence
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equal<T>(ReadOnlySpan<T> left, Span<T> right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(ReadOnlySpan<T> left, Span<T> right, IEqualityComparer<T>? itemComparer = null)
     {
 #if NET6_0_OR_GREATER
         return left.SequenceEqual((ReadOnlySpan<T>)right, itemComparer);
@@ -1057,7 +1057,7 @@ public static class Sequence
 #endif
     }
 
-    public static bool Equal<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = null)
     {
 #if NET6_0_OR_GREATER
         return left.SequenceEqual(right, itemComparer);
@@ -1138,7 +1138,7 @@ public static class Sequence
         }
     }
 
-    public static bool Equal<T>(IEnumerable<T>? left, T[]? right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(IEnumerable<T>? left, T[]? right, IEqualityComparer<T>? itemComparer = null)
     {
         if (left is null)
             return right is null;
@@ -1149,7 +1149,7 @@ public static class Sequence
         return Equal(left, new ReadOnlySpan<T>(right), itemComparer);
     }
 
-    public static bool Equal<T>(IEnumerable<T>? left, Span<T> right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(IEnumerable<T>? left, Span<T> right, IEqualityComparer<T>? itemComparer = null)
     {
         if (left is null)
             return false;
@@ -1157,7 +1157,7 @@ public static class Sequence
         return Equal(left, (ReadOnlySpan<T>)right, itemComparer);
     }
 
-    public static bool Equal<T>(IEnumerable<T>? left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = default)
+    public static bool Equal<T>(IEnumerable<T>? left, ReadOnlySpan<T> right, IEqualityComparer<T>? itemComparer = null)
     {
         if (left is null)
             return false;

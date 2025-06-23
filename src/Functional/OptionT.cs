@@ -450,35 +450,35 @@ public readonly struct Option<T> :
 #region LINQ + IEnumerable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Option<TNew> Select<TNew>(Fn<T, TNew> selector)
+    public Option<N> Select<N>(Fn<T, N> selector)
     {
         if (_isSome)
-            return Some<TNew>(selector(_value!));
-        return None<TNew>();
+            return Some<N>(selector(_value!));
+        return None<N>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Option<TNew> SelectMany<TNew>(Fn<T, Option<TNew>> newSelector)
+    public Option<N> SelectMany<N>(Fn<T, Option<N>> newSelector)
     {
         if (_isSome)
         {
             return newSelector(_value!);
         }
 
-        return None<TNew>();
+        return None<N>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Option<TNew> SelectMany<TKey, TNew>(
-        Fn<T, Option<TKey>> keySelector,
-        Fn<T, TKey, TNew> newSelector)
+    public Option<N> SelectMany<K, N>(
+        Fn<T, Option<K>> keySelector,
+        Fn<T, K, N> newSelector)
     {
         if (_isSome && keySelector(_value!).IsSome(out var key))
         {
-            return Some<TNew>(newSelector(_value!, key));
+            return Some<N>(newSelector(_value!, key));
         }
 
-        return None<TNew>();
+        return None<N>();
     }
 
     /// <summary>
@@ -554,45 +554,32 @@ public readonly struct Option<T> :
         Span<char> destination,
         out int charsWritten,
         text format = default,
-        IFormatProvider? provider = default)
+        IFormatProvider? provider = null)
     {
+        var writer = new TryFormatWriter(destination);
         if (_isSome)
         {
-            return new TryFormatWriter(destination)
-            {
-                "Some(",
-                { _value, format, provider },
-                ')',
-            }.GetResult(out charsWritten);
+            writer.Add("Some(");
+            writer.Add(_value, format, provider);
+            writer.Add(')');
         }
         else
         {
-            if ("None".TryCopyTo(destination))
-            {
-                charsWritten = 4;
-                return true;
-            }
+            writer.Add("None");
         }
-        charsWritten = 0;
-        return false;
+
+        return writer.Wrote(out charsWritten);
     }
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
-        TextBuffer buffer = stackalloc char[256];
         if (_isSome)
         {
-            buffer.Write("Some(");
-            buffer.Write(_value, format, provider);
-            buffer.Write(')');
-        }
-        else
-        {
-            buffer.Write("None");
+            return TextBuilder.New.Append("Some(").Append(_value, format, provider).Append(')').ToStringAndDispose();
         }
 
-        return buffer.ToStringAndDispose();
+        return "None";
     }
 
-    public override string ToString() => ToString(default, default);
+    public override string ToString() => ToString(null, null);
 }

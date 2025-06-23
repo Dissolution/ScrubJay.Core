@@ -55,13 +55,13 @@ public readonly struct Unit :
     public override bool Equals(object? obj) => obj is Unit;
     public override int GetHashCode() => 0;
 
-    public string ToString(string? format, IFormatProvider? provider = default) => "()";
+    public string ToString(string? format, IFormatProvider? provider = null) => "()";
 
 #pragma warning disable CA1822 // method can be marked static
     public bool TryFormat(Span<char> destination, out int charsWritten, text format = default,
-        IFormatProvider? provider = default)
+        IFormatProvider? provider = null)
     {
-        if ("()".TryCopyTo(destination))
+        if (TextHelper.TryCopyTo("()", destination))
         {
             charsWritten = 2;
             return true;

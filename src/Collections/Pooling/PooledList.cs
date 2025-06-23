@@ -1,4 +1,7 @@
 ﻿// Identifiers should have correct suffix
+
+using System.Text;
+
 #pragma warning disable CA1710
 
 namespace ScrubJay.Collections.Pooling;
@@ -159,7 +162,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         // Slow path, fill another buffer and then insert known
         using var buffer = new Buffer<T>();
         buffer.AddMany(items);
-        TryInsertMany(index, buffer).ThrowIfError();
+        TryInsertMany(index, buffer.Written).ThrowIfError();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -472,7 +475,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <returns>
     /// An <see cref="Option{T}"/> that might contain the index of the first matching instance
     /// </returns>
-    public Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = default, IEqualityComparer<T>? itemComparer = null)
+    public Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = null, IEqualityComparer<T>? itemComparer = null)
     {
         int pos = _position;
         var span = new Span<T>(_array);
@@ -557,7 +560,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public Option<int> TryFindIndex(
         ReadOnlySpan<T> items,
         bool firstToLast = true,
-        Index? offset = default,
+        Index? offset = null,
         IEqualityComparer<T>? itemComparer = null)
     {
         int itemCount = items.Length;
@@ -647,7 +650,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public Option<(int Index, T Item)> TryFindItemIndex(
         Func<T, bool>? itemPredicate,
         bool firstToLast = true,
-        Index? offset = default)
+        Index? offset = null)
     {
         if (itemPredicate is null)
             return None();
@@ -1059,6 +1062,11 @@ public sealed class PooledList<T> : PooledArray<T>,
         var listSpan = CollectionsMarshal.AsSpan<T>(list);
         Sequence.CopyTo(Written, listSpan);
         CollectionsMarshal.SetCount<T>(list, _position);
+#elif NETSTANDARD2_1
+        foreach (var item in Written)
+        {
+            list.Add(item);
+        }
 #else
         list.AddRange(Written);
 #endif
@@ -1119,20 +1127,21 @@ public sealed class PooledList<T> : PooledArray<T>,
             return written.ToString(); // will convert directly to a string
         }
 
-        DefaultInterpolatedStringHandler text = new(Count * 2, Count);
-        text.AppendLiteral("[");
+        StringBuilder text = new StringBuilder()
+            .Append('[');
+
         if (written.Length > 0)
         {
-            text.AppendFormatted<T>(written[0]);
+            text.Append(written[0]);
             for (int i = 1; i < written.Length; i++)
             {
-                text.AppendLiteral(", ");
-                text.AppendFormatted<T>(written[i]);
+                text.Append(", ");
+                text.Append(written[i]);
             }
         }
 
-        text.AppendLiteral("]");
-        return text.ToStringAndClear();
+        text.Append(']');
+        return text.ToString();
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

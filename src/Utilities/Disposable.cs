@@ -84,7 +84,7 @@ public static class Disposable
             finally
             {
                 // always set to default
-                disposable = default;
+                disposable = null;
             }
         }
 

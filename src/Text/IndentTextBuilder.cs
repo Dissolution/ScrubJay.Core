@@ -72,7 +72,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
 #if DEBUG
         var removed = newWhiteSpace.TryRemoveIndent();
         Debug.Assert(removed.IsOk(out string? removedIndent));
-        Debug.Assert(TextHelper.Equate(indent, removedIndent));
+        Debug.Assert(indent.Equate(removedIndent));
 #else
         // no need to remove indent, will be discarded
 #endif
@@ -99,7 +99,7 @@ public class FluentIndentTextBuilder<B> : TextBuilderBase<B>
         // special behavior only if we're indented
         if (_whitespace.HasIndent)
         {
-            if (TextHelper.Equate(text, _whitespace.NewLine))
+            if (text.Equate(_whitespace.NewLine))
                 return NewLine();
             return _builder.Delimit<B, char>(
                 static b => b.NewLine(),

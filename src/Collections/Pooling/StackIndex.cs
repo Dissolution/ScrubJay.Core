@@ -67,30 +67,10 @@ public readonly struct StackIndex :
 
     public override string ToString()
     {
-        var buffer = new TextBuffer(14);
-
-        if (!_inArrayOrder)
-        {
-            buffer.Write("pop:");
-        }
-        else
-        {
-            buffer.Write("arr:");
-        }
-
-        if (IsFromEnd)
-        {
-            buffer.Write('^');
-        }
-
-#if DEBUG
-        bool formatted = ((uint)_index).TryFormat(buffer.Available, out int charsWritten);
-        Debug.Assert(formatted);
-#else
-        ((uint)_index).TryFormat(buffer.Available, out int charsWritten);
-#endif
-        buffer.Count += charsWritten;
-
-        return buffer.ToStringAndDispose();
+        return TextBuilder.New
+            .AppendIf(_inArrayOrder, "arr:", "pop:")
+            .AppendIf(IsFromEnd, '^')
+            .Append(_index)
+            .ToStringAndDispose();
     }
 }

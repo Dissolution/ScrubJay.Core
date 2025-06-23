@@ -252,104 +252,104 @@ public static class TextHelper
 
 #region Equate
 #region Ordinal
-    public static bool Equate(char left, char right)
+    public static bool Equate(this char left, char right)
         => left.Equals(right);
 
-    public static bool Equate(char left, string? right)
+    public static bool Equate(this char left, string? right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(char left, char[]? right)
+    public static bool Equate(this char left, char[]? right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(char left, text right)
+    public static bool Equate(this char left, text right)
         => Equate(left.AsSpan(), right);
 
-    public static bool Equate(string? left, char right)
+    public static bool Equate(this string? left, char right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(string? left, string? right)
+    public static bool Equate(this string? left, string? right)
         => string.Equals(left, right, StringComparison.Ordinal);
 
-    public static bool Equate(string? left, char[]? right)
+    public static bool Equate(this string? left, char[]? right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(string? left, text right)
+    public static bool Equate(this string? left, text right)
         => Equate(left.AsSpan(), right);
 
-    public static bool Equate(char[]? left, char right)
+    public static bool Equate(this char[]? left, char right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(char[]? left, string? right)
+    public static bool Equate(this char[]? left, string? right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(char[]? left, char[]? right)
+    public static bool Equate(this char[]? left, char[]? right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(char[]? left, text right)
+    public static bool Equate(this char[]? left, text right)
         => Equate(left.AsSpan(), right);
 
-    public static bool Equate(text left, char right)
+    public static bool Equate(this text left, char right)
         => Equate(left, right.AsSpan());
 
-    public static bool Equate(text left, string? right)
+    public static bool Equate(this text left, string? right)
         => Equate(left, right.AsSpan());
 
-    public static bool Equate(text left, char[]? right)
+    public static bool Equate(this text left, char[]? right)
         => Equate(left, right.AsSpan());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equate(text left, text right)
+    public static bool Equate(this text left, text right)
         => MemoryExtensions.SequenceEqual<char>(left, right);
 #endregion
 
 #region with StringComparison
-    public static bool Equate(char left, char right, StringComparison comparison)
+    public static bool Equate(this char left, char right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(char left, string? right, StringComparison comparison)
+    public static bool Equate(this char left, string? right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(char left, char[]? right, StringComparison comparison)
+    public static bool Equate(this char left, char[]? right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(char left, text right, StringComparison comparison)
+    public static bool Equate(this char left, text right, StringComparison comparison)
         => Equate(left.AsSpan(), right, comparison);
 
-    public static bool Equate(string? left, char right, StringComparison comparison)
+    public static bool Equate(this string? left, char right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(string? left, string? right, StringComparison comparison)
+    public static bool Equate(this string? left, string? right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(string? left, char[]? right, StringComparison comparison)
+    public static bool Equate(this string? left, char[]? right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(string? left, text right, StringComparison comparison)
+    public static bool Equate(this string? left, text right, StringComparison comparison)
         => Equate(left.AsSpan(), right, comparison);
 
-    public static bool Equate(char[]? left, char right, StringComparison comparison)
+    public static bool Equate(this char[]? left, char right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(char[]? left, string? right, StringComparison comparison)
+    public static bool Equate(this char[]? left, string? right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(char[]? left, char[]? right, StringComparison comparison)
+    public static bool Equate(this char[]? left, char[]? right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(char[]? left, text right, StringComparison comparison)
+    public static bool Equate(this char[]? left, text right, StringComparison comparison)
         => Equate(left.AsSpan(), right, comparison);
 
-    public static bool Equate(text left, char right, StringComparison comparison)
+    public static bool Equate(this text left, char right, StringComparison comparison)
         => Equate(left, right.AsSpan(), comparison);
 
-    public static bool Equate(text left, string? right, StringComparison comparison)
+    public static bool Equate(this text left, string? right, StringComparison comparison)
         => Equate(left, right.AsSpan(), comparison);
 
-    public static bool Equate(text left, char[]? right, StringComparison comparison)
+    public static bool Equate(this text left, char[]? right, StringComparison comparison)
         => Equate(left, right.AsSpan(), comparison);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equate(text left, text right, StringComparison comparison)
+    public static bool Equate(this text left, text right, StringComparison comparison)
         => MemoryExtensions.Equals(left, right, comparison);
 #endregion
 #endregion

@@ -14,7 +14,7 @@ namespace ScrubJay.Utilities;
 public static class Pair
 {
 #if NET7_0_OR_GREATER
-    public static Result<Pair<TKey, TValue>> TryParse<TKey, TValue>(text text, IFormatProvider? provider = default)
+    public static Result<Pair<TKey, TValue>> TryParse<TKey, TValue>(text text, IFormatProvider? provider = null)
         where TKey : ISpanParsable<TKey>
         where TValue : ISpanParsable<TValue>
     {
@@ -174,18 +174,18 @@ public readonly struct Pair<TKey, TValue> :
             ", ",
             { Value, format, provider },
             ')',
-        }.GetResult(out charsWritten);
+        }.Wrote(out charsWritten);
     }
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
-        var text = new TextBuffer();
-        text.Write("(");
-        text.Write<TKey>(Key, format, provider);
-        text.Write(", ");
-        text.Write<TValue>(Value, format, provider);
-        text.Write(")");
-        return text.ToStringAndDispose();
+        return TextBuilder.New
+            .Append('(')
+            .Append(Key, format, provider)
+            .Append(", ")
+            .Append(Value, format, provider)
+            .Append(')')
+            .ToStringAndDispose();
     }
 
     public override string ToString() => $"({Key}, {Value})";

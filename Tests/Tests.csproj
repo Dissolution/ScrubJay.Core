@@ -5,9 +5,13 @@
         <AssemblyName>ScrubJay.Tests</AssemblyName>
 
         <TargetFrameworks>
-            net9.0;net8.0;
+            <!-- Always supports all latest versions -->
+            <!-- https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-version -->
+            net9.0;net8.0;net481;
         </TargetFrameworks>
         <CheckEolTargetFramework>false</CheckEolTargetFramework>
+
+        <!-- Always use the latest features -->
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -43,11 +47,9 @@
         </PackageReference>
     </ItemGroup>
 
-    <!-- Need System.Memory for older frameworks -->
+    <!-- NetStandard* and NetFramework* require System.Memory (for Index, Range, etc) -->
     <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Memory" Version="4.6.3">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
+        <PackageReference Include="System.Memory" Version="4.6.3"/>
     </ItemGroup>
 
     <!-- Global Usings -->

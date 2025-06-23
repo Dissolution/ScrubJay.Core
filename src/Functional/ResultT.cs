@@ -90,7 +90,7 @@ public readonly struct Result<T> :
     /// Creates <see cref="Result{T}"/>.Ok(<paramref name="value"/>)
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T> Ok(T value) => new Result<T>(true, value, default);
+    public static Result<T> Ok(T value) => new Result<T>(true, value, null);
 
     /// <summary>
     /// Creates <see cref="Result{T}"/>.Error(<paramref name="ex"/>)
@@ -365,51 +365,50 @@ public readonly struct Result<T> :
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
-        TextBuffer text = stackalloc char[256];
+        using var builder = new TextBuilder();
+
         if (_isOk)
         {
-            text.Write("Ok(");
-            text.Write(_value, format, provider);
-            text.Write(')');
+            builder.Append("Ok(")
+                .Append(_value, format, provider)
+                .Append(')');
         }
         else
         {
-            text.Write(_error.RenderType());
-            text.Write('(');
-            text.Write(_error?.Message);
-            text.Write(')');
+            builder.Render(_error?.GetType())
+                .Append('(')
+                .Append(_error?.Message)
+                .Append(')');
         }
-        return text.ToStringAndDispose();
+
+        return builder.ToString();
     }
 
     public bool TryFormat(
         Span<char> destination,
         out int charsWritten,
         text format = default,
-        IFormatProvider? provider = default)
+        IFormatProvider? provider = null)
     {
+        var writer = new TryFormatWriter(destination);
         if (_isOk)
         {
-            return new TryFormatWriter(destination)
-            {
-                "Ok(",
-                {
-                    _value, format, provider
-                },
-                ')',
-            }.GetResult(out charsWritten);
+            writer.Add("Ok(");
+            writer.Add(_value, format, provider);
+            writer.Add(')');
+        }
+        else
+        {
+            writer.Add(_error?.RenderType());
+            writer.Add('(');
+            writer.Add(_error?.Message);
+            writer.Add(')');
         }
 
-        return new TryFormatWriter(destination)
-        {
-            _error.RenderType(),
-            '(',
-            _error?.Message,
-            ')',
-        }.GetResult(out charsWritten);
+        return writer.Wrote(out charsWritten);
     }
 
-    public override string ToString() => ToString(default, default);
+    public override string ToString() => ToString(null, null);
 
 #endregion
 
@@ -420,7 +419,7 @@ public readonly struct Result<T> :
     {
         if (_isOk)
         {
-            return new(true, selector(_value!), default);
+            return new(true, selector(_value!), null);
         }
         return new(false, default, _error);
     }
@@ -429,7 +428,7 @@ public readonly struct Result<T> :
     {
         if (_isOk && selector(_value!).IsSome(out var value))
         {
-            return new(true, value, default);
+            return new(true, value, null);
         }
         return new(false, default, _error);
     }
@@ -447,7 +446,7 @@ public readonly struct Result<T> :
     {
         if (_isOk)
         {
-            return new(true, selector(state, _value!), default);
+            return new(true, selector(state, _value!), null);
         }
         return new(false, default, _error);
     }
@@ -465,7 +464,7 @@ public readonly struct Result<T> :
     {
         if (_isOk && keySelector(_value!).IsOk(out var key))
         {
-            return new(true, newSelector(_value!, key), default);
+            return new(true, newSelector(_value!, key), null);
         }
 
         return new(false, default, _error);

@@ -269,14 +269,14 @@ public readonly struct Values<T> :
         if (obj is T value)
         {
             if (span.Length == 0)
-                return new ArgumentException(default, nameof(span));
+                return new ArgumentException(null, nameof(span));
             span[0] = value;
             return Ok(1);
         }
 
         var values = Notsafe.As<object, T[]>(obj);
         if (span.Length < values.Length)
-            return new ArgumentException(default, nameof(span));
+            return new ArgumentException(null, nameof(span));
         Sequence.CopyTo(values, span);
         return Ok(values.Length);
     }
@@ -394,7 +394,7 @@ public readonly struct Values<T> :
         Span<char> destination,
         out int charsWritten,
         text format = default,
-        IFormatProvider? provider = default)
+        IFormatProvider? provider = null)
     {
         var writer = new TryFormatWriter(destination);
         writer.Add('[');
@@ -414,8 +414,8 @@ public readonly struct Values<T> :
             }
         }
         writer.Add(']');
-        return writer.GetResult(out charsWritten);
+        return writer.Wrote(out charsWritten);
     }
 
-    public override string ToString() => ToString(default, default);
+    public override string ToString() => ToString(null, null);
 }

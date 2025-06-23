@@ -5,23 +5,34 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using ScrubJay.Text.Rendering;
 
-//using static InlineIL.IL;
+string str = "Sphinx of black quartz, judge my vow.";
 
-int i = 147;
-try
+TryFormatWriter writer = new TryFormatWriter(stackalloc char[147])
 {
-    Throw.IfLessThan(i, 999);
-}
-catch (Exception ex)
-{
-    Console.WriteLine(ex);
-    Console.WriteLine(TextBuilder.Build(tb => tb.Render(ex)));
-    Debugger.Break();
-}
+    'a',
+    "abc",
+    new char[3] {'k', 'f', 'c'},
+    147,
+    (147),
+    (147, "d"),
+    {147, "g"},
+};
+
+str = TextBuilder.Build(
+    $"The char '{'c'}' is not the string \"{"abc"}\", {true} or {false}?{Environment.NewLine}{str}{sizeof(int)}{writer.Count}");
+
+
+
+
+
+
 
 
 Debugger.Break();
 return;
+
+
+
 
 namespace ScrubJay.Scratch
 {

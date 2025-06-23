@@ -15,7 +15,7 @@ public class BaseNTextEncoder
     public BaseNTextEncoder(string symbols)
     {
         if (symbols.Distinct().Count() != symbols.Length)
-            throw new ArgumentException(default, nameof(symbols));
+            throw new ArgumentException(null, nameof(symbols));
         _radix = symbols.Length;
         _symbols = symbols.ToCharArray();
     }
@@ -23,35 +23,27 @@ public class BaseNTextEncoder
     public BaseNTextEncoder(params char[] symbols)
     {
         if (symbols.Distinct().Count() != symbols.Length)
-            throw new ArgumentException(default, nameof(symbols));
+            throw new ArgumentException(null, nameof(symbols));
         _radix = symbols.Length;
         _symbols = symbols;
     }
 
     public Result<string> TryEncode(BigInteger iBig)
     {
-#if NET5_0_OR_GREATER
-        long bitLength = iBig.GetBitLength();
-        if (bitLength > int.MaxValue)
-            return new ArgumentException($"BigInt would require {bitLength} characters, which is larger than int.MaxValue", nameof(iBig));
-#else
-        long bitLength = 1024L;
-#endif
-
-        using TextBuffer buffer = stackalloc char[(int)bitLength];
+        using var builder = new TextBuilder();
         text symbols = _symbols;
         BigInteger len = symbols.Length;
         do
         {
             var charsIndex = iBig % len;
             Debug.Assert((charsIndex >= BigInteger.Zero) && (charsIndex < len));
-            buffer.Add(symbols[(int)charsIndex]);
+            builder.Append(symbols[(int)charsIndex]);
             iBig /= len;
         } while (iBig > BigInteger.Zero);
 
         // have to reverse
-        buffer.Written.Reverse();
-        return Ok(buffer.ToString());
+        builder._text.Written.Reverse();
+        return Ok(builder.ToString());
     }
 
     public Result<BigInteger> TryDecode(string str)

@@ -2,7 +2,7 @@
 
 namespace ScrubJay.Expressions;
 
-public class FluentLambdaBuilder<B> : BuilderBase<B>
+public class FluentLambdaBuilder<B> : FluentBuilderBase<B>
     where B : FluentLambdaBuilder<B>
 {
     protected readonly Type _delegateType;

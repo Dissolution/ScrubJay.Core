@@ -2,6 +2,13 @@
 
 namespace ScrubJay;
 
+/// <summary>
+/// Supports shallow-cloning, which creates a new instance with the same value as an existing instance,
+/// preserving all references
+/// </summary>
+/// <typeparam name="S">
+/// The <see cref="Type"/> of this instance (self)
+/// </typeparam>
 [PublicAPI]
 public interface ICloneable<S> : ICloneable
     where S : ICloneable<S>

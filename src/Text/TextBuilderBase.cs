@@ -17,7 +17,7 @@ namespace ScrubJay.Text;
 /// </typeparam>
 [PublicAPI]
 [MustDisposeResource]
-public abstract class TextBuilderBase<B> : BuilderBase<B>,
+public abstract class TextBuilderBase<B> : FluentBuilderBase<B>,
     IList<char>,
     IReadOnlyList<char>,
     ICollection<char>,
@@ -27,7 +27,7 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
     where B : TextBuilderBase<B>
 {
     // This manages all the actual writing
-    protected readonly PooledList<char> _text;
+    protected internal readonly PooledList<char> _text;
 
     int ICollection<char>.Count => Length;
 
@@ -174,26 +174,25 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
 
         if (value is IFormattable)
         {
+#if NET6_0_OR_GREATER
             if (value is ISpanFormattable)
             {
                 int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, default, default))
+                while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, default, null))
                 {
                     _text.Grow();
                 }
 
                 _text.Count += charsWritten;
+                return _builder;
             }
-            else
-            {
-                _text.AddMany(((IFormattable)value).ToString(default, default).AsSpan());
-            }
-        }
-        else
-        {
-            _text.AddMany(value.ToString().AsSpan());
+#endif
+
+            _text.AddMany(((IFormattable)value).ToString(null, null).AsSpan());
+            return _builder;
         }
 
+        _text.AddMany(value.ToString().AsSpan());
         return _builder;
     }
 
@@ -214,33 +213,33 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
             return _builder;
         }
 
+        // Special Rendering
         if (format == "@")
-        {
             return _builder.Render(value);
-        }
+        if (format == "@T")
+            return _builder.RenderType(value);
 
         if (value is IFormattable)
         {
+#if NET6_0_OR_GREATER
             if (value is ISpanFormattable)
             {
                 int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, format.AsSpan(), provider))
+                while (!((ISpanFormattable)value).TryFormat(_text.Available, out charsWritten, format, provider))
                 {
                     _text.Grow();
                 }
 
                 _text.Count += charsWritten;
+                return _builder;
             }
-            else
-            {
-                _text.AddMany(((IFormattable)value).ToString(format, provider).AsSpan());
-            }
-        }
-        else
-        {
-            _text.AddMany(value.ToString().AsSpan());
+#endif
+
+            _text.AddMany(((IFormattable)value).ToString(format, provider).AsSpan());
+            return _builder;
         }
 
+        _text.AddMany(value.ToString().AsSpan());
         return _builder;
     }
 
@@ -261,13 +260,15 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
             return _builder;
         }
 
-        if (TextHelper.Equate(format, "@"))
-        {
+        // Special Rendering
+        if (format.Equate("@"))
             return _builder.Render(value);
-        }
+        if (format.Equate("@T"))
+            return _builder.RenderType(value);
 
         if (value is IFormattable)
         {
+#if NET6_0_OR_GREATER
             if (value is ISpanFormattable)
             {
                 int charsWritten;
@@ -277,17 +278,15 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
                 }
 
                 _text.Count += charsWritten;
+                return _builder;
             }
-            else
-            {
-                _text.AddMany(((IFormattable)value).ToString(format.AsString(), provider).AsSpan());
-            }
-        }
-        else
-        {
-            _text.AddMany(value.ToString().AsSpan());
+#endif
+
+            _text.AddMany(((IFormattable)value).ToString(format.AsString(), provider).AsSpan());
+            return _builder;
         }
 
+        _text.AddMany(value.ToString().AsSpan());
         return _builder;
     }
 
@@ -542,9 +541,9 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
 
     public B Wrap(string? preStr, string? postStr, Action<B>? build) => Append(preStr).Invoke(build).Append(postStr);
 
-    public B Wrap(Action<B> wrapBuild, Action<B> build) => Invoke(wrapBuild).Invoke(build).Invoke(wrapBuild);
+    public B Wrap(Action<B> wrapBuild, Action<B> build) => _builder.Invoke(wrapBuild).Invoke(build).Invoke(wrapBuild);
 
-    public B Wrap(Action<B> preBuild, Action<B> postBuild, Action<B> build) => Invoke(preBuild).Invoke(build).Invoke(postBuild);
+    public B Wrap(Action<B> preBuild, Action<B> postBuild, Action<B> build) => _builder.Invoke(preBuild).Invoke(build).Invoke(postBuild);
 
 #endregion
 
@@ -616,14 +615,14 @@ public abstract class TextBuilderBase<B> : BuilderBase<B>,
     }
 
 
-    public Option<int> TryFindIndex(char ch, bool firstToLast = true, Index? offset = default,
+    public Option<int> TryFindIndex(char ch, bool firstToLast = true, Index? offset = null,
         IEqualityComparer<char>? charComparer = null)
         => _text.TryFindIndex(ch, firstToLast, offset, charComparer);
 
     public Option<int> TryFindIndex(
         scoped text text,
         bool firstToLast = true,
-        Index? offset = default,
+        Index? offset = null,
         IEqualityComparer<char>? charComparer = null)
         => _text.TryFindIndex(text, firstToLast, offset, charComparer);
 

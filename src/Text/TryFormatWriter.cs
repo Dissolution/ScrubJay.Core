@@ -1,10 +1,6 @@
-﻿// Exception to Identifiers Require Correct Suffix
+﻿#pragma warning disable CA1010, CA1710
 
-#pragma warning disable CA1710
-// Only implements IEnumerable for fluent collection initialization support
-#pragma warning disable CA1010
-
-// ReSharper disable MergeCastWithTypeCheck
+using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Text;
 
@@ -23,7 +19,7 @@ public ref struct TryFormatWriter : IEnumerable
     private int _position;
     private Option<Exception> _hasFailed;
 
-    private readonly int End
+    private readonly int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _destination.Length;
@@ -34,22 +30,22 @@ public ref struct TryFormatWriter : IEnumerable
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         readonly get => _position;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => _position = value.Clamp(0, _destination.Length);
+        set => _position = value.Clamp(0, Capacity);
     }
 
-    public Span<char> WrittenSpan
+    public Span<char> Written
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _destination[.._position];
     }
 
-    public Span<char> AvailableSpan
+    public Span<char> Available
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _destination[_position..];
     }
 
-    public readonly int AvailableCount
+    public readonly int RemainingCount
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _destination.Length - _position;
@@ -64,92 +60,103 @@ public ref struct TryFormatWriter : IEnumerable
 
     public TryFormatWriter(Span<char> destination, int position)
     {
-        if ((position < 0) || (position >= destination.Length))
-            throw new ArgumentOutOfRangeException(nameof(position), position, "Position must be inside of span");
+        Throw.IfNotBetween(position, 0, destination.Length);
         _destination = destination;
         _position = position;
         _hasFailed = None<Exception>();
     }
 
-    private bool AddError(Exception error)
+#region Private Methods
+
+    private bool Errored(Exception error)
     {
+        Debug.Assert(error is not null);
         Debug.Assert(_hasFailed.IsNone());
-        _hasFailed = Some<Exception>(error);
+        _hasFailed = Some<Exception>(error!);
         return false;
     }
 
-    public bool Add(char ch)
+
+    private bool AddImpl(char ch,
+        [CallerMemberName] string? callingMethod = null,
+        [CallerArgumentExpression(nameof(ch))] string? charName = null)
     {
-        if (_hasFailed) return false;
+        if (_hasFailed)
+            return false;
 
         int pos = _position;
         int newPos = pos + 1;
-        if (newPos <= End)
+        if (newPos <= Capacity)
         {
             _destination[pos] = ch;
             _position = newPos;
             return true;
         }
 
-        return AddError(
-            new ArgumentException($"Cannot add '{ch}': 1 character is greater than remaining capacity {AvailableCount}",
-                nameof(ch)));
+        string message = TextBuilder
+            .Build($"Could not {callingMethod} '{ch}': Will not fit in remaining Capacity of {RemainingCount}");
+        return Errored(new ArgumentException(message, charName));
     }
 
-
-    public bool Add(scoped text text)
+    private bool AddImpl(scoped text text,
+        [CallerMemberName] string? callingMethod = null,
+        [CallerArgumentExpression(nameof(text))]
+        string? textName = null)
     {
-        if (_hasFailed) return false;
+        if (_hasFailed)
+            return false;
 
         int pos = _position;
-        int newPos = pos + text.Length;
-        if (newPos <= End)
+        int len = text.Length;
+        int newPos = pos + len;
+        if (newPos <= Capacity)
         {
-            Sequence.CopyTo(text, _destination[pos..]);
+            Notsafe.Text.CopyBlock(text, _destination[pos..], len);
             _position = newPos;
             return true;
         }
 
-        return AddError(new ArgumentException(
-            $"Cannot add \"{text}\": {text.Length} characters is greater than remaining capacity {AvailableCount}",
-            nameof(text)));
+        string message = TextBuilder
+            .Build($"Could not {callingMethod} \"{text}\": Will not fit in remaining Capacity of {RemainingCount}");
+        return Errored(new ArgumentException(message, textName));
     }
 
-    public bool Add(char[]? chars)
+    private bool AddImpl(string? str,
+        [CallerMemberName] string? callingMethod = null,
+        [CallerArgumentExpression(nameof(str))]
+        string? strName = null)
     {
-        if (_hasFailed) return false;
-        if (chars is null) return true;
-
-        int pos = _position;
-        int newPos = pos + chars.Length;
-        if (newPos <= End)
-        {
-            Sequence.CopyTo(chars, _destination[pos..]);
-            _position = newPos;
+        if (_hasFailed)
+            return false;
+        if (str is null)
             return true;
-        }
-
-        return AddError(new ArgumentException(
-            $"Cannot add [{chars.AsString()}]: {chars.Length} characters is greater than remaining capacity {AvailableCount}",
-            nameof(chars)));
+        return AddImpl(str.AsSpan(), callingMethod, strName);
     }
 
-    public bool Add(IEnumerable<char>? characters)
+    private bool AddImpl(IEnumerable<char>? characters,
+        [CallerMemberName] string? callingMethod = null,
+        [CallerArgumentExpression(nameof(characters))]
+        string? charactersName = null)
     {
-        if (_hasFailed) return false;
-        if (characters is null) return true;
+        if (_hasFailed)
+            return false;
+        if (characters is null)
+            return true; // add nothing
 
         int pos = _position;
+        var dest = _destination;
+
+        // Some collection types we can shortcut
 
         if (characters is IList<char> list)
         {
-            int count = list.Count;
-            int newPos = pos + count;
-            if (newPos <= End)
+            int len = list.Count;
+            int newPos = pos + len;
+            if (newPos <= Capacity)
             {
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < len; i++, pos++)
                 {
-                    _destination[pos++] = list[i];
+                    dest[pos] = list[i];
                 }
 
                 Debug.Assert(pos == newPos);
@@ -157,20 +164,23 @@ public ref struct TryFormatWriter : IEnumerable
                 return true;
             }
 
-            return AddError(new ArgumentException(
-                $"Cannot add [{list.AsString()}]: {list.Count} characters is greater than remaining capacity {AvailableCount}",
-                nameof(characters)));
+            string message = TextBuilder.New
+                .Append($"Could not {callingMethod} [")
+                .EnumerateAppend(list)
+                .Append($"]: Will not fit in remaining Capacity of {RemainingCount}")
+                .ToStringAndDispose();
+            return Errored(new ArgumentException(message, charactersName));
         }
 
         if (characters is ICollection<char> collection)
         {
-            int count = collection.Count;
-            int newPos = pos + count;
-            if (newPos <= End)
+            int len = collection.Count;
+            int newPos = pos + len;
+            if (newPos <= Capacity)
             {
                 foreach (char ch in characters)
                 {
-                    _destination[pos++] = ch;
+                    dest[pos++] = ch;
                 }
 
                 Debug.Assert(pos == newPos);
@@ -178,62 +188,71 @@ public ref struct TryFormatWriter : IEnumerable
                 return true;
             }
 
-            return AddError(new ArgumentException(
-                $"Cannot add ({collection.AsString()}): {collection.Count} characters is greater than remaining capacity {AvailableCount}",
-                nameof(characters)));
+            string message = TextBuilder.New
+                .Append($"Could not {callingMethod} (")
+                .EnumerateAppend(collection)
+                .Append($"): Will not fit in remaining Capacity of {RemainingCount}")
+                .ToStringAndDispose();
+            return Errored(new ArgumentException(message, charactersName));
         }
 
-        int start = pos;
-        foreach (char ch in characters)
+        // slow path
+        using var e = characters.GetEnumerator();
+        while (e.MoveNext())
         {
-            if (pos >= End)
+            if (!AddImpl(e.Current, callingMethod, charactersName))
             {
-                return AddError(new ArgumentException(
-                    $"Cannot add another character from IEnumerable<char>: wrote \"{_destination[start..]}\" before remaining capacity became 0",
-                    nameof(characters)));
+                var builder = TextBuilder.New
+                    .Append($"Could not {callingMethod} the rest of the enumerable ..")
+                    .Append(e.Current);
+                while (e.MoveNext())
+                    builder.Append(", ").Append(e.Current);
+                string message = builder
+                    .Append($": Will not fit in remaining Capacity of {RemainingCount}")
+                    .ToStringAndDispose();
+                // override what AddImpl set with better information
+                _hasFailed = Option<Exception>.Some(new ArgumentException(message, charactersName));
+                return false;
             }
-
-            _destination[pos++] = ch;
         }
 
-        _position = pos;
+        // Position has already been updated by AddImpl
         return true;
     }
 
-    public bool Add(string? str)
+    private bool AddImpl<T>(T? value,
+        string? format,
+        IFormatProvider? provider = null,
+        [CallerMemberName] string? callingMethod = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
     {
-        if (_hasFailed) return false;
-        if (str is null) return true;
+        if (_hasFailed)
+            return false;
+        if (value is null)
+            return true; // add nothing
 
-        int pos = _position;
-        int newPos = pos + str.Length;
-        if (newPos <= End)
-        {
-            Sequence.CopyTo(str, _destination[pos..]);
-            _position = newPos;
-            return true;
-        }
-
-        return AddError(new ArgumentException(
-            $"Cannot add \"{str}\": {str.Length} characters is greater than remaining capacity {AvailableCount}",
-            nameof(str)));
-    }
-
-    public bool Add<T>(T? value)
-    {
-        if (_hasFailed) return false;
+        // Special Rendering
+        if (format == "@")
+            return AddImpl(value.Render(), callingMethod, valueName);
+        if (format == "@T")
+            return AddImpl(value.RenderType(), callingMethod, valueName);
 
         string? str;
         if (value is IFormattable)
         {
 #if NET6_0_OR_GREATER
-            // If the value can format itself directly into our buffer, do so
             if (value is ISpanFormattable)
             {
-                if (!((ISpanFormattable)value).TryFormat(AvailableSpan, out int charsWritten, default, default))
+                if (!((ISpanFormattable)value).TryFormat(Available, out int charsWritten, format.AsSpan(), provider))
                 {
-                    return AddError(new ArgumentException($"Cannot format({value}): Will not fit in remaining capacity {AvailableCount}",
-                            nameof(value)));
+                    string message = TextBuilder.New
+                        .Append($"Could not {callingMethod} `{value:@}`")
+                        .IfNotEmpty(format, static (tb, fmt) => tb.Append($" with format \"{fmt}\""))
+                        .IfNotNull(provider, static (tb, prov) => tb.Append($" with a {prov:@T} provider"))
+                        .Append($": Will not fit in remaining Capacity of {RemainingCount}")
+                        .ToStringAndDispose();
+                    return Errored(new ArgumentException(message, valueName));
                 }
 
                 _position += charsWritten;
@@ -241,116 +260,160 @@ public ref struct TryFormatWriter : IEnumerable
             }
 #endif
 
-            str = ((IFormattable)value).ToString(null, null);
-        }
-        else
-        {
-            str = value?.ToString();
-        }
-
-        return Add(str);
-    }
-
-    public bool Add<T>(T? value,
-        string? format,
-        IFormatProvider? provider = null)
-    {
-        if (_hasFailed) return false;
-
-        string? str;
-        if (value is IFormattable)
-        {
-            // If the value can format itself directly into our buffer, do so
-            if (value is ISpanFormattable)
-            {
-                if (!((ISpanFormattable)value).TryFormat(AvailableSpan, out int charsWritten, format.AsSpan(), provider))
-                {
-                    return AddError(new ArgumentException(
-                        $"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
-                        nameof(value)));
-                }
-
-                _position += charsWritten;
-                return true;
-            }
-
             str = ((IFormattable)value).ToString(format, provider);
         }
         else
         {
-            str = value?.ToString();
+            str = value.ToString();
         }
 
-        return Add(str);
+        return AddImpl(str, callingMethod, valueName);
     }
 
-    public bool Add<T>(T? value,
-        text format,
-        IFormatProvider? provider = null)
+    private bool AddImpl<T>(T? value,
+        scoped text format,
+        IFormatProvider? provider = null,
+        [CallerMemberName] string? callingMethod = null,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
     {
-        if (_hasFailed) return false;
+        if (_hasFailed)
+            return false;
+        if (value is null)
+            return true; // add nothing
+
+        // Special Rendering
+        if (format.Equate("@"))
+            return AddImpl(value.Render(), callingMethod, valueName);
+        if (format.Equate("@T"))
+            return AddImpl(value.RenderType(), callingMethod, valueName);
 
         string? str;
         if (value is IFormattable)
         {
-            // If the value can format itself directly into our buffer, do so
+#if NET6_0_OR_GREATER
             if (value is ISpanFormattable)
             {
-                if (!((ISpanFormattable)value).TryFormat(AvailableSpan, out int charsWritten, format, provider))
+                if (!((ISpanFormattable)value).TryFormat(Available, out int charsWritten, format, provider))
                 {
-                    return AddError(new ArgumentException(
-                        $"Cannot format({value}, {format}, {provider}): Will not fit in remaining capacity {AvailableCount}",
-                        nameof(value)));
+                    string message = TextBuilder.New
+                        .Append($"Could not {callingMethod} `{value:@}`")
+                        .IfNotEmpty(format, static (tb, fmt) => tb.Append($" with format \"{fmt}\""))
+                        .IfNotNull(provider, static (tb, prov) => tb.Append($" with a {prov:@T} provider"))
+                        .Append($": Will not fit in remaining Capacity of {RemainingCount}")
+                        .ToStringAndDispose();
+                    return Errored(new ArgumentException(message, valueName));
                 }
 
                 _position += charsWritten;
                 return true;
             }
+#endif
 
             str = ((IFormattable)value).ToString(format.AsString(), provider);
         }
         else
         {
-            str = value?.ToString();
+            str = value.ToString();
         }
 
-        return Add(str);
+        return AddImpl(str, callingMethod, valueName);
     }
 
-    public bool Add<T>((T? Value, string? Format) valueTuple)
-        => Add<T>(valueTuple.Value, valueTuple.Format);
+#endregion
 
-    public bool Add<T>(Tuple<T?, string?> tuple)
-        => Add<T>(tuple.Item1, tuple.Item2);
+#region Fluent Collection Instantiation Methods
 
-    public bool Add<T>((T? Value, string? Format, IFormatProvider? Provider) valueTuple)
-        => Add<T>(valueTuple.Value, valueTuple.Format, valueTuple.Provider);
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add(char ch) => AddImpl(ch);
 
-    public bool Add<T>(Tuple<T?, string?, IFormatProvider?> tuple)
-        => Add<T>(tuple.Item1, tuple.Item2, tuple.Item3);
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add(scoped text text) => AddImpl(text);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add(string? str) => AddImpl(str);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add(char[]? chars) => AddImpl(chars.AsSpan());
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add(IEnumerable<char>? chars) => AddImpl(chars);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add<T>(T? value) => AddImpl<T>(value, default(text));
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add<T>(T? value, string? format) => AddImpl<T>(value, format);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add<T>(T? value, string? format, IFormatProvider? provider) => AddImpl<T>(value, format, provider);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add<T>(T? value, scoped text format) => AddImpl<T>(value, format);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add<T>(T? value, scoped text format, IFormatProvider? provider) => AddImpl<T>(value, format, provider);
 
 
-    public delegate bool FormatWriterAdd(ref TryFormatWriter writer);
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add<T>((T? Value, string? Format) valueTuple)
+        => AddImpl<T>(valueTuple.Value, valueTuple.Format);
 
-    public bool Add(FormatWriterAdd del) => del(ref this);
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add<T>(Tuple<T?, string?> tuple)
+        => AddImpl<T>(tuple.Item1, tuple.Item2);
 
-    public void Clear()
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add<T>((T? Value, string? Format, IFormatProvider? Provider) valueTuple)
+        => AddImpl<T>(valueTuple.Value, valueTuple.Format, valueTuple.Provider);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Add<T>(Tuple<T?, string?, IFormatProvider?> tuple)
+        => AddImpl<T>(tuple.Item1, tuple.Item2, tuple.Item3);
+
+#endregion
+
+    public bool Write(char ch) => AddImpl(ch);
+
+    public bool Write(scoped text text) => AddImpl(text);
+
+    public bool Write(string? str) => AddImpl(str);
+
+    public bool Write(char[]? chars) => AddImpl(chars.AsSpan());
+
+    public bool Write(IEnumerable<char>? chars) => AddImpl(chars);
+
+    public bool Write<T>(T? value) => AddImpl<T>(value, default(text));
+
+    public bool Write<T>(T? value, string? format) => AddImpl<T>(value, format);
+
+    public bool Write<T>(T? value, string? format, IFormatProvider? provider) => AddImpl<T>(value, format, provider);
+
+    public bool Write<T>((T? Value, string? Format) valueTuple)
+        => AddImpl<T>(valueTuple.Value, valueTuple.Format);
+
+    public bool Write<T>(Tuple<T?, string?> tuple)
+        => AddImpl<T>(tuple.Item1, tuple.Item2);
+
+    public bool Write<T>((T? Value, string? Format, IFormatProvider? Provider) valueTuple)
+        => AddImpl<T>(valueTuple.Value, valueTuple.Format, valueTuple.Provider);
+
+    public bool Write<T>(Tuple<T?, string?, IFormatProvider?> tuple)
+        => AddImpl<T>(tuple.Item1, tuple.Item2, tuple.Item3);
+
+    public readonly Result<int> Wrote()
     {
-        WrittenSpan.Clear();
-        _position = 0;
+        if (!_hasFailed.IsSome(out var error))
+        {
+            return Ok(_position);
+        }
+
+        // remove any trace of us
+        _destination.Clear();
+        return error;
     }
 
-    public bool TryCopyTo(Span<char> span) => TextHelper.TryCopyTo(WrittenSpan, span);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<char> AsSpan() => WrittenSpan;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public char[] ToArray() => WrittenSpan.ToArray();
-
-    public readonly Result<int> GetResult() => _hasFailed.IsSome(out var error) ? error : Ok(_position);
-
-    public readonly bool GetResult(out int charsWritten)
+    public readonly bool Wrote(out int charsWritten)
     {
         if (!_hasFailed)
         {
@@ -364,19 +427,31 @@ public ref struct TryFormatWriter : IEnumerable
         return false;
     }
 
-    public readonly string GetString()
+    public void Clear()
     {
-        if (_hasFailed)
-            return string.Empty;
-        return _destination[.._position].AsString();
+        Written.Clear();
+        _position = 0;
     }
 
-    public override string ToString() => WrittenSpan.AsString();
+    public bool TryCopyTo(Span<char> span) => TextHelper.TryCopyTo(Written, span);
 
-    readonly IEnumerator IEnumerable.GetEnumerator()
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<char> AsSpan() => Written;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public char[] ToArray() => Written.ToArray();
+
+    public readonly IEnumerator GetEnumerator()
     {
         if (_hasFailed.IsSome(out var error))
             return Enumerator.One<Exception>(error);
         return Enumerator.Empty<Exception>();
+    }
+
+    public readonly override string ToString()
+    {
+        if (_hasFailed)
+            return string.Empty;
+        return _destination[.._position].AsString();
     }
 }

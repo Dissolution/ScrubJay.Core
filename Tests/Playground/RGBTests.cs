@@ -33,7 +33,11 @@ public class RGBTests
     static RGBTests()
     {
         var rng = RandomNumberGenerator.Create();
+#if NETFRAMEWORK
+        byte[] buffer = new byte[3];
+#else
         Span<byte> buffer = stackalloc byte[3];
+#endif
 
         for (var i = 0; i < 100; i++)
         {

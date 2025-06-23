@@ -49,7 +49,7 @@ namespace ScrubJay.Utilities;
 /// </summary>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public ref struct Hasher : IHasher
+public ref struct Hasher
 {
     #region Static
 

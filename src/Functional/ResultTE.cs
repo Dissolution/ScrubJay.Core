@@ -441,27 +441,29 @@ public readonly struct Result<T, E> :
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
-        TextBuffer text = stackalloc char[256];
+        using var builder = new TextBuilder();
+
         if (_isOk)
         {
-            text.Write("Ok(");
-            text.Write(_value, format, provider);
-            text.Write(')');
+            builder.Append("Ok(")
+                .Append(_value, format, provider)
+                .Append(')');
         }
         else
         {
-            text.Write("Error(");
-            text.Write(_error, format, provider);
-            text.Write(')');
+            builder.Append("Error(")
+                .Append(_error, format, provider)
+                .Append(')');
         }
-        return text.ToStringAndDispose();
+
+        return builder.ToString();
     }
 
     public bool TryFormat(
         Span<char> destination,
         out int charsWritten,
         text format = default,
-        IFormatProvider? provider = default)
+        IFormatProvider? provider = null)
     {
         if (_isOk)
         {
@@ -472,7 +474,7 @@ public readonly struct Result<T, E> :
                     _value, format, provider
                 },
                 ')',
-            }.GetResult(out charsWritten);
+            }.Wrote(out charsWritten);
         }
         else
         {
@@ -483,7 +485,7 @@ public readonly struct Result<T, E> :
                     _error, format, provider
                 },
                 ')',
-            }.GetResult(out charsWritten);
+            }.Wrote(out charsWritten);
         }
     }
 
@@ -510,6 +512,7 @@ public readonly struct Result<T, E> :
         {
             return new(true, selector(_value!), default);
         }
+
         return new(false, default, _error);
     }
 
@@ -520,6 +523,7 @@ public readonly struct Result<T, E> :
         {
             return new(true, value, default);
         }
+
         return new(false, default, _error);
     }
 
@@ -530,6 +534,7 @@ public readonly struct Result<T, E> :
         {
             return selector(_value!);
         }
+
         return new(false, default, _error);
     }
 
@@ -540,6 +545,7 @@ public readonly struct Result<T, E> :
         {
             return new(true, selector(state, _value!), default);
         }
+
         return new(false, default, _error);
     }
 
@@ -550,6 +556,7 @@ public readonly struct Result<T, E> :
         {
             return newSelector(_value!);
         }
+
         return new(false, default, _error);
     }
 
@@ -580,7 +587,7 @@ public readonly struct Result<T, E> :
     public sealed class ResultEnumerator : IEnumerator<T>, IEnumerator, IDisposable
     {
         private readonly Result<T, E> _result;
-        private          bool         _canYield;
+        private bool _canYield;
 
         object? IEnumerator.Current => _result.OkOrThrow();
 

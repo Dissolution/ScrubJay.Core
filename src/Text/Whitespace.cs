@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Text;
+﻿using System.Text;
+
+namespace ScrubJay.Text;
 
 internal class Whitespace : IDisposable
 {
@@ -16,7 +18,6 @@ internal class Whitespace : IDisposable
 
     public Whitespace()
     {
-
     }
 
     public void AddIndent(string? indent) => _indents.Push(indent ?? "");
@@ -31,7 +32,8 @@ internal class Whitespace : IDisposable
             ch = _newLine[0];
             return true;
         }
-        ch = default;
+
+        ch = '\0';
         return false;
     }
 
@@ -44,8 +46,8 @@ internal class Whitespace : IDisposable
             return true;
         }
 
-        char1 = default;
-        char2 = default;
+        char1 = '\0';
+        char2 = '\0';
         return false;
     }
 
@@ -61,14 +63,16 @@ internal class Whitespace : IDisposable
 
     public string NewLineAndIndents()
     {
-        var buffer = new TextBuffer();
-        buffer.Write(_newLine);
+        // cannot use anything that might use us
+        var builder = new StringBuilder()
+            .Append(_newLine);
         using var e = _indents.GetEnumerator(false);
         while (e.MoveNext())
         {
-            buffer.Write(e.Current);
+            builder.Append(e.Current);
         }
-        return buffer.ToStringAndDispose();
+
+        return builder.ToString();
     }
 
     public void Dispose() => _indents.Dispose();

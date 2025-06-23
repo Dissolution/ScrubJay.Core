@@ -248,19 +248,19 @@ public static class TextBuilderExtensions
     public static B EnumerateAndDelimit<B, T>(this B builder, T[]? values,
         Action<B, T> buildValue,
         char delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values, buildValue, tb => tb.Append(delimiter));
 
     public static B EnumerateAndDelimit<B, T>(this B builder, IList<T>? values,
         Action<B, T> buildValue,
         char delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values, buildValue, tb => tb.Append(delimiter));
 
     public static B EnumerateAndDelimit<B, T>(this B builder, IEnumerable<T>? values,
         Action<B, T> buildValue,
         char delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values, buildValue, tb => tb.Append(delimiter));
 
 #endregion
@@ -271,7 +271,7 @@ public static class TextBuilderExtensions
         scoped ReadOnlySpan<T> values,
         Action<B, T> buildValue,
         text delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         int len = values.Length;
         if (len == 0)
@@ -289,7 +289,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAndDelimit<B, T>(this B builder, T[]? values,
         Action<B, T> buildValue,
         text delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -310,7 +310,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAndDelimit<B, T>(this B builder, IList<T>? values,
         Action<B, T> buildValue,
         text delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -331,7 +331,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAndDelimit<B, T>(this B builder, IEnumerable<T>? values,
         Action<B, T> buildValue,
         text delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -351,13 +351,13 @@ public static class TextBuilderExtensions
 
 #endregion
 
-    #region string delimiter
+#region string delimiter
 
     public static B EnumerateAndDelimit<B, T>(this B builder,
         scoped ReadOnlySpan<T> values,
         Action<B, T> buildValue,
         string? delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         int len = values.Length;
         if (len == 0)
@@ -375,7 +375,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAndDelimit<B, T>(this B builder, T[]? values,
         Action<B, T> buildValue,
         string? delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -396,7 +396,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAndDelimit<B, T>(this B builder, IList<T>? values,
         Action<B, T> buildValue,
         string? delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -417,7 +417,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAndDelimit<B, T>(this B builder, IEnumerable<T>? values,
         Action<B, T> buildValue,
         string? delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -442,32 +442,32 @@ public static class TextBuilderExtensions
     public static B EnumerateAndLineDelimit<B, T>(this B builder,
         scoped ReadOnlySpan<T> values,
         Action<B, T> buildValue)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values, buildValue, tb => tb.NewLine());
 
     public static B EnumerateAndLineDelimit<B, T>(this B builder, T[]? values,
         Action<B, T> buildValue)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values, buildValue, tb => tb.NewLine());
 
     public static B EnumerateAndLineDelimit<B, T>(this B builder, IList<T>? values,
         Action<B, T> buildValue)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values, buildValue, tb => tb.NewLine());
 
     public static B EnumerateAndLineDelimit<B, T>(this B builder, IEnumerable<T>? values,
         Action<B, T> buildValue)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values, buildValue, tb => tb.NewLine());
 
 #endregion
 
-    #region enumerate append and delimit char
+#region enumerate append and delimit char
 
     public static B EnumerateAppendAndDelimit<B, T>(this B builder,
         scoped ReadOnlySpan<T> values,
         char delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         int len = values.Length;
         if (len == 0)
@@ -485,7 +485,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAppendAndDelimit<B, T>(this B builder,
         T[]? values,
         char delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -505,7 +505,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAppendAndDelimit<B, T>(this B builder,
         IList<T>? values,
         char delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -525,7 +525,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAppendAndDelimit<B, T>(this B builder,
         IEnumerable<T>? values,
         char delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -550,7 +550,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAppendAndDelimit<B, T>(this B builder,
         scoped ReadOnlySpan<T> values,
         text delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         int len = values.Length;
         if (len == 0)
@@ -568,7 +568,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAppendAndDelimit<B, T>(this B builder,
         T[]? values,
         text delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -588,7 +588,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAppendAndDelimit<B, T>(this B builder,
         IList<T>? values,
         text delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -608,7 +608,7 @@ public static class TextBuilderExtensions
     public static B EnumerateAppendAndDelimit<B, T>(this B builder,
         IEnumerable<T>? values,
         text delimiter)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
     {
         if (values is not null)
         {
@@ -628,28 +628,112 @@ public static class TextBuilderExtensions
 
 #endregion
 
+#region enumerate append and delimit string
+
+    public static B EnumerateAppendAndDelimit<B, T>(this B builder,
+        scoped ReadOnlySpan<T> values,
+        string? delimiter)
+        where B : TextBuilderBase<B>
+    {
+        int len = values.Length;
+        if (len == 0)
+            return builder;
+        builder.Append(values[0]);
+        for (int i = 1; i < len; i++)
+        {
+            builder.Append(delimiter)
+                .Append(values[i]);
+        }
+
+        return builder;
+    }
+
+    public static B EnumerateAppendAndDelimit<B, T>(this B builder,
+        T[]? values,
+        string? delimiter)
+        where B : TextBuilderBase<B>
+    {
+        if (values is not null)
+        {
+            int len = values.Length;
+            if (len == 0)
+                return builder;
+            builder.Append(values[0]);
+            for (int i = 1; i < len; i++)
+            {
+                builder.Append(delimiter).Append(values[i]);
+            }
+        }
+
+        return builder;
+    }
+
+    public static B EnumerateAppendAndDelimit<B, T>(this B builder,
+        IList<T>? values,
+        string? delimiter)
+        where B : TextBuilderBase<B>
+    {
+        if (values is not null)
+        {
+            int len = values.Count;
+            if (len == 0)
+                return builder;
+            builder.Append(values[0]);
+            for (int i = 1; i < len; i++)
+            {
+                builder.Append(delimiter).Append(values[i]);
+            }
+        }
+
+        return builder;
+    }
+
+    public static B EnumerateAppendAndDelimit<B, T>(this B builder,
+        IEnumerable<T>? values,
+        string? delimiter)
+        where B : TextBuilderBase<B>
+    {
+        if (values is not null)
+        {
+            using var e = values.GetEnumerator();
+            if (!e.MoveNext())
+                return builder;
+            builder.Append(e.Current);
+            while (e.MoveNext())
+            {
+                builder.Append(delimiter);
+                builder.Append(e.Current);
+            }
+        }
+
+        return builder;
+    }
+
+#endregion
+
+
 #region enumerate append and line delimit
 
     public static B EnumerateAppendAndLineDelimit<B, T>(this B builder, scoped ReadOnlySpan<T> values)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values,
             static (tb, value) => tb.Append(value),
             static tb => tb.NewLine());
 
     public static B EnumerateAppendAndLineDelimit<B, T>(this B builder, params T[]? values)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values,
             static (tb, value) => tb.Append(value),
             static tb => tb.NewLine());
 
     public static B EnumerateAppendAndLineDelimit<B, T>(this B builder, IList<T>? values)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values,
             static (tb, value) => tb.Append(value),
             static tb => tb.NewLine());
 
     public static B EnumerateAppendAndLineDelimit<B, T>(this B builder, IEnumerable<T>? values)
-                where B : TextBuilderBase<B>
+        where B : TextBuilderBase<B>
         => builder.EnumerateAndDelimit(values,
             static (tb, value) => tb.Append(value),
             static tb => tb.NewLine());

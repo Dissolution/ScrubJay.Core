@@ -13,18 +13,10 @@ static partial class Throw
         [CallerArgumentExpression(nameof(instance))]
         string? instanceName = null)
     {
-        TextBuffer buffer = stackalloc char[256];
-        buffer.Write(typeof(T).Render());
-        buffer.Write(" `");
-        buffer.Write(instance);
-        buffer.Write("` is read-only");
-        if (info is not null)
-        {
-            buffer.Write(": ");
-            buffer.Write(info);
-        }
-
-        string message = buffer.ToStringAndDispose();
+        string message = TextBuilder.New
+            .Append($"{typeof(T):@} `{instanceName}` is read-only")
+            .IfNotNull(info, static (tb, nfo) => tb.Append($": {nfo}"))
+            .ToStringAndDispose();
         throw new NotSupportedException(message);
     }
 
@@ -66,16 +58,11 @@ static partial class Throw
         string? info = null,
         [CallerMemberName] string? callerName = null)
     {
-        TextBuffer buffer = stackalloc char[256];
-        buffer.Write(callerName);
-        buffer.Write(" is not supported");
-        if (info is not null)
-        {
-            buffer.Write(": ");
-            buffer.Write(info);
-        }
+        string message = TextBuilder.New
+            .Append($"{callerName} is not supported")
+            .IfNotNull(info, static (tb, nfo) => tb.Append($": {nfo}"))
+            .ToStringAndDispose();
 
-        string message = buffer.ToStringAndDispose();
         throw new NotSupportedException(message);
     }
 
@@ -93,17 +80,10 @@ static partial class Throw
         K key,
         string? info = null)
     {
-        TextBuffer buffer = stackalloc char[256];
-        buffer.Write("Key `");
-        buffer.Write(key);
-        buffer.Write("` was not found");
-        if (info is not null)
-        {
-            buffer.Write(": ");
-            buffer.Write(info);
-        }
-
-        string message = buffer.ToStringAndDispose();
+        string message = TextBuilder.New
+            .Append($"Key `{key}` was not found")
+            .IfNotNull(info, static (tb, nfo) => tb.Append($": {nfo}"))
+            .ToStringAndDispose();
         throw new KeyNotFoundException(message);
     }
 
@@ -122,17 +102,10 @@ static partial class Throw
         string? info = null,
         [CallerMemberName] string? keyName = null)
     {
-        TextBuffer buffer = stackalloc char[256];
-        buffer.Write("Duplicate Key `");
-        buffer.Write(key);
-        buffer.Write("` was found");
-        if (info is not null)
-        {
-            buffer.Write(": ");
-            buffer.Write(info);
-        }
-
-        string message = buffer.ToStringAndDispose();
+        string message = TextBuilder.New
+            .Append($"Duplicate Key `{key}` was found")
+            .IfNotNull(info, static (tb, nfo) => tb.Append($": {nfo}"))
+            .ToStringAndDispose();
         throw new ArgumentException(message, keyName);
     }
 

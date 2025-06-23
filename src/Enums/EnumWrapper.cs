@@ -37,7 +37,7 @@ public readonly struct EnumWrapper<E> :
 
 #region Parse
 
-    public static EnumWrapper<E> Parse(string str, IFormatProvider? _ = default)
+    public static EnumWrapper<E> Parse(string str, IFormatProvider? _ = null)
     {
 #if NETFRAMEWORK || NETSTANDARD2_0
         object obj = System.Enum.Parse(typeof(E), str, true);
@@ -48,7 +48,7 @@ public readonly struct EnumWrapper<E> :
 #endif
     }
 
-    public static EnumWrapper<E> Parse(text text, IFormatProvider? _ = default)
+    public static EnumWrapper<E> Parse(text text, IFormatProvider? _ = null)
         => Parse(text.ToString());
 
     public static bool TryParse([NotNullWhen(true)] string? str, IFormatProvider? _, out EnumWrapper<E> result)
@@ -70,9 +70,12 @@ public readonly struct EnumWrapper<E> :
 
     public readonly E Enum;
 
+    public readonly string Name;
+
     public EnumWrapper(E @enum)
     {
         Enum = @enum;
+        Name = @enum.ToString();
     }
 
     public int CompareTo(E other) => Comparer<E>.Default.Compare(Enum, other);
@@ -107,18 +110,22 @@ public readonly struct EnumWrapper<E> :
         Span<char> destination,
         out int charsWritten,
         text format = default,
-        IFormatProvider? provider = default)
+        IFormatProvider? provider = null)
     {
-        return new TryFormatWriter(destination)
+        if (TextHelper.TryCopyTo(Name, destination))
         {
-            Enum,
-        }.GetResult(out charsWritten);
+            charsWritten = Name.Length;
+            return true;
+        }
+
+        charsWritten = 0;
+        return false;
     }
 
     public string ToString(
         [StringSyntax(StringSyntaxAttribute.EnumFormat)]
         string? format,
-        IFormatProvider? formatProvider = default) => Enum.ToString(format);
+        IFormatProvider? formatProvider = null) => Enum.ToString(format);
 
-    public override string ToString() => Enum.AsString();
+    public override string ToString() => Name;
 }

@@ -139,13 +139,13 @@ public static class TextExtensions
             return new string(chars);
         }
 
-        using var buffer = new TextBuffer();
-        foreach (char character in characters)
+        using var builder = new TextBuilder();
+        foreach (char ch in characters)
         {
-            buffer.Add(character);
+            builder.Append(ch);
         }
 
-        return buffer.Written.AsString();
+        return builder.ToString();
     }
 
 #endregion

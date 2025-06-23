@@ -1,12 +1,14 @@
 #pragma warning disable MA0025
 
-using Polyfills;
+using System.Diagnostics;
 
 namespace ScrubJay.Utilities;
 
 [PublicAPI]
+#if NET6_0_OR_GREATER
 [InterpolatedStringHandler]
-public ref struct PairBuilder<TKey, TValue>
+#endif
+public ref struct PairBuilder<K, V>
 {
     private enum Step
     {
@@ -21,12 +23,12 @@ public ref struct PairBuilder<TKey, TValue>
     }
 
 
-    private Option<TKey> _key = default;
-    private Option<TValue> _value = default;
+    private Option<K> _key = default;
+    private Option<V> _value = default;
     private Step _step = Step.PreStartParen;
     private object? _error = null;
 
-    public Result<Pair<TKey, TValue>> TryGetPair()
+    public Result<Pair<K, V>> TryGetPair()
     {
         if (_error is Exception ex)
             return ex;
@@ -57,7 +59,7 @@ public ref struct PairBuilder<TKey, TValue>
                 errors.Add(error);
                 break;
             default:
-                throw new UnreachableException();
+                throw new System.Diagnostics.UnreachableException();
         }
     }
 
@@ -65,7 +67,7 @@ public ref struct PairBuilder<TKey, TValue>
     {
         if ((argumentCount != 2) || (formattedLength < 3))
         {
-            AddError(new InvalidOperationException($"A {typeof(Pair<TKey, TValue>)} must be specified as `(Key,Value)` (with optional whitespace)"));
+            AddError(new InvalidOperationException($"A {typeof(Pair<K, V>)} must be specified as `(Key,Value)` (with optional whitespace)"));
         }
     }
 
@@ -100,7 +102,7 @@ public ref struct PairBuilder<TKey, TValue>
         }
     }
 
-    public void AppendFormatted(TKey key)
+    public void AppendFormatted(K key)
     {
         if (_key.IsSome())
             throw new InvalidOperationException();
@@ -110,7 +112,7 @@ public ref struct PairBuilder<TKey, TValue>
         _step = Step.PreComma;
     }
 
-    public void AppendFormatted(TValue value)
+    public void AppendFormatted(V value)
     {
         if (_value.IsSome())
             throw new InvalidOperationException();

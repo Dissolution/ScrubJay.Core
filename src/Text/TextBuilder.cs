@@ -43,6 +43,12 @@ public sealed class TextBuilder : TextBuilderBase<TextBuilder>, IDisposable
         return builder.ToString();
     }
 
+    public static string Build(ref InterpolatedTextBuilder<TextBuilder> interpolatedText)
+    {
+        return interpolatedText.ToStringAndDispose();
+    }
+
+
     internal TextBuilder(PooledList<char> text) : base(text)
     {
     }

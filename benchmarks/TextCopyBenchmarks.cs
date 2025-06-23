@@ -13,10 +13,10 @@ public class TextCopyBenchmarks
 {
     public static IEnumerable<object[]> Args()
     {
-        yield return new object[2] { "", new char[1024] };
-        yield return new object[2] { Environment.NewLine, new char[1024] };
-        yield return new object[2] { "EE0A1999-5F25-411B-AA2C-ACB40D6778C1", new char[1024] };
-        yield return new object[2] { new string('x', 1000), new char[1024] };
+        yield return ["", new char[1024]];
+        yield return [Environment.NewLine, new char[1024]];
+        yield return ["EE0A1999-5F25-411B-AA2C-ACB40D6778C1", new char[1024]];
+        yield return [new string('x', 1000), new char[1024]];
     }
 
 

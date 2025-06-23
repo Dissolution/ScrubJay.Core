@@ -5,7 +5,9 @@ namespace ScrubJay;
 /// Supports deep-cloning, which creates a new instance with the same value as an existing instance,
 /// preserving no references of any kind
 /// </summary>
-/// <typeparam name="S"></typeparam>
+/// <typeparam name="S">
+/// The <see cref="Type"/> of this instance (self)
+/// </typeparam>
 /// <remarks>
 /// This is opposed to <see cref="ICloneable"/> which only supports boxed, shallow-clones of instances,
 /// which do preserve references
