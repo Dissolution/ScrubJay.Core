@@ -20,6 +20,7 @@ public static unsafe class Notsafe
     public static class Unmanaged
     {
 #region CopyTo
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyUnmanagedBlock<U>(in U source, ref U destination, int count)
             where U : unmanaged
@@ -132,9 +133,11 @@ public static unsafe class Notsafe
                 ref MemoryMarshal.GetReference<UDest>(destination),
                 count);
         }
+
 #endregion
 
 #region Arrays
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* ArrayAlloc<T>(int size)
             where T : unmanaged
@@ -158,6 +161,7 @@ public static unsafe class Notsafe
         {
             CopyBlock(in PtrAsIn(src), ref PtrAsRef(dst), size * sizeof(T));
         }
+
 #endregion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -177,6 +181,7 @@ public static unsafe class Notsafe
     public static class Bytes
     {
 #region Copy
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyByteBlock(in byte source, ref byte destination, int count)
         {
@@ -250,14 +255,9 @@ public static unsafe class Notsafe
                 in MemoryMarshal.GetReference(source),
                 ref MemoryMarshal.GetReference(destination),
                 count);
+
 #endregion
-
-
-
-
-
     }
-
 
 
     /// <summary>
@@ -268,6 +268,8 @@ public static unsafe class Notsafe
     /// </remarks>
     public static class Text
     {
+#region Copy
+
         /// <summary>
         /// Copies a specified <paramref name="count"/> of <see cref="char">chars</see>
         /// from a <paramref name="source"/> to a <paramref name="destination"/>
@@ -284,28 +286,26 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyCharBlock(in char source, ref char destination, int count)
         {
-            /* Instruction                         Stack
-             * -----------------------------       -----------*/
-            Emit.Ldarg(nameof(destination)); // char*                        // destination pointer
-            Emit.Ldarg(nameof(source)); // char* | char*                // source pointer
-            Emit.Ldarg(nameof(count)); // char* | char* | i32          // count
-            /* We need to convert the count of chars to the count of bytes
+            /* Must convert a count of chars to a count of bytes
              * sizeof(char) == 2 // bytes
              * bytes = count * 2 // count * sizeof(char)
              *
-             * There are two easy ways to do this
-             *  Ldc_I4_2()                      // char* | char* | i32 | i32    // 2
-             *  Mul()                           // char* | char* | i32          // count * 2
-             * and the below, which is usually faster                           */
-            Emit.Ldc_I4_1(); // char* | char* | i32 | i32    // 1
-            Emit.Shl(); // char* | char* | i32          // count << 1
-            Emit.Cpblk(); //                              // stack is empty
-
-            /* OpCodes:
-             * Ldc_I4_1     - https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.ldc_i4_1
-             * Shl          - https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.shl
-             * Cpblk        - https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.cpblk
+             * There are two easy ways to do this:
+             * - Multiply By 2
+             *   - ldc_I4_2
+             *   - mul
+             * - Shift Left By 1
+             *   - ldc_I4_1
+             *   - shl
              */
+
+            /*         Instruction           ||     Stack */
+            Emit.Ldarg(nameof(destination)); //     char*
+            Emit.Ldarg(nameof(source)); //          char* | char*
+            Emit.Ldarg(nameof(count)); //           char* | char* | count_i32
+            Emit.Ldc_I4_1(); //                     char* | char* | count_i32 | 1_i32
+            Emit.Shl(); //                          char* | char* | (count*2)_i32
+            Emit.Cpblk(); //                        _
         }
 
         /* All the public methods for CopyBlock allow for the most efficient conversion of
@@ -641,6 +641,41 @@ public static unsafe class Notsafe
                 count);
         }
 #endif
+
+#endregion
+
+#region Init
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void InitCharBlock(ref char source, int count)
+        {
+            /*         Instruction      ||  Stack */
+            Emit.Ldarg(nameof(source)); //  char*
+            Emit.Ldc_I4_0(); //             char* | 0_i32
+            Emit.Ldarg(nameof(count)); //   char* | 0_i32 | count_i32
+            Emit.Ldc_I4_1(); //             char* | 0_i32 | count_i32 | 1_i32
+            Emit.Shl(); //                  char* | 0_i32 | (count*2)_i32
+            Emit.Initblk(); //              _
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ClearBlock(Span<char> chars)
+            => InitCharBlock(ref MemoryMarshal.GetReference(chars), chars.Length);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ClearBlock(char[]? chars)
+        {
+            if (chars is not null)
+            {
+#if NET5_0_OR_GREATER
+                InitCharBlock(ref MemoryMarshal.GetArrayDataReference(chars), chars.Length);
+#else
+                InitCharBlock(ref chars[0], chars.Length);
+#endif
+            }
+        }
+
+#endregion
     }
 
 
@@ -695,6 +730,7 @@ public static unsafe class Notsafe
 
 
 #region Referencing
+
     /************************************
      * Roughly:
      * void*, T*, in T, ref T
@@ -865,7 +901,7 @@ public static unsafe class Notsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly T RefAsIn<T>(ref T inValue)
 #if NET9_0_OR_GREATER
-        where T: allows ref struct
+        where T : allows ref struct
 #endif
     {
         Emit.Ldarg(nameof(inValue));
@@ -877,7 +913,7 @@ public static unsafe class Notsafe
 
     public static ref T OutAsRef<T>(out T outValue)
 #if NET9_0_OR_GREATER
-        where T: allows ref struct
+        where T : allows ref struct
 #endif
     {
         Emit.Ldarg(nameof(outValue));
@@ -888,6 +924,7 @@ public static unsafe class Notsafe
 #endregion
 
 #region Casting
+
     // object -> ?
 
     /// <summary>
@@ -1024,6 +1061,7 @@ public static unsafe class Notsafe
             pointer: InAsVoidPtr(in input.GetPinnableReference()),
             length: input.Length);
     }
+
 #endregion
 
     // crazy stuff below
@@ -1035,6 +1073,7 @@ public static unsafe class Notsafe
         {
             return FastUnboxToSpan<T>(obj);
         }
+
         return new ReadOnlySpan<T>([(T)obj]);
     }
 
@@ -1058,6 +1097,7 @@ public static unsafe class Notsafe
 
 
 #region Reference Offsetting
+
     /// <summary>
     /// Adds an element offset to the given reference.
     /// </summary>
@@ -1124,9 +1164,11 @@ public static unsafe class Notsafe
         Emit.Add();
         return ref ReturnRef<T>();
     }
+
 #endregion
 
 #region Comparison
+
     /// <summary>
     /// Determines whether the specified references point to the same location.
     /// </summary>
@@ -1141,5 +1183,6 @@ public static unsafe class Notsafe
         Emit.Ceq();
         return Return<bool>();
     }
+
 #endregion
 }

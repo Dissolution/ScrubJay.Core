@@ -370,7 +370,7 @@ public readonly struct Result<T> :
         if (_isOk)
         {
             builder.Append("Ok(")
-                .Append(_value, format, provider)
+                .Format(_value, format, provider)
                 .Append(')');
         }
         else

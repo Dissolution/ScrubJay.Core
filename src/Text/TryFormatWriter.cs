@@ -166,7 +166,7 @@ public ref struct TryFormatWriter : IEnumerable
 
             string message = TextBuilder.New
                 .Append($"Could not {callingMethod} [")
-                .EnumerateAppend(list)
+                .EnumerateFormat(list)
                 .Append($"]: Will not fit in remaining Capacity of {RemainingCount}")
                 .ToStringAndDispose();
             return Errored(new ArgumentException(message, charactersName));
@@ -190,7 +190,7 @@ public ref struct TryFormatWriter : IEnumerable
 
             string message = TextBuilder.New
                 .Append($"Could not {callingMethod} (")
-                .EnumerateAppend(collection)
+                .EnumerateFormat(collection)
                 .Append($"): Will not fit in remaining Capacity of {RemainingCount}")
                 .ToStringAndDispose();
             return Errored(new ArgumentException(message, charactersName));

@@ -1,9 +1,11 @@
 ﻿// Member can be made `readonly` -- Incorrect on members that return Span<T>, which may change the underlying data
+
 #pragma warning disable IDE0251
 // Rename collections to end in a suffix
 #pragma warning disable CA1710
 
 
+using System.Buffers;
 using System.Text;
 
 namespace ScrubJay.Collections.Pooling;
@@ -47,6 +49,8 @@ public ref struct Buffer<T> :
     /// </returns>
     [MustDisposeResource(false)]
     public static implicit operator Buffer<T>(Span<T> span) => new(span, 0);
+
+    private static readonly int _minCapacity = typeof(T).IsValueType ? 1024 : 64;
 
 
     // The writable span, usually pointing to _array, but possibly from an initial Span<T>
@@ -182,7 +186,7 @@ public ref struct Buffer<T> :
         }
         else
         {
-            _span = _array = ArrayInstancePool<T>.Shared.Rent(minCapacity);
+            _span = _array = ArrayPool<T>.Shared.Rent(Math.Max(_minCapacity, minCapacity));
         }
 
         _position = 0;
@@ -190,23 +194,26 @@ public ref struct Buffer<T> :
 
 #region nonpublic methods
 
-    /// <summary>
-    /// Increases the size of the rented array by at least <paramref name="adding"/> items
-    /// </summary>
-    /// <param name="adding"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void GrowBy(int adding) => GrowTo((Capacity + adding) * 2);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void GrowTo(int newCapacity)
+    private void GrowBy(int adding)
     {
-        Debug.Assert(newCapacity >= Capacity);
-        T[] newArray = ArrayInstancePool<T>.Shared.Rent(newCapacity);
-        Sequence.CopyTo(Written, newArray);
+        Debug.Assert(adding > 0);
+        GrowTo(Capacity + (adding * 16));
+    }
 
-        T[]? toReturn = _array;
-        _span = _array = newArray;
-        ArrayInstancePool<T>.Shared.Return(toReturn);
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void GrowTo(int minCapacity)
+    {
+        Debug.Assert(minCapacity > Capacity);
+        T[] array = ArrayPool<T>.Shared.Rent(Math.Max(minCapacity * 2, _minCapacity));
+        if (_span.Length > 0)
+        {
+            Debug.Assert(_array is not null);
+            Written.CopyTo(array);
+            ArrayPool<T>.Shared.Return(_array, true);
+        }
+
+        _span = _array = array;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1200,7 +1207,10 @@ public ref struct Buffer<T> :
         // defensive clear
         _position = 0;
         _span = _array = null;
-        ArrayInstancePool<T>.Shared.Return(toReturn);
+        if (toReturn is not null)
+        {
+            ArrayPool<T>.Shared.Return(toReturn, true);
+        }
     }
 
     /// <summary>

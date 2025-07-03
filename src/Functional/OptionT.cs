@@ -575,7 +575,11 @@ public readonly struct Option<T> :
     {
         if (_isSome)
         {
-            return TextBuilder.New.Append("Some(").Append(_value, format, provider).Append(')').ToStringAndDispose();
+            return TextBuilder.New
+                .Append("Some(")
+                .Format(_value, format, provider)
+                .Append(')')
+                .ToStringAndDispose();
         }
 
         return "None";

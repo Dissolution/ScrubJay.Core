@@ -1423,8 +1423,7 @@ public readonly struct Rational :
 
 #region Formatting + Stringification
 
-    private void WriteTo<B>(B builder, string? format, IFormatProvider? provider)
-        where B : TextBuilderBase<B>
+    private void FormatTo(TextBuilder builder, string? format, IFormatProvider? provider)
     {
         if (string.IsNullOrEmpty(format))
         {
@@ -1436,9 +1435,9 @@ public readonly struct Rational :
         text fmt = format.AsSpan(1);
         if (firstChar is ('g' or 'G'))
         {
-            builder.Append(Numerator, fmt, provider)
+            builder.Format(Numerator, fmt, provider)
                 .Append('/')
-                .Append(Denominator, fmt, provider);
+                .Format(Denominator, fmt, provider);
         }
         else if (firstChar == 'M') // Mixed number
         {
@@ -1452,7 +1451,7 @@ public readonly struct Rational :
 
             BigInteger integralPart = numerator / denominator;
             var remainder = this - integralPart;
-            builder.Append(integralPart, fmt, provider);
+            builder.Format(integralPart, fmt, provider);
             if (remainder != Zero)
             {
                 builder.Append(' ').Invoke(remainder.RenderTo);
@@ -1460,19 +1459,19 @@ public readonly struct Rational :
         }
         else if (firstChar == 'N') // Numerator only
         {
-            builder.Append(Numerator, fmt, provider);
+            builder.Format(Numerator, fmt, provider);
         }
         else if (firstChar == 'D') // Denominator only
         {
-            builder.Append(Denominator, fmt, provider);
+            builder.Format(Denominator, fmt, provider);
         }
         else if (firstChar == 'd')
         {
-            builder.Append(ToDouble(), fmt, provider);
+            builder.Format(ToDouble(), fmt, provider);
         }
         else if (firstChar == 'm')
         {
-            builder.Append(ToDecimal(), fmt, provider);
+            builder.Format(ToDecimal(), fmt, provider);
         }
         else
         {
@@ -1480,10 +1479,9 @@ public readonly struct Rational :
         }
     }
 
-    public void RenderTo<B>(B textBuilder)
-        where B : TextBuilderBase<B>
+    public void RenderTo(TextBuilder builder)
     {
-        textBuilder.Append(Numerator).Append('/').Append(Denominator);
+        builder.Format(Numerator).Append('/').Format(Denominator);
     }
 
     public bool TryFormat(
@@ -1493,7 +1491,7 @@ public readonly struct Rational :
         IFormatProvider? provider = null)
     {
         using var builder = new TextBuilder();
-        WriteTo(builder, format.AsString(), provider);
+        FormatTo(builder, format.AsString(), provider);
         if (builder.Length > destination.Length)
         {
             charsWritten = 0;
@@ -1508,7 +1506,7 @@ public readonly struct Rational :
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         using var builder = new TextBuilder();
-        WriteTo(builder, format, provider);
+        FormatTo(builder, format, provider);
         return builder.ToString();
     }
 

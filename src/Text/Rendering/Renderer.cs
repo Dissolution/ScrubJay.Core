@@ -1,10 +1,13 @@
-﻿namespace ScrubJay.Text.Rendering;
+namespace ScrubJay.Text.Rendering;
 
-[PublicAPI]
-public abstract class Renderer<T> : IRenderer<T>
+public abstract class Renderer
 {
-    public virtual bool CanRender(Type type) => type.Implements<T>();
+    public abstract bool CanRender(Type type);
+}
 
-    public abstract void RenderTo<B>(T? value, B textBuilder)
-        where B : TextBuilderBase<B>;
+public abstract class Renderer<T> : Renderer
+{
+    public override bool CanRender(Type type) => type.Implements<T>();
+
+    public abstract void RenderTo(T? value, TextBuilder builder);
 }

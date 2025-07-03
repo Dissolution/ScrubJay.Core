@@ -446,13 +446,13 @@ public readonly struct Result<T, E> :
         if (_isOk)
         {
             builder.Append("Ok(")
-                .Append(_value, format, provider)
+                .Format(_value, format, provider)
                 .Append(')');
         }
         else
         {
             builder.Append("Error(")
-                .Append(_error, format, provider)
+                .Format(_error, format, provider)
                 .Append(')');
         }
 

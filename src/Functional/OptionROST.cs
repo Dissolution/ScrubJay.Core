@@ -400,7 +400,7 @@ public readonly ref struct OptionROS<T> :
         {
             return TextBuilder.New
                 .Append("Some[")
-                .EnumerateAndDelimit(_span, (tb,v) => tb.Append(v, format, provider), ',')
+                .EnumerateAndDelimit(_span, (tb,v) => tb.Format(v, format, provider), ',')
                 .Append(']')
                 .ToStringAndDispose();
         }
@@ -413,7 +413,7 @@ public readonly ref struct OptionROS<T> :
         {
             return TextBuilder.New
                 .Append("Some[")
-                .EnumerateAppendAndDelimit(_span, ',')
+                .EnumerateFormatAndDelimit(_span, ',')
                 .Append(']')
                 .ToStringAndDispose();
         }

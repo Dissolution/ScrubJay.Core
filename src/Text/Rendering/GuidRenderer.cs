@@ -5,17 +5,15 @@ namespace ScrubJay.Text.Rendering;
 [PublicAPI]
 public sealed class GuidRenderer : Renderer<Guid>
 {
-    public override void RenderTo<B>(Guid guid, B builder)
+    public override void RenderTo(Guid guid, TextBuilder builder)
     {
-        builder.Allocate(32, buffer =>
-        {
+        var buffer = builder.Allocate(32);
 #if NETFRAMEWORK || NETSTANDARD2_0
-            string str = guid.ToString("N");
-            Notsafe.Text.CopyBlock(str, buffer, 32);
+        string str = guid.ToString("N");
+        Notsafe.Text.CopyBlock(str, buffer, 32);
 #else
-            guid.TryFormat(buffer, out _, format: "N");
+        guid.TryFormat(buffer, out _, format: "N");
 #endif
-            buffer.ForEach((ref char ch) => ch = char.ToUpper(ch, CultureInfo.InvariantCulture));
-        });
+        buffer.ForEach((ref char ch) => ch = char.ToUpper(ch, CultureInfo.InvariantCulture));
     }
 }

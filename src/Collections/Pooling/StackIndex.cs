@@ -68,9 +68,9 @@ public readonly struct StackIndex :
     public override string ToString()
     {
         return TextBuilder.New
-            .AppendIf(_inArrayOrder, "arr:", "pop:")
-            .AppendIf(IsFromEnd, '^')
-            .Append(_index)
+            .IfAppend(_inArrayOrder, "arr:", "pop:")
+            .IfAppend(IsFromEnd, '^')
+            .Format(_index)
             .ToStringAndDispose();
     }
 }

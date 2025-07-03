@@ -1,7 +1,8 @@
 ﻿// alias `ReadOnlySpan<char>` to `text`
-global using text = System.ReadOnlySpan<char>;
+
 // prevent attribute name conflict with `JetBrains.Annotations.NotNullAttribute`
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+global using text = System.ReadOnlySpan<char>;
 
 #pragma warning disable CA1715
 

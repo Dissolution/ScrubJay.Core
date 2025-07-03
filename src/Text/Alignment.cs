@@ -1,19 +1,24 @@
-﻿namespace ScrubJay.Text;
+﻿#pragma warning disable CA1008
+
+namespace ScrubJay.Text;
 
 /// <summary>
-/// Indicates the alignment of text within a space
+/// The alignment of text within a space
 /// </summary>
 /// <remarks>
-/// This is a <see cref="FlagsAttribute"/> <see cref="Enum"/> so that a bias can be indicated for centering operations<br/>
-/// <i>e.g.</i> <c>Left | Center</c> is a left-bias when there is an uneven amount of spacing<br/>
-/// <c>Left | Right</c> is considered an invalid <see cref="Alignment"/>
+/// This is a flagged enum so that a bias can be indicated for <see cref="Center"/>:<br/>
+/// <see cref="Right"/> is the default alignment<br/>
+/// <see cref="Left"/> is the opposite (<c>Left &amp; Right == Left</c>)<br/>
+/// <see cref="Center"/> defaults to a right-bias when there is an odd space<br/>
+/// <c>Center | Left</c> indicates a center alignment, with a <b>left</b>-bias when there is an odd space<br/>
 /// </remarks>
 [PublicAPI]
 [Flags]
 public enum Alignment
 {
-    None = 0,
+    Right = 0,
     Left = 1 << 0,
-    Right = 1 << 1,
-    Center = 1 << 2,
+    Center = 1 << 1,
+    // CenterRight = Center,
+    // CenterLeft = Center | Left,
 }

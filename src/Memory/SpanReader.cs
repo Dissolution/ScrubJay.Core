@@ -590,7 +590,7 @@ public ref struct SpanReader<T>
             startIndex = 0;
         }
 
-        text.EnumerateAppendAndDelimit(span[startIndex..index], delimiter);
+        text.EnumerateFormatAndDelimit(span[startIndex..index], delimiter);
 
         // position indicator
         text.Append('×');
@@ -611,7 +611,7 @@ public ref struct SpanReader<T>
             nextIndex = span.Length;
         }
 
-        text.EnumerateAppendAndDelimit(span[index..nextIndex], delimiter);
+        text.EnumerateFormatAndDelimit(span[index..nextIndex], delimiter);
 
         if (postpendEllipsis)
         {

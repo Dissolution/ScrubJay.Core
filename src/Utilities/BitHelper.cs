@@ -1,5 +1,5 @@
-﻿using bytes = System.ReadOnlySpan<byte>;
-using static InlineIL.IL;
+﻿using static InlineIL.IL;
+using bytes = System.ReadOnlySpan<byte>;
 
 namespace ScrubJay.Utilities;
 

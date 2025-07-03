@@ -65,7 +65,7 @@ public static class TextHelper
         return false;
     }
 
-    public static bool TryCopyTo(text source, Span<char> destination)
+    public static bool TryCopyTo(scoped text source, Span<char> destination)
     {
         int count = source.Length;
         if (count <= destination.Length)
@@ -76,7 +76,7 @@ public static class TextHelper
         return false;
     }
 
-    public static bool TryCopyTo(text source, char[]? destination)
+    public static bool TryCopyTo(scoped text source, char[]? destination)
     {
         if (destination is null)
             return false;
@@ -157,7 +157,7 @@ public static class TextHelper
     public static int Compare(char left, char[]? right)
         => Compare(left.AsSpan(), right.AsSpan());
 
-    public static int Compare(char left, text right)
+    public static int Compare(char left, scoped text right)
         => Compare(left.AsSpan(), right);
 
     public static int Compare(string? left, char right)
@@ -169,7 +169,7 @@ public static class TextHelper
     public static int Compare(string? left, char[]? right)
         => Compare(left.AsSpan(), right.AsSpan());
 
-    public static int Compare(string? left, text right)
+    public static int Compare(string? left, scoped text right)
         => Compare(left.AsSpan(), right);
 
     public static int Compare(char[]? left, char right)
@@ -181,20 +181,20 @@ public static class TextHelper
     public static int Compare(char[]? left, char[]? right)
         => Compare(left.AsSpan(), right.AsSpan());
 
-    public static int Compare(char[]? left, text right)
+    public static int Compare(char[]? left, scoped text right)
         => Compare(left.AsSpan(), right);
 
-    public static int Compare(text left, char right)
+    public static int Compare(scoped text left, char right)
         => Compare(left, right.AsSpan());
 
-    public static int Compare(text left, string? right)
+    public static int Compare(scoped text left, string? right)
         => Compare(left, right.AsSpan());
 
-    public static int Compare(text left, char[]? right)
+    public static int Compare(scoped text left, char[]? right)
         => Compare(left, right.AsSpan());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare(text left, text right)
+    public static int Compare(scoped text left, scoped text right)
         => MemoryExtensions.SequenceCompareTo<char>(left, right);
 #endregion
 
@@ -208,7 +208,7 @@ public static class TextHelper
     public static int Compare(char left, char[]? right, StringComparison comparison)
         => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static int Compare(char left, text right, StringComparison comparison)
+    public static int Compare(char left, scoped text right, StringComparison comparison)
         => Compare(left.AsSpan(), right, comparison);
 
     public static int Compare(string? left, char right, StringComparison comparison)
@@ -220,7 +220,7 @@ public static class TextHelper
     public static int Compare(string? left, char[]? right, StringComparison comparison)
         => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static int Compare(string? left, text right, StringComparison comparison)
+    public static int Compare(string? left, scoped text right, StringComparison comparison)
         => Compare(left.AsSpan(), right, comparison);
 
     public static int Compare(char[]? left, char right, StringComparison comparison)
@@ -232,20 +232,20 @@ public static class TextHelper
     public static int Compare(char[]? left, char[]? right, StringComparison comparison)
         => Compare(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static int Compare(char[]? left, text right, StringComparison comparison)
+    public static int Compare(char[]? left, scoped text right, StringComparison comparison)
         => Compare(left.AsSpan(), right, comparison);
 
-    public static int Compare(text left, char right, StringComparison comparison)
+    public static int Compare(scoped text left, char right, StringComparison comparison)
         => Compare(left, right.AsSpan(), comparison);
 
-    public static int Compare(text left, string? right, StringComparison comparison)
+    public static int Compare(scoped text left, string? right, StringComparison comparison)
         => Compare(left, right.AsSpan(), comparison);
 
-    public static int Compare(text left, char[]? right, StringComparison comparison)
+    public static int Compare(scoped text left, char[]? right, StringComparison comparison)
         => Compare(left, right.AsSpan(), comparison);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare(text left, text right, StringComparison comparison)
+    public static int Compare(scoped text left, scoped text right, StringComparison comparison)
         => MemoryExtensions.CompareTo(left, right, comparison);
 #endregion
 #endregion
@@ -261,7 +261,7 @@ public static class TextHelper
     public static bool Equate(this char left, char[]? right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(this char left, text right)
+    public static bool Equate(this char left, scoped text right)
         => Equate(left.AsSpan(), right);
 
     public static bool Equate(this string? left, char right)
@@ -273,7 +273,7 @@ public static class TextHelper
     public static bool Equate(this string? left, char[]? right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(this string? left, text right)
+    public static bool Equate(this string? left, scoped text right)
         => Equate(left.AsSpan(), right);
 
     public static bool Equate(this char[]? left, char right)
@@ -285,20 +285,20 @@ public static class TextHelper
     public static bool Equate(this char[]? left, char[]? right)
         => Equate(left.AsSpan(), right.AsSpan());
 
-    public static bool Equate(this char[]? left, text right)
+    public static bool Equate(this char[]? left, scoped text right)
         => Equate(left.AsSpan(), right);
 
-    public static bool Equate(this text left, char right)
+    public static bool Equate(this scoped text left, char right)
         => Equate(left, right.AsSpan());
 
-    public static bool Equate(this text left, string? right)
+    public static bool Equate(this scoped text left, string? right)
         => Equate(left, right.AsSpan());
 
-    public static bool Equate(this text left, char[]? right)
+    public static bool Equate(this scoped text left, char[]? right)
         => Equate(left, right.AsSpan());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equate(this text left, text right)
+    public static bool Equate(this scoped text left, scoped text right)
         => MemoryExtensions.SequenceEqual<char>(left, right);
 #endregion
 
@@ -312,7 +312,7 @@ public static class TextHelper
     public static bool Equate(this char left, char[]? right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(this char left, text right, StringComparison comparison)
+    public static bool Equate(this char left, scoped text right, StringComparison comparison)
         => Equate(left.AsSpan(), right, comparison);
 
     public static bool Equate(this string? left, char right, StringComparison comparison)
@@ -324,7 +324,7 @@ public static class TextHelper
     public static bool Equate(this string? left, char[]? right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
-    public static bool Equate(this string? left, text right, StringComparison comparison)
+    public static bool Equate(this string? left, scoped text right, StringComparison comparison)
         => Equate(left.AsSpan(), right, comparison);
 
     public static bool Equate(this char[]? left, char right, StringComparison comparison)
@@ -339,17 +339,17 @@ public static class TextHelper
     public static bool Equate(this char[]? left, text right, StringComparison comparison)
         => Equate(left.AsSpan(), right, comparison);
 
-    public static bool Equate(this text left, char right, StringComparison comparison)
+    public static bool Equate(this scoped text left, char right, StringComparison comparison)
         => Equate(left, right.AsSpan(), comparison);
 
-    public static bool Equate(this text left, string? right, StringComparison comparison)
+    public static bool Equate(this scoped text left, string? right, StringComparison comparison)
         => Equate(left, right.AsSpan(), comparison);
 
-    public static bool Equate(this text left, char[]? right, StringComparison comparison)
+    public static bool Equate(this scoped text left, char[]? right, StringComparison comparison)
         => Equate(left, right.AsSpan(), comparison);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equate(this text left, text right, StringComparison comparison)
+    public static bool Equate(this scoped text left, scoped text right, StringComparison comparison)
         => MemoryExtensions.Equals(left, right, comparison);
 #endregion
 #endregion

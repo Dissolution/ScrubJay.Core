@@ -53,4 +53,10 @@ public static class GenericTypeConstraint
 
     public readonly struct IsNumberBase<T> where T : INumberBase<T>;
 #endif
+
+    public readonly struct AllowsRefStruct<T>
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        ;
 }

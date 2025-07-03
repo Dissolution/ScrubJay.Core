@@ -1,4 +1,6 @@
-﻿#pragma warning disable CA1816
+﻿using System.Buffers;
+
+#pragma warning disable CA1816
 
 namespace ScrubJay.Collections.Pooling;
 
@@ -25,7 +27,7 @@ public abstract class PooledArray<T> : IDisposable
 
     protected PooledArray(int minCapacity)
     {
-        _array = ArrayInstancePool<T>.Shared.Rent(minCapacity);
+        _array = ArrayPool<T>.Shared.Rent(minCapacity);
     }
 
     [HandlesResourceDisposal]
@@ -38,30 +40,25 @@ public abstract class PooledArray<T> : IDisposable
 
     public void Grow() => GrowTo(Capacity * 2);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GrowBy(int adding)
     {
-        if (adding > 0)
-        {
-            GrowTo((Capacity + adding) * 2);
-        }
+        Debug.Assert(adding > 0);
+        GrowTo(Capacity + (adding * 16));
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public void GrowTo(int minCapacity)
     {
-        int capacity = _array.Length;
-        if (capacity == 0)
+        Debug.Assert(minCapacity > Capacity);
+        T[] array = ArrayPool<T>.Shared.Rent(Math.Max(minCapacity * 2, 64));
+        if (_array.Length > 0)
         {
-            _version++;
-            _array = ArrayInstancePool<T>.Shared.Rent(minCapacity);
+            CopyToNewArray(array);
+            ArrayPool<T>.Shared.Return(_array, true);
         }
-        else if (minCapacity > capacity)
-        {
-            _version++;
-            T[] newArray = ArrayInstancePool<T>.Shared.Rent(minCapacity);
-            CopyToNewArray(newArray);
-            T[] toReturn = Interlocked.Exchange<T[]>(ref _array, newArray);
-            ArrayInstancePool<T>.Shared.Return(toReturn);
-        }
+
+        _array = array;
     }
 
     protected virtual void OnDisposing()
@@ -74,7 +71,7 @@ public abstract class PooledArray<T> : IDisposable
     {
         OnDisposing();
         T[] toReturn = Interlocked.Exchange<T[]>(ref _array, []);
-        ArrayInstancePool<T>.Shared.Return(toReturn);
+        ArrayPool<T>.Shared.Return(toReturn, true);
         GC.SuppressFinalize(this);
     }
 }

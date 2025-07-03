@@ -148,10 +148,10 @@ public class Validations<TError> : IReadOnlyCollection<TError>
             return;
 
         string message = TextBuilder.New
-            .Append(_errors.Count)
+            .Format(_errors.Count)
             .Append(" validations failed:")
             .NewLine()
-            .EnumerateAppendAndLineDelimit(_errors)
+            .EnumerateFormatAndDelimitLines(_errors)
             .ToStringAndDispose();
         throw new InvalidOperationException(message);
     }

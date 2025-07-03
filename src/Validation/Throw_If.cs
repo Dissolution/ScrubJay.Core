@@ -722,10 +722,10 @@ public static partial class Throw
         string message = GetArgumentExceptionMessage(argument, info, argumentName, tb =>
         {
             tb.Append("must be in ")
-                .AppendIf(lowerBoundIsInclusive, '[', '(')
-                .Append(upperBound)
+                .IfAppend(lowerBoundIsInclusive, '[', '(')
+                .Format(upperBound)
                 .Append("..")
-                .AppendIf(upperBoundIsInclusive, ']', ')');
+                .IfAppend(upperBoundIsInclusive, ']', ')');
         });
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);

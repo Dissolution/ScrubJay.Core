@@ -34,8 +34,7 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         [typeof(nuint)] = "nuint",
     };
 
-    private static B AppendType<B>(B builder, Type? type)
-        where B : TextBuilderBase<B>
+    private static TextBuilder RenderType(Type? type, TextBuilder builder)
     {
         if (type is null)
             return builder;
@@ -50,7 +49,7 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         underType = Nullable.GetUnderlyingType(type);
         if (underType is not null)
         {
-            return AppendType(builder, underType).Append('?');
+            return RenderType(underType, builder).Append('?');
         }
 
         // Array is `T[,,,n]`
@@ -58,9 +57,9 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         {
             underType = type.GetElementType()!;
             Debug.Assert(underType is not null);
-            return AppendType(builder, underType)
+            return RenderType(underType, builder)
                 .Append('[')
-                .Repeat(type.GetArrayRank() - 1, ',')
+                .RepeatAppend(type.GetArrayRank() - 1, ',')
                 .Append(']');
         }
 
@@ -69,7 +68,7 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         {
             underType = type.GetElementType()!;
             Debug.Assert(underType is not null);
-            return AppendType(builder, underType).Append('*');
+            return RenderType(underType, builder).Append('*');
         }
 
         // Refs are `ref T` (could also be `&T`)
@@ -77,24 +76,23 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         {
             underType = type.GetElementType()!;
             Debug.Assert(underType is not null);
-            return AppendType(builder.Append("ref "), underType);
+            return RenderType(underType, builder.Append("ref "));
         }
 
         // Nested types we want to indicate their parent (but not generic parameters)
         if (type.IsNested && !type.IsGenericParameter)
         {
-            AppendType(builder, type.DeclaringType).Append('.');
+            RenderType(type.DeclaringType, builder).Append('.');
         }
 
         // If we are not generic or are an enum, we append the name only
         if (!type.IsGenericType || type.IsEnum)
             return builder.Append(type.Name);
 
-        return AppendNameAndGenericTypes(builder, type.Name, type.GetGenericArguments());
+        return RenderNameAndGenericTypes(type.Name, type.GetGenericArguments(), builder);
     }
 
-    private static B AppendNameAndGenericTypes<B>(B builder, string? name, Type[]? genericTypes)
-        where B : TextBuilderBase<B>
+    private static TextBuilder RenderNameAndGenericTypes(string? name, Type[]? genericTypes, TextBuilder builder)
     {
         return builder.IfNotNull(name,
             static (tb, n) =>
@@ -113,12 +111,9 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         ).IfNotEmpty(genericTypes,
             static (tb, types) => tb
                 .Append('<')
-                .EnumerateAndDelimit(types, static (t, type) => AppendType(t, type), ", ")
+                .EnumerateAndDelimit(types, static (t, type) => RenderType(type, t), ", ")
                 .Append('>'));
     }
 
-    public override void RenderTo<B>(Type? type, B textBuilder)
-    {
-        AppendType(textBuilder, type);
-    }
+    public override void RenderTo(Type? type, TextBuilder builder) => RenderType(type, builder);
 }

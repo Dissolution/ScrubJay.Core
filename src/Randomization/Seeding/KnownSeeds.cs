@@ -64,8 +64,8 @@ public sealed class KnownSeeds : RandSeed
     public override string ToString() => TextBuilder.New
         .Append("Seeds:[")
         .EnumerateAndDelimit(_seeds,
-            static (tb, seed) => tb.Append(seed, "X"),
-            static tb => tb.Append(','))
+            static (tb, seed) => tb.Format(seed, "X"),
+            ',')
         .Append(']')
         .ToStringAndDispose();
 }

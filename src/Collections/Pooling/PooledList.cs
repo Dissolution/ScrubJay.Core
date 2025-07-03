@@ -776,6 +776,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             return valid;
         _version++;
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
+        _position--;
         return Ok(offset);
     }
 
@@ -797,6 +798,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         T item = Written[offset];
         _version++;
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
+        _position--;
         return Ok(item);
     }
 
@@ -818,6 +820,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         (int offset, int length) = ol;
         _version++;
         Sequence.SelfCopy(Written, (offset + length).., offset..);
+        _position -= length;
         return Ok(length);
     }
 
@@ -839,6 +842,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         T[] items = _array.AsSpan(offset, length).ToArray();
         _version++;
         Sequence.SelfCopy(_array, (offset + length).., offset..);
+        _position -= length;
         return Ok(items);
     }
 
