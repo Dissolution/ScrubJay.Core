@@ -245,10 +245,10 @@ public readonly struct Option<T> :
     /// </summary>
     /// <param name="map"></param>
     /// <param name="defaultValue"></param>
-    /// <typeparam name="TNew"></typeparam>
+    /// <typeparam name="N"></typeparam>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
-    public TNew SelectOr<TNew>(Fn<T, TNew> map, TNew defaultValue)
+    public N SelectOr<N>(Fn<T, N> map, N defaultValue)
     {
         if (IsSome(out var value))
         {
@@ -258,14 +258,14 @@ public readonly struct Option<T> :
         return defaultValue;
     }
 
-    public TNew? SelectOrDefault<TNew>(Fn<T, TNew> map)
+    public N? SelectOrDefault<N>(Fn<T, N> map)
     {
         if (IsSome(out var value))
         {
             return map(value);
         }
 
-        return default(TNew);
+        return default(N);
     }
 
     /// <summary>
@@ -273,10 +273,10 @@ public readonly struct Option<T> :
     /// </summary>
     /// <param name="map"></param>
     /// <param name="getDefaultValue"></param>
-    /// <typeparam name="TNew"></typeparam>
+    /// <typeparam name="N"></typeparam>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
-    public TNew SelectOrElse<TNew>(Fn<T, TNew> map, Fn<TNew> getDefaultValue)
+    public N SelectOrElse<N>(Fn<T, N> map, Fn<N> getDefaultValue)
     {
         if (IsSome(out var value))
         {
@@ -313,7 +313,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(Fn<T, TResult> some, Fn<TResult> none)
+    public R Match<R>(Fn<T, R> some, Fn<R> none)
     {
         if (_isSome)
         {
@@ -326,7 +326,7 @@ public readonly struct Option<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TResult Match<TResult>(Fn<T, TResult> some, Fn<None, TResult> none)
+    public R Match<R>(Fn<T, R> some, Fn<None, R> none)
     {
         if (_isSome)
         {
@@ -585,5 +585,5 @@ public readonly struct Option<T> :
         return "None";
     }
 
-    public override string ToString() => ToString(null, null);
+    public override string ToString() => ToString(null);
 }

@@ -61,7 +61,7 @@ public static class DecimalHelper
         mantissa = new Int128(upper, lower);
 #elif NET6_0 || NETSTANDARD2_1
         Span<byte> mantissaBytes = MemoryMarshal.Cast<int, byte>(ints[..3]);
-        BigInteger mantissa = new BigInteger(mantissaBytes, true, false);
+        BigInteger mantissa = new BigInteger(mantissaBytes, true);
 #else
         BigInteger mantissa;
         BigInteger low = new BigInteger((uint)ints[0]);

@@ -1,10 +1,8 @@
 ﻿#pragma warning disable IDE0004, CA2225, IDE0002, IDE0090, IDE0018, IDE0047
 
 using System.Globalization;
-using Polyfills;
 using ScrubJay.Parsing;
 using ScrubJay.Text.Rendering;
-using static Polyfills.Polyfill;
 
 // ReSharper disable RedundantOverflowCheckingContext
 
@@ -58,7 +56,7 @@ public readonly struct Rational :
 
     //public static implicit operator Rational(BigDecimal bigDec) => FromBigDecimal(bigDec);
     public static implicit operator Rational(decimal dec) => FromDecimal(dec);
-    public static implicit operator Rational(double f64) => FromDouble(f64, double.Epsilon);
+    public static implicit operator Rational(double f64) => FromDouble(f64);
     public static implicit operator Rational(float f32) => FromDouble(f32, float.Epsilon);
     public static implicit operator Rational(BigInteger bigInt) => New(bigInt, BigInteger.One);
     public static implicit operator Rational(long i64) => New(new BigInteger(i64), BigInteger.One);
@@ -238,7 +236,7 @@ public readonly struct Rational :
         return null; // both are false
     }
 
-    private static bool? MaybeEqual<TInstance>(Func<TInstance, bool> predicate, TInstance leftInstance, TInstance rightInstance)
+    private static bool? MaybeEqual<I>(Func<I, bool> predicate, I leftInstance, I rightInstance)
     {
         if (predicate(leftInstance))
         {
@@ -259,8 +257,8 @@ public readonly struct Rational :
         }
     }
 
-    private static int? ComparePredicateResults<TInstance>(Func<TInstance, bool> predicate, TInstance leftInstance,
-        TInstance rightInstance)
+    private static int? ComparePredicateResults<I>(Func<I, bool> predicate, I leftInstance,
+        I rightInstance)
     {
         if (predicate(leftInstance))
         {
@@ -708,14 +706,14 @@ public readonly struct Rational :
 #region TryConvert
 
 #if NET7_0_OR_GREATER
-    static bool INumberBase<Rational>.TryConvertFromChecked<TOther>(TOther value, out Rational rational) => throw new NotImplementedException();
+    static bool INumberBase<Rational>.TryConvertFromChecked<T>(T value, out Rational rational) => throw new NotImplementedException();
 
-    static bool INumberBase<Rational>.TryConvertFromSaturating<TOther>(TOther value, out Rational rational) => TryConvertFrom<TOther>(value, out rational);
+    static bool INumberBase<Rational>.TryConvertFromSaturating<T>(T value, out Rational rational) => TryConvertFrom<T>(value, out rational);
 
-    static bool INumberBase<Rational>.TryConvertFromTruncating<TOther>(TOther value, out Rational rational) => TryConvertFrom<TOther>(value, out rational);
+    static bool INumberBase<Rational>.TryConvertFromTruncating<T>(T value, out Rational rational) => TryConvertFrom<T>(value, out rational);
 #endif
 
-    public static bool TryConvertFrom<TOther>(TOther value, out Rational rational)
+    public static bool TryConvertFrom<T>(T value, out Rational rational)
     {
         switch (value)
         {
@@ -756,7 +754,7 @@ public readonly struct Rational :
                 rational = FromDouble(f32, float.Epsilon);
                 return true;
             case double f64:
-                rational = FromDouble(f64, double.Epsilon);
+                rational = FromDouble(f64);
                 return true;
             case decimal dec:
                 rational = FromDecimal(dec);
@@ -773,38 +771,38 @@ public readonly struct Rational :
     }
 
 #if NET7_0_OR_GREATER
-    static bool INumberBase<Rational>.TryConvertToChecked<TOther>(Rational value, [MaybeNullWhen(false)] out TOther result) => TryConvertTo<TOther>(value, out result, true);
+    static bool INumberBase<Rational>.TryConvertToChecked<T>(Rational value, [MaybeNullWhen(false)] out T result) => TryConvertTo<T>(value, out result, true);
 
-    static bool INumberBase<Rational>.TryConvertToSaturating<TOther>(Rational value, [MaybeNullWhen(false)] out TOther result) => TryConvertTo<TOther>(value, out result);
+    static bool INumberBase<Rational>.TryConvertToSaturating<T>(Rational value, [MaybeNullWhen(false)] out T result) => TryConvertTo<T>(value, out result);
 
-    static bool INumberBase<Rational>.TryConvertToTruncating<TOther>(Rational value, [MaybeNullWhen(false)] out TOther result) => TryConvertTo<TOther>(value, out result);
+    static bool INumberBase<Rational>.TryConvertToTruncating<T>(Rational value, [MaybeNullWhen(false)] out T result) => TryConvertTo<T>(value, out result);
 #endif
 
 #pragma warning disable CA1502
-    public static bool TryConvertTo<TOther>(Rational rational, [MaybeNullWhen(false)] out TOther other,
+    public static bool TryConvertTo<T>(Rational rational, [MaybeNullWhen(false)] out T other,
         bool isChecked = false)
     {
-        var otherType = typeof(TOther);
+        var otherType = typeof(T);
 
         if (otherType == typeof(float))
         {
             return rational
                 .TryConvertToFloat()
-                .Select(Notsafe.As<float, TOther>)
+                .Select(Notsafe.As<float, T>)
                 .IsOk(out other);
         }
         else if (otherType == typeof(double))
         {
             return rational
                 .TryConvertToDouble()
-                .Select(Notsafe.As<double, TOther>)
+                .Select(Notsafe.As<double, T>)
                 .IsOk(out other);
         }
         else if (otherType == typeof(decimal))
         {
             return rational
                 .TryConvertToDecimal()
-                .Select(Notsafe.As<decimal, TOther>)
+                .Select(Notsafe.As<decimal, T>)
                 .IsOk(out other);
         }
         /*else if (otherType == typeof(BigDecimal))
@@ -817,12 +815,12 @@ public readonly struct Rational :
         else if (otherType == typeof(string))
         {
             string str = rational.ToString();
-            other = Notsafe.As<string, TOther>(str);
+            other = Notsafe.As<string, T>(str);
             return true;
         }
         else if (otherType == typeof(Rational))
         {
-            other = Notsafe.As<Rational, TOther>(rational);
+            other = Notsafe.As<Rational, T>(rational);
             return true;
         }
 
@@ -849,7 +847,7 @@ public readonly struct Rational :
                     uint8 = unchecked((byte)rational.Numerator);
                 }
 
-                other = Notsafe.As<byte, TOther>(uint8);
+                other = Notsafe.As<byte, T>(uint8);
                 return true;
             }
             else if (otherType == typeof(sbyte))
@@ -872,7 +870,7 @@ public readonly struct Rational :
                     int8 = unchecked((sbyte)rational.Numerator);
                 }
 
-                other = Notsafe.As<sbyte, TOther>(int8);
+                other = Notsafe.As<sbyte, T>(int8);
                 return true;
             }
             else if (otherType == typeof(short))
@@ -895,7 +893,7 @@ public readonly struct Rational :
                     int16 = unchecked((short)rational.Numerator);
                 }
 
-                other = Notsafe.As<short, TOther>(int16);
+                other = Notsafe.As<short, T>(int16);
                 return true;
             }
             else if (otherType == typeof(ushort))
@@ -918,7 +916,7 @@ public readonly struct Rational :
                     uint16 = unchecked((ushort)rational.Numerator);
                 }
 
-                other = Notsafe.As<ushort, TOther>(uint16);
+                other = Notsafe.As<ushort, T>(uint16);
                 return true;
             }
             else if (otherType == typeof(int))
@@ -941,7 +939,7 @@ public readonly struct Rational :
                     int32 = unchecked((int)rational.Numerator);
                 }
 
-                other = Notsafe.As<int, TOther>(int32);
+                other = Notsafe.As<int, T>(int32);
                 return true;
             }
             else if (otherType == typeof(uint))
@@ -964,7 +962,7 @@ public readonly struct Rational :
                     uint32 = unchecked((uint)rational.Numerator);
                 }
 
-                other = Notsafe.As<uint, TOther>(uint32);
+                other = Notsafe.As<uint, T>(uint32);
                 return true;
             }
             else if (otherType == typeof(long))
@@ -987,7 +985,7 @@ public readonly struct Rational :
                     int64 = unchecked((long)rational.Numerator);
                 }
 
-                other = Notsafe.As<long, TOther>(int64);
+                other = Notsafe.As<long, T>(int64);
                 return true;
             }
             else if (otherType == typeof(ulong))
@@ -1010,7 +1008,7 @@ public readonly struct Rational :
                     uint64 = unchecked((ulong)rational.Numerator);
                 }
 
-                other = Notsafe.As<ulong, TOther>(uint64);
+                other = Notsafe.As<ulong, T>(uint64);
                 return true;
             }
             else if (otherType == typeof(nint))
@@ -1033,7 +1031,7 @@ public readonly struct Rational :
                     nint = unchecked((nint)(long)rational.Numerator);
                 }
 
-                other = Notsafe.As<nint, TOther>(nint);
+                other = Notsafe.As<nint, T>(nint);
                 return true;
             }
             else if (otherType == typeof(nuint))
@@ -1056,12 +1054,12 @@ public readonly struct Rational :
                     nuint = unchecked((nuint)(ulong)rational.Numerator);
                 }
 
-                other = Notsafe.As<nuint, TOther>(nuint);
+                other = Notsafe.As<nuint, T>(nuint);
                 return true;
             }
             else if (otherType == typeof(BigInteger))
             {
-                other = Notsafe.As<BigInteger, TOther>(rational.Numerator);
+                other = Notsafe.As<BigInteger, T>(rational.Numerator);
                 return true;
             }
         }

@@ -16,9 +16,9 @@ public sealed class MiscTheoryData : IReadOnlyCollection<object?[]>
         _rows = new(64);
     }
 
-    public void Add<T>(T? value) => _rows.Add(new object?[1] { (object?)value });
+    public void Add<T>(T? value) => _rows.Add([(object?)value]);
 
-    public void Add(object? obj) => _rows.Add(new object?[1] { obj });
+    public void Add(object? obj) => _rows.Add([obj]);
 
     public void AddRow(params object?[] objects) => _rows.Add(objects);
 
@@ -35,7 +35,7 @@ public sealed class MiscTheoryData : IReadOnlyCollection<object?[]>
             return new MiscTheoryData();
         }
 
-        int[]? lengths = new int[columns];
+        int[] lengths = new int[columns];
         lengths.AsSpan().Fill(rows.Count);
         ArrayIndicesEnumerator indices = ArrayIndicesEnumerator.FromLengths(lengths);
 

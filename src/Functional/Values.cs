@@ -313,7 +313,7 @@ public readonly struct Values<T> :
         }
     }
 
-    public TResult Match<TResult>(Fn<TResult> onEmpty, Fn<T, TResult> onValue, Fn<T[], TResult> onValues)
+    public R Match<R>(Fn<R> onEmpty, Fn<T, R> onValue, Fn<T[], R> onValues)
     {
         object? obj = _obj;
         if (obj == null)
@@ -417,5 +417,5 @@ public readonly struct Values<T> :
         return writer.Wrote(out charsWritten);
     }
 
-    public override string ToString() => ToString(null, null);
+    public override string ToString() => ToString(null);
 }

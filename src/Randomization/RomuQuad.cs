@@ -19,7 +19,7 @@ public sealed class RomuQuad : RomuPrng
     public RomuQuad(RandSeed seed) : base(seed)
     {
         // We require four seeds
-        this.Seed.GetSeeds(out _wState, out _xState, out _yState, out _zState);
+        Seed.GetSeeds(out _wState, out _xState, out _yState, out _zState);
         if (_wState == 0UL && _xState == 0UL && _yState == 0UL && _zState == 0UL)
             throw new InvalidOperationException("At least one seed value must be non-zero");
     }

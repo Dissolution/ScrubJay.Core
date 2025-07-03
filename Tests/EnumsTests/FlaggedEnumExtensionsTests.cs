@@ -27,7 +27,7 @@ public class FlaggedEnumExtensionsTests
 
         foreach (var enumType in enumTypes)
         {
-            foreach (object[]? data in GetEnumTestData(enumType, paramCount))
+            foreach (object[] data in GetEnumTestData(enumType, paramCount))
             {
                 yield return data;
             }
@@ -36,91 +36,91 @@ public class FlaggedEnumExtensionsTests
 
     [Theory]
     [MemberData(nameof(EnumTestData), 1)]
-    public void ToUInt64Works<TEnum>(TEnum @enum)
-        where TEnum : struct, Enum
+    public void ToUInt64Works<E>(E @enum)
+        where E : struct, Enum
     {
         ulong convertValue = Convert.ToUInt64(@enum);
-        ulong extValue = FlagsEnumExtensions.ToUInt64<TEnum>(@enum);
+        ulong extValue = FlagsEnumExtensions.ToUInt64<E>(@enum);
         Assert.Equal(convertValue, extValue);
     }
-    
+
     [Theory]
     [MemberData(nameof(EnumTestData), 1)]
-    public void FromUInt64Works<TEnum>(TEnum @enum)
-        where TEnum : struct, Enum
+    public void FromUInt64Works<E>(E @enum)
+        where E : struct, Enum
     {
         ulong convertValue = Convert.ToUInt64(@enum);
 
-        TEnum extEnum = FlagsEnumExtensions.FromUInt64<TEnum>(convertValue);
+        E extEnum = FlagsEnumExtensions.FromUInt64<E>(convertValue);
 
         Assert.Equal(@enum, extEnum);
     }
-    
-   /* 
+
+   /*
     [Theory]
     [MemberData(nameof(EnumTestData), 1)]
-    public void NotWorks<TEnum>(TEnum @enum)
-        where TEnum : struct, Enum
+    public void NotWorks<E>(E @enum)
+        where E : struct, Enum
     {
         var notResult = Express
-            .Func<TEnum, TEnum>(e => e
-                .Convert(typeof(TEnum).GetEnumUnderlyingType())
+            .Func<E, E>(e => e
+                .Convert(typeof(E).GetEnumUnderlyingType())
                 .OnesComplement()
-                .Convert<TEnum>())
+                .Convert<E>())
             .Compile()
             .Invoke(@enum);
-        var extResult = FlagsEnumExtensions.BitwiseComplement<TEnum>(@enum);
+        var extResult = FlagsEnumExtensions.BitwiseComplement<E>(@enum);
         Assert.Equal(notResult, extResult);
     }
-    
+
     [Theory]
     [MemberData(nameof(EnumTestData), 2)]
-    public void AndWorks<TEnum>(TEnum left, TEnum right)
-        where TEnum : struct, Enum
+    public void AndWorks<E>(E left, E right)
+        where E : struct, Enum
     {
-        var andResult = Express.Func<TEnum, TEnum, TEnum>((l, r) => Express
+        var andResult = Express.Func<E, E, E>((l, r) => Express
                 .Pair(
-                    l.Convert(typeof(TEnum).GetEnumUnderlyingType()),
-                    r.Convert(typeof(TEnum).GetEnumUnderlyingType()))
+                    l.Convert(typeof(E).GetEnumUnderlyingType()),
+                    r.Convert(typeof(E).GetEnumUnderlyingType()))
                 .And()
-                .Convert<TEnum>())
+                .Convert<E>())
             .Compile()
             .Invoke(left, right);
-        var extResult = FlagsEnumExtensions.And<TEnum>(left, right);
+        var extResult = FlagsEnumExtensions.And<E>(left, right);
         Assert.Equal(andResult, extResult);
     }
-    
+
     [Theory]
     [MemberData(nameof(EnumTestData), 2)]
-    public void OrWorks<TEnum>(TEnum left, TEnum right)
-        where TEnum : struct, Enum
+    public void OrWorks<E>(E left, E right)
+        where E : struct, Enum
     {
-        var orResult = Express.Func<TEnum, TEnum, TEnum>((l, r) => Express
+        var orResult = Express.Func<E, E, E>((l, r) => Express
                 .Pair(
-                    l.Convert(typeof(TEnum).GetEnumUnderlyingType()),
-                    r.Convert(typeof(TEnum).GetEnumUnderlyingType()))
+                    l.Convert(typeof(E).GetEnumUnderlyingType()),
+                    r.Convert(typeof(E).GetEnumUnderlyingType()))
                 .Or()
-                .Convert<TEnum>())
+                .Convert<E>())
             .Compile()
             .Invoke(left, right);
-        var extResult = FlagsEnumExtensions.Or<TEnum>(left, right);
+        var extResult = FlagsEnumExtensions.Or<E>(left, right);
         Assert.Equal(orResult, extResult);
     }
-    
+
     [Theory]
     [MemberData(nameof(EnumTestData), 2)]
-    public void XorWorks<TEnum>(TEnum left, TEnum right)
-        where TEnum : struct, Enum
+    public void XorWorks<E>(E left, E right)
+        where E : struct, Enum
     {
-        var xorResult = Express.Func<TEnum, TEnum, TEnum>((l, r) => Express
+        var xorResult = Express.Func<E, E, E>((l, r) => Express
                 .Pair(
-                    l.Convert(typeof(TEnum).GetEnumUnderlyingType()),
-                    r.Convert(typeof(TEnum).GetEnumUnderlyingType()))
+                    l.Convert(typeof(E).GetEnumUnderlyingType()),
+                    r.Convert(typeof(E).GetEnumUnderlyingType()))
                 .ExclusiveOr()
-                .Convert<TEnum>())
+                .Convert<E>())
             .Compile()
             .Invoke(left, right);
-        var extResult = FlagsEnumExtensions.Xor<TEnum>(left, right);
+        var extResult = FlagsEnumExtensions.Xor<E>(left, right);
         Assert.Equal(xorResult, extResult);
     }
 */
@@ -162,14 +162,14 @@ public class FlaggedEnumExtensionsTests
     }
 
     private static readonly Type[] _signedPrimitiveTypes = [typeof(long), typeof(int), typeof(short), typeof(sbyte)];
-    
+
     [Theory]
     [MemberData(nameof(EnumTestData), 1)]
-    public void FlagCountWorks<TEnum>(TEnum e)
-        where TEnum : struct, Enum
+    public void FlagCountWorks<E>(E e)
+        where E : struct, Enum
     {
         int countResult;
-        if (_signedPrimitiveTypes.Contains(EnumExtensions.UnderlyingType<TEnum>()))
+        if (_signedPrimitiveTypes.Contains(EnumExtensions.UnderlyingType<E>()))
         {
             countResult = GetLongBitCount(Convert.ToInt64(e));
         }
@@ -178,19 +178,19 @@ public class FlaggedEnumExtensionsTests
             countResult = GetULongBitCount(Convert.ToUInt64(e));
         }
 
-        int extResult = FlagsEnumExtensions.FlagCount<TEnum>(e);
+        int extResult = FlagsEnumExtensions.FlagCount<E>(e);
         Assert.Equal(countResult, extResult);
     }
-    
+
     [Theory]
     [MemberData(nameof(EnumTestData), 2)]
-    public void FlagCountWorks2<TEnum>(TEnum left, TEnum right)
-        where TEnum : struct, Enum
+    public void FlagCountWorks2<E>(E left, E right)
+        where E : struct, Enum
     {
         var e = FlagsEnumExtensions.Or(left, right);
-        
+
         int countResult;
-        if (_signedPrimitiveTypes.Contains(EnumExtensions.UnderlyingType<TEnum>()))
+        if (_signedPrimitiveTypes.Contains(EnumExtensions.UnderlyingType<E>()))
         {
             countResult = GetLongBitCount(Convert.ToInt64(e));
         }
@@ -199,18 +199,18 @@ public class FlaggedEnumExtensionsTests
             countResult = GetULongBitCount(Convert.ToUInt64(e));
         }
 
-        int extResult = FlagsEnumExtensions.FlagCount<TEnum>(e);
+        int extResult = FlagsEnumExtensions.FlagCount<E>(e);
         Assert.Equal(countResult, extResult);
     }
-    
+
     [Theory]
     [MemberData(nameof(EnumTestData), 1)]
-    public void HasMultipleFlagsWorks<TEnum>(TEnum e)
-        where TEnum : struct, Enum
+    public void HasMultipleFlagsWorks<E>(E e)
+        where E : struct, Enum
     {
         var flags = Enum
-            .GetValues(typeof(TEnum))
-            .ThrowIfNot<TEnum[]>()
+            .GetValues(typeof(E))
+            .ThrowIfNot<E[]>()
             .Where(flag =>
             {
                 ulong value = FlagsEnumExtensions.ToUInt64(flag);
@@ -230,15 +230,15 @@ public class FlaggedEnumExtensionsTests
             Assert.False(hasMultipleFlags);
         }
     }
-    
+
     [Theory]
     [MemberData(nameof(EnumTestData), 1)]
-    public void GetFlagsWorks<TEnum>(TEnum e)
-        where TEnum : struct, Enum
+    public void GetFlagsWorks<E>(E e)
+        where E : struct, Enum
     {
         var flags = Enum
-            .GetValues(typeof(TEnum))
-            .ThrowIfNot<TEnum[]>()
+            .GetValues(typeof(E))
+            .ThrowIfNot<E[]>()
             .Where(flag =>
             {
                 ulong value = FlagsEnumExtensions.ToUInt64(flag);
@@ -251,18 +251,18 @@ public class FlaggedEnumExtensionsTests
 
         Assert.True(Sequence.Equal(flags, extFlags));
     }
-    
+
     [Theory]
     [MemberData(nameof(EnumTestData), 2)]
-    public void GetFlagsWorks2<TEnum>(TEnum left, TEnum right)
-        where TEnum : struct, Enum
+    public void GetFlagsWorks2<E>(E left, E right)
+        where E : struct, Enum
     {
         var e = FlagsEnumExtensions.Or(left, right);
-        
+
         var flags = Enum
-            .GetValues(typeof(TEnum))
-            .ThrowIfNot<TEnum[]>()
-            .Where(flag => 
+            .GetValues(typeof(E))
+            .ThrowIfNot<E[]>()
+            .Where(flag =>
             {
                 ulong value = FlagsEnumExtensions.ToUInt64(flag);
                 return ((value & (value - 1)) == 0) && (value != 0);
@@ -274,6 +274,6 @@ public class FlaggedEnumExtensionsTests
 
         Assert.True(Sequence.Equal(flags, extFlags));
     }
-    
+
     // All the *Flags methods use the methods already checked above!
 }

@@ -46,11 +46,13 @@ public class TextCopyBenchmarks
         }
     }
 
+    // ReSharper disable EntityNameCapturedOnly.Local
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void CopyBlock(
         in char source,
         ref char destination,
         int count)
+        // ReSharper restore EntityNameCapturedOnly.Local
     {
         Emit.Ldarg(nameof(destination));
         Emit.Ldarg(nameof(source));

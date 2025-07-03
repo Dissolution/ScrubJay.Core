@@ -43,43 +43,43 @@ public static class ValidationExtensions
     }
 
     /// <summary>
-    /// Casts this <see cref="object"/> <c>as</c> a <typeparamref name="TOut"/> value and returns it
+    /// Casts this <see cref="object"/> <c>as</c> a <typeparamref name="T"/> value and returns it
     /// </summary>
     /// <param name="obj">
-    /// The <see cref="object"/> to convert to a <typeparamref name="TOut"/> value
+    /// The <see cref="object"/> to convert to a <typeparamref name="T"/> value
     /// </param>
     /// <param name="objName">
     /// The automatically captured name of the <paramref name="obj"/> argument, used for a thrown <see cref="ArgumentNullException"/>
     /// </param>
-    /// <typeparam name="TOut">
+    /// <typeparam name="T">
     /// The <see cref="Type"/> of value to cast <paramref name="obj"/> <c>as</c>
     /// </typeparam>
     /// <returns>
     /// <c>obj as TOut</c>
     /// </returns>
     /// <exception cref="ArgumentException">
-    /// Thrown is <paramref name="obj"/> is not a valid <typeparamref name="TOut"/> value
+    /// Thrown is <paramref name="obj"/> is not a valid <typeparamref name="T"/> value
     /// </exception>
     [return: NotNull]
-    public static TOut ThrowIfNot<TOut>([NotNull] this object? obj,
+    public static T ThrowIfNot<T>([NotNull] this object? obj,
         [CallerArgumentExpression(nameof(obj))] string? objName = null)
     {
         return obj switch
         {
             null => throw new ArgumentNullException(objName),
-            TOut output => output,
-            _ => throw new ArgumentException($"The given {obj.GetType().Render()} value is not a valid {typeof(TOut).Render()} instance", objName)
+            T output => output,
+            _ => throw new ArgumentException($"The given {obj.GetType().Render()} value is not a valid {typeof(T).Render()} instance", objName)
         };
     }
 
 
     [return: NotNullIfNotNull(nameof(obj))]
-    public static TOut? ThrowIfCannotBe<TOut>(
+    public static T? ThrowIfCannotBe<T>(
         this object? obj,
         [CallerArgumentExpression(nameof(obj))] string? objName = null)
     {
-        if (obj.As<TOut?>(out TOut? output))
+        if (obj.As<T?>(out T? output))
             return output;
-        throw new ArgumentException($"The given {obj?.GetType().Render()} value is not a valid {typeof(TOut).Render()} instance", objName);
+        throw new ArgumentException($"The given {obj?.GetType().Render()} value is not a valid {typeof(T).Render()} instance", objName);
     }
 }

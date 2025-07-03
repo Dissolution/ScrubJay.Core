@@ -8,16 +8,16 @@ public sealed class AliasesAttribute : Attribute
 
     public AliasesAttribute(params string[] aliases)
     {
-        this.Aliases = aliases;
+        Aliases = aliases;
     }
 
     public AliasesAttribute(IEnumerable<string> aliases)
     {
-        this.Aliases = aliases.ToArray();
+        Aliases = aliases.ToArray();
     }
 
     public AliasesAttribute(ReadOnlySpan<string> aliases)
     {
-        this.Aliases = aliases.ToArray();
+        Aliases = aliases.ToArray();
     }
 }

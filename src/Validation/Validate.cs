@@ -254,7 +254,7 @@ public static class Validate
 
 
     public static Result<T> IsNotNull<T>(
-        [AllowNull, NotNullWhen(true)] T? value,
+        [NotNullWhen(true)] T? value,
         string? message = null,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)

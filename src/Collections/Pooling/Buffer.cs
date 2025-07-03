@@ -12,7 +12,7 @@ namespace ScrubJay.Collections.Pooling;
 
 /// <summary>
 /// A Buffer is a stack-based <see cref="IList{T}"/>-like collection <i>(grows as required)</i>,
-/// that uses <see cref="ArrayInstancePool{T}"/> to avoid allocation,
+/// that uses <see cref="ArrayPool{T}"/> to avoid allocation,
 /// and thus must be <see cref="Dispose">Disposed</see> after use
 /// </summary>
 /// <typeparam name="T">
@@ -105,8 +105,8 @@ public ref struct Buffer<T> :
     {
         get
         {
-            Throw.IfBadIndex(index, _position);
-            return ref _span[index];
+            int offset = Throw.IfBadIndex(index, _position);
+            return ref _span[offset];
         }
     }
 
@@ -120,8 +120,8 @@ public ref struct Buffer<T> :
     {
         get
         {
-            Throw.IfBadRange(range, _position);
-            return _span[range];
+            (int offset, int len) = Throw.IfBadRange(range, _position);
+            return _span.Slice(offset, len);
         }
     }
 
@@ -208,8 +208,11 @@ public ref struct Buffer<T> :
         T[] array = ArrayPool<T>.Shared.Rent(Math.Max(minCapacity * 2, _minCapacity));
         if (_span.Length > 0)
         {
-            Debug.Assert(_array is not null);
             Written.CopyTo(array);
+        }
+
+        if (_array is not null)
+        {
             ArrayPool<T>.Shared.Return(_array, true);
         }
 
@@ -251,7 +254,7 @@ public ref struct Buffer<T> :
     /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least twice its current value
     /// </summary>
     /// <remarks>
-    /// This method causes a rental from <see cref="ArrayInstancePool{T}"/>
+    /// This method causes a rental from <see cref="ArrayPool{T}"/>
     /// </remarks>
     public void Grow() => GrowBy(1);
 
@@ -359,10 +362,9 @@ public ref struct Buffer<T> :
             return;
         }
 
-        int itemCount;
         if (items is ICollection<T> collection)
         {
-            itemCount = collection.Count;
+            int itemCount = collection.Count;
             if (itemCount == 0)
             {
                 return;
@@ -1197,7 +1199,7 @@ public ref struct Buffer<T> :
 #pragma warning restore CA1002
 
     /// <summary>
-    /// Clears this <see cref="Buffer{T}"/> and returns any rented array back to <see cref="ArrayInstancePool{T}"/>
+    /// Clears this <see cref="Buffer{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
     /// </summary>
     [HandlesResourceDisposal]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

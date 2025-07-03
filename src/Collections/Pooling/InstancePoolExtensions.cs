@@ -13,13 +13,13 @@ public static class InstancePoolExtensions
         pool.Return(instance);
     }
 
-    public static TReturn Borrow<T, TReturn>(
+    public static R Borrow<T, R>(
         this IInstancePool<T> pool,
-        Func<T, TReturn> borrowedInstanceAction)
+        Func<T, R> borrowedInstanceAction)
         where T : class
     {
         T instance = pool.Rent();
-        TReturn result = borrowedInstanceAction(instance);
+        R result = borrowedInstanceAction(instance);
         pool.Return(instance);
         return result;
     }

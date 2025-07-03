@@ -572,7 +572,7 @@ public ref struct SpanReader<T>
             captureCount = 3;
         }
 
-        var text = new TextBuilder();
+        using var builder = new TextBuilder();
 
         int index = _position;
         var span = _span;
@@ -582,7 +582,7 @@ public ref struct SpanReader<T>
         // If we have more before this, indicate with ellipsis
         if (startIndex > 0)
         {
-            text.Append('…').Append(delimiter);
+            builder.Append('…').Append(delimiter);
         }
         // Otherwise, cap at a min zero
         else
@@ -590,10 +590,10 @@ public ref struct SpanReader<T>
             startIndex = 0;
         }
 
-        text.EnumerateFormatAndDelimit(span[startIndex..index], delimiter);
+        builder.EnumerateFormatAndDelimit(span[startIndex..index], delimiter);
 
         // position indicator
-        text.Append('×');
+        builder.Append('×');
 
         // items yet to be read
         int nextIndex = index + captureCount;
@@ -611,14 +611,14 @@ public ref struct SpanReader<T>
             nextIndex = span.Length;
         }
 
-        text.EnumerateFormatAndDelimit(span[index..nextIndex], delimiter);
+        builder.EnumerateFormatAndDelimit(span[index..nextIndex], delimiter);
 
         if (postpendEllipsis)
         {
-            text.Append(delimiter).Append('…');
+            builder.Append(delimiter).Append('…');
         }
 
-        return text.ToStringAndDispose();
+        return builder.ToString();
     }
 }
 /*

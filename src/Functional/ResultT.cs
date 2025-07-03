@@ -292,7 +292,7 @@ public readonly struct Result<T> :
     }
 
 
-    public TResult Match<TResult>(Fn<T, TResult> onOk, Fn<Exception, TResult> onError)
+    public R Match<R>(Fn<T, R> onOk, Fn<Exception, R> onError)
     {
         if (_isOk)
         {
@@ -408,7 +408,7 @@ public readonly struct Result<T> :
         return writer.Wrote(out charsWritten);
     }
 
-    public override string ToString() => ToString(null, null);
+    public override string ToString() => ToString(null);
 
 #endregion
 

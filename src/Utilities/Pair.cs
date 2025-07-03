@@ -3,8 +3,9 @@
 // ReSharper disable ArrangeThisQualifier
 
 
-using ScrubJay.Text.Rendering;
+
 #if NET7_0_OR_GREATER
+using ScrubJay.Text.Rendering;
 using ScrubJay.Parsing;
 #endif
 
@@ -14,9 +15,9 @@ namespace ScrubJay.Utilities;
 public static class Pair
 {
 #if NET7_0_OR_GREATER
-    public static Result<Pair<TKey, TValue>> TryParse<TKey, TValue>(text text, IFormatProvider? provider = null)
-        where TKey : ISpanParsable<TKey>
-        where TValue : ISpanParsable<TValue>
+    public static Result<Pair<K, V>> TryParse<K, V>(text text, IFormatProvider? provider = null)
+        where K : ISpanParsable<K>
+        where V : ISpanParsable<V>
     {
         var reader = new SpanReader<char>(text);
 
@@ -34,8 +35,8 @@ public static class Pair
             return getEx(text);
 
         var keySpan = takeUntilComma.Span;
-        if (!TKey.TryParse(keySpan, provider, out var key))
-            return getEx(text, ParseException.Create<TKey>(keySpan));
+        if (!K.TryParse(keySpan, provider, out var key))
+            return getEx(text, ParseException.Create<K>(keySpan));
 
         reader.Take();
 
@@ -44,8 +45,8 @@ public static class Pair
             return getEx(text);
 
         var valueSpan = takeUntilRightParenthesis.Span;
-        if (!TValue.TryParse(valueSpan, provider, out var value))
-            return getEx(text, ParseException.Create<TValue>(valueSpan));
+        if (!V.TryParse(valueSpan, provider, out var value))
+            return getEx(text, ParseException.Create<V>(valueSpan));
 
         reader.Take();
 
@@ -53,15 +54,15 @@ public static class Pair
         if (reader.RemainingCount > 0)
             return getEx(text);
 
-        var pair = new Pair<TKey, TValue>(key, value);
+        var pair = new Pair<K, V>(key, value);
         return Ok(pair);
 
 
         static ParseException getEx(text text, Exception? innerEx = null)
         {
-            return ParseException.Create<Pair<TKey, TValue>>(
+            return ParseException.Create<Pair<K, V>>(
                 text,
-                $"Expected `({typeof(TKey).Render()}, {typeof(TValue).Render()})`",
+                $"Expected `({typeof(K).Render()}, {typeof(V).Render()})`",
                 innerEx);
         }
     }

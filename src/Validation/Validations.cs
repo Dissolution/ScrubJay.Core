@@ -87,14 +87,14 @@ public class Validations : Validations<Exception>
             throw ex;
     }
 
-    public Result<TOk> ToResult<TOk>(TOk okValue)
+    public Result<T> ToResult<T>(T okValue)
     {
         if (HasException(out var ex))
             return ex;
         return Ok(okValue);
     }
 
-    public Result<TOk> ToResult<TOk>(Func<TOk> getOk)
+    public Result<T> ToResult<T>(Func<T> getOk)
     {
         if (HasException(out var ex))
             return ex;
@@ -110,13 +110,13 @@ public class Validations : Validations<Exception>
 /// and <a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/collection-expressions">collection expressions</a>
 /// </remarks>
 [PublicAPI]
-public class Validations<TError> : IReadOnlyCollection<TError>
+public class Validations<E> : IReadOnlyCollection<E>
 {
-    protected readonly List<TError> _errors = [];
+    protected readonly List<E> _errors = [];
 
     public int Count => _errors.Count;
 
-    public void Add(TError? error)
+    public void Add(E? error)
     {
         if (error is not null)
         {
@@ -124,22 +124,22 @@ public class Validations<TError> : IReadOnlyCollection<TError>
         }
     }
 
-    public void Add(Result<Unit, TError> result)
+    public void Add(Result<Unit, E> result)
     {
         if (result.IsError(out var error))
             Add(error);
     }
 
-    public void Add<T>(Result<T, TError> result)
+    public void Add<T>(Result<T, E> result)
     {
         if (result.IsError(out var error))
             Add(error);
     }
 
-    public void Add(Func<Result<Unit, TError>> getResult)
+    public void Add(Func<Result<Unit, E>> getResult)
          => Add(getResult());
 
-    public void Add<T>(Func<Result<T, TError>> getResult)
+    public void Add<T>(Func<Result<T, E>> getResult)
         => Add(getResult());
 
     public virtual void ThrowIfErrors()
@@ -157,5 +157,5 @@ public class Validations<TError> : IReadOnlyCollection<TError>
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    public IEnumerator<TError> GetEnumerator() => _errors.GetEnumerator();
+    public IEnumerator<E> GetEnumerator() => _errors.GetEnumerator();
 }

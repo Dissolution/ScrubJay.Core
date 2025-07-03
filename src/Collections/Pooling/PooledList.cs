@@ -1,5 +1,6 @@
 ﻿// Identifiers should have correct suffix
 
+using System.Buffers;
 using System.Text;
 
 #pragma warning disable CA1710
@@ -8,7 +9,7 @@ namespace ScrubJay.Collections.Pooling;
 
 /// <summary>
 /// A PooledList is an <see cref="IList{T}"/> implementation that operates on
-/// <see cref="Array">T[]</see> instance and <see cref="ArrayInstancePool{T}"/> to minimize allocations<br/>
+/// <see cref="Array">T[]</see> instance and <see cref="ArrayPool{T}"/> to minimize allocations<br/>
 /// It must be Disposed in order to be useful
 /// </summary>
 /// <typeparam name="T">
@@ -147,7 +148,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// The minimum starting Capacity this <see cref="PooledList{T}"/> will have
     /// </param>
     /// <remarks>
-    /// If <paramref name="minCapacity"/> is greater than 0, an array will be rented from <see cref="ArrayInstancePool{T}"/>
+    /// If <paramref name="minCapacity"/> is greater than 0, an array will be rented from <see cref="ArrayPool{T}"/>
     /// </remarks>
     public PooledList(int minCapacity) : base(minCapacity)
     {

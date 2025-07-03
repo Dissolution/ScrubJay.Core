@@ -444,7 +444,7 @@ public class PooledStack<T> : PooledArray<T>,
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator(true);
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     [MustDisposeResource(false)]
     public IEnumerator<T> GetEnumerator(bool popOrder = true)

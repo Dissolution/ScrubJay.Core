@@ -86,5 +86,5 @@ public readonly struct HResult :
         };
     }
 
-    public override string ToString() => ToString(null, null);
+    public override string ToString() => ToString(null);
 }

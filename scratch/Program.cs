@@ -11,7 +11,7 @@ TryFormatWriter writer = new TryFormatWriter(stackalloc char[147])
 {
     'a',
     "abc",
-    new char[3] {'k', 'f', 'c'},
+    new[] {'k', 'f', 'c'},
     147,
     (147),
     (147, "d"),
@@ -29,7 +29,7 @@ str = TextBuilder.Build(
 
 
 Debugger.Break();
-return;
+return 0;
 
 
 
@@ -68,7 +68,7 @@ namespace ScrubJay.Scratch
             return x / y;
         });
 
-        public static async Result<double> parseDivideAsync(string a, string b)
+        public static async Result<double> ParseDivideAsync(string a, string b)
         {
             var x = await parse(a);
             var y = await Result.TryInvoke(() => double.Parse(b));

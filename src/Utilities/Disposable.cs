@@ -62,13 +62,13 @@ public static class Disposable
     public static void Dispose([HandlesResourceDisposal] IDisposable? disposable)
         => disposable?.Dispose();
 
-    public static bool TryDisposeAndDefaultRef<TDisposable>(
+    public static bool TryDisposeAndDefaultRef<D>(
         [HandlesResourceDisposal]
-        ref TDisposable? disposable)
-        where TDisposable : class, IDisposable
+        ref D? disposable)
+        where D : class, IDisposable
     {
         // Acquire and immediately set to null
-        var localDisposable = Interlocked.Exchange<TDisposable?>(ref disposable, null);
+        var localDisposable = Interlocked.Exchange<D?>(ref disposable, null);
         if (localDisposable is not null)
         {
             try

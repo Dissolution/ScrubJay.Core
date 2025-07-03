@@ -204,24 +204,24 @@ public readonly struct Result<T, E> :
     ///
     /// </summary>
     /// <param name="map"></param>
-    /// <typeparam name="TNewOk"></typeparam>
+    /// <typeparam name="N"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.map"/>
-    public Result<TNewOk, E> OkSelect<TNewOk>(Fn<T, TNewOk> map)
+    public Result<N, E> OkSelect<N>(Fn<T, N> map)
     {
         if (_isOk)
         {
-            return Result<TNewOk, E>.Ok(map(_value!));
+            return Result<N, E>.Ok(map(_value!));
         }
 
-        return Result<TNewOk, E>.Error(_error!);
+        return Result<N, E>.Error(_error!);
     }
 
-    public Result<TNewOk, E> OkSelect<TNewOk>(Fn<T, Result<TNewOk, E>> map)
+    public Result<N, E> OkSelect<N>(Fn<T, Result<N, E>> map)
     {
         if (_isOk)
             return map(_value!);
-        return Result<TNewOk, E>.Error(_error!);
+        return Result<N, E>.Error(_error!);
     }
 
     /// <summary>
@@ -229,10 +229,10 @@ public readonly struct Result<T, E> :
     /// </summary>
     /// <param name="mapOk"></param>
     /// <param name="defaultOk"></param>
-    /// <typeparam name="TNewOk"></typeparam>
+    /// <typeparam name="N"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.map_or"/>
-    public TNewOk OkSelectOr<TNewOk>(Fn<T, TNewOk> mapOk, TNewOk defaultOk)
+    public N OkSelectOr<N>(Fn<T, N> mapOk, N defaultOk)
     {
         if (_isOk)
         {
@@ -247,10 +247,10 @@ public readonly struct Result<T, E> :
     /// </summary>
     /// <param name="mapOk"></param>
     /// <param name="getOk"></param>
-    /// <typeparam name="TNewOk"></typeparam>
+    /// <typeparam name="N"></typeparam>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.map_or_else"/>
-    public TNewOk OkSelectOrElse<TNewOk>(Fn<T, TNewOk> mapOk, Fn<TNewOk> getOk)
+    public N OkSelectOrElse<N>(Fn<T, N> mapOk, Fn<N> getOk)
     {
         if (_isOk)
         {
@@ -352,7 +352,7 @@ public readonly struct Result<T, E> :
     }
 
 
-    public TResult Match<TResult>(Fn<T, TResult> onOk, Fn<E, TResult> onError)
+    public R Match<R>(Fn<T, R> onOk, Fn<E, R> onError)
     {
         if (_isOk)
         {

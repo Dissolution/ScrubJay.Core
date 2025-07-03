@@ -44,7 +44,7 @@
 
     <!-- NuGet Packages -->
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.15.1" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
         <PackageReference Include="Fody" Version="6.9.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

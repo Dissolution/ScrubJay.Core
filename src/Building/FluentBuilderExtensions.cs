@@ -387,7 +387,11 @@ public static class FluentBuilderExtensions
         }
         else
         {
+#if NETFRAMEWORK || NETSTANDARD2_0
             onNotEmpty?.Invoke(builder, str!);
+#else
+            onNotEmpty?.Invoke(builder, str);
+#endif
         }
 
         return builder;

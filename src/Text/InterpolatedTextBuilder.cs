@@ -1,5 +1,6 @@
 ﻿// Members can be made readonly
-#pragma warning disable IDE0250, IDE0251
+// ReSharper disable NotDisposedResource
+#pragma warning disable IDE0250, IDE0251, CA1001
 
 namespace ScrubJay.Text;
 
@@ -8,7 +9,6 @@ namespace ScrubJay.Text;
 /// </summary>
 [PublicAPI]
 [InterpolatedStringHandler]
-[MustDisposeResource(false)]
 public ref struct InterpolatedTextBuilder // : IDisposable
 {
     private readonly TextBuilder _builder;
@@ -26,14 +26,12 @@ public ref struct InterpolatedTextBuilder // : IDisposable
         _disposeBuilder = true;
     }
 
-    [MustDisposeResource(false)]
     public InterpolatedTextBuilder(TextBuilder builder)
     {
         _builder = builder;
         _disposeBuilder = false;
     }
 
-    [MustDisposeResource(false)]
     public InterpolatedTextBuilder(int literalLength, int formattedCount, TextBuilder builder)
     {
         _builder = builder;
@@ -84,21 +82,24 @@ public ref struct InterpolatedTextBuilder // : IDisposable
         // pass-through to builder for execution
         _builder.Invoke(buildText);
     }
-
-    [HandlesResourceDisposal]
-    public void Dispose()
-    {
-        if (_disposeBuilder)
-        {
-            _builder.Dispose();
-        }
-    }
+    //
+    // [HandlesResourceDisposal]
+    // public void Dispose()
+    // {
+    //     if (_disposeBuilder)
+    //     {
+    //         _builder.Dispose();
+    //     }
+    // }
 
     [HandlesResourceDisposal]
     public string ToStringAndDispose()
     {
         string str = ToString();
-        Dispose();
+        if (_disposeBuilder)
+        {
+            _builder.Dispose();
+        }
         return str;
     }
 

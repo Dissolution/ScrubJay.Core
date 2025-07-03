@@ -3,6 +3,7 @@
 
 using InlineIL;
 using static InlineIL.IL;
+// ReSharper disable EntityNameCapturedOnly.Local
 
 namespace ScrubJay.Utilities;
 

@@ -24,7 +24,6 @@ public sealed class ObjectComparer :
             return Equate.GetEqualityComparer(xType).Equals(x, y);
         }
 
-        Debug.Assert(y is not null);
         Type yType = y!.GetType();
         if (yType == typeof(object))
             return false; // reference failed

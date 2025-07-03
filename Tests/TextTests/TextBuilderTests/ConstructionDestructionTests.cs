@@ -7,7 +7,7 @@ public class ConstructionDestructionTests
     [Fact]
     public void CanConstructAndDispose()
     {
-        TextBuilder? builder = new TextBuilder();
+        TextBuilder builder = new TextBuilder();
         Assert.NotNull(builder);
         Assert.Empty(builder);
 
@@ -19,7 +19,7 @@ public class ConstructionDestructionTests
     [Fact]
     public void CanNewAndDispose()
     {
-        TextBuilder? builder = TextBuilder.New;
+        TextBuilder builder = TextBuilder.New;
         Assert.NotNull(builder);
         Assert.Empty(builder);
 

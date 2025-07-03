@@ -50,6 +50,7 @@ public static class EnumTestData
             Max = ushort.MaxValue,
         }
 
+        // ReSharper disable once EnumUnderlyingTypeIsInt
         public enum EInt : int
         {
             Min = int.MinValue,
@@ -141,6 +142,7 @@ public static class EnumTestData
         }
 
         [Flags]
+        // ReSharper disable once EnumUnderlyingTypeIsInt
         public enum EfInt : int
         {
             None = 0,
@@ -148,7 +150,7 @@ public static class EnumTestData
             Beta = 1 << 1,
             Gamma = 1 << 2,
             Alphabet = Alpha | Beta,
-           // Max = int.MaxValue,
+            // Max = int.MaxValue,
         }
 
         [Flags]
@@ -183,22 +185,21 @@ public static class EnumTestData
             Alphabet = Alpha | Beta,
             //Max = ulong.MaxValue,
         }
-
     }
 
-    public static IEnumerable<object[]> GetEnumTestData<TEnum>(int paramCount)
-        where TEnum : struct, Enum
+    public static IEnumerable<object[]> GetEnumTestData<E>(int paramCount)
+        where E : struct, Enum
     {
         if (paramCount < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(paramCount), paramCount, "Parameter count must be 1 or greater");
         }
 
-        TEnum[] enumMembers = (TEnum[])Enum.GetValues(typeof(TEnum));
+        E[] enumMembers = (E[])Enum.GetValues(typeof(E));
         int combinations = (int)Math.Pow(enumMembers.Length, paramCount);
         for (int i = 0; i < combinations; i++)
         {
-            object[]? values = new object[paramCount];
+            object[] values = new object[paramCount];
             int index = i;
             for (int j = 0; j < paramCount; j++)
             {
@@ -206,6 +207,7 @@ public static class EnumTestData
                 values[j] = enumMembers[enumIndex];
                 index /= enumMembers.Length;
             }
+
             yield return values;
         }
     }
@@ -227,7 +229,7 @@ public static class EnumTestData
         var testData = new List<object[]>(combinations);
         for (int i = 0; i < combinations; i++)
         {
-            object[]? values = new object[paramCount];
+            object[] values = new object[paramCount];
             int index = i;
             for (int j = 0; j < paramCount; j++)
             {
@@ -235,8 +237,10 @@ public static class EnumTestData
                 values[j] = enumMembers.GetValue(enumIndex)!;
                 index /= enumMembers.Length;
             }
+
             testData.Add(values);
         }
+
         return testData;
     }
 }

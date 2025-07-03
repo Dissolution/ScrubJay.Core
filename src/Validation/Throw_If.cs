@@ -51,6 +51,7 @@ public static partial class Throw
     }
 
     private static string GetArgumentExceptionMessage<T>(
+        [NoEnumeration]
         T? argument,
         string? info,
         string? argumentName,

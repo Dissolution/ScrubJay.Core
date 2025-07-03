@@ -238,7 +238,7 @@ public class ResultTests
 #pragma warning disable S1125
     [Theory]
     [MemberData(nameof(ResultsData))]
-    public void OpEqualsWorks<TOk, TError>(Result<TOk, TError> result)
+    public void OpEqualsWorks<T, E>(Result<T, E> result)
     {
         // ReSharper disable once EqualExpressionComparison
         Assert.True(result == result);
@@ -266,7 +266,7 @@ public class ResultTests
 
     [Theory]
     [MemberData(nameof(ResultsData))]
-    public void OpNotEqualsWorks<TOk, TError>(Result<TOk, TError> result)
+    public void OpNotEqualsWorks<T, E>(Result<T, E> result)
     {
         // ReSharper disable once EqualExpressionComparison
         Assert.False(result != result);

@@ -152,7 +152,7 @@ public readonly ref struct OptionROS<T> :
     /// <c>false</c> if it is <see cref="None"/>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSome([MaybeNullWhen(false)] out ReadOnlySpan<T> value)
+    public bool IsSome(out ReadOnlySpan<T> value)
     {
         if (_isSome)
         {

@@ -17,7 +17,7 @@ public class EnumerableExtensionsTests
         (object?)Enumerable.Empty<int>(),
         // ReSharper disable once UseArrayCreationExpression.1
         (object?)Array.CreateInstance(typeof(byte), 0),
-        (object?)new string?[4] { null, string.Empty, "c", "ABC" },
+        (object?)new string?[] { null, string.Empty, "c", "ABC" },
         (object?)Enumerable.Empty<int?>().Append(1).Append(null).Append(4).Append(null).Append(7),
     };
 
@@ -66,7 +66,7 @@ public class EnumerableExtensionsTests
     public static TheoryData<IEnumerable<int>?> SwallowedData { get; } = new()
     {
         (IEnumerable<int>?)null!,
-        (IEnumerable<int>?)new int[3] { 0, 1, 2 },
+        (IEnumerable<int>?) [0, 1, 2],
         (IEnumerable<int>?)new BadEnumerableNull(),
         (IEnumerable<int>?)new List<int> { 1, 2, 3 },
         (IEnumerable<int>?)new BadEnumerableThrow(),

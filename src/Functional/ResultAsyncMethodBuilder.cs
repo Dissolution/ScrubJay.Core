@@ -21,9 +21,9 @@ public struct ResultAsyncMethodBuilder<T>
     public static ResultAsyncMethodBuilder<T> Create() => new();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Action MoveNext<TStateMachine>(
-        ref TStateMachine stateMachine)
-        where TStateMachine : IAsyncStateMachine
+    private static Action MoveNext<SM>(
+        ref SM stateMachine)
+        where SM : IAsyncStateMachine
     {
         // dereference
         var smInstance = stateMachine;
@@ -44,8 +44,8 @@ public struct ResultAsyncMethodBuilder<T>
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Start<TStateMachine>(ref TStateMachine stateMachine)
-        where TStateMachine : IAsyncStateMachine
+    public void Start<SM>(ref SM stateMachine)
+        where SM : IAsyncStateMachine
         => stateMachine.MoveNext();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -63,19 +63,19 @@ public struct ResultAsyncMethodBuilder<T>
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AwaitOnCompleted<TAwaiter, TStateMachine>(
-        ref TAwaiter awaiter,
-        ref TStateMachine stateMachine)
-        where TAwaiter : INotifyCompletion
-        where TStateMachine : IAsyncStateMachine
+    public void AwaitOnCompleted<A, SM>(
+        ref A awaiter,
+        ref SM stateMachine)
+        where A : INotifyCompletion
+        where SM : IAsyncStateMachine
         => awaiter.OnCompleted(MoveNext(ref stateMachine));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
-        ref TAwaiter awaiter,
-        ref TStateMachine stateMachine)
-        where TAwaiter : ICriticalNotifyCompletion
-        where TStateMachine : IAsyncStateMachine
+    public void AwaitUnsafeOnCompleted<A, SM>(
+        ref A awaiter,
+        ref SM stateMachine)
+        where A : ICriticalNotifyCompletion
+        where SM : IAsyncStateMachine
         => awaiter.UnsafeOnCompleted(MoveNext(ref stateMachine));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

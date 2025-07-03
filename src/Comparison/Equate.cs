@@ -177,8 +177,8 @@ public static class Equate
         return comparer.Equals(left!, right!);
     }
 
-    public static bool EquatableValues<TLeft, TRight>(TLeft? left, TRight? right)
-        where TLeft : IEquatable<TRight>
+    public static bool EquatableValues<L, R>(L? left, R? right)
+        where L : IEquatable<R>
     {
         if (left is null)
             return right is null;

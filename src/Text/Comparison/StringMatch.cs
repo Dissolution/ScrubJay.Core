@@ -7,11 +7,11 @@ public sealed record class StringMatch
 {
     public StringComparison StringComparison { get; init; } = StringComparison.Ordinal;
 
-    public bool StartsWith { get; init; } = false;
+    public bool StartsWith { get; init; }
 
-    public bool EndsWith { get; init; } = false;
+    public bool EndsWith { get; init; }
 
-    public bool Contains { get; init; } = false;
+    public bool Contains { get; init; }
 
 
     public bool IgnoresCase => (((int)StringComparison % 2) != 0);

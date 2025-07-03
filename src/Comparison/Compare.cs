@@ -58,8 +58,8 @@ public static class Compare
         return valueComparer.Compare(left!, right!);
     }
 
-    public static int ComparableValues<TLeft, TRight>(TLeft? left, TRight? right)
-        where TLeft : IComparable<TRight>
+    public static int ComparableValues<L, R>(L? left, R? right)
+        where L : IComparable<R>
     {
         if (left is null)
         {

@@ -18,7 +18,7 @@ public sealed class RomuDuoJrPrng : RomuPrng
     public RomuDuoJrPrng(RandSeed seed) : base(seed)
     {
         // We require two seeds
-        this.Seed.GetSeeds(out _xState, out _yState);
+        Seed.GetSeeds(out _xState, out _yState);
         if (_xState == 0UL && _yState == 0UL)
             throw new InvalidOperationException("At least one seed value must be non-zero");
     }

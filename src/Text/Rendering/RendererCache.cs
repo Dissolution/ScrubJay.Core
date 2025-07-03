@@ -19,6 +19,7 @@ public static class RendererCache
             .ToList();
     }
 
+    // ReSharper disable once UnusedMethodReturnValue.Local
     private static TextBuilder DefaultRenderTo<T>(T? value, TextBuilder builder)
     {
         switch (value)

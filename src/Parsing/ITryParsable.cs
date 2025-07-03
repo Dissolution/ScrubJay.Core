@@ -3,49 +3,49 @@
 namespace ScrubJay.Parsing;
 
 [PublicAPI]
-public interface ITrySpanParsable<TSelf> : ITryParsable<TSelf>
+public interface ITrySpanParsable<S> : ITryParsable<S>
 #if NET7_0_OR_GREATER
-    , ISpanParsable<TSelf>
-    , IParsable<TSelf>
+    , ISpanParsable<S>
+    , IParsable<S>
 #endif
-    where TSelf : ITrySpanParsable<TSelf>
+    where S : ITrySpanParsable<S>
 {
 #if NET7_0_OR_GREATER
-    static abstract Result<TSelf> TryParse(text text, IFormatProvider? provider = null);
+    static abstract Result<S> TryParse(text text, IFormatProvider? provider = null);
 
 
-    static Result<TSelf> ITryParsable<TSelf>.TryParse(string? str, IFormatProvider? provider)
-        => TSelf.TryParse(str.AsSpan(), provider);
+    static Result<S> ITryParsable<S>.TryParse(string? str, IFormatProvider? provider)
+        => S.TryParse(str.AsSpan(), provider);
 
-    static TSelf ISpanParsable<TSelf>.Parse(text text, IFormatProvider? provider)
-        => TSelf.TryParse(text, provider).OkOrThrow();
+    static S ISpanParsable<S>.Parse(text text, IFormatProvider? provider)
+        => S.TryParse(text, provider).OkOrThrow();
 
-    static bool ISpanParsable<TSelf>.TryParse(text text, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
-        => TSelf.TryParse(text, provider).IsOk(out result);
+    static bool ISpanParsable<S>.TryParse(text text, IFormatProvider? provider, [MaybeNullWhen(false)] out S result)
+        => S.TryParse(text, provider).IsOk(out result);
 
-    static TSelf IParsable<TSelf>.Parse(string? str, IFormatProvider? provider)
-        => TSelf.TryParse(str.AsSpan(), provider).OkOrThrow();
+    static S IParsable<S>.Parse(string? str, IFormatProvider? provider)
+        => S.TryParse(str.AsSpan(), provider).OkOrThrow();
 
-    static bool IParsable<TSelf>.TryParse(string? str, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
-        => TSelf.TryParse(str.AsSpan(), provider).IsOk(out result);
+    static bool IParsable<S>.TryParse(string? str, IFormatProvider? provider, [MaybeNullWhen(false)] out S result)
+        => S.TryParse(str.AsSpan(), provider).IsOk(out result);
 #endif
 }
 
 [PublicAPI]
-public interface ITryParsable<TSelf>
+public interface ITryParsable<S>
 #if NET7_0_OR_GREATER
-    : IParsable<TSelf>
+    : IParsable<S>
 #endif
-    where TSelf : ITryParsable<TSelf>
+    where S : ITryParsable<S>
 {
 #if NET7_0_OR_GREATER
-    static abstract Result<TSelf> TryParse(string? str, IFormatProvider? provider = null);
+    static abstract Result<S> TryParse(string? str, IFormatProvider? provider = null);
 
 
-    static TSelf IParsable<TSelf>.Parse(string? str, IFormatProvider? provider)
-        => TSelf.TryParse(str, provider).OkOrThrow();
+    static S IParsable<S>.Parse(string? str, IFormatProvider? provider)
+        => S.TryParse(str, provider).OkOrThrow();
 
-    static bool IParsable<TSelf>.TryParse(string? str, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result)
-        => TSelf.TryParse(str, provider).IsOk(out result);
+    static bool IParsable<S>.TryParse(string? str, IFormatProvider? provider, [MaybeNullWhen(false)] out S result)
+        => S.TryParse(str, provider).IsOk(out result);
 #endif
 }

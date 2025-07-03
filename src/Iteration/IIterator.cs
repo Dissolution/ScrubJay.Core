@@ -8,7 +8,7 @@ public interface IIterator<T>
     Option<T> Next();
 
 #if !NETFRAMEWORK && !NETSTANDARD2_0
-    bool Next([MaybeNullWhen(false)] out T? item) => Next().IsSome(out item);
+    bool Next(out T? item) => Next().IsSome(out item);
 #endif
 }
 
@@ -18,7 +18,7 @@ public interface IReverseIterator<T>
     Option<T> Prev();
 
 #if !NETFRAMEWORK && !NETSTANDARD2_0
-    bool Prev([MaybeNullWhen(false)] out T? item) => Prev().IsSome(out item);
+    bool Prev(out T? item) => Prev().IsSome(out item);
 #endif
 }
 

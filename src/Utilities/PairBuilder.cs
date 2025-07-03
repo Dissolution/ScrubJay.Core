@@ -1,7 +1,5 @@
 #pragma warning disable MA0025
 
-using System.Diagnostics;
-
 namespace ScrubJay.Utilities;
 
 [PublicAPI]
@@ -12,8 +10,6 @@ public ref struct PairBuilder<K, V>
 {
     private enum Step
     {
-        Invalid = 0,
-
         PreStartParen,
         PreKey,
         PreComma,
@@ -59,7 +55,7 @@ public ref struct PairBuilder<K, V>
                 errors.Add(error);
                 break;
             default:
-                throw new System.Diagnostics.UnreachableException();
+                throw new UnreachableException();
         }
     }
 

@@ -4,20 +4,20 @@
 public static class Parsable
 {
 #if NET7_0_OR_GREATER
-    public static TParsable Parse<TParsable>(string str, IFormatProvider? provider = null)
-        where TParsable : IParsable<TParsable> => TParsable.Parse(str, provider);
+    public static P Parse<P>(string str, IFormatProvider? provider = null)
+        where P : IParsable<P> => P.Parse(str, provider);
 
-    public static TSpanParsable Parse<TSpanParsable>(text text, IFormatProvider? provider = null)
-        where TSpanParsable : ISpanParsable<TSpanParsable> => TSpanParsable.Parse(text, provider);
+    public static P Parse<P>(text text, IFormatProvider? provider = null)
+        where P : ISpanParsable<P> => P.Parse(text, provider);
 
-    public static bool TryParse<TParsable>(
+    public static bool TryParse<P>(
         [NotNullWhen(true)] string? str,
-        [MaybeNullWhen(false)] out TParsable result)
-        where TParsable : IParsable<TParsable> => TParsable.TryParse(str, null, out result);
+        [MaybeNullWhen(false)] out P result)
+        where P : IParsable<P> => P.TryParse(str, null, out result);
 
-    public static bool TryParse<TSpanParsable>(
+    public static bool TryParse<P>(
         text text,
-        [MaybeNullWhen(false)] out TSpanParsable result)
-        where TSpanParsable : ISpanParsable<TSpanParsable> => TSpanParsable.TryParse(text, null, out result);
+        [MaybeNullWhen(false)] out P result)
+        where P : ISpanParsable<P> => P.TryParse(text, null, out result);
 #endif
 }

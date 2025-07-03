@@ -3,11 +3,11 @@
 [PublicAPI]
 public static class FunctionalExtensions
 {
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
-        this IEnumerable<TIn> enumerable,
-        Func<TIn, Option<TOut>> selectWhere)
+    public static IEnumerable<O> SelectWhere<I, O>(
+        this IEnumerable<I> enumerable,
+        Func<I, Option<O>> selectWhere)
     {
-        foreach (TIn input in enumerable)
+        foreach (I input in enumerable)
         {
             if (selectWhere(input).IsSome(out var output))
             {
@@ -16,11 +16,11 @@ public static class FunctionalExtensions
         }
     }
 
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(
-        this IEnumerable<TIn> enumerable,
-        Func<TIn, Result<TOut>> selectWhere)
+    public static IEnumerable<O> SelectWhere<I, O>(
+        this IEnumerable<I> enumerable,
+        Func<I, Result<O>> selectWhere)
     {
-        foreach (TIn input in enumerable)
+        foreach (I input in enumerable)
         {
             if (selectWhere(input).IsOk(out var output))
             {
@@ -29,11 +29,11 @@ public static class FunctionalExtensions
         }
     }
 
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut, TError>(
-        this IEnumerable<TIn> enumerable,
-        Func<TIn, Result<TOut, TError>> selectWhere)
+    public static IEnumerable<O> SelectWhere<I, O, E>(
+        this IEnumerable<I> enumerable,
+        Func<I, Result<O, E>> selectWhere)
     {
-        foreach (TIn input in enumerable)
+        foreach (I input in enumerable)
         {
             if (selectWhere(input).IsOk(out var output))
             {
@@ -51,7 +51,7 @@ public static class FunctionalExtensions
      */
 
     public static Result<T> TryGetOne<T>(
-        [AllowNull, NotNullWhen(true)]
+        [AllowNull]
         this IEnumerable<T> source)
     {
         if (source is null)
@@ -92,7 +92,7 @@ public static class FunctionalExtensions
     }
 
     public static Result<T> TryGetOne<T>(
-        [AllowNull, NotNullWhen(true)] this IEnumerable<T> source,
+        [AllowNull] this IEnumerable<T> source,
         Func<T, bool> predicate)
     {
         if (source is null)
@@ -173,7 +173,7 @@ public static class FunctionalExtensions
 
 #region First()
     public static Result<T> TryGetFirst<T>(
-        [AllowNull, NotNullWhen(true)]
+        [AllowNull]
         this IEnumerable<T> source)
     {
         if (source is null)
@@ -210,7 +210,7 @@ public static class FunctionalExtensions
     }
 
     public static Result<T> TryGetFirst<T>(
-        [AllowNull, NotNullWhen(true)] this IEnumerable<T> source,
+        [AllowNull] this IEnumerable<T> source,
         Func<T, bool> predicate)
     {
         if (source is null)
@@ -251,7 +251,7 @@ public static class FunctionalExtensions
     #region Min
 
     public static Result<T> TryGetMinimum<T>(
-        [AllowNull, NotNullWhen(true)]
+        [AllowNull]
         this IEnumerable<T> source,
         IComparer<T>? valueComparer = null,
         bool firstMin = true)

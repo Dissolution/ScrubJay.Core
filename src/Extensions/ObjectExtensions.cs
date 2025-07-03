@@ -42,7 +42,7 @@ public static class ObjectExtensions
         return None();
     }
 
-    public static bool As<T>(this object? input, [NotNullIfNotNull(nameof(input)), MaybeNull] out T? output)
+    public static bool As<T>(this object? input, [NotNullIfNotNull(nameof(input))] out T? output)
     {
         if (input is T)
         {

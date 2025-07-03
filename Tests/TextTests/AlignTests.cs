@@ -20,7 +20,7 @@ public class AlignTests
     {
         using var text = new TextBuilder();
         text.Align('j', 0);
-        Assert.Equal(1, text.Length);
+        Assert.Equal(0, text.Length);
     }
 
     [Fact]

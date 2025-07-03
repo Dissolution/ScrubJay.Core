@@ -41,8 +41,7 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
 
     internal ListSlice(IList<T> list, int offset, int length)
     {
-        Debug.Assert(list is not null);
-        _list = list!;
+        _list = list;
         Debug.Assert(offset >= 0);
         _offset = offset;
         Debug.Assert(length >= 0);

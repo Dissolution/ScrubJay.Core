@@ -1,12 +1,10 @@
 namespace ScrubJay.Extensions;
 
-
-
 /// <summary>
 /// Extensions on 2D Arrays
 /// </summary>
 [PublicAPI]
-public static partial class ArrayExtensions
+public static class ArrayExtensions
 {
 #if NETFRAMEWORK || NETSTANDARD2_0
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -20,10 +18,10 @@ public static partial class ArrayExtensions
 #endif
 
     /// <inheritdoc cref="Array.ConvertAll{TInput,TOutput}"/>
-    public static TOutput[] ConvertAll<TInput, TOutput>(
-        this TInput[] array,
-        Converter<TInput, TOutput> converter)
-        => Array.ConvertAll<TInput, TOutput>(array, converter);
+    public static O[] ConvertAll<I, O>(
+        this I[] array,
+        Converter<I, O> converter)
+        => Array.ConvertAll<I, O>(array, converter);
 
     public static Result<T> TryGet<T>(
         this T[]? array,

@@ -18,10 +18,10 @@ public ref struct OptionRef<T>
         _reference = ref someValue;
     }
 
-    [return: MaybeNull]
-    public ref T GetRef()
+    public ref T Ref
     {
-        return ref _reference!;
+        [return: MaybeNull]
+        get => ref _reference!;
     }
 
     public bool IsSome(ref T someValue)

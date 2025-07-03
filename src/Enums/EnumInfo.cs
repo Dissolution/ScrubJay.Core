@@ -11,7 +11,7 @@ public abstract record class EnumInfo
     public Attribute[] Attributes { get; init; } = [];
     public required Type EnumType { get; init; }
     public required Type UnderlyingType { get; init; }
-    public bool IsFlags { get; init; } = false;
+    public bool IsFlags { get; init; }
 
     protected EnumInfo()
     {
@@ -22,10 +22,10 @@ public abstract record class EnumInfo
     {
         Debug.Assert(enumType is not null);
         Debug.Assert(enumType!.IsEnum);
-        this.EnumType = enumType;
-        this.UnderlyingType = Enum.GetUnderlyingType(enumType);
-        this.Attributes = Attribute.GetCustomAttributes(enumType);
-        this.IsFlags = Attributes.Has<FlagsAttribute>();
+        EnumType = enumType;
+        UnderlyingType = Enum.GetUnderlyingType(enumType);
+        Attributes = Attribute.GetCustomAttributes(enumType);
+        IsFlags = Attributes.Has<FlagsAttribute>();
     }
 }
 

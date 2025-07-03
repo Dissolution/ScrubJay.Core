@@ -9,15 +9,15 @@ public static class EnumerableExtensions
     /// <summary>
     /// A Predicate against <paramref name="input"/> that also produces <paramref name="output"/>
     /// </summary>
-    /// <typeparam name="TIn"></typeparam>
-    /// <typeparam name="TOut"></typeparam>
-    public delegate bool SelectWherePredicate<in TIn, TOut>(TIn input, out TOut output);
+    /// <typeparam name="I"></typeparam>
+    /// <typeparam name="O"></typeparam>
+    public delegate bool SelectWherePredicate<in I, O>(I input, out O output);
 
-    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> enumerable, SelectWherePredicate<TIn, TOut> selectWherePredicate)
+    public static IEnumerable<O> SelectWhere<I, O>(this IEnumerable<I> enumerable, SelectWherePredicate<I, O> selectWherePredicate)
     {
-        foreach (TIn input in enumerable)
+        foreach (I input in enumerable)
         {
-            if (selectWherePredicate(input, out TOut output))
+            if (selectWherePredicate(input, out O output))
             {
                 yield return output;
             }

@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text.Rendering;
-
-#pragma warning disable CA1716
+﻿#pragma warning disable CA1716
 
 namespace ScrubJay.Validation;
 

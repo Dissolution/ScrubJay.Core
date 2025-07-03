@@ -35,7 +35,7 @@ public static class BitHelper
         }
     }
 
-    public static unsafe U ReadUnsafe<U>(bytes bytes)
+    public static U ReadUnsafe<U>(bytes bytes)
         where U : unmanaged
     {
         Emit.Ldarg(nameof(bytes));

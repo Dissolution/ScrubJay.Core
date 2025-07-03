@@ -1,15 +1,15 @@
 ﻿namespace ScrubJay.Maths;
 
-public interface IAlgebraic<TSelf, TOther> :
+public interface IAlgebraic<S, O> :
 #if NET7_0_OR_GREATER
-    IEqualityOperators<TSelf, TOther, bool>,
-    IComparisonOperators<TSelf, TOther, bool>,
-    IAdditionOperators<TSelf, TOther, TSelf>,
-    ISubtractionOperators<TSelf, TOther, TSelf>,
-    IMultiplyOperators<TSelf, TOther, TSelf>,
-    IDivisionOperators<TSelf, TOther, TSelf>,
-    IModulusOperators<TSelf, TOther, TSelf>,
+    IEqualityOperators<S, O, bool>,
+    IComparisonOperators<S, O, bool>,
+    IAdditionOperators<S, O, S>,
+    ISubtractionOperators<S, O, S>,
+    IMultiplyOperators<S, O, S>,
+    IDivisionOperators<S, O, S>,
+    IModulusOperators<S, O, S>,
 #endif
-    IEquatable<TOther>,
-    IComparable<TOther>
-    where TSelf : IAlgebraic<TSelf, TOther>;
+    IEquatable<O>,
+    IComparable<O>
+    where S : IAlgebraic<S, O>;

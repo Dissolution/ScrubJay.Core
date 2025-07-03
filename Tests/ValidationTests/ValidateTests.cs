@@ -2,6 +2,7 @@
 using ScrubJay.Utilities;
 #endif
 using ScrubJay.Validation;
+// ReSharper disable RedundantArgumentDefaultValue
 
 namespace ScrubJay.Tests.ValidationTests;
 

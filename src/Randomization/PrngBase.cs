@@ -13,7 +13,7 @@ public abstract class PrngBase : IPrng
 
     protected PrngBase(RandSeed seed)
     {
-        this.Seed = seed;
+        Seed = seed;
     }
 
     public virtual bool NextBoolean() => (NextU64() >> 63) == 1UL;

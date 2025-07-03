@@ -26,7 +26,7 @@ public static class TestHelper
         "Sphinx of black quartz, judge my vow.",
         "❤️",
         // array
-        new byte[4] { 0, 147, 13, 101 },
+        new byte[] { 0, 147, 13, 101 },
         // delegate
         new Action(static () => { }),
         // object itself

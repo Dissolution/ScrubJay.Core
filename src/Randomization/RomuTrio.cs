@@ -18,7 +18,7 @@ public sealed class RomuTrio : RomuPrng
     public RomuTrio(RandSeed seed) : base(seed)
     {
         // We require three seeds
-        this.Seed.GetSeeds(out _xState, out _yState, out _zState);
+        Seed.GetSeeds(out _xState, out _yState, out _zState);
         if (_xState == 0UL && _yState == 0UL && _zState == 0UL)
             throw new InvalidOperationException("At least one seed value must be non-zero");
     }

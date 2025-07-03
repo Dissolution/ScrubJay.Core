@@ -1,3 +1,5 @@
+#pragma warning disable CA1710
+
 using System.Buffers;
 using ScrubJay.Maths;
 using ScrubJay.Text.Rendering;
@@ -164,10 +166,7 @@ public sealed class TextBuilder :
     }
 
     [HandlesResourceDisposal]
-    ~TextBuilder()
-    {
-        this.Dispose();
-    }
+    ~TextBuilder() => Dispose();
 
     void ICollection<char>.Add(char item) => Append(item);
 
@@ -279,17 +278,17 @@ public sealed class TextBuilder :
         return this;
     }
 
-#pragma warning disable IDE0060
+#pragma warning disable IDE0060, CA2000
     public TextBuilder Append(
-        [HandlesResourceDisposal]
         [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
-        ref InterpolatedTextBuilder interpolatedTextBuilder)
+        [HandlesResourceDisposal]
+        InterpolatedTextBuilder interpolatedTextBuilder)
     {
         // as this TextBuilder instance was passed into the InterpolatedTextBuilder's constructor,
         // all the writing has already occurred
         return this;
     }
-#pragma warning restore IDE0060
+#pragma warning restore IDE0060, CA2000
 
 #endregion
 
@@ -895,10 +894,11 @@ public sealed class TextBuilder :
                 }
 
                 end = width - start;
-                throw new NotImplementedException();
-
+                Debugger.Break();
                 var slice = wrote.Slice(start, width);
-                return Append('…').Append(slice).Append('…');
+                Debug.Assert(slice.Length == end - start);
+                //return Append('…').Append(slice).Append('…');
+                throw new NotImplementedException();
             }
         }
 
@@ -1242,7 +1242,7 @@ public sealed class TextBuilder :
         if (offset == pos)
             return Format<T>(value, format, provider);
 
-        this.Measure(tb => tb.Format<T>(value, format, provider), out var written);
+        Measure(tb => tb.Format<T>(value, format, provider), out var written);
         int len = written.Length;
         if (len > 0)
         {
@@ -1266,7 +1266,7 @@ public sealed class TextBuilder :
         if (offset == pos)
             return Render<T>(value);
 
-        this.Measure(tb => tb.Render<T>(value), out var written);
+        Measure(tb => tb.Render<T>(value), out var written);
         int len = written.Length;
         if (len > 0)
         {
@@ -2649,7 +2649,6 @@ public sealed class TextBuilder :
 
         GC.SuppressFinalize(this);
     }
-
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override string ToString() => Written.AsString();

@@ -27,8 +27,8 @@ public abstract record class EnumMemberInfo
         Debug.Assert(memberField is not null);
         Debug.Assert(memberField!.IsStatic);
 
-        this.Attributes = Attribute.GetCustomAttributes(memberField);
-        this.Name = memberField.Name;
+        Attributes = Attribute.GetCustomAttributes(memberField);
+        Name = memberField.Name;
 
         if (Attributes.Has<AliasesAttribute>().IsSome(out var aliasesAttr))
         {
@@ -108,7 +108,7 @@ public sealed record class EnumMemberInfo<E> : EnumMemberInfo
     internal EnumMemberInfo(FieldInfo memberField) : base(memberField)
     {
         object? obj = memberField.GetValue(null);
-        this.Value = obj.ThrowIfNot<E>();
+        Value = obj.ThrowIfNot<E>();
     }
 
     public EnumMemberInfo() : base()

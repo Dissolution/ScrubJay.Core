@@ -4,9 +4,9 @@ public class CharToTextBenchmarks
 {
     public static IEnumerable<object[]> Characters()
     {
-        yield return new object[1] { '\0' };
-        yield return new object[1] { ',' };
-        yield return new object[1] { char.MaxValue };
+        yield return ['\0'];
+        yield return [','];
+        yield return [char.MaxValue];
     }
 
 
@@ -20,7 +20,7 @@ public class CharToTextBenchmarks
     [ArgumentsSource(nameof(Characters))]
     public ReadOnlySpan<char> NewTextFromCharArray(char ch)
     {
-        return new ReadOnlySpan<char>(new char[1] { ch });
+        return new ReadOnlySpan<char>([ch]);
     }
 
 

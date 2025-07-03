@@ -3,113 +3,113 @@
 namespace ScrubJay.Collections;
 
 /// <summary>
-/// A <see cref="ConcurrentDictionary{TKey,TValue}"/> where <c>TKey</c> is <see cref="Type"/> that supports using a generic type
+/// A <see cref="ConcurrentDictionary{K,TValue}"/> where <c>K</c> is <see cref="Type"/> that supports using a generic type
 /// instead of a key
 /// </summary>
-/// <typeparam name="TValue">
+/// <typeparam name="V">
 /// The <see cref="Type"/> of values associated with the <see cref="Type"/> keys
 /// </typeparam>
 [PublicAPI]
-public class ConcurrentTypeMap<TValue> : ConcurrentDictionary<Type, TValue>
+public class ConcurrentTypeMap<V> : ConcurrentDictionary<Type, V>
 {
     public ConcurrentTypeMap() { }
 
     public ConcurrentTypeMap(int capacity)
         : base(Environment.ProcessorCount, capacity) { }
 
-    public bool ContainsKey<TKey>()
+    public bool ContainsKey<K>()
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.ContainsKey(typeof(TKey));
+        => base.ContainsKey(typeof(K));
 
-    public bool TryGetValue<TKey>([MaybeNullWhen(false)] out TValue value)
+    public bool TryGetValue<K>([MaybeNullWhen(false)] out V value)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.TryGetValue(typeof(TKey), out value);
+        => base.TryGetValue(typeof(K), out value);
 
-    public TValue GetOrAdd<TKey>(TValue value)
+    public V GetOrAdd<K>(V value)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.GetOrAdd(typeof(TKey), value);
+        => base.GetOrAdd(typeof(K), value);
 
-    public TValue GetOrAdd<TKey>(Func<TValue> addValue)
+    public V GetOrAdd<K>(Func<V> addValue)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.GetOrAdd(typeof(TKey), _ => addValue());
+        => base.GetOrAdd(typeof(K), _ => addValue());
 
-    public TValue GetOrAdd<TKey>(Func<Type, TValue> addValue)
+    public V GetOrAdd<K>(Func<Type, V> addValue)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.GetOrAdd(typeof(TKey), addValue);
+        => base.GetOrAdd(typeof(K), addValue);
 
-    public bool TryAdd<TKey>(TValue addValue)
+    public bool TryAdd<K>(V addValue)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.TryAdd(typeof(TKey), addValue);
+        => base.TryAdd(typeof(K), addValue);
 
-    public TValue AddOrUpdate(Type type, TValue value)
+    public V AddOrUpdate(Type type, V value)
         => base.AddOrUpdate(type, value, (_, _) => value);
 
-    public TValue AddOrUpdate<TKey>(TValue value)
+    public V AddOrUpdate<K>(V value)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.AddOrUpdate(typeof(TKey), value, (_, _) => value);
+        => base.AddOrUpdate(typeof(K), value, (_, _) => value);
 
-    public TValue AddOrUpdate<TKey>(TValue addValue, Func<TValue, TValue> updateValue)
+    public V AddOrUpdate<K>(V addValue, Func<V, V> updateValue)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.AddOrUpdate(typeof(TKey), _ => addValue, (_, existingValue) => updateValue(existingValue));
+        => base.AddOrUpdate(typeof(K), _ => addValue, (_, existingValue) => updateValue(existingValue));
 
-    public TValue AddOrUpdate<TKey>(TValue addValue, Func<Type, TValue, TValue> updateValue)
+    public V AddOrUpdate<K>(V addValue, Func<Type, V, V> updateValue)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.AddOrUpdate(typeof(TKey), _ => addValue, updateValue);
+        => base.AddOrUpdate(typeof(K), _ => addValue, updateValue);
 
-    public TValue AddOrUpdate<TKey>(Func<TValue> createValue, Func<TValue, TValue> updateValue)
+    public V AddOrUpdate<K>(Func<V> createValue, Func<V, V> updateValue)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.AddOrUpdate(typeof(TKey), _ => createValue(), (_, existingValue) => updateValue(existingValue));
+        => base.AddOrUpdate(typeof(K), _ => createValue(), (_, existingValue) => updateValue(existingValue));
 
-    public TValue AddOrUpdate<TKey>(Func<TValue> createValue, Func<Type, TValue, TValue> updateValue)
+    public V AddOrUpdate<K>(Func<V> createValue, Func<Type, V, V> updateValue)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.AddOrUpdate(typeof(TKey), _ => createValue(), updateValue);
+        => base.AddOrUpdate(typeof(K), _ => createValue(), updateValue);
 
-    public TValue AddOrUpdate<TKey>(Func<Type, TValue> createValue, Func<TValue, TValue> updateValue)
+    public V AddOrUpdate<K>(Func<Type, V> createValue, Func<V, V> updateValue)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.AddOrUpdate(typeof(TKey), createValue, (_, existingValue) => updateValue(existingValue));
+        => base.AddOrUpdate(typeof(K), createValue, (_, existingValue) => updateValue(existingValue));
 
-    public TValue AddOrUpdate<TKey>(Func<Type, TValue> createValue, Func<Type, TValue, TValue> updateValue)
+    public V AddOrUpdate<K>(Func<Type, V> createValue, Func<Type, V, V> updateValue)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.AddOrUpdate(typeof(TKey), createValue, updateValue);
+        => base.AddOrUpdate(typeof(K), createValue, updateValue);
 
     public bool TryRemove(Type keyType)
         => base.TryRemove(keyType, out _);
 
-    public bool TryRemove<TKey>()
+    public bool TryRemove<K>()
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.TryRemove(typeof(TKey), out _);
+        => base.TryRemove(typeof(K), out _);
 
-    public bool TryRemove<TKey>([MaybeNullWhen(false)] out TValue value)
+    public bool TryRemove<K>([MaybeNullWhen(false)] out V value)
 #if NET9_0_OR_GREATER
-        where TKey : allows ref struct
+        where K : allows ref struct
 #endif
-        => base.TryRemove(typeof(TKey), out value);
+        => base.TryRemove(typeof(K), out value);
 }
