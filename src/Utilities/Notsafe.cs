@@ -3,6 +3,7 @@
 
 using InlineIL;
 using static InlineIL.IL;
+
 // ReSharper disable EntityNameCapturedOnly.Local
 
 namespace ScrubJay.Utilities;
@@ -256,6 +257,48 @@ public static unsafe class Notsafe
                 in MemoryMarshal.GetReference(source),
                 ref MemoryMarshal.GetReference(destination),
                 count);
+
+#endregion
+
+#region Read
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static U ReadImpl<U>(ref readonly byte source)
+            // where U : unmanaged
+        {
+            Emit.Ldarg(nameof(source));
+            Emit.Unaligned(0x1);
+            Emit.Ldobj<U>();
+            return Return<U>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static U Read<U>(scoped ReadOnlySpan<byte> bytes)
+            where U : unmanaged
+        {
+            return ReadImpl<U>(in bytes.GetPinnableReference());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static U Read<U>(scoped Span<byte> bytes)
+            where U : unmanaged
+        {
+            return ReadImpl<U>(in bytes.GetPinnableReference());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static E ReadEnum<E>(scoped ReadOnlySpan<byte> bytes)
+            where E : struct, Enum
+        {
+            return ReadImpl<E>(in bytes.GetPinnableReference());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static E ReadEnum<E>(scoped Span<byte> bytes)
+            where E : struct, Enum
+        {
+            return ReadImpl<E>(in bytes.GetPinnableReference());
+        }
 
 #endregion
     }

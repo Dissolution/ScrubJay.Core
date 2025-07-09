@@ -228,7 +228,7 @@ public class BufferTests
         buffer.AddMany(startArray);
 
         Index index = 0;
-        buffer.TryInsert(index, 147);
+        buffer.Insert(index, 147);
         byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -244,7 +244,7 @@ public class BufferTests
         buffer.AddMany(startArray);
 
         Index index = 8;
-        buffer.TryInsert(index, 147);
+        buffer.Insert(index, 147);
         byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -260,7 +260,7 @@ public class BufferTests
         buffer.AddMany(startArray);
 
         Index index = ^0;
-        buffer.TryInsert(index, 147);
+        buffer.Insert(index, 147);
         byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -276,7 +276,7 @@ public class BufferTests
         buffer.AddMany(startArray);
 
         Index index = 0;
-        buffer.TryInsertMany(index, [255, 250, 245, 240]);
+        buffer.InsertMany(index, [255, 250, 245, 240]);
         byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -292,7 +292,7 @@ public class BufferTests
         buffer.AddMany(startArray);
 
         Index index = 8;
-        buffer.TryInsertMany(index, [255, 250, 245, 240]);
+        buffer.InsertMany(index, [255, 250, 245, 240]);
         byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -308,7 +308,7 @@ public class BufferTests
         buffer.AddMany(startArray);
 
         Index index = ^0;
-        buffer.TryInsertMany(index, [255, 250, 245, 240]);
+        buffer.InsertMany(index, [255, 250, 245, 240]);
         byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -333,7 +333,7 @@ public class BufferTests
         buffer.AddMany(startArray);
 
         Index index = 0;
-        buffer.TryInsertMany(index, EnumerateInsertBytes());
+        buffer.InsertMany(index, EnumerateInsertBytes());
         byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -349,7 +349,7 @@ public class BufferTests
         buffer.AddMany(startArray);
 
         Index index = 8;
-        buffer.TryInsertMany(index, EnumerateInsertBytes());
+        buffer.InsertMany(index, EnumerateInsertBytes());
         byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);
@@ -365,7 +365,7 @@ public class BufferTests
         buffer.AddMany(startArray);
 
         Index index = ^0;
-        buffer.TryInsertMany(index, EnumerateInsertBytes());
+        buffer.InsertMany(index, EnumerateInsertBytes());
         byte[] bufferArray = buffer.ToArray();
         Assert.Equal(endArray.Length, buffer.Count);
         Assert.Equal(endArray, bufferArray);

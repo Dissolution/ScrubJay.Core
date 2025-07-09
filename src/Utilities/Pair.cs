@@ -21,37 +21,35 @@ public static class Pair
     {
         var reader = new SpanReader<char>(text);
 
-        reader.TrySkipWhile(char.IsWhiteSpace);
+        reader.SkipWhile(char.IsWhiteSpace);
 
-        if (reader.RemainingCount == 0)
+        if (reader.IsCompleted)
             return getEx(text);
 
         char ch = reader.Take();
         if (ch != '(')
             return getEx(text);
 
-        var takeUntilComma = reader.TryTakeUntilMatches(',');
-        if (takeUntilComma.StopReason == StopReason.EndOfSpan)
+        var keySpan = reader.TakeUntilMatching(',');
+        if (reader.IsCompleted)
             return getEx(text);
 
-        var keySpan = takeUntilComma.Span;
         if (!K.TryParse(keySpan, provider, out var key))
             return getEx(text, ParseException.Create<K>(keySpan));
 
         reader.Take();
 
-        var takeUntilRightParenthesis = reader.TryTakeUntilMatches(')');
-        if (takeUntilRightParenthesis.StopReason == StopReason.EndOfSpan)
+        var valueSpan = reader.TakeUntilMatching(')');
+        if (reader.IsCompleted)
             return getEx(text);
 
-        var valueSpan = takeUntilRightParenthesis.Span;
         if (!V.TryParse(valueSpan, provider, out var value))
             return getEx(text, ParseException.Create<V>(valueSpan));
 
         reader.Take();
 
-        reader.TrySkipWhile(char.IsWhiteSpace);
-        if (reader.RemainingCount > 0)
+        reader.SkipWhile(char.IsWhiteSpace);
+        if (!reader.IsCompleted)
             return getEx(text);
 
         var pair = new Pair<K, V>(key, value);

@@ -1,32 +1,14 @@
-﻿using static ScrubJay.Memory.SpanReadResult;
-
-namespace ScrubJay.Memory;
+﻿namespace ScrubJay.Memory;
 
 [PublicAPI]
 public ref struct SpanReader<T>
 {
 #region delegates
 
-    /// <summary>
-    /// A predicate that examines the <see cref="ReadOnlySpan{T}"/> of items after a position
-    /// </summary>
     public delegate bool ScanNext(ReadOnlySpan<T> nextItems);
 
-    /// <summary>
-    /// A predicate that examines the <see cref="ReadOnlySpan{T}"/> of items before and after a position
-    /// </summary>
     public delegate bool ScanPrevNext(ReadOnlySpan<T> prevItems, ReadOnlySpan<T> nextItems);
 
-    /// <summary>
-    /// Examines the <see cref="RemainingSpan"/> and returns how many of them were read,
-    /// which moves the reading position forward
-    /// </summary>
-    /// <param name="remainingSpan">
-    /// The <see cref="RemainingSpan"/>
-    /// </param>
-    /// <returns>
-    /// The number of items in <paramref name="remainingSpan"/> that were read
-    /// </returns>
     public delegate int ReadSpan(ReadOnlySpan<T> remainingSpan);
 
 #endregion
@@ -129,6 +111,22 @@ public ref struct SpanReader<T>
             var slice = _span.Slice(_position, count);
             _position += count;
             return slice;
+        }
+
+        throw GetEx();
+    }
+
+#endregion
+
+#region TakeInto
+
+    public void TakeInto(scoped Span<T> buffer)
+    {
+        if (_position + buffer.Length <= _spanLength)
+        {
+            _span.Slice(_position, buffer.Length).CopyTo(buffer);
+            _position += buffer.Length;
+            return;
         }
 
         throw GetEx();
@@ -282,7 +280,8 @@ public ref struct SpanReader<T>
 
     public ReadOnlySpan<T> TakeUntilMatching(
         scoped ReadOnlySpan<T> match,
-        IEqualityComparer<T>? comparer = null)
+        IEqualityComparer<T>? comparer = null,
+        bool chunk = false)
     {
         int matchLen = match.Length;
         if (matchLen == 0)
@@ -295,7 +294,10 @@ public ref struct SpanReader<T>
 
         while (index < len && !Sequence.Equal(span.Slice(index, matchLen), match, comparer))
         {
-            index++;
+            if (chunk)
+                index += matchLen;
+            else
+                index++;
         }
 
         _position = index;
@@ -651,7 +653,7 @@ public ref struct SpanReader<T>
     {
         int matchLen = match.Length;
         if (matchLen == 0)
-            return [];
+            return;
 
         var span = _span;
         int start = _position;
@@ -778,12 +780,10 @@ public ref struct SpanReader<T>
 #endregion
 
 
-
     /// <summary>
     /// Resets this <see cref="SpanReader{T}"/> back to its beginning position
     /// </summary>
     public void Reset() => _position = 0;
-
 
     public readonly override string ToString()
     {
@@ -846,40 +846,3 @@ public ref struct SpanReader<T>
         return builder.ToString();
     }
 }
-/*
-
-public static class SpanReaderExtensions
-{
-
-    public static bool TryTakeUntil<T>(
-        this scoped ref SpanReader<T> spanReader,
-        T match,
-        out ReadOnlySpan<T> taken,
-        bool inclusive = false,
-        bool skipFirst = false)
-    {
-        // Operate on the remaining span
-        var span = spanReader.RemainingSpan;
-        int len = span.Length;
-
-        int i = skipFirst ? 1 : 0;
-        while (i < len)
-        {
-            if (EqualityComparer<T>.Default.Equals(match, span[i]))
-            {
-                if (inclusive)
-                {
-                    i += 1;
-                }
-                taken = span[..i];
-                spanReader.Skip(count: i);
-                return true;
-            }
-            i++;
-        }
-        // Did not find the ending match
-        taken = default;
-        return false;
-    }
-}
-*/
