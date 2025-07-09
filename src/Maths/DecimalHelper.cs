@@ -9,15 +9,16 @@
 {
     public override string ToString()
     {
-        var text = new Buffer<char>();
-        text.AddMany(Mantissa.ToString().AsSpan());
+        using var builder = new TextBuilder();
+        builder.Format(Mantissa);
+
         if (Exponent == 0)
         {
             // fin
         }
-        else if (Exponent > text.Count)
+        else if (Exponent > builder.Length)
         {
-            int zeros = Exponent - text.Count;
+            int zeros = Exponent - builder.Length;
             int offset = 0;
             if (Mantissa < 0)
             {
@@ -30,15 +31,15 @@
             buf[1] = '.';
             buf[2..].Fill('0');
 
-            text.TryInsertMany(offset, buf).ThrowIfError();
+            builder.Insert(offset, buf);
         }
         else
         {
-            int offset = text.Count - Exponent;
-            text.TryInsert(offset, '.').ThrowIfError();
+            int offset = builder.Length - Exponent;
+            builder.Insert(offset, '.');
         }
 
-        return text.ToStringAndDispose();
+        return builder.ToString();
     }
 }
 

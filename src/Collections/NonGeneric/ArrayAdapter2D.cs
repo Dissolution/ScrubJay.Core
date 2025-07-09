@@ -13,7 +13,7 @@ namespace ScrubJay.Collections.NonGeneric;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 [PublicAPI]
-public sealed class ArrayAdapter<T> :
+public sealed class ArrayAdapter2D<T> :
     /* Does not implement
      * IList<T>, IList, ICollection<T>, nor ICollection
      * as those types imply the capacity to Add and Remove from a collection
@@ -24,8 +24,6 @@ public sealed class ArrayAdapter<T> :
     IEnumerable<T>,
     IEnumerable
 {
-    private readonly Array _array;
-
     [return: NotNullIfNotNull(nameof(objValue))]
     private static T? ObjectToValue(
         object? objValue,
@@ -37,6 +35,10 @@ public sealed class ArrayAdapter<T> :
         throw new ArgumentException($"Value '{objValue}' is not a '{typeof(T).Render()}'", valueName);
     }
 
+    private readonly Array _array;
+    private readonly int _lowerBounds;
+    private readonly int _upperBound;
+
     public T this[int index]
     {
         get => ObjectToValue(_array.GetValue(index))!;
@@ -45,9 +47,14 @@ public sealed class ArrayAdapter<T> :
 
     public int Count => _array.Length;
 
-    public ArrayAdapter(Array array)
+    public ArrayAdapter2D(Array array)
     {
         _array = array.ThrowIfNull();
+        int dims = array.Rank;
+        if (dims != 1)
+            throw new ArgumentException("Array must have a Rank of 1", nameof(array));
+        _lowerBounds = array.GetLowerBound(0);
+        _upperBound = array.GetUpperBound(0);
     }
 
     public bool Contains(T item) => IndexOf(item) >= 0;

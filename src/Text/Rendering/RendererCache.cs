@@ -78,7 +78,7 @@ public static class RendererCache
             }
             case Array array:
             {
-                var wrapper = new ArrayWrapper<object?>(array);
+                var wrapper = new ArrayAdapterND<object?>(array);
                 return builder.Append('[')
                     .EnumerateAndDelimit(wrapper,
                         static (tb, item) => RenderTo(item, tb),

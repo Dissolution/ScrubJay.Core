@@ -23,7 +23,7 @@ namespace ScrubJay.Functional;
 ///  <seealso href="https://doc.rust-lang.org/std/option/index.html"/>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public readonly ref struct OptionROS<T> :
+public readonly ref struct OptionROSpan<T> :
     /* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */
     //IEqualityOperators<OptionROS<T>, OptionROS<T>, bool>,
     //IEqualityOperators<OptionROS<T>, None, bool>,
@@ -32,8 +32,8 @@ public readonly ref struct OptionROS<T> :
     //IComparisonOperators<OptionROS<T>, None, bool>,
     //IComparisonOperators<OptionROS<T>, T, bool>,
 #if NET9_0_OR_GREATER
-    IEquatable<OptionROS<T>>,
-    IComparable<OptionROS<T>>,
+    IEquatable<OptionROSpan<T>>,
+    IComparable<OptionROSpan<T>>,
 #endif
     IEquatable<None>,
     //IEquatable<T>,
@@ -47,63 +47,66 @@ public readonly ref struct OptionROS<T> :
     /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator bool(OptionROS<T> option) => option._isSome;
+    public static implicit operator bool(OptionROSpan<T> option) => option._isSome;
 
     /// <summary>
     /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator true(OptionROS<T> option) => option._isSome;
+    public static bool operator true(OptionROSpan<T> option) => option._isSome;
 
     /// <summary>
     /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator false(OptionROS<T> option) => !option._isSome;
+    public static bool operator false(OptionROSpan<T> option) => !option._isSome;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator OptionROSpan<T>(ReadOnlySpan<T> span) => Some(span);
 
     /// <summary>
     /// Implicitly convert a standalone <see cref="None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator OptionROS<T>(None _) => None();
+    public static implicit operator OptionROSpan<T>(None _) => None();
 
     // We pass equality and comparison down to T values
 
-    public static bool operator ==(OptionROS<T> left, OptionROS<T> right) => left.Equals(right);
+    public static bool operator ==(OptionROSpan<T> left, OptionROSpan<T> right) => left.Equals(right);
 
-    public static bool operator !=(OptionROS<T> left, OptionROS<T> right) => !left.Equals(right);
+    public static bool operator !=(OptionROSpan<T> left, OptionROSpan<T> right) => !left.Equals(right);
 
-    public static bool operator >(OptionROS<T> left, OptionROS<T> right) => left.CompareTo(right) > 0;
+    public static bool operator >(OptionROSpan<T> left, OptionROSpan<T> right) => left.CompareTo(right) > 0;
 
-    public static bool operator >=(OptionROS<T> left, OptionROS<T> right) => left.CompareTo(right) >= 0;
+    public static bool operator >=(OptionROSpan<T> left, OptionROSpan<T> right) => left.CompareTo(right) >= 0;
 
-    public static bool operator <(OptionROS<T> left, OptionROS<T> right) => left.CompareTo(right) < 0;
+    public static bool operator <(OptionROSpan<T> left, OptionROSpan<T> right) => left.CompareTo(right) < 0;
 
-    public static bool operator <=(OptionROS<T> left, OptionROS<T> right) => left.CompareTo(right) <= 0;
+    public static bool operator <=(OptionROSpan<T> left, OptionROSpan<T> right) => left.CompareTo(right) <= 0;
 
-    public static bool operator ==(OptionROS<T> option, None _) => option.IsNone();
+    public static bool operator ==(OptionROSpan<T> option, None _) => option.IsNone();
 
-    public static bool operator !=(OptionROS<T> option, None _) => option._isSome;
+    public static bool operator !=(OptionROSpan<T> option, None _) => option._isSome;
 
-    public static bool operator >(OptionROS<T> option, None none) => option.CompareTo(none) > 0;
+    public static bool operator >(OptionROSpan<T> option, None none) => option.CompareTo(none) > 0;
 
-    public static bool operator >=(OptionROS<T> option, None none) => option.CompareTo(none) >= 0;
+    public static bool operator >=(OptionROSpan<T> option, None none) => option.CompareTo(none) >= 0;
 
-    public static bool operator <(OptionROS<T> option, None none) => option.CompareTo(none) < 0;
+    public static bool operator <(OptionROSpan<T> option, None none) => option.CompareTo(none) < 0;
 
-    public static bool operator <=(OptionROS<T> option, None none) => option.CompareTo(none) <= 0;
+    public static bool operator <=(OptionROSpan<T> option, None none) => option.CompareTo(none) <= 0;
 
-    public static bool operator ==(OptionROS<T> option, T? some) => option.Equals(some);
+    public static bool operator ==(OptionROSpan<T> option, T? some) => option.Equals(some);
 
-    public static bool operator !=(OptionROS<T> option, T? some) => !option.Equals(some);
+    public static bool operator !=(OptionROSpan<T> option, T? some) => !option.Equals(some);
 
-    public static bool operator >(OptionROS<T> option, T some) => option.CompareTo(some) > 0;
+    public static bool operator >(OptionROSpan<T> option, T some) => option.CompareTo(some) > 0;
 
-    public static bool operator >=(OptionROS<T> option, T some) => option.CompareTo(some) >= 0;
+    public static bool operator >=(OptionROSpan<T> option, T some) => option.CompareTo(some) >= 0;
 
-    public static bool operator <(OptionROS<T> option, T some) => option.CompareTo(some) < 0;
+    public static bool operator <(OptionROSpan<T> option, T some) => option.CompareTo(some) < 0;
 
-    public static bool operator <=(OptionROS<T> option, T some) => option.CompareTo(some) <= 0;
+    public static bool operator <=(OptionROSpan<T> option, T some) => option.CompareTo(some) <= 0;
 
 #endregion
 
@@ -111,13 +114,13 @@ public readonly ref struct OptionROS<T> :
     /// Gets <see cref="Option{T}"/>.None, which represents the lack of a value
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static OptionROS<T> None() => default;
+    public static OptionROSpan<T> None() => default;
 
     /// <summary>
     /// Get an <see cref="Option{T}"/>.Some containing a <paramref name="value"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static OptionROS<T> Some(ReadOnlySpan<T> value) => new(value);
+    public static OptionROSpan<T> Some(ReadOnlySpan<T> value) => new(value);
 
 
     // Is this Option.Some?
@@ -127,11 +130,17 @@ public readonly ref struct OptionROS<T> :
     // If this is Option.Some, the value
     private readonly ReadOnlySpan<T> _span;
 
-    // option can only be constructed with None(), Some(), or implicitly
-    private OptionROS(ReadOnlySpan<T> value)
+
+    public OptionROSpan()
     {
-        _isSome = true;
+        _span = default;
+        _isSome = false;
+    }
+
+    public OptionROSpan(ReadOnlySpan<T> value)
+    {
         _span = value;
+        _isSome = true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -262,7 +271,7 @@ public readonly ref struct OptionROS<T> :
 
     /* None always compares as less than any Some */
 
-    public int CompareTo(OptionROS<T> other)
+    public int CompareTo(OptionROSpan<T> other)
     {
         if (_isSome)
         {
@@ -320,7 +329,7 @@ public readonly ref struct OptionROS<T> :
 
 #region Equality
 
-    public bool Equals(OptionROS<T> other)
+    public bool Equals(OptionROSpan<T> other)
     {
         // If I am Some
         if (_isSome)

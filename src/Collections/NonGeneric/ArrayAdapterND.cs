@@ -9,7 +9,7 @@ using ScrubJay.Text.Rendering;
 namespace ScrubJay.Collections.NonGeneric;
 
 [PublicAPI]
-public sealed class ArrayWrapper<T> :
+public sealed class ArrayAdapterND<T> :
     IReadOnlyCollection<T?>,
     IEnumerable<T?>
 {
@@ -38,7 +38,7 @@ public sealed class ArrayWrapper<T> :
     public int Count => _array.Length;
 
 
-    public ArrayWrapper(Array array)
+    public ArrayAdapterND(Array array)
     {
         _array = array.ThrowIfNull();
 
@@ -153,7 +153,7 @@ public sealed class ArrayWrapper<T> :
             }
         }
 
-        public ArrayWrapperEnumerator(ArrayWrapper<T> wrapper)
+        public ArrayWrapperEnumerator(ArrayAdapterND<T> wrapper)
         {
             _array = wrapper._array;
             _arrayIndicesEnumerator = new(wrapper._lowerBounds, wrapper._upperBounds);

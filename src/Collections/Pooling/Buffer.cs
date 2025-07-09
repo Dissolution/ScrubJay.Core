@@ -50,13 +50,29 @@ public ref struct Buffer<T> :
     [MustDisposeResource(false)]
     public static implicit operator Buffer<T>(Span<T> span) => new(span, 0);
 
+    /// <summary>
+    /// The minimum capacity a buffer can start with
+    /// </summary>
     private static readonly int _minCapacity = typeof(T).IsValueType ? 1024 : 64;
+
+    public static Buffer<T> Empty
+    {
+        [MustDisposeResource]
+        get => new();
+    }
+
+    [MustDisposeResource]
+    public static Buffer<T> New() => new();
+
+    [MustDisposeResource]
+    public static Buffer<T> New(int minCapacity) => new(minCapacity);
 
 
     // The writable span, usually pointing to _array, but possibly from an initial Span<T>
     internal Span<T> _span;
 
     // The writeable array, usually rented from an ArrayPool
+    // may be null if started with a span
     internal T[]? _array;
 
     // the position in _span that we're writing to
@@ -90,8 +106,8 @@ public ref struct Buffer<T> :
     {
         get
         {
-            Throw.IfBadIndex(index, _position);
-            return ref _span[index];
+            int offset = Throw.IfBadIndex(index, _position);
+            return ref _span[offset];
         }
     }
 
@@ -141,8 +157,23 @@ public ref struct Buffer<T> :
     /// <summary>
     /// Gets the current capacity for this <see cref="Buffer{T}"/>, which will be increased as required
     /// </summary>
-    public readonly int Capacity => _span.Length;
+    public int Capacity
+    {
+        readonly get => _span.Length;
+        set
+        {
+            if (value < _position)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, $"Capacity cannot be less that Count of {Count}");
+            }
+            else if (value > _span.Length)
+            {
+                GrowTo(value);
+            }
+        }
+    }
 
+#region constructors
 
     internal Buffer(T[] initialArray, int initialPosition)
     {
@@ -192,7 +223,9 @@ public ref struct Buffer<T> :
         _position = 0;
     }
 
-#region nonpublic methods
+#endregion
+
+#region Grow
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void GrowBy(int adding)
@@ -204,7 +237,7 @@ public ref struct Buffer<T> :
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void GrowTo(int minCapacity)
     {
-        Debug.Assert(minCapacity > Capacity);
+        Debug.Assert(minCapacity >= Capacity);
         T[] array = ArrayPool<T>.Shared.Rent(Math.Max(minCapacity * 2, _minCapacity));
         if (_span.Length > 0)
         {
@@ -218,6 +251,17 @@ public ref struct Buffer<T> :
 
         _span = _array = array;
     }
+
+    /// <summary>
+    /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least twice its current value
+    /// </summary>
+    /// <remarks>
+    /// This method causes a <see cref="Array">T[]</see> rental
+    /// from <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
+    /// </remarks>
+    public void Grow() => GrowTo(Capacity * 2);
+
+#endregion
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool SequenceEqual(IEqualityComparer<T> itemComparer, Span<T> left, ReadOnlySpan<T> right, int count)
@@ -245,41 +289,19 @@ public ref struct Buffer<T> :
             buffer.Add(item);
         }
 
-        _ = TryInsertMany(index, buffer.Written).OkOrThrow();
+        InsertMany(index, buffer.Written);
     }
 
-#endregion nonpublic methods
 
-    /// <summary>
-    /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least twice its current value
-    /// </summary>
-    /// <remarks>
-    /// This method causes a rental from <see cref="ArrayPool{T}"/>
-    /// </remarks>
-    public void Grow() => GrowBy(1);
+#region Add
 
-    /// <summary>
-    /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least <paramref name="minCapacity"/>
-    /// </summary>
-    public void GrowCapacity(int minCapacity)
-    {
-        if (minCapacity > Capacity)
-        {
-            GrowTo(minCapacity);
-        }
-    }
-
-    /// <summary>
-    /// Grows this PooledList and then add an item
-    /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AddGrow(T item)
+    private void GrowAndAdd(T item)
     {
-        int pos = _position;
-        Debug.Assert(pos == Capacity);
+        Debug.Assert(_position == Capacity);
         GrowBy(1);
-        _span[pos] = item;
-        _position = pos + 1;
+        _span[_position] = item;
+        _position++;
     }
 
     /// <summary>
@@ -288,61 +310,40 @@ public ref struct Buffer<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T item)
     {
-        int pos = _position;
-        Span<T> span = _span;
-
-        if (pos < span.Length)
+        if (_position < _span.Length)
         {
-            span[pos] = item;
-            _position = pos + 1;
+            _span[_position] = item;
+            _position++;
         }
         else
         {
-            AddGrow(item);
+            GrowAndAdd(item);
         }
     }
 
-    /// <summary>
-    /// Grow this buffer and then add <paramref name="count"/> items from <paramref name="source"/>
-    /// </summary>
+#endregion
+
+#region AddMany
+
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AddManyGrow(scoped ReadOnlySpan<T> source, int count)
+    private void GrowAndAddMany(scoped ReadOnlySpan<T> items)
     {
-        Debug.Assert(count == source.Length);
-        Debug.Assert(count > 0);
-        GrowBy(count);
-        Sequence.CopyTo(source, Available);
-        _position += count;
+        GrowBy(items.Length);
+        Sequence.CopyTo(items, _span[_position..]);
+        _position += items.Length;
     }
 
-    /// <summary>
-    /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
-    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(scoped ReadOnlySpan<T> items)
+    public void AddMany(params ReadOnlySpan<T> items)
     {
-        int count = items.Length;
-
-        if (count == 0)
+        if (_position + items.Length <= _span.Length)
         {
-            // do nothing
-        }
-        else if (count == 1)
-        {
-            Add(items[0]);
+            Sequence.CopyTo(items, _span[_position..]);
+            _position += items.Length;
         }
         else
         {
-            int newPos = _position + count;
-            if (newPos <= Capacity)
-            {
-                Sequence.CopyTo(items, Available);
-                _position = newPos;
-            }
-            else
-            {
-                AddManyGrow(items, count);
-            }
+            GrowAndAddMany(items);
         }
     }
 
@@ -350,7 +351,13 @@ public ref struct Buffer<T> :
     /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(params T[]? items) => AddMany(new ReadOnlySpan<T>(items));
+    public void AddMany(T[]? items)
+    {
+        if (items is not null)
+        {
+            AddMany(new ReadOnlySpan<T>(items));
+        }
+    }
 
     /// <summary>
     /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
@@ -364,21 +371,19 @@ public ref struct Buffer<T> :
 
         if (items is ICollection<T> collection)
         {
-            int itemCount = collection.Count;
-            if (itemCount == 0)
+            int len = collection.Count;
+            if (len == 0)
             {
                 return;
             }
 
-            int pos = _position;
-            int newPos = pos + itemCount;
-            if ((newPos > Capacity) || _array is null)
+            if ((_position + len > Capacity) || _array is null)
             {
-                GrowBy(itemCount);
+                GrowBy(len);
             }
 
-            collection.CopyTo(_array!, pos);
-            _position = newPos;
+            collection.CopyTo(_array!, _position);
+            _position += len;
         }
         else
         {
@@ -390,124 +395,72 @@ public ref struct Buffer<T> :
         }
     }
 
-    /// <summary>
-    /// Try to insert an <paramref name="item"/> into this <see cref="Buffer{T}"/> at <paramref name="index"/>
-    /// </summary>
-    /// <param name="index">The <see cref="Index"/> to insert the <paramref name="item"/></param>
-    /// <param name="item">The item to insert</param>
-    /// <returns>
-    /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the item was inserted at or an <see cref="Exception"/> that describes why insertion failed
-    /// </returns>
-    public Result<int> TryInsert(Index index, T item)
-    {
-        int pos = _position;
-        var vr = Validate.InsertIndex(index, pos);
-        if (!vr.IsOk(out int offset))
-        {
-            return vr;
-        }
+#endregion
 
-        if (offset == pos)
+#region Insert
+
+    public void Insert(Index index, T item)
+    {
+        int offset = Throw.IfBadInsertIndex(index, _position);
+        if (offset == _position)
         {
             Add(item);
-            return Ok(offset);
+            return;
         }
 
-        int newPos = pos + 1;
-        if (newPos >= Capacity)
+        if (_position + 1 >= _span.Length)
         {
             GrowBy(1);
         }
 
-        Sequence.SelfCopy(_span, offset..pos, (offset + 1)..);
+        Sequence.SelfCopy(_span, offset.._position, (offset + 1)..);
         _span[offset] = item;
-        _position = newPos;
-        return Ok(offset);
+        _position++;
     }
 
-    /// <summary>
-    /// Try to insert multiple <paramref name="items"/> into this <see cref="Buffer{T}"/> at <paramref name="index"/>
-    /// </summary>
-    /// <param name="index">The <see cref="Index"/> to insert the <paramref name="items"/></param>
-    /// <param name="items">The <see cref="ReadOnlySpan{T}"/> of items to insert</param>
-    /// <returns>
-    /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
-    /// </returns>
-    public Result<int> TryInsertMany(Index index, scoped ReadOnlySpan<T> items)
+#endregion
+
+    #region InsertMany
+
+    public void InsertMany(Index index, params ReadOnlySpan<T> items)
     {
-        int itemCount = items.Length;
-
-        if (itemCount == 0)
-        {
-            return Validate.InsertIndex(index, _position);
-        }
-
-        if (itemCount == 1)
-        {
-            return TryInsert(index, items[0]);
-        }
-
-        var vr = Validate.InsertIndex(index, _position);
-        if (!vr.IsOk(out int offset))
-        {
-            return vr;
-        }
-
+        int offset = Throw.IfBadInsertIndex(index, _position);
         if (offset == _position)
         {
             AddMany(items);
-            return Ok(offset);
+            return;
         }
 
-        int newPos = _position + itemCount;
-        if (newPos >= Capacity)
+        int len = items.Length;
+
+        if (_position + len >= _span.Length)
         {
-            GrowBy(itemCount);
+            GrowBy(len);
         }
 
-        Sequence.SelfCopy(_span, offset.._position, (offset + itemCount)..);
-        Sequence.CopyTo(items, _span.Slice(offset, itemCount));
-        _position = newPos;
-        return Ok(offset);
+        Sequence.SelfCopy(_span, offset.._position, (offset + len)..);
+        Sequence.CopyTo(items, _span.Slice(offset, len));
+        _position += len;
     }
 
-    /// <summary>
-    /// Try to insert multiple <paramref name="items"/> into this <see cref="Buffer{T}"/> at <paramref name="index"/>
-    /// </summary>
-    /// <param name="index">The <see cref="Index"/> to insert the <paramref name="items"/></param>
-    /// <param name="items">The <see cref="Array">T[]</see> of items to insert</param>
-    /// <returns>
-    /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
-    /// </returns>
-    public void TryInsertMany(Index index, params T[]? items) => TryInsertMany(index, new ReadOnlySpan<T>(items));
 
-    /// <summary>
-    /// Try to insert multiple <paramref name="items"/> into this <see cref="Buffer{T}"/> at <paramref name="index"/>
-    /// </summary>
-    /// <param name="index">The <see cref="Index"/> to insert the <paramref name="items"/></param>
-    /// <param name="items">The <see cref="IEnumerable{T}"/> of items to insert</param>
-    /// <returns>
-    /// A <see cref="Result{O,E}"/> that contains the <c>int</c> offset the items were inserted at or an <see cref="Exception"/> that describes why insertion failed
-    /// </returns>
-    public Result<int> TryInsertMany(Index index, IEnumerable<T>? items)
+    public void InsertMany(Index index, T[]? items)
     {
-        if (items is null)
+        if (items is not null)
         {
-            return Validate.InsertIndex(index, _position);
+            InsertMany(index, new ReadOnlySpan<T>(items));
         }
+    }
 
-        int pos = _position;
 
-        var vr = Validate.InsertIndex(index, pos);
-        if (!vr.IsOk(out int offset))
-        {
-            return vr;
-        }
-
+    public void InsertMany(Index index, IEnumerable<T>? items)
+    {
+        if (items is null) return;
+        int offset = Throw.IfBadInsertIndex(index, _position);
         if (offset == _position)
         {
             AddMany(items);
-            return Ok(offset);
+            return;
         }
 
         int itemCount;
@@ -516,10 +469,10 @@ public ref struct Buffer<T> :
             itemCount = collection.Count;
             if (itemCount == 0)
             {
-                return Ok(offset);
+                return;
             }
 
-            int newPos = pos + itemCount;
+            int newPos = _position + itemCount;
             if ((newPos > Capacity) || _array is null)
             {
                 GrowBy(itemCount);
@@ -528,13 +481,15 @@ public ref struct Buffer<T> :
             Sequence.SelfCopy(_span, offset.._position, (offset + itemCount)..);
             collection.CopyTo(_array!, offset);
             _position = newPos;
-            return Ok(offset);
+            return;
         }
 
         // Enumerate to a temporary PooledList, then insert
         InsertManyEnumerable(offset, items);
-        return Ok(offset);
+        return;
     }
+
+    #endregion
 
     /// <summary>
     /// Sorts the items in this <see cref="Buffer{T}"/> using an optional <see cref="IComparer{T}"/>

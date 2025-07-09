@@ -1,89 +1,62 @@
-﻿namespace ScrubJay.Utilities;
+﻿using System.Buffers.Binary;
+
+namespace ScrubJay.Utilities;
 
 [PublicAPI]
 public enum Endianness
 {
     Little = 0,
     Big = 1,
+    System = 2,
+    NonSystem = 3,
 }
 
+/// <summary>
+///
+/// </summary>
+/// <remarks>
+/// See <see cref="System.Buffers.Binary.BinaryPrimitives"/>
+/// </remarks>
 [PublicAPI]
 public static class EndianHelper
 {
-    public static readonly Endianness EnvironmentEndianness = BitConverter.IsLittleEndian ? Endianness.Little : Endianness.Big;
+    public static readonly Endianness SystemEndianness = BitConverter.IsLittleEndian ? Endianness.Little : Endianness.Big;
 
-    public static ReadOnlySpan<byte> AsSpan<U>(in U value, Endianness endianness = Endianness.Little)
-        where U : unmanaged
+    // public static ReadOnlySpan<byte> AsSpan<U>(in U value, Endianness endianness = Endianness.Little)
+    //     where U : unmanaged
+    // {
+    //     unsafe
+    //     {
+    //         if (endianness == SystemEndianness)
+    //         {
+    //             return new ReadOnlySpan<byte>(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
+    //         }
+    //
+    //         Span<byte> span = new Span<byte>(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
+    //         span.Reverse();
+    //         return span;
+    //     }
+    // }
+
+    public static Endianness Flipped(this Endianness endianness)
     {
-        unsafe
+        return endianness switch
         {
-            if (endianness == EnvironmentEndianness)
-            {
-                return new ReadOnlySpan<byte>(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
-            }
-
-            Span<byte> span = new Span<byte>(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
-            span.Reverse();
-            return span;
-        }
+            Endianness.Little => Endianness.Big,
+            Endianness.Big => Endianness.Little,
+            Endianness.System => Endianness.NonSystem,
+            Endianness.NonSystem => Endianness.System,
+            _ => throw InvalidEnumException.Create(endianness),
+        };
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Swap<T>(Span<T> span) => span.Reverse();
-
-    public static ushort Swap(ushort u16)
+    public static Endianness Resolve(this Endianness endianness)
     {
-        return (ushort)((u16 >> 8) | (u16 << 8));
-    }
-
-    public static short Swap(short i16)
-    {
-        return (short)((i16 >> 8) | (i16 << 8));
-    }
-
-    public static uint Swap(uint u32)
-    {
-        // Swap adjacent 16-bit blocks
-        u32 = (u32 >> 16) | (u32 << 16);
-        // Swap adjacent 8-bit blocks
-        u32 = ((u32 & 0xFF00FF00U) >> 8) | ((u32 & 0x00FF00FFU) << 8);
-        return u32;
-    }
-
-    public static int Swap(int i32)
-    {
-        unchecked
+        return endianness switch
         {
-            return (int)Swap((uint)i32);
-        }
-    }
-
-    public static ulong Swap(ulong u64)
-    {
-        // Swap adjacent 32-bit blocks
-        u64 = (u64 >> 32) | (u64 << 32);
-        // Swap adjacent 16-bit blocks
-        u64 = ((u64 & 0xFFFF0000FFFF0000U) >> 16) | ((u64 & 0x0000FFFF0000FFFFU) << 16);
-        // Swap adjacent 8-bit blocks
-        u64 = ((u64 & 0xFF00FF00FF00FF00U) >> 8) | ((u64 & 0x00FF00FF00FF00FFU) << 8);
-        return u64;
-    }
-
-    public static long Swap(long i64)
-    {
-        unchecked
-        {
-            return (long)Swap((ulong)i64);
-        }
-    }
-
-    public static float Swap(float f32)
-    {
-        return Notsafe.As<uint, float>(Swap(Notsafe.As<float, uint>(f32)));
-    }
-
-    public static double Swap(double f64)
-    {
-        return Notsafe.As<ulong, double>(Swap(Notsafe.As<double, ulong>(f64)));
+            Endianness.System => SystemEndianness,
+            Endianness.NonSystem => SystemEndianness == Endianness.Little ? Endianness.Big : Endianness.Little,
+            _ => endianness,
+        };
     }
 }

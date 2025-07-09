@@ -2,20 +2,20 @@
 
 namespace ScrubJay.Memory;
 
-
 [PublicAPI]
 public ref struct SpanReader<T>
 {
-    #region delegates
+#region delegates
+
     /// <summary>
     /// A predicate that examines the <see cref="ReadOnlySpan{T}"/> of items after a position
     /// </summary>
-    public delegate bool ReadNextPredicate(ReadOnlySpan<T> nextItems);
+    public delegate bool ScanNext(ReadOnlySpan<T> nextItems);
 
     /// <summary>
     /// A predicate that examines the <see cref="ReadOnlySpan{T}"/> of items before and after a position
     /// </summary>
-    public delegate bool ReadPrevNextPredicate(ReadOnlySpan<T> prevItems, ReadOnlySpan<T> nextItems);
+    public delegate bool ScanPrevNext(ReadOnlySpan<T> prevItems, ReadOnlySpan<T> nextItems);
 
     /// <summary>
     /// Examines the <see cref="RemainingSpan"/> and returns how many of them were read,
@@ -28,46 +28,30 @@ public ref struct SpanReader<T>
     /// The number of items in <paramref name="remainingSpan"/> that were read
     /// </returns>
     public delegate int ReadSpan(ReadOnlySpan<T> remainingSpan);
-    #endregion
+
+#endregion
 
     private readonly ReadOnlySpan<T> _span;
     private readonly int _spanLength;
 
     private int _position;
 
-    public readonly int Position
+    public int Position
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _position;
-    }
-
-    public readonly int RemainingCount
-    {
-        get
+        readonly get => _position;
+        set
         {
-            int pos = _position;
-            if (pos < 0)
-                return _spanLength;
-            else if (pos >= _spanLength)
-                return 0;
-            else
-                return _spanLength - pos;
+            Throw.IfNotBetween(value, 0, _spanLength);
+            _position = value;
         }
     }
 
-    internal readonly ReadOnlySpan<T> RemainingSpan
-    {
-        get
-        {
-            int pos = _position;
-            if (pos < 0)
-                return _span;
-            else if (pos >= _spanLength)
-                return [];
-            else
-                return _span[pos..];
-        }
-    }
+    public readonly bool IsCompleted => _position >= _spanLength;
+
+    public readonly ReadOnlySpan<T> Previous => _span[.._position];
+
+    public readonly ReadOnlySpan<T> Next => _span[_position..];
 
 
     public SpanReader(ReadOnlySpan<T> span)
@@ -77,476 +61,723 @@ public ref struct SpanReader<T>
         _position = 0;
     }
 
-    #region (Try)Peek
-    /// <summary>
-    /// Try to peek at the next item
-    /// </summary>
-    /// <returns>
-    /// A <see cref="Option{T}.Some"/> containing the next item<br/>
-    /// A <see cref="Option{T}.None"/> if there are no remaining items<br/>
-    /// </returns>
-    public readonly Option<T> TryPeek()
+    private readonly InvalidOperationException GetEx(
+        string? info = null,
+        [CallerMemberName] string? methodName = null)
     {
-        int pos = _position;
-        if ((uint)pos < (uint)_spanLength)
-        {
-            return Some(_span[pos]);
-        }
-        return None();
+        string message = TextBuilder.New
+            .Append("Cannot ")
+            .Append(methodName)
+            .Append(", ")
+            .If(Next.Length, static len => len == 0,
+                static (tb, _) => tb.Append("no items remain"),
+                static (tb, len) => tb.Append($"only {len} items remain"))
+            .IfNotNull(info, static (tb, n) => tb.Append($": {n}"))
+            .ToStringAndDispose();
+        return new InvalidOperationException(message);
     }
 
-    /// <summary>
-    /// Try to peek at the next <paramref name="count"/> items
-    /// </summary>
-    /// <param name="count">
-    /// The number of items to peek at
-    /// </param>
-    /// <returns>
-    /// A <see cref="SpanReadResult{T}"/>
-    /// </returns>
-    public readonly SpanReadResult<T> TryPeek(int count)
-    {
-        int pos = _position;
-        if (((uint)pos + (uint)count) <= (uint)_spanLength)
-        {
-            return Satisified(_span.Slice(pos, count));
-        }
-        return EndOfSpan<T>();
-    }
+#region Take
 
-    /// <summary>
-    /// Peek at the next item
-    /// </summary>
-    /// <returns>
-    /// The next item
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if there are no items remaining
-    /// </exception>
-    public readonly T Peek() => TryPeek().SomeOrThrow($"Cannot {nameof(Peek)}: No items remain");
+#region (Try)Take
 
-    /// <summary>
-    /// Peek at the next <paramref name="count"/> items
-    /// </summary>
-    /// <param name="count">
-    /// The number of items to peek at
-    /// </param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if there are not at least <paramref name="count"/> items remaining
-    /// </exception>
-    public readonly ReadOnlySpan<T> Peek(int count)
-    {
-        if (TryPeek(count).HasReason(StopReason.Satisified, out var span))
-            return span;
-        throw new InvalidOperationException($"Cannot {nameof(Peek)}({count}): Only {RemainingCount} items remain");
-    }
-    #endregion
-
-    #region (Try)Take
-    /// <summary>
-    /// Try to take the next item
-    /// </summary>
-    /// <returns>
-    /// A <see cref="Option{T}.Some"/> containing the next item<br/>
-    /// A <see cref="Option{T}.None"/> if there are no more items
-    /// </returns>
     public Option<T> TryTake()
     {
-        int pos = _position;
-        if ((uint)pos < (uint)_spanLength)
+        if (_position < _spanLength)
         {
-            _position = pos + 1;
-            return Some(_span[pos]);
+            T value = _span[_position];
+            _position++;
+            return Some(value);
         }
+
+        return None<T>();
+    }
+
+    public T Take()
+    {
+        if (_position < _spanLength)
+        {
+            T value = _span[_position];
+            _position++;
+            return value;
+        }
+
+        throw GetEx();
+    }
+
+    public OptionROSpan<T> TryTake(int count)
+    {
+        if (count <= 0)
+            return ReadOnlySpan<T>.Empty;
+
+        if (_position + count <= _spanLength)
+        {
+            var slice = _span.Slice(_position, count);
+            _position += count;
+            return slice;
+        }
+
         return None();
     }
 
-    public SpanReadResult<T> TryTake(int count)
-    {
-        int pos = _position;
-        if (((uint)pos + (uint)count) <= (uint)_spanLength)
-        {
-            _position = pos + count;
-            return Satisified(_span.Slice(pos, count));
-        }
-        return EndOfSpan<T>();
-    }
-
-    public T Take() => TryTake()
-        .SomeOrThrow($"Cannot {nameof(Take)}: No items remain");
 
     public ReadOnlySpan<T> Take(int count)
     {
-        if (TryTake(count).HasReason(StopReason.Satisified, out var span))
-            return span;
-        throw new InvalidOperationException($"Cannot {nameof(Take)}({count}): Only {RemainingCount} items remain");
+        Throw.IfLessThan(count, 0);
+        if (_position + count <= _spanLength)
+        {
+            var slice = _span.Slice(_position, count);
+            _position += count;
+            return slice;
+        }
+
+        throw GetEx();
     }
 
-    public SpanReadResult<T> TryTakeWhile(Func<T, bool> itemPredicate)
+#endregion
+
+#region TakeWhile
+
+    public ReadOnlySpan<T> TakeWhile(Func<T, bool> itemPredicate)
     {
         var span = _span;
         int start = _position;
         int index = start;
         int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
-        {
-            if (!itemPredicate(span[index]))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
-            index++;
-        }
 
+        while (index < len && itemPredicate(span[index]))
+            index++;
         _position = index;
-        return new SpanReadResult<T>(stopReason, span[start..index]);
+        return span[start..index];
     }
 
-    public SpanReadResult<T> TryTakeWhileNext(ReadNextPredicate nextItemsPredicate)
+    public ReadOnlySpan<T> TakeWhile(ScanNext scanNext)
     {
         var span = _span;
         int start = _position;
         int index = start;
         int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
-        {
-            if (!nextItemsPredicate(span[index..]))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
-            index++;
-        }
 
+        while (index < len && scanNext(span[index..]))
+            index++;
         _position = index;
-        return new SpanReadResult<T>(stopReason, span[start..index]);
+        return span[start..index];
     }
 
-    public SpanReadResult<T> TryTakeWhilePrevNext(ReadPrevNextPredicate prevNextItemsPredicate)
+    public ReadOnlySpan<T> TakeWhile(ScanPrevNext scanPrevNext)
     {
         var span = _span;
         int start = _position;
         int index = start;
         int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
-        {
-            if (!prevNextItemsPredicate(span[start..index], span[index..]))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
+
+        while (index < len && scanPrevNext(span[..index], span[index..]))
             index++;
-        }
-
         _position = index;
-        return new SpanReadResult<T>(stopReason, span[start..index]);
+        return span[start..index];
     }
 
-    public SpanReadResult<T> TryTakeWhileMatches(T match, IEqualityComparer<T>? itemComparer = null)
+#endregion
+
+#region TakeWhileMatching
+
+    public ReadOnlySpan<T> TakeWhileMatching(
+        T match,
+        IEqualityComparer<T>? comparer = null)
     {
-        if (itemComparer is null)
-        {
-            return TryTakeWhile(item => EqualityComparer<T>.Default.Equals(item, match));
-        }
-        return TryTakeWhile(item => itemComparer.Equals(item, match));
+        if (comparer is null)
+            return TakeWhile(item => EqualityComparer<T>.Default.Equals(item, match));
+        return TakeWhile(item => comparer.Equals(item, match));
     }
 
-    public SpanReadResult<T> TryTakeWhileMatches(ReadOnlySpan<T> match, IEqualityComparer<T>? itemComparer = null)
+    public ReadOnlySpan<T> TakeWhileMatching(
+        scoped ReadOnlySpan<T> match,
+        IEqualityComparer<T>? comparer = null)
     {
         int matchLen = match.Length;
         if (matchLen == 0)
-            return Satisified<T>();
+            return [];
 
         var span = _span;
         int start = _position;
         int index = start;
         int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
+
+        while (index < len && Sequence.Equal(span.Slice(index, matchLen), match, comparer))
         {
-            if (!Sequence.Equal(span.Slice(index, matchLen), match, itemComparer))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
             index += matchLen;
         }
 
         _position = index;
-        return new SpanReadResult<T>(stopReason, span[start..index]);
+        return span[start..index];
     }
 
-    public SpanReadResult<T> TryTakeWhileMatchesAny(ICollection<T> matches, IEqualityComparer<T>? itemComparer = null)
+    public ReadOnlySpan<T> TakeWhileMatchingAny(
+        ICollection<T> matches,
+        IEqualityComparer<T>? comparer = null)
     {
-        if (itemComparer is null)
+        if (comparer is null)
         {
-            return TryTakeWhile(item => matches.Contains(item));
+            return TakeWhile(item => matches.Contains(item));
         }
 
-        return TryTakeWhile(item => matches.Contains(item, itemComparer));
+        return TakeWhile(item => matches.Contains(item, comparer));
     }
 
+#endregion
 
-    public SpanReadResult<T> TryTakeUntil(Func<T, bool> itemPredicate) => TryTakeWhile(item => !itemPredicate(item));
-    public SpanReadResult<T> TryTakeUntilNext(ReadNextPredicate nextItemsPredicate) => TryTakeWhileNext(items => !nextItemsPredicate(items));
-    public SpanReadResult<T> TryTakeUntilPrevNext(ReadPrevNextPredicate prevNextItemsPredicate) => TryTakeWhilePrevNext((prev, next) => !prevNextItemsPredicate(prev, next));
-    public SpanReadResult<T> TryTakeUntilMatches(T match, IEqualityComparer<T>? itemComparer = null)
+#region TakeUntil
+
+    public ReadOnlySpan<T> TakeUntil(Func<T, bool> itemPredicate)
     {
-        if (itemComparer is null)
-        {
-            return TryTakeWhile(item => !EqualityComparer<T>.Default.Equals(item, match));
-        }
-        return TryTakeWhile(item => !itemComparer.Equals(item, match));
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !itemPredicate(span[index]))
+            index++;
+        _position = index;
+        return span[start..index];
     }
 
-    public SpanReadResult<T> TryTakeUntilMatches(ReadOnlySpan<T> match, IEqualityComparer<T>? itemComparer = null)
+    public ReadOnlySpan<T> TakeUntil(ScanNext scanNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !scanNext(span[index..]))
+            index++;
+        _position = index;
+        return span[start..index];
+    }
+
+    public ReadOnlySpan<T> TakeUntil(ScanPrevNext scanPrevNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !scanPrevNext(span[..index], span[index..]))
+            index++;
+        _position = index;
+        return span[start..index];
+    }
+
+#endregion
+
+#region TakeUntilMatching
+
+    public ReadOnlySpan<T> TakeUntilMatching(
+        T match,
+        IEqualityComparer<T>? comparer = null)
+    {
+        if (comparer is null)
+            return TakeUntil(item => !EqualityComparer<T>.Default.Equals(item, match));
+        return TakeUntil(item => !comparer.Equals(item, match));
+    }
+
+    public ReadOnlySpan<T> TakeUntilMatching(
+        scoped ReadOnlySpan<T> match,
+        IEqualityComparer<T>? comparer = null)
     {
         int matchLen = match.Length;
         if (matchLen == 0)
-            return Satisified<T>();
+            return [];
 
         var span = _span;
         int start = _position;
         int index = start;
         int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
+
+        while (index < len && !Sequence.Equal(span.Slice(index, matchLen), match, comparer))
         {
-            if (Sequence.Equal(span.Slice(index, matchLen), match, itemComparer))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
-            index += matchLen;
+            index++;
         }
 
         _position = index;
-        return new SpanReadResult<T>(stopReason, span[start..index]);
+        return span[start..index];
     }
 
-    public SpanReadResult<T> TryTakeUntilMatchesAny(ICollection<T> matches, IEqualityComparer<T>? itemComparer = null)
+    public ReadOnlySpan<T> TakeUntilMatchingAny(
+        ICollection<T> matches,
+        IEqualityComparer<T>? comparer = null)
     {
-        if (itemComparer is null)
+        if (comparer is null)
         {
-            return TryTakeWhile(item => !matches.Contains(item));
+            return TakeUntil(item => !matches.Contains(item));
         }
 
-        return TryTakeWhile(item => !matches.Contains(item, itemComparer));
+        return TakeUntil(item => !matches.Contains(item, comparer));
+    }
+
+#endregion
+
+#endregion
+
+#region Peek
+
+#region (Try)Peek
+
+    public readonly Option<T> TryPeek()
+    {
+        if (_position < _spanLength)
+            return Some(_span[_position]);
+        return None<T>();
+    }
+
+    public readonly T Peek()
+    {
+        if (_position < _spanLength)
+            return _span[_position];
+        throw GetEx();
+    }
+
+    public readonly OptionROSpan<T> TryPeek(int count)
+    {
+        if (count <= 0)
+            return ReadOnlySpan<T>.Empty;
+
+        if (_position + count <= _spanLength)
+            return _span.Slice(_position, count);
+
+        return None();
     }
 
 
-    public ReadOnlySpan<T> TakeAll() => TryTakeWhile(static _ => true).Span;
+    public readonly ReadOnlySpan<T> Peek(int count)
+    {
+        Throw.IfLessThan(count, 0);
+        if (_position + count <= _spanLength)
+            return _span.Slice(_position, count);
 
+        throw GetEx();
+    }
 
-    #endregion
+#endregion
 
-    #region (Try)Skip
-    /// <summary>
-    /// Try to skip the next item
-    /// </summary>
+#region PeekWhile
+
+    public readonly ReadOnlySpan<T> PeekWhile(Func<T, bool> itemPredicate)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && itemPredicate(span[index]))
+            index++;
+        return span[start..index];
+    }
+
+    public readonly ReadOnlySpan<T> PeekWhile(ScanNext scanNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && scanNext(span[index..]))
+            index++;
+        return span[start..index];
+    }
+
+    public readonly ReadOnlySpan<T> PeekWhile(ScanPrevNext scanPrevNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && scanPrevNext(span[..index], span[index..]))
+            index++;
+        return span[start..index];
+    }
+
+#endregion
+
+#region PeekWhileMatching
+
+    public readonly ReadOnlySpan<T> PeekWhileMatching(
+        T match,
+        IEqualityComparer<T>? comparer = null)
+    {
+        if (comparer is null)
+            return PeekWhile(item => EqualityComparer<T>.Default.Equals(item, match));
+        return PeekWhile(item => comparer.Equals(item, match));
+    }
+
+    public readonly ReadOnlySpan<T> PeekWhileMatching(
+        scoped ReadOnlySpan<T> match,
+        IEqualityComparer<T>? comparer = null)
+    {
+        int matchLen = match.Length;
+        if (matchLen == 0)
+            return [];
+
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && Sequence.Equal(span.Slice(index, matchLen), match, comparer))
+        {
+            index += matchLen;
+        }
+
+        return span[start..index];
+    }
+
+    public readonly ReadOnlySpan<T> PeekWhileMatchingAny(
+        ICollection<T> matches,
+        IEqualityComparer<T>? comparer = null)
+    {
+        if (comparer is null)
+        {
+            return PeekWhile(item => matches.Contains(item));
+        }
+
+        return PeekWhile(item => matches.Contains(item, comparer));
+    }
+
+#endregion
+
+#region PeekUntil
+
+    public readonly ReadOnlySpan<T> PeekUntil(Func<T, bool> itemPredicate)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !itemPredicate(span[index]))
+            index++;
+        return span[start..index];
+    }
+
+    public readonly ReadOnlySpan<T> PeekUntil(ScanNext scanNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !scanNext(span[index..]))
+            index++;
+        return span[start..index];
+    }
+
+    public readonly ReadOnlySpan<T> PeekUntil(ScanPrevNext scanPrevNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !scanPrevNext(span[..index], span[index..]))
+            index++;
+        return span[start..index];
+    }
+
+#endregion
+
+#region PeekUntilMatching
+
+    public readonly ReadOnlySpan<T> PeekUntilMatching(
+        T match,
+        IEqualityComparer<T>? comparer = null)
+    {
+        if (comparer is null)
+            return PeekUntil(item => !EqualityComparer<T>.Default.Equals(item, match));
+        return PeekUntil(item => !comparer.Equals(item, match));
+    }
+
+    public readonly ReadOnlySpan<T> PeekUntilMatching(
+        scoped ReadOnlySpan<T> match,
+        IEqualityComparer<T>? comparer = null)
+    {
+        int matchLen = match.Length;
+        if (matchLen == 0)
+            return [];
+
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !Sequence.Equal(span.Slice(index, matchLen), match, comparer))
+        {
+            index++;
+        }
+
+        return span[start..index];
+    }
+
+    public readonly ReadOnlySpan<T> PeekUntilMatchingAny(
+        ICollection<T> matches,
+        IEqualityComparer<T>? comparer = null)
+    {
+        if (comparer is null)
+        {
+            return PeekUntil(item => !matches.Contains(item));
+        }
+
+        return PeekUntil(item => !matches.Contains(item, comparer));
+    }
+
+#endregion
+
+#endregion
+
+#region Skip
+
+#region (Try)Skip
+
     public bool TrySkip()
     {
-        int pos = _position;
-        if ((uint)pos < (uint)_spanLength)
+        if (_position < _spanLength)
         {
-            _position = pos + 1;
+            _position++;
             return true;
         }
-        return false;
-    }
 
-    public bool TrySkip(int count)
-    {
-        int pos = _position;
-        if (((uint)pos + (uint)count) <= (uint)_spanLength)
-        {
-            _position = pos + count;
-            return true;
-        }
         return false;
     }
 
     public void Skip()
     {
-        if (!TrySkip())
-            throw new InvalidOperationException($"Cannot {nameof(Skip)}: No items remain");
+        if (_position < _spanLength)
+        {
+            _position++;
+            return;
+        }
+
+        throw GetEx();
     }
+
+    public bool TrySkip(int count)
+    {
+        if (count <= 0)
+            return true;
+
+        if (_position + count <= _spanLength)
+        {
+            _position += count;
+            return true;
+        }
+
+        return false;
+    }
+
 
     public void Skip(int count)
     {
-        if (!TrySkip(count))
-            throw new InvalidOperationException($"Cannot {nameof(Skip)}({count}): Only {RemainingCount} items remain");
-    }
+        Throw.IfLessThan(count, 0);
 
-    public StopReason TrySkipWhile(Func<T, bool> itemPredicate)
-    {
-        var span = _span;
-        int index = _position;
-        int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
+        if (_position + count <= _spanLength)
         {
-            if (!itemPredicate(span[index]))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
-            index++;
+            _position += count;
+            return;
         }
 
-        _position = index;
-        return stopReason;
+        throw GetEx();
     }
 
-    public StopReason TrySkipWhileNext(ReadNextPredicate nextItemsPredicate)
-    {
-        var span = _span;
-        int index = _position;
-        int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
-        {
-            if (!nextItemsPredicate(span[index..]))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
-            index++;
-        }
+#endregion
 
-        _position = index;
-        return stopReason;
-    }
+#region SkipWhile
 
-    public StopReason TrySkipWhilePrevNext(ReadPrevNextPredicate prevNextItemsPredicate)
+    public void SkipWhile(Func<T, bool> itemPredicate)
     {
         var span = _span;
         int start = _position;
         int index = start;
         int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
+
+        while (index < len && itemPredicate(span[index]))
+            index++;
+        _position = index;
+    }
+
+    public void SkipWhile(ScanNext scanNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && scanNext(span[index..]))
+            index++;
+        _position = index;
+    }
+
+    public void SkipWhile(ScanPrevNext scanPrevNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && scanPrevNext(span[..index], span[index..]))
+            index++;
+        _position = index;
+    }
+
+#endregion
+
+#region SkipWhileMatching
+
+    public void SkipWhileMatching(
+        T match,
+        IEqualityComparer<T>? comparer = null)
+    {
+        if (comparer is null)
         {
-            if (!prevNextItemsPredicate(span[start..index], span[index..]))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
+            SkipWhile(item => EqualityComparer<T>.Default.Equals(item, match));
+        }
+        else
+        {
+            SkipWhile(item => comparer.Equals(item, match));
+        }
+    }
+
+    public void SkipWhileMatching(
+        scoped ReadOnlySpan<T> match,
+        IEqualityComparer<T>? comparer = null)
+    {
+        int matchLen = match.Length;
+        if (matchLen == 0)
+            return [];
+
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && Sequence.Equal(span.Slice(index, matchLen), match, comparer))
+        {
+            index += matchLen;
+        }
+
+        _position = index;
+    }
+
+    public void SkipWhileMatchingAny(
+        ICollection<T> matches,
+        IEqualityComparer<T>? comparer = null)
+    {
+        if (comparer is null)
+        {
+            SkipWhile(item => matches.Contains(item));
+        }
+        else
+        {
+            SkipWhile(item => matches.Contains(item, comparer));
+        }
+    }
+
+#endregion
+
+#region SkipUntil
+
+    public void SkipUntil(Func<T, bool> itemPredicate)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !itemPredicate(span[index]))
+            index++;
+        _position = index;
+    }
+
+    public void SkipUntil(ScanNext scanNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !scanNext(span[index..]))
+            index++;
+        _position = index;
+    }
+
+    public void SkipUntil(ScanPrevNext scanPrevNext)
+    {
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !scanPrevNext(span[..index], span[index..]))
+            index++;
+        _position = index;
+    }
+
+#endregion
+
+#region SkipUntilMatching
+
+    public void SkipUntilMatching(
+        T match,
+        IEqualityComparer<T>? comparer = null)
+    {
+        if (comparer is null)
+        {
+            SkipUntil(item => !EqualityComparer<T>.Default.Equals(item, match));
+        }
+        else
+        {
+            SkipUntil(item => !comparer.Equals(item, match));
+        }
+    }
+
+    public void SkipUntilMatching(
+        scoped ReadOnlySpan<T> match,
+        IEqualityComparer<T>? comparer = null)
+    {
+        int matchLen = match.Length;
+        if (matchLen == 0)
+            return;
+
+        var span = _span;
+        int start = _position;
+        int index = start;
+        int len = _spanLength;
+
+        while (index < len && !Sequence.Equal(span.Slice(index, matchLen), match, comparer))
+        {
             index++;
         }
 
         _position = index;
-        return stopReason;
     }
 
-    public StopReason TrySkipWhileMatches(T match, IEqualityComparer<T>? itemComparer = null)
+    public void SkipUntilMatchingAny(
+        ICollection<T> matches,
+        IEqualityComparer<T>? comparer = null)
     {
-        if (itemComparer is null)
+        if (comparer is null)
         {
-            return TrySkipWhile(item => EqualityComparer<T>.Default.Equals(item, match));
+            SkipUntil(item => !matches.Contains(item));
         }
-        return TrySkipWhile(item => itemComparer.Equals(item, match));
-    }
-
-    public StopReason TrySkipWhileMatches(ReadOnlySpan<T> match, IEqualityComparer<T>? itemComparer = null)
-    {
-        int matchLen = match.Length;
-        if (matchLen == 0)
-            return StopReason.Satisified;
-
-        var span = _span;
-        int index = _position;
-        int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
+        else
         {
-            if (!Sequence.Equal(span.Slice(index, matchLen), match, itemComparer))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
-            index += matchLen;
+            SkipUntil(item => !matches.Contains(item, comparer));
         }
-
-        _position = index;
-        return stopReason;
     }
 
-    public StopReason TrySkipWhileMatchesAny(ICollection<T> matches, IEqualityComparer<T>? itemComparer = null)
-    {
-        if (itemComparer is null)
-        {
-            return TrySkipWhile(item => matches.Contains(item));
-        }
+#endregion
 
-        return TrySkipWhile(item => matches.Contains(item, itemComparer));
-    }
-
-    public StopReason TrySkipUntil(Func<T, bool> itemPredicate) => TrySkipWhile(item => !itemPredicate(item));
-    public StopReason TrySkipUntilNext(ReadNextPredicate nextItemsPredicate) => TrySkipWhileNext(items => !nextItemsPredicate(items));
-    public StopReason TrySkipUntilPrevNext(ReadPrevNextPredicate prevNextItemsPredicate) => TrySkipWhilePrevNext((prev, next) => !prevNextItemsPredicate(prev, next));
-    public StopReason TrySkipUntilMatches(T match, IEqualityComparer<T>? itemComparer = null)
-    {
-        if (itemComparer is null)
-        {
-            return TrySkipWhile(item => !EqualityComparer<T>.Default.Equals(item, match));
-        }
-        return TrySkipWhile(item => !itemComparer.Equals(item, match));
-    }
-
-    public StopReason TrySkipUntilMatches(ReadOnlySpan<T> match, IEqualityComparer<T>? itemComparer = null)
-    {
-        int matchLen = match.Length;
-        if (matchLen == 0)
-            return StopReason.Satisified;
-
-        var span = _span;
-        int index = _position;
-        int len = _spanLength;
-        StopReason stopReason = StopReason.EndOfSpan;
-        while (index < len)
-        {
-            if (Sequence.Equal(span.Slice(index, matchLen), match, itemComparer))
-            {
-                stopReason = StopReason.Predicate;
-                break;
-            }
-            index += matchLen;
-        }
-
-        _position = index;
-        return stopReason;
-    }
-
-    public StopReason TrySkipUntilMatchesAny(ICollection<T> matches, IEqualityComparer<T>? itemComparer = null)
-    {
-        if (itemComparer is null)
-        {
-            return TrySkipWhile(item => !matches.Contains(item));
-        }
-
-        return TrySkipWhile(item => !matches.Contains(item, itemComparer));
-    }
+#endregion
 
 
-    public void SkipAll() => TrySkipWhile(static _ => true);
-
-
-    #endregion
-
-
-
-    public void Consume(ReadSpan consumeRemainingSpan)
-    {
-        int consumed = consumeRemainingSpan(RemainingSpan);
-        if ((consumed < 0) || (consumed > RemainingCount))
-            throw new InvalidOperationException($"Cannot consume {consumed} items");
-        _position += consumed;
-    }
 
     /// <summary>
     /// Resets this <see cref="SpanReader{T}"/> back to its beginning position
@@ -560,60 +791,54 @@ public ref struct SpanReader<T>
 
         string delimiter;
         int captureCount;
+        string pointer;
 
         if (typeof(T) == typeof(char))
         {
             delimiter = string.Empty;
-            captureCount = 10;
+            captureCount = 13;
+            pointer = " ⌖ ";
         }
         else
         {
             delimiter = ", ";
             captureCount = 3;
+            pointer = "⌖ ";
         }
 
         using var builder = new TextBuilder();
 
-        int index = _position;
-        var span = _span;
-
         // Previously read items
-        int startIndex = index - captureCount;
-        // If we have more before this, indicate with ellipsis
-        if (startIndex > 0)
+        var prev = this.Previous;
+        int len = prev.Length;
+        if (len > captureCount)
         {
             builder.Append('…').Append(delimiter);
         }
-        // Otherwise, cap at a min zero
-        else
+        else if (len < captureCount)
         {
-            startIndex = 0;
+            captureCount = len;
         }
 
-        builder.EnumerateFormatAndDelimit(span[startIndex..index], delimiter);
+        // Append them
+        builder.EnumerateFormatAndDelimit(prev[^captureCount..], delimiter);
 
         // position indicator
-        builder.Append('×');
+        builder.Append(pointer);
 
-        // items yet to be read
-        int nextIndex = index + captureCount;
+        // Next items
+        var next = this.Next;
+        len = next.Length;
 
-        // if we have more after, we're going to end with an ellipsis
-        bool postpendEllipsis;
-        // but we also need to cap at capacity
-        if (nextIndex < span.Length)
+        if (len < captureCount)
         {
-            postpendEllipsis = true;
-        }
-        else
-        {
-            postpendEllipsis = false;
-            nextIndex = span.Length;
+            captureCount = len;
         }
 
-        builder.EnumerateFormatAndDelimit(span[index..nextIndex], delimiter);
+        // Append them
+        builder.EnumerateFormatAndDelimit(next[..captureCount], delimiter);
 
-        if (postpendEllipsis)
+        if (len > captureCount)
         {
             builder.Append(delimiter).Append('…');
         }

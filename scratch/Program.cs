@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using ScrubJay.Collections.Pooling;
 using ScrubJay.Text.Rendering;
 
 string str = "Sphinx of black quartz, judge my vow.";
@@ -24,7 +25,8 @@ str = TextBuilder.Build(
 
 
 
-
+Buffer<int> buffer = stackalloc int[1024];
+buffer.AddMany(new int[3] { 1, 4, 7 });
 
 
 
