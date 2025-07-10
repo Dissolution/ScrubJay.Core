@@ -72,10 +72,6 @@ public static class RendererCache
                     .Append(')');
             }
 #endif
-            case Enum e:
-            {
-                return builder.Append(e.ToString());
-            }
             case Array array:
             {
                 var wrapper = new ArrayAdapterND<object?>(array);

@@ -6,29 +6,10 @@ using System.Runtime.InteropServices;
 using ScrubJay.Collections.Pooling;
 using ScrubJay.Text.Rendering;
 
-string str = "Sphinx of black quartz, judge my vow.";
+Enum e = StringComparison.OrdinalIgnoreCase;
 
-TryFormatWriter writer = new TryFormatWriter(stackalloc char[147])
-{
-    'a',
-    "abc",
-    new[] {'k', 'f', 'c'},
-    147,
-    (147),
-    (147, "d"),
-    {147, "g"},
-};
-
-str = TextBuilder.Build(
-    $"The char '{'c'}' is not the string \"{"abc"}\", {true} or {false}?{Environment.NewLine}{str}{sizeof(int)}{writer.Count}");
-
-
-
-
-Buffer<int> buffer = stackalloc int[1024];
-buffer.AddMany(new int[3] { 1, 4, 7 });
-
-
+var info = EnumInfo.For(e);
+var minfo = EnumMemberInfo.For(e);
 
 Debugger.Break();
 return 0;

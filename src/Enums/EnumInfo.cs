@@ -1,73 +1,148 @@
-﻿#pragma warning disable CA1819 // Properties should not return arrays
+﻿#pragma warning disable CA1819
 
 using System.Reflection;
-using ScrubJay.Parsing;
+using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Enums;
 
 [PublicAPI]
-public abstract record class EnumInfo
+public abstract class EnumInfo :
+#if NET7_0_OR_GREATER
+    IEqualityOperators<EnumInfo, EnumInfo, bool>,
+#endif
+    IEquatable<EnumInfo>
 {
-    public Attribute[] Attributes { get; init; } = [];
-    public required Type EnumType { get; init; }
-    public required Type UnderlyingType { get; init; }
-    public bool IsFlags { get; init; }
+    public static bool operator ==(EnumInfo? left, EnumInfo? right)
+        => Equate.EquatableValues<EnumInfo>(left, right);
 
-    protected EnumInfo()
+    public static bool operator !=(EnumInfo? left, EnumInfo? right)
+        => !Equate.EquatableValues<EnumInfo>(left, right);
+
+
+    private static readonly ConcurrentTypeMap<EnumInfo> _enumInfoCache = [];
+
+    private static EnumInfo CreateEnumInfo(Type enumType)
     {
+        var enumInfo = typeof(EnumInfo<>)
+            .MakeGenericType(enumType)
+            .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
+            .First()
+            .Invoke(parameters: null)
+            .ThrowIfNot<EnumInfo>();
+        return enumInfo;
     }
 
-    [SetsRequiredMembers]
+    public static EnumInfo For(Type enumType)
+    {
+        Throw.IfNull(enumType);
+        if (!enumType.IsEnum)
+            throw new ArgumentException($"Invalid Enum Type: {enumType.Render()}", nameof(enumType));
+        return _enumInfoCache.GetOrAdd(enumType, CreateEnumInfo);
+    }
+
+    public static EnumInfo For(Enum @enum)
+    {
+        Throw.IfNull(@enum);
+        return For(@enum.GetType());
+    }
+
+    public static EnumInfo<E> For<E>(E _ = default)
+        where E : struct, Enum
+    {
+        return _enumInfoCache.GetOrAdd<E>(CreateEnumInfo).ThrowIfNot<EnumInfo<E>>();
+    }
+
+
+    private readonly EnumMemberInfo[] _members;
+
+    public Attribute[] Attributes { get; }
+    public Type EnumType { get; }
+    public Type UnderlyingType { get; }
+    public bool IsFlags { get; }
+    public IEnumerable<EnumMemberInfo> Members => _members;
+
     protected EnumInfo(Type enumType)
     {
         Debug.Assert(enumType is not null);
-        Debug.Assert(enumType!.IsEnum);
+        Debug.Assert(enumType!.IsValueType);
+        Debug.Assert(enumType.IsEnum);
+
         EnumType = enumType;
         UnderlyingType = Enum.GetUnderlyingType(enumType);
         Attributes = Attribute.GetCustomAttributes(enumType);
         IsFlags = Attributes.Has<FlagsAttribute>();
-    }
-}
 
-public sealed record class EnumInfo<E> : EnumInfo
-    where E : struct, Enum
-{
-    public static EnumInfo<E> Default { get; } = new();
-
-    private static readonly Dictionary<E, EnumMemberInfo<E>> _members = [];
-
-    [SetsRequiredMembers]
-    private EnumInfo() : base(typeof(E))
-    {
         var members = EnumType.GetFields(BindingFlags.Public | BindingFlags.Static);
-        foreach (var memberField in members)
+        _members = new EnumMemberInfo[members.Length];
+        for (var i = 0; i < members.Length; i++)
         {
-            var enumMemberInfo = new EnumMemberInfo<E>(memberField);
-            if (!_members.TryAdd(enumMemberInfo.Value, enumMemberInfo))
-            {
-                // This is an alias
-                _members[enumMemberInfo.Value].AddAliases(enumMemberInfo);
-            }
+            var memberField = members[i];
+            var ctors =  typeof(EnumMemberInfo<>)
+                .MakeGenericType(enumType)
+                .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic);
+            var instance = ctors
+                .First()
+                .Invoke(parameters: [this, memberField])
+                .ThrowIfNot<EnumMemberInfo>();
+            Debugger.Break();
+            _members[i] = instance;
         }
     }
 
-    public static Result<E> TryParse(string? str, StringComparison comparison = StringComparison.Ordinal)
+    public EnumMemberInfo? GetMemberInfo(string? name)
     {
-        if (str is null)
-            return new ArgumentNullException(nameof(str));
+        return _members
+            .FirstOrDefault(m => m.HasAlias(name));
+    }
 
-        int len = str.Length;
-        if (len == 0)
-        {
-            return ParseException.Create<E>(str, "String was empty");
-        }
+    public EnumMemberInfo? GetMemberInfo(long value)
+    {
+        return _members.FirstOrDefault(m => m.I64Value == value);
+    }
 
-        foreach (var (e, info) in _members)
-        {
-            if (info.Matches(str, comparison))
-                return e;
-        }
+    public EnumMemberInfo<E>? GetMemberInfo<E>(E mune)
+        where E : struct, Enum
+    {
+        if (typeof(E).DeclaringType != EnumType)
+            throw new ArgumentException("Enum does not belong to this EnumInfo", nameof(mune));
 
-        return ParseException.Create<E>(str, "String was invalid");
+        return _members.OfType<EnumMemberInfo<E>>()
+            .FirstOrDefault(m => m.Member.IsEqual(mune));
+    }
+
+    public EnumMemberInfo? GetMemberInfo(Enum mune)
+    {
+        Throw.IfNull(mune);
+        if (mune.GetType() != EnumType)
+            throw new ArgumentException("Enum does not belong to this EnumInfo", nameof(mune));
+
+        long value = ((IConvertible)mune).ToInt64(null);
+
+        return _members
+            .FirstOrDefault(m => m.I64Value == value);
+    }
+
+    public bool Equals(EnumInfo? enumInfo)
+    {
+        return enumInfo is not null && enumInfo.EnumType == EnumType;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is EnumInfo enumInfo)
+            return Equals(enumInfo);
+        if (obj is Type enumType)
+            return enumType == EnumType;
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return Hasher.Hash(EnumType);
+    }
+
+    public override string ToString()
+    {
+        return EnumType.Render();
     }
 }

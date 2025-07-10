@@ -1,117 +1,141 @@
-﻿#pragma warning disable CA1819 // Properties should not return arrays
+﻿#pragma warning disable CA1819
 
 #if !NETFRAMEWORK && !NETSTANDARD
 using System.ComponentModel.DataAnnotations;
 #endif
 using System.Reflection;
+using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Enums;
 
 [PublicAPI]
-public abstract record class EnumMemberInfo
-{
-    private readonly HashSet<string> _aliases = new HashSet<string>(StringComparer.Ordinal);
-
-    public required Attribute[] Attributes { get; init; }
-    public required string Name { get; init; }
-
-    public IReadOnlyCollection<string> Aliases => _aliases;
-
-    protected EnumMemberInfo()
-    {
-    }
-
-    [SetsRequiredMembers]
-    protected EnumMemberInfo(FieldInfo memberField)
-    {
-        Debug.Assert(memberField is not null);
-        Debug.Assert(memberField!.IsStatic);
-
-        Attributes = Attribute.GetCustomAttributes(memberField);
-        Name = memberField.Name;
-
-        if (Attributes.Has<AliasesAttribute>().IsSome(out var aliasesAttr))
-        {
-            AddAliases(aliasesAttr.Aliases);
-        }
-
-        if (Attributes.Has<DescriptionAttribute>().IsSome(out var descriptionAttr))
-        {
-            AddAlias(descriptionAttr.Description);
-        }
-
-#if !NETFRAMEWORK && !NETSTANDARD
-        if (Attributes.Has<DisplayAttribute>().IsSome(out var displayAttr))
-        {
-            AddAlias(displayAttr.Name);
-            AddAlias(displayAttr.ShortName);
-            AddAlias(displayAttr.Description);
-        }
+public abstract class EnumMemberInfo :
+#if NET7_0_OR_GREATER
+    IEqualityOperators<EnumMemberInfo, EnumMemberInfo, bool>,
 #endif
+    IEquatable<EnumMemberInfo>,
+    IRenderable
+{
+    public static bool operator ==(EnumMemberInfo? left, EnumMemberInfo? right)
+        => Equate.EquatableValues<EnumMemberInfo>(left, right);
 
-        _aliases.TrimExcess();
-    }
+    public static bool operator !=(EnumMemberInfo? left, EnumMemberInfo? right)
+        => !Equate.EquatableValues<EnumMemberInfo>(left, right);
 
-    protected void AddAlias(string? alias)
+    protected static void AddAlias(string? alias, HashSet<string> aliases, ref string render)
     {
-        if (alias is not null)
-            _aliases.Add(alias);
-    }
-
-    protected void AddAliases(IEnumerable<string>? aliases)
-    {
-        if (aliases is not null)
+        if (!string.IsNullOrWhiteSpace(alias))
         {
-            foreach (var alias in aliases)
+            if (aliases.Add(alias!))
             {
-                AddAlias(alias);
+                render = alias!;
             }
         }
     }
 
-    internal void AddAliases(EnumMemberInfo info)
+    public static EnumMemberInfo? For(Enum @enum)
     {
-        AddAlias(info.Name);
-        AddAliases(info._aliases);
+        return EnumInfo.For(@enum).GetMemberInfo(@enum);
+    }
+
+    public static EnumMemberInfo<E>? For<E>(E @enum)
+        where E : struct, Enum
+    {
+        return EnumInfo.For<E>().GetMemberInfo(@enum);
+    }
+
+    private readonly HashSet<string> _aliases = [];
+    private readonly string _render;
+
+    public EnumInfo EnumInfo { get; }
+    public Attribute[] Attributes { get; }
+    public string Name { get; }
+    public object Member { get; }
+    public long I64Value { get; }
+
+    protected EnumMemberInfo(EnumInfo enumInfo, FieldInfo memberField)
+    {
+        Debug.Assert(enumInfo is not null);
+        Debug.Assert(memberField is not null);
+        Debug.Assert(memberField!.IsStatic);
+        Debug.Assert(memberField.DeclaringType == enumInfo!.EnumType);
+
+        EnumInfo = enumInfo;
+        Attributes = Attribute.GetCustomAttributes(memberField);
+        Name = memberField.Name;
+        Member = memberField.GetValue(null).ThrowIfNull();
+        I64Value = Convert.ToInt64(Member);
+
+        // default render is name
+        _render = Name;
+        _aliases = new(StringComparer.Ordinal);
+
+        // In order of least important to most (overwrite)
+#if !NETFRAMEWORK && !NETSTANDARD
+        if (Attributes.Has<DisplayAttribute>(out var displayAttr))
+        {
+            AddAlias(displayAttr.Name, _aliases, ref _render);
+            AddAlias(displayAttr.ShortName, _aliases, ref _render);
+            AddAlias(displayAttr.Description, _aliases, ref _render);
+        }
+#endif
+
+        if (Attributes.Has<DescriptionAttribute>(out var descriptionAttr))
+        {
+            AddAlias(descriptionAttr.Description, _aliases, ref _render);
+        }
+
+        if (Attributes.Has<RenderAsAttribute>(out var renderAsAttr))
+        {
+            AddAlias(renderAsAttr.Name, _aliases, ref _render);
+        }
+
+        // shrink aliases to save memory
         _aliases.TrimExcess();
     }
 
-    public bool Matches(string? str, StringComparison comparison = StringComparison.Ordinal)
+    public bool HasAlias(string? str)
     {
-        if (str is null) return false;
-        if (str.Equals(Name, comparison))
+        if (str is null)
+            return false;
+
+        if (str == Name)
             return true;
-        if (comparison == StringComparison.Ordinal)
-        {
-            return _aliases.Contains(str);
-        }
 
-        foreach (var alias in _aliases)
-        {
-            if (str.Equals(alias, comparison))
-                return true;
-        }
+        return _aliases.Contains(str);
+    }
 
+    public bool Equals(EnumMemberInfo? enumMemberInfo)
+    {
+        return enumMemberInfo is not null &&
+               enumMemberInfo.EnumInfo == EnumInfo &&
+               enumMemberInfo.Name == Name;
+    }
+
+    public bool Equals(Enum e)
+    {
+        return e.GetType() == EnumInfo.EnumType &&
+               e.ToString() == Name;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is EnumMemberInfo enumMemberInfo)
+            return Equals(enumMemberInfo);
+        if (obj is Enum e)
+            return Equals(e);
         return false;
     }
 
+    public override int GetHashCode()
+    {
+        return Hasher.HashMany(EnumInfo, Name);
+    }
+
+    public void RenderTo(TextBuilder builder)
+    {
+        builder.Append(_render);
+    }
+
     public override string ToString() => Name;
-}
-
-[PublicAPI]
-public sealed record class EnumMemberInfo<E> : EnumMemberInfo
-    where E : struct, Enum
-{
-    public required E Value { get; init; }
-
-    [SetsRequiredMembers]
-    internal EnumMemberInfo(FieldInfo memberField) : base(memberField)
-    {
-        object? obj = memberField.GetValue(null);
-        Value = obj.ThrowIfNot<E>();
-    }
-
-    public EnumMemberInfo() : base()
-    {
-    }
 }

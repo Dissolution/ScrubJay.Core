@@ -3,17 +3,34 @@
 [PublicAPI]
 public static class AttributeExtensions
 {
-    public static Option<A> Has<A>(this Attribute[]? attributes)
+    public static bool Has<A>(this Attribute[]? attributes)
         where A : Attribute
     {
         if (attributes is not null)
         {
-            foreach (var attr in attributes)
+            foreach (Attribute attribute in attributes)
             {
-                if (attr is A attribute)
-                    return Some(attribute);
+                if (attribute is A)
+                    return true;
             }
         }
-        return None();
+
+        return false;
+    }
+
+    public static bool Has<A>(this Attribute[]? attributes, [NotNullWhen(true)] out A? attr)
+        where A : Attribute
+    {
+        if (attributes is not null)
+        {
+            foreach (Attribute attribute in attributes)
+            {
+                if (attribute.Is<A>(out attr))
+                    return true;
+            }
+        }
+
+        attr = null;
+        return false;
     }
 }
