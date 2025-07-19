@@ -2,19 +2,16 @@
 // ReSharper disable UnusedVariable
 
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using ScrubJay.Collections.Pooling;
+using ScrubJay.Maths;
+using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
-Enum e = StringComparison.OrdinalIgnoreCase;
-
-var info = EnumInfo.For(e);
-var minfo = EnumMemberInfo.For(e);
 
 Debugger.Break();
 return 0;
-
-
 
 
 namespace ScrubJay.Scratch
@@ -40,8 +37,10 @@ namespace ScrubJay.Scratch
     }
 
 
-    public static class Util_2
+    public static class Util
     {
+
+
         private static Result<double> parse(string input) => Result.TryInvoke(() => double.Parse(input));
 
         private static Result<double> divide(double x, double y) => Result.TryInvoke(() =>

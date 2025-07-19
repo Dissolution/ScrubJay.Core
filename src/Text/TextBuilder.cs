@@ -2351,25 +2351,25 @@ public sealed class TextBuilder :
 
 #region newline delimiter
 
-    public TextBuilder EnumerateAndLineDelimit<T>(
+    public TextBuilder EnumerateAndDelimitLines<T>(
         scoped ReadOnlySpan<T> values,
         Action<TextBuilder, T> buildValue)
         => EnumerateAndDelimit(values, buildValue, static tb => tb.NewLine());
 
-    public TextBuilder EnumerateAndLineDelimit<T>(
+    public TextBuilder EnumerateAndDelimitLines<T>(
         scoped Span<T> values,
         Action<TextBuilder, T> buildValue)
         => EnumerateAndDelimit(values, buildValue, static tb => tb.NewLine());
 
-    public TextBuilder EnumerateAndLineDelimit<T>(T[]? values,
+    public TextBuilder EnumerateAndDelimitLines<T>(T[]? values,
         Action<TextBuilder, T> buildValue)
         => EnumerateAndDelimit(values, buildValue, static tb => tb.NewLine());
 
-    public TextBuilder EnumerateAndLineDelimit<T>(IList<T>? values,
+    public TextBuilder EnumerateAndDelimitLines<T>(IList<T>? values,
         Action<TextBuilder, T> buildValue)
         => EnumerateAndDelimit(values, buildValue, static tb => tb.NewLine());
 
-    public TextBuilder EnumerateAndLineDelimit<T>(IEnumerable<T>? values,
+    public TextBuilder EnumerateAndDelimitLines<T>(IEnumerable<T>? values,
         Action<TextBuilder, T> buildValue)
         => EnumerateAndDelimit(values, buildValue, static tb => tb.NewLine());
 
