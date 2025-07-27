@@ -17,10 +17,10 @@ public abstract class EnumMemberInfo :
     IRenderable
 {
     public static bool operator ==(EnumMemberInfo? left, EnumMemberInfo? right)
-        => Equate.EquatableValues<EnumMemberInfo>(left, right);
+        => Equate.Values(left, right);
 
     public static bool operator !=(EnumMemberInfo? left, EnumMemberInfo? right)
-        => !Equate.EquatableValues<EnumMemberInfo>(left, right);
+        => !Equate.Values(left, right);
 
     protected static void AddAlias(string? alias, HashSet<string> aliases, ref string render)
     {

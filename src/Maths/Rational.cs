@@ -264,14 +264,14 @@ public readonly struct Rational :
     {
         // special cases
         if (double.IsNaN(value))
-            return Rational.NaN;
+            return NaN;
         if (double.IsPositiveInfinity(value))
-            return Rational.PositiveInfinity;
+            return PositiveInfinity;
         if (double.IsNegativeInfinity(value))
-            return Rational.NegativeInfinity;
+            return NegativeInfinity;
         Debug.Assert(!double.IsInfinity(value));
         if (value == 0.0d)
-            return Rational.Zero;
+            return Zero;
 
         // deal with negative values
         bool isNegative = value < 0;
@@ -283,7 +283,7 @@ public readonly struct Rational :
 
         // anything below tolerance is zero
         if (value <= tolerance)
-            return Rational.Zero;
+            return Zero;
 
         // close enough to a number?
         double integerPart = Math.Truncate(value);

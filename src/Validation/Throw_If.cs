@@ -187,7 +187,7 @@ public static partial class Throw
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        if (Compare.Values(argument, other, comparer) >= 0)
+        if (Relate.Values(argument, other, comparer) >= 0)
             return;
 
         string message = GetArgumentExceptionMessage(argument, info, argumentName,
@@ -202,7 +202,7 @@ public static partial class Throw
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        if (Compare.Values(argument, other, comparer) > 0)
+        if (Relate.Values(argument, other, comparer) > 0)
             return;
 
         string message = GetArgumentExceptionMessage(argument, info, argumentName,
@@ -217,7 +217,7 @@ public static partial class Throw
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        if (Compare.Values(argument, other, comparer) <= 0)
+        if (Relate.Values(argument, other, comparer) <= 0)
             return;
 
         string message = GetArgumentExceptionMessage(argument, info, argumentName,
@@ -232,7 +232,7 @@ public static partial class Throw
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        if (Compare.Values(argument, other, comparer) < 0)
+        if (Relate.Values(argument, other, comparer) < 0)
             return;
 
         string message = GetArgumentExceptionMessage(argument, info, argumentName,

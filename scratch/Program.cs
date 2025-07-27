@@ -9,6 +9,11 @@ using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
+var d = new Dom();
+var s = new Sub();
+
+var eq = Equate.Values(147, 13);
+
 
 Debugger.Break();
 return 0;
@@ -16,6 +21,10 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
+    public record class Sub { }
+
+    public record class Dom : Sub { }
+
     [StructLayout(LayoutKind.Explicit, Size = 3)]
     public readonly struct RGB
     {

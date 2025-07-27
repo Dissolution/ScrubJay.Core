@@ -1,6 +1,4 @@
-﻿using System.Buffers.Binary;
-
-namespace ScrubJay.Utilities;
+﻿namespace ScrubJay.Utilities;
 
 [PublicAPI]
 public enum Endianness

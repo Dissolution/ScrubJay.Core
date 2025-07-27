@@ -8,7 +8,7 @@ namespace ScrubJay.Comparison;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 [PublicAPI]
-public sealed class DelegatedEqualityComparer<T> : IEqualityComparer<T>, IEqualityComparer
+public sealed class FuncEqualityComparer<T> : IEqualityComparer<T>, IEqualityComparer
 #if NET9_0_OR_GREATER
     where T : allows ref struct
 #endif
@@ -19,13 +19,13 @@ public sealed class DelegatedEqualityComparer<T> : IEqualityComparer<T>, IEquali
     private readonly Fn<T?, T?, bool> _equals;
     private readonly Fn<T?, int> _getHashCode;
 
-    public DelegatedEqualityComparer(Fn<T?, T?, bool> equals)
+    public FuncEqualityComparer(Fn<T?, T?, bool> equals)
     {
         _equals = equals;
         _getHashCode = _throwCannotHash;
     }
 
-    public DelegatedEqualityComparer(Fn<T?, T?, bool> equals, Fn<T?, int> getHashCode)
+    public FuncEqualityComparer(Fn<T?, T?, bool> equals, Fn<T?, int> getHashCode)
     {
         _equals = equals;
         _getHashCode = getHashCode;
@@ -56,8 +56,5 @@ public sealed class DelegatedEqualityComparer<T> : IEqualityComparer<T>, IEquali
 
     public bool Equals(T? x, T? y) => _equals(x, y);
 
-    public int GetHashCode(T? value)
-    {
-        return _getHashCode(value);
-    }
+    public int GetHashCode(T? value) => _getHashCode(value);
 }

@@ -33,7 +33,7 @@ public readonly struct ExprNode :
 
 
     public bool Equals(ExprNode other)
-        => ObjectComparer.Default.Equals(_obj, other._obj);
+        => ObjectComparer.Default.Equate(_obj, other._obj);
 
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is ExprNode node && Equals(node);

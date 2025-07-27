@@ -89,7 +89,7 @@ public class HasherTests
         Assert.Equal(hash, hash2);
         Assert.NotEqual(defHash, hash);
 
-        comparer = Equate.CreateEqualityComparer<T>((_, _) => false, _ => 0);
+        comparer = Equate.CreateComparer<T>((_, _) => false, _ => 0);
         var valueHash = comparer.GetHashCode(value!);
         Assert.Equal(0, valueHash);
 

@@ -13,10 +13,10 @@ public abstract class EnumInfo :
     IEquatable<EnumInfo>
 {
     public static bool operator ==(EnumInfo? left, EnumInfo? right)
-        => Equate.EquatableValues<EnumInfo>(left, right);
+        => Equate.Values(left, right);
 
     public static bool operator !=(EnumInfo? left, EnumInfo? right)
-        => !Equate.EquatableValues<EnumInfo>(left, right);
+        => !Equate.Values(left, right);
 
 
     private static readonly ConcurrentTypeMap<EnumInfo> _enumInfoCache = [];

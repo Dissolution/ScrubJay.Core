@@ -1,51 +1,75 @@
-﻿namespace ScrubJay.Comparison;
+﻿#pragma warning disable CA1822
 
-/// <summary>
-/// A combination <see cref="IEqualityComparer{T}"/> and <see cref="IComparer{T}"/> for <see cref="object"/>
-/// that uses underlying type equality
-/// </summary>
+namespace ScrubJay.Comparison;
+
+[PublicAPI]
 public sealed class ObjectComparer :
-    IHasDefault<ObjectComparer>,
     IEqualityComparer<object>, IEqualityComparer,
-    IComparer<object>, IComparer
+    IComparer<object>, IComparer,
+    IHasDefault<ObjectComparer>
 {
     public static ObjectComparer Default { get; } = new();
 
-    public new bool Equals(object? x, object? y)
+    bool IEqualityComparer<object>.Equals(object? x, object? y) => Equate(x, y);
+
+    bool IEqualityComparer.Equals(object? x, object? y) => Equate(x, y);
+
+    public bool Equate(object? left, object? right)
     {
-        if (ReferenceEquals(x, y))
+        if (ReferenceEquals(left, right))
             return true;
 
-        if (x is not null)
+        if (left is not null)
         {
-            Type xType = x.GetType();
-            if (xType == typeof(object))
-                return false; // reference failed
-            return Equate.GetEqualityComparer(xType).Equals(x, y);
+            Type leftType = left.GetType();
+            if (leftType == typeof(object)) // prevent recursion
+                return false;
+
+            return Comparison.Equate.GetComparer(leftType).Equals(left, right);
         }
 
-        Type yType = y!.GetType();
-        if (yType == typeof(object))
-            return false; // reference failed
-        return Equate.GetEqualityComparer(yType).Equals(x, y);
+        Debug.Assert(right is not null);
+        Type rightType = right!.GetType();
+        if (rightType == typeof(object)) // prevent recursion
+            return false;
+
+        return Comparison.Equate.GetComparer(rightType).Equals(right, left);
     }
 
-    public int GetHashCode(object? obj) => Hasher.Hash<object>(obj);
 
-    public int Compare(object? x, object? y)
+    int IEqualityComparer<object>.GetHashCode(object obj) => GetHashCode(obj);
+
+    int IEqualityComparer.GetHashCode(object obj) => GetHashCode(obj);
+
+    public int GetHashCode(object? obj) => Hasher.Hash(obj);
+
+    int IComparer<object>.Compare(object? x, object? y) => Relate(x, y);
+
+    int IComparer.Compare(object? x, object? y) => Relate(x, y);
+
+    public int Relate(object? left, object? right)
     {
-        if (ReferenceEquals(x, y))
+        if (ReferenceEquals(left, right))
             return 0;
 
-        // nulls sort before all other values
-        if (x is null)
-            return -1;
-        if (y is null)
-            return 1;
+        // null sorts as first
+        if (left is null) return -1;
+        if (right is null) return 1;
 
-        Type xType = x.GetType();
-        if (xType == typeof(object))
-            return -1; // both objects should have been caught in RefEquals, so x is 'less complex' than y
-        return Comparison.Compare.GetComparer(xType).Compare(x, y);
+        Type leftType = left.GetType();
+
+        if (leftType == typeof(object))
+        {
+            // left is less complex than right
+            return -1;
+        }
+
+        if (right.GetType() == typeof(object))
+        {
+            // right is less complex than left
+            return 1;
+        }
+
+        return Comparison.Relate.GetComparer(leftType).Compare(left, right);
     }
 }

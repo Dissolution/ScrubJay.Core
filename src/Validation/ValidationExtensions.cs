@@ -62,24 +62,53 @@ public static class ValidationExtensions
     /// </exception>
     [return: NotNull]
     public static T ThrowIfNot<T>([NotNull] this object? obj,
-        [CallerArgumentExpression(nameof(obj))] string? objName = null)
+        [CallerArgumentExpression(nameof(obj))]
+        string? objName = null)
     {
         return obj switch
         {
             null => throw new ArgumentNullException(objName),
             T output => output,
-            _ => throw new ArgumentException($"The given {obj.GetType().Render()} value is not a valid {typeof(T).Render()} instance", objName)
+            _ => throw new ArgumentException(
+                TextBuilder.Build($"(object){obj.GetType():@} `{obj:@}` is not a {typeof(T):@} instance"), objName),
         };
+    }
+
+    [return: NotNullIfNotNull(nameof(obj))]
+    [return: NotNullIfNotNull(nameof(type))]
+    public static object? ThrowIfNot(this object? obj,
+        Type? type,
+        [CallerArgumentExpression(nameof(obj))]
+        string? objName = null)
+    {
+        if (type is null)
+        {
+            if (obj is null)
+                return obj;
+            throw new ArgumentException(
+                TextBuilder.Build($"(object){obj.GetType():@} `{obj:@}` was expected to be null"), objName);
+        }
+
+        if (obj is null)
+            throw new ArgumentNullException(objName);
+
+        if (obj.GetType().Implements(type))
+            return obj;
+
+        throw new ArgumentException(
+            TextBuilder.Build($"(object){obj.GetType():@} `{obj:@}` is not a {type:@} instance"), objName);
     }
 
 
     [return: NotNullIfNotNull(nameof(obj))]
     public static T? ThrowIfCannotBe<T>(
         this object? obj,
-        [CallerArgumentExpression(nameof(obj))] string? objName = null)
+        [CallerArgumentExpression(nameof(obj))]
+        string? objName = null)
     {
         if (obj.As<T?>(out T? output))
             return output;
-        throw new ArgumentException($"The given {obj?.GetType().Render()} value is not a valid {typeof(T).Render()} instance", objName);
+        throw new ArgumentException($"The given {obj?.GetType().Render()} value is not a valid {typeof(T).Render()} instance",
+            objName);
     }
 }

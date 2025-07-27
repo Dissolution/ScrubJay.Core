@@ -532,7 +532,7 @@ public ref struct Buffer<T> :
             Grow();
         }
 
-        Array.Sort(_array!, 0, _position, Compare.CreateComparer<T>(itemComparison));
+        Array.Sort(_array!, 0, _position, Relate.CreateComparer<T>(itemComparison));
     }
 
     /// <summary>

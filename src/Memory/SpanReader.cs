@@ -809,7 +809,7 @@ public ref struct SpanReader<T>
         using var builder = new TextBuilder();
 
         // Previously read items
-        var prev = this.Previous;
+        var prev = Previous;
         int len = prev.Length;
         if (len > captureCount)
         {
@@ -827,7 +827,7 @@ public ref struct SpanReader<T>
         builder.Append(pointer);
 
         // Next items
-        var next = this.Next;
+        var next = Next;
         len = next.Length;
 
         if (len < captureCount)

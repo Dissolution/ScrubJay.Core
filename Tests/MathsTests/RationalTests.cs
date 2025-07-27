@@ -1,10 +1,7 @@
 ﻿#pragma warning disable CA1305 // Specify IFormatProvider
 
-using System.Globalization;
-using System.Numerics;
 using ScrubJay.Maths;
 using ScrubJay.Text;
-using ScrubJay.Utilities;
 
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 

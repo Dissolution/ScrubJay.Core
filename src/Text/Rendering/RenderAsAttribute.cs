@@ -8,6 +8,6 @@ public sealed class RenderAsAttribute : Attribute
 
     public RenderAsAttribute(string name)
     {
-        this.Name = name;
+        Name = name;
     }
 }

@@ -421,7 +421,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public void Sort(Comparison<T> itemComparison)
     {
         _version++;
-        Array.Sort(_array, 0, _position, Compare.CreateComparer<T>(itemComparison));
+        Array.Sort(_array, 0, _position, Relate.CreateComparer<T>(itemComparison));
     }
 
     /// <summary>
