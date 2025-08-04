@@ -44,7 +44,7 @@ public static class EndianHelper
             Endianness.Big => Endianness.Little,
             Endianness.System => Endianness.NonSystem,
             Endianness.NonSystem => Endianness.System,
-            _ => throw InvalidEnumException.Create(endianness),
+            _ => throw InvalidEnumException.New(endianness),
         };
     }
 

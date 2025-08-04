@@ -145,7 +145,7 @@ public sealed class TextBuilder :
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _position;
-        private set
+        internal set
         {
             Debug.Assert((value >= 0) && (value < Capacity));
             _position = value;
@@ -280,12 +280,13 @@ public sealed class TextBuilder :
 
 #pragma warning disable IDE0060, CA2000
     public TextBuilder Append(
-        [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
         [HandlesResourceDisposal]
+        [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
         InterpolatedTextBuilder interpolatedTextBuilder)
     {
         // as this TextBuilder instance was passed into the InterpolatedTextBuilder's constructor,
         // all the writing has already occurred
+        interpolatedTextBuilder.Dispose();
         return this;
     }
 #pragma warning restore IDE0060, CA2000
@@ -306,7 +307,7 @@ public sealed class TextBuilder :
     public TextBuilder AppendLine(
         [InterpolatedStringHandlerArgument("")]
         [HandlesResourceDisposal]
-        ref InterpolatedTextBuilder interpolatedText) => NewLine();
+        InterpolatedTextBuilder interpolatedText) => Append(interpolatedText).NewLine();
 #pragma warning restore IDE0060
 
 #endregion
@@ -1452,6 +1453,10 @@ public sealed class TextBuilder :
         // no match
         return None<int>();
     }
+
+    public Option<int> TryFindIndex(string? str, bool firstToLast = true, Index? index = null,
+        StringComparison comparison = StringComparison.Ordinal)
+        => TryFindIndex(str.AsSpan(), firstToLast, index, comparison);
 
     public Option<(int Index, char Char)> TryFindIndex(
         Func<char, bool>? charPredicate,

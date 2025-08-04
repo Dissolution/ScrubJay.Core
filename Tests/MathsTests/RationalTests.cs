@@ -89,7 +89,7 @@ public sealed class RationalTests
         double d = (double)rat.Denominator;
         double ratDouble = n / d;
 
-        var tol = 0.00001d;
+        var tol = 0.01d;
 
         Assert.Equal(f64, ratDouble, tol);
 

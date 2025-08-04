@@ -15,6 +15,7 @@ public static class Reference
     /// <remarks>
     /// This is a non-locking version of <see cref="Interlocked"/>'s <c>Exchange</c> methods
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: NotNullIfNotNull(nameof(location))]
     public static T Exchange<T>(ref T location, T value)
     {
@@ -23,6 +24,7 @@ public static class Reference
         return original;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Exchange<T>(ref Span<T> left, ref Span<T> right)
     {
         Span<T> temp = left;

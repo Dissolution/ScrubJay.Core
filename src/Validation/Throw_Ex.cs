@@ -37,7 +37,7 @@ static partial class Throw
         [CallerArgumentExpression(nameof(@enum))]
         string? enumName = null)
         where E : struct, Enum
-        => throw InvalidEnumException.Create<E>(@enum, info, enumName);
+        => throw InvalidEnumException.New<E>(@enum, info, enumName);
 
     [DoesNotReturn]
     public static R InvalidEnum<E, R>(

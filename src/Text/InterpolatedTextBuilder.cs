@@ -14,24 +14,28 @@ public ref struct InterpolatedTextBuilder // : IDisposable
     private readonly TextBuilder _builder;
     private readonly bool _disposeBuilder;
 
+    [MustDisposeResource(true)]
     public InterpolatedTextBuilder()
     {
         _builder = new TextBuilder();
         _disposeBuilder = true;
     }
 
+    [MustDisposeResource(true)]
     public InterpolatedTextBuilder(int literalLength, int formattedCount)
     {
         _builder = new TextBuilder(literalLength + (formattedCount * 16));
         _disposeBuilder = true;
     }
 
+    [MustDisposeResource(false)]
     public InterpolatedTextBuilder(TextBuilder builder)
     {
         _builder = builder;
         _disposeBuilder = false;
     }
 
+    [MustDisposeResource(false)]
     public InterpolatedTextBuilder(int literalLength, int formattedCount, TextBuilder builder)
     {
         _builder = builder;
@@ -82,24 +86,21 @@ public ref struct InterpolatedTextBuilder // : IDisposable
         // pass-through to builder for execution
         _builder.Invoke(buildText);
     }
-    //
-    // [HandlesResourceDisposal]
-    // public void Dispose()
-    // {
-    //     if (_disposeBuilder)
-    //     {
-    //         _builder.Dispose();
-    //     }
-    // }
+
+    [HandlesResourceDisposal]
+    public void Dispose()
+    {
+        if (_disposeBuilder)
+        {
+            _builder.Dispose();
+        }
+    }
 
     [HandlesResourceDisposal]
     public string ToStringAndDispose()
     {
         string str = ToString();
-        if (_disposeBuilder)
-        {
-            _builder.Dispose();
-        }
+        Dispose();
         return str;
     }
 

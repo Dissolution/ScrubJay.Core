@@ -14,7 +14,7 @@ public class InvalidEnumException : ArgumentOutOfRangeException
         where E : struct, Enum
         => $"Invalid {typeof(E).Render()} enum: {e}";
 
-    public static InvalidEnumException Create<E>(
+    public static InvalidEnumException New<E>(
         E @enum,
         string? message = null,
         [CallerArgumentExpression(nameof(@enum))]

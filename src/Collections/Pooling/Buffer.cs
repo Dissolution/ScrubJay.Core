@@ -11,9 +11,9 @@ using System.Text;
 namespace ScrubJay.Collections.Pooling;
 
 /// <summary>
-/// A Buffer is a stack-based <see cref="IList{T}"/>-like collection <i>(grows as required)</i>,
-/// that uses <see cref="ArrayPool{T}"/> to avoid allocation,
-/// and thus must be <see cref="Dispose">Disposed</see> after use
+/// A Buffer is a stack-based, <see cref="IList{T}"/>-like collection <i>(grows as required)</i>,
+/// that uses <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/> to minimalize allocations.<br/>
+/// It must be <see cref="Dispose">Disposed</see> after use or there is little benefit to using one.
 /// </summary>
 /// <typeparam name="T">
 /// The <see cref="Type"/> of items stored in this <see cref="Buffer{T}"/>

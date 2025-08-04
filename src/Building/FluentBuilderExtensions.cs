@@ -399,7 +399,6 @@ public static class FluentBuilderExtensions
 
 #endregion
 
-
 #region Enumerate
 
     public static B Enumerate<B, T>(this B builder, scoped ReadOnlySpan<T> values, Action<B, T> onBuilderValue)

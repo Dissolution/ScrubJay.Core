@@ -18,7 +18,7 @@ public static class ByteSpanReaderExtensions
             Endianness.NonSystem => false,
             Endianness.Little => BitConverter.IsLittleEndian,
             Endianness.Big => !BitConverter.IsLittleEndian,
-            _ => throw InvalidEnumException.Create(endianness),
+            _ => throw InvalidEnumException.New(endianness),
         };
     }
 
@@ -229,7 +229,7 @@ public static class ByteSpanReaderExtensions
 #endif
 
         {
-            throw InvalidEnumException.Create(@enum);
+            throw InvalidEnumException.New(@enum);
         }
 
         return @enum;
@@ -364,7 +364,7 @@ public static class ByteSpanReaderExtensions
                 return str;
             }
             default:
-                throw InvalidEnumException.Create(fix);
+                throw InvalidEnumException.New(fix);
         }
     }
 
@@ -479,7 +479,7 @@ public static class ByteSpanReaderExtensions
                 return TimeSpan.FromSeconds(seconds);
             }
             default:
-                throw InvalidEnumException.Create(fix);
+                throw InvalidEnumException.New(fix);
         }
     }
 
@@ -505,7 +505,7 @@ public static class ByteSpanReaderExtensions
                 return _dateOrigin.AddSeconds(seconds);
             }
             default:
-                throw InvalidEnumException.Create(fix);
+                throw InvalidEnumException.New(fix);
         }
     }
 
