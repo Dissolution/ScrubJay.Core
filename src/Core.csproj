@@ -7,6 +7,7 @@
         <TargetFrameworks>
             <!-- Always supports all latest versions -->
             <!-- https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-version -->
+            net10.0;
             net9.0;net8.0;netstandard2.1;net481;
             <!-- Support for .NET Standard 2.0 so source generators can consume this package -->
             netstandard2.0;
@@ -14,7 +15,7 @@
         <CheckEolTargetFramework>false</CheckEolTargetFramework>
 
         <!-- Always use the latest features -->
-        <LangVersion>latest</LangVersion>
+        <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

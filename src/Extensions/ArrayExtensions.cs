@@ -6,22 +6,41 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class ArrayExtensions
 {
-#if NETFRAMEWORK || NETSTANDARD2_0
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this T[]? array, Range range)
+    extension(Array? array)
     {
-        if (array is null)
-            return [];
-        (int start, int length) = range.GetOffsetAndLength(array.Length);
-        return new Span<T>(array, start, length);
     }
-#endif
 
-    /// <inheritdoc cref="Array.ConvertAll{TInput,TOutput}"/>
-    public static O[] ConvertAll<I, O>(
-        this I[] array,
-        Converter<I, O> converter)
-        => Array.ConvertAll<I, O>(array, converter);
+    extension<T>(T[]? array)
+    {
+        public O[] ConvertAll<O>(Converter<T, O> converter)
+        {
+            if (array is null) return [];
+            return Array.ConvertAll<T, O>(array, converter);
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="array"/> is <c>null</c> or has a Length of 0
+        /// </summary>
+        public bool IsNullOrEmpty()
+            => array is null || (array.Length == 0);
+
+
+        // Compat
+#if NETFRAMEWORK || NETSTANDARD2_0
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<T> AsSpan(Range range)
+        {
+            if (array is null)
+                return [];
+            (int start, int length) = range.GetOffsetAndLength(array.Length);
+            return new Span<T>(array, start, length);
+        }
+#endif
+    }
+
+
+
 
     public static Result<T> TryGet<T>(
         this T[]? array,
@@ -52,11 +71,7 @@ public static class ArrayExtensions
             select (arr[idx] = item);
     }
 
-    /// <summary>
-    /// Returns <c>true</c> if <paramref name="array"/> is <c>null</c> or has a Length of 0
-    /// </summary>
-    public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this T[]? array)
-        => array is null || (array.Length == 0);
+
 
 #if NETFRAMEWORK || NETSTANDARD2_0
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
