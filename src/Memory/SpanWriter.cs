@@ -2,6 +2,7 @@
 
 namespace ScrubJay.Memory;
 
+[PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public ref struct SpanWriter<T>
 {
@@ -45,7 +46,7 @@ public ref struct SpanWriter<T>
         _position = position;
     }
 
-    public void UseAvailable(SpanDelegates.FuncS<T,int> useAvailable)
+    public void UseAvailable(FnSpan<T,int> useAvailable)
     {
         int used = useAvailable(_span.Slice(_position));
         _position += used;
@@ -65,7 +66,7 @@ public ref struct SpanWriter<T>
         return new InvalidOperationException($"Could not write item '{item}': No capacity remaining");
     }
 
-    public Result<Unit> TryWriteMany(scoped ReadOnlySpan<T> items)
+    public Result<Unit> TryWriteMany(params ReadOnlySpan<T> items)
     {
         int pos = _position;
         int newPos = pos + items.Length;
@@ -79,7 +80,7 @@ public ref struct SpanWriter<T>
         return new InvalidOperationException($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
     }
 
-    public Result<Unit> TryWriteMany(params T[]? items)
+    public Result<Unit> TryWriteMany(T[]? items)
     {
         if (items is null)
             return Ok(Unit());

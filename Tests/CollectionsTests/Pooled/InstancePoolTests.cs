@@ -122,13 +122,13 @@ public class InstancePoolTests
     {
         using var pool = InstancePool.Create<int[]>(
             static () => new int[8],
-            cleanInstance: static arr => arr.AsSpan().ForEach((ref int i) => i = 0)
+            cleanInstance: static arr => arr.ForEach((ref int i) => i = 0)
         );
 
         int[] array = pool.Rent();
         Assert.Equal(8, array.Length);
         // ReSharper disable once RedundantAssignment
-        array.AsSpan().ForEach((ref int item) => item = 3);
+        array.ForEach((ref int item) => item = 3);
         Assert.True(array.All(item => item == 3));
         pool.Return(array);
         Assert.True(array.All(item => item == 0));

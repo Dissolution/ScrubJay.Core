@@ -70,7 +70,7 @@ public abstract class EnumInfo :
         EnumType = enumType;
         UnderlyingType = Enum.GetUnderlyingType(enumType);
         Attributes = Attribute.GetCustomAttributes(enumType);
-        IsFlags = Attributes.Has<FlagsAttribute>();
+        IsFlags = Attributes.Contains<FlagsAttribute>();
 
         var members = EnumType.GetFields(BindingFlags.Public | BindingFlags.Static);
         _members = new EnumMemberInfo[members.Length];

@@ -68,31 +68,7 @@ Commented Aug 27, 2017 at 10:08
 
         return left;
     }
-    //
-    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    // public static T LeastCommonMultiple<T>(T left, T right)
-    //     where T : INumber<T>
-    //     => (left / GreatestCommonDivisor(left, right)) * right;
 
-
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int HalfRoundDown(int value)
-    {
-        Emit.Ldarg(nameof(value));
-        Emit.Ldc_I4_1();
-        Emit.Shr();
-        return Return<int>();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Twice(int value)
-    {
-        Emit.Ldarg(nameof(value));
-        Emit.Ldc_I4_1();
-        Emit.Shl();
-        return Return<int>();
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Min(int a, int b, int c)

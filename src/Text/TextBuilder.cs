@@ -780,7 +780,7 @@ public sealed class TextBuilder :
         // if padding is even, pre + post are the same
         if (padding.IsEven())
         {
-            int pad = MathHelper.HalfRoundDown(padding);
+            int pad = padding / 2;
             return RepeatAppend(pad, paddingChar)
                 .Append(text)
                 .RepeatAppend(pad, paddingChar);
@@ -1557,7 +1557,7 @@ public sealed class TextBuilder :
         return this;
     }
 
-    public TextBuilder ForEach(ActionRef<char>? refChar)
+    public TextBuilder ForEach(FnRef<char, None>? refChar)
     {
         if (refChar is not null)
         {
@@ -1571,7 +1571,7 @@ public sealed class TextBuilder :
         return this;
     }
 
-    public TextBuilder ForEach(ActionRef<char, int>? refCharIndex)
+    public TextBuilder ForEach(FnRef<char, int, None>? refCharIndex)
     {
         if (refCharIndex is not null)
         {

@@ -1,4 +1,5 @@
 ﻿// Exception to Identifiers Require Correct Suffix
+
 #pragma warning disable CA1710
 
 namespace ScrubJay.Validation;
@@ -19,6 +20,21 @@ public class Validations : Validations<Exception>
     }
 
     public void Add<T>(Func<T> func)
+    {
+        try
+        {
+            _ = func();
+        }
+        catch (Exception ex)
+        {
+            base.Add(ex);
+        }
+    }
+
+    public void Add<T>(Fn<T> func)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         try
         {
@@ -72,11 +88,13 @@ public class Validations : Validations<Exception>
             exception = null;
             return false;
         }
+
         if (count == 1)
         {
             exception = exceptions[0];
             return true;
         }
+
         exception = new AggregateException($"{exceptions.Count} Validations Failed", exceptions);
         return true;
     }
@@ -137,7 +155,7 @@ public class Validations<E> : IReadOnlyCollection<E>
     }
 
     public void Add(Func<Result<Unit, E>> getResult)
-         => Add(getResult());
+        => Add(getResult());
 
     public void Add<T>(Func<Result<T, E>> getResult)
         => Add(getResult());

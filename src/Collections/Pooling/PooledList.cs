@@ -209,6 +209,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         {
             GrowBy(items.Length);
         }
+
         _version++;
         Sequence.CopyTo(items, _array.AsSpan(pos));
         _position = newPos;
@@ -476,7 +477,8 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <returns>
     /// An <see cref="Option{T}"/> that might contain the index of the first matching instance
     /// </returns>
-    public Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = null, IEqualityComparer<T>? itemComparer = null)
+    public Option<int> TryFindIndex(T item, bool firstToLast = true, Index? offset = null,
+        IEqualityComparer<T>? itemComparer = null)
     {
         int pos = _position;
         var span = new Span<T>(_array);
@@ -943,7 +945,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <c>true</c> if the <see cref="SpanDelegates.FuncS{T1,R}"/> operation succeeded<br/>
     /// <c>false</c> if it did not
     /// </returns>
-    public bool TryUseAvailable(SpanDelegates.FuncS<T, int> useAvailable)
+    public bool TryUseAvailable(FnSpan<T, int> useAvailable)
     {
         int used = useAvailable(Available);
         if ((used < 0) || (used > Available.Length))
@@ -959,7 +961,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <param name="perItem">
     /// The <see cref="ActionRef{T}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(ActionRef<T> perItem)
+    public void ForEach(FnRef<T, None> perItem)
     {
         int pos = _position;
         var array = _array;
@@ -976,7 +978,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     /// <param name="perItem">
     /// The <see cref="ActionRef{T,I}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(ActionRef<T, int> perItem)
+    public void ForEach(FnRef<T, int, None> perItem)
     {
         int pos = _position;
         var array = _array;

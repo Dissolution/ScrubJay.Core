@@ -72,7 +72,7 @@ public abstract class EnumMemberInfo :
 
         // In order of least important to most (overwrite)
 #if !NETFRAMEWORK && !NETSTANDARD
-        if (Attributes.Has<DisplayAttribute>(out var displayAttr))
+        if (Attributes.TryGet<DisplayAttribute>(out var displayAttr))
         {
             AddAlias(displayAttr.Name, _aliases, ref _render);
             AddAlias(displayAttr.ShortName, _aliases, ref _render);
@@ -80,12 +80,12 @@ public abstract class EnumMemberInfo :
         }
 #endif
 
-        if (Attributes.Has<DescriptionAttribute>(out var descriptionAttr))
+        if (Attributes.TryGet<DescriptionAttribute>(out var descriptionAttr))
         {
             AddAlias(descriptionAttr.Description, _aliases, ref _render);
         }
 
-        if (Attributes.Has<RenderAsAttribute>(out var renderAsAttr))
+        if (Attributes.TryGet<RenderAsAttribute>(out var renderAsAttr))
         {
             AddAlias(renderAsAttr.Name, _aliases, ref _render);
         }

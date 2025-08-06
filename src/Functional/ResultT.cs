@@ -279,7 +279,7 @@ public readonly struct Result<T> :
 #endregion
 
 
-    public void Match(Act<T> onOk, Act<Exception> onError)
+    public void Match(Action<T> onOk, Action<Exception> onError)
     {
         if (_isOk)
         {

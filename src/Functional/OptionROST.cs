@@ -8,8 +8,6 @@
 // CA1000: Do not declare static members on generic types
 #pragma warning disable CA1000
 
-using static ScrubJay.SpanDelegates;
-
 namespace ScrubJay.Functional;
 
 /// <summary>
@@ -216,7 +214,7 @@ public readonly ref struct OptionROSpan<T> :
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(ActionROS<T> onSome, Action onNone)
+    public void Match(ActRSpan<T> onSome, Action onNone)
     {
         if (_isSome)
         {
@@ -229,7 +227,7 @@ public readonly ref struct OptionROSpan<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Match(ActionROS<T> onSome, Action<None> onNone)
+    public void Match(ActRSpan<T> onSome, Action<None> onNone)
     {
         if (_isSome)
         {
@@ -242,7 +240,7 @@ public readonly ref struct OptionROSpan<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public R Match<R>(FuncROS<T, R> some, Fn<R> none)
+    public R Match<R>(FnRSpan<T, R> some, Fn<R> none)
     {
         if (_isSome)
         {
@@ -255,7 +253,7 @@ public readonly ref struct OptionROSpan<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public R Match<R>(FuncROS<T, R> some, Fn<None, R> none)
+    public R Match<R>(FnRSpan<T, R> some, Fn<None, R> none)
     {
         if (_isSome)
         {

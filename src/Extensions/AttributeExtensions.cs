@@ -3,7 +3,7 @@
 [PublicAPI]
 public static class AttributeExtensions
 {
-    public static bool Has<A>(this Attribute[]? attributes)
+    public static bool Contains<A>(this Attribute[]? attributes)
         where A : Attribute
     {
         if (attributes is not null)
@@ -18,7 +18,7 @@ public static class AttributeExtensions
         return false;
     }
 
-    public static bool Has<A>(this Attribute[]? attributes, [NotNullWhen(true)] out A? attr)
+    public static bool TryGet<A>(this Attribute[]? attributes, [NotNullWhen(true)] out A? attr)
         where A : Attribute
     {
         if (attributes is not null)

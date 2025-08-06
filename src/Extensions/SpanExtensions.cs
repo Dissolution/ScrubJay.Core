@@ -12,15 +12,15 @@ public static class SpanExtensions
     /// Performs the given <paramref name="perItem"/> action on each item in the <see cref="Span{T}"/>
     /// </summary>
     /// <param name="span">
-    /// The <see cref="Span{T}"/> of items to perform the <see cref="ActionRef{T}"/> delegate upon
+    /// The <see cref="Span{T}"/> of items to perform the <see cref="FnRef{T,None}"/> delegate upon
     /// </param>
     /// <param name="perItem">
-    /// The <see cref="ActionRef{T}"/> delegate to perform on each item of the <see cref="Span{T}"/>
+    /// The <see cref="FnRef{T,None}"/> delegate to perform on each item of the <see cref="Span{T}"/>
     /// </param>
     /// <typeparam name="T">
     /// The <see cref="Type"/> of items in the <see cref="Span{T}"/>
     /// </typeparam>
-    public static void ForEach<T>(this Span<T> span, ActionRef<T> perItem)
+    public static void ForEach<T>(this Span<T> span, ActRef<T> perItem)
     {
         for (int i = 0; i < span.Length; i++)
         {
@@ -145,15 +145,18 @@ public static class SpanExtensions
         return false;
     }
 
-    public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, T separator, SpanSplitterOptions options = SpanSplitterOptions.None)
+    public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, T separator,
+        SpanSplitterOptions options = SpanSplitterOptions.None)
         where T : IEquatable<T>
         => SpanSplitter<T>.Split(span, separator, options);
 
-    public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator, SpanSplitterOptions options = SpanSplitterOptions.None)
+    public static SpanSplitter<T> Splitter<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator,
+        SpanSplitterOptions options = SpanSplitterOptions.None)
         where T : IEquatable<T>
         => SpanSplitter<T>.Split(span, separator, options);
 
-    public static SpanSplitter<T> SplitterAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separators, SpanSplitterOptions options = SpanSplitterOptions.None)
+    public static SpanSplitter<T> SplitterAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separators,
+        SpanSplitterOptions options = SpanSplitterOptions.None)
         where T : IEquatable<T>
         => SpanSplitter<T>.SplitAny(span, separators, options);
 }

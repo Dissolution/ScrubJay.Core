@@ -1038,7 +1038,7 @@ public ref struct Buffer<T> :
     /// <c>true</c> if the <see cref="SpanDelegates.FuncS{T1,R}"/> operation succeeded<br/>
     /// <c>false</c> if it did not
     /// </returns>
-    public bool TryUseAvailable(SpanDelegates.FuncS<T, int> useAvailable)
+    public bool TryUseAvailable(FnSpan<T, int> useAvailable)
     {
         int used = useAvailable(Available);
         if ((used < 0) || (used > Available.Length))
@@ -1056,7 +1056,7 @@ public ref struct Buffer<T> :
     /// <param name="perItem">
     /// The <see cref="ActionRef{T}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(ActionRef<T>? perItem)
+    public void ForEach(FnRef<T,None>? perItem)
     {
         if (perItem is null)
         {

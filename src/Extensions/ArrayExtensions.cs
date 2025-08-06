@@ -17,6 +17,17 @@ public static class ArrayExtensions
     }
 #endif
 
+    public static void ForEach<T>(this T[]? array, ActRef<T> perItem)
+    {
+        if (array is not null)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                perItem(ref array[i]);
+            }
+        }
+    }
+
     /// <inheritdoc cref="Array.ConvertAll{TInput,TOutput}"/>
     public static O[] ConvertAll<I, O>(
         this I[] array,
