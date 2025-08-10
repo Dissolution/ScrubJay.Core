@@ -6,7 +6,7 @@ public static class ByteSpanExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsAllZeros(this scoped ReadOnlySpan<byte> span)
     {
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
         return span.IndexOfAnyExcept((byte)0) == -1;
 #else
         for (int i = 0; i < span.Length; i++)

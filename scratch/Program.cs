@@ -12,7 +12,7 @@ using ScrubJay.Text.Rendering;
 var d = new Dom();
 var s = new Sub();
 
-var eq = Equate.Values(147, 13);
+var eq = Relate.Values(147, 13);
 
 
 Debugger.Break();

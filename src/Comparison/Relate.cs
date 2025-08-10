@@ -31,7 +31,7 @@ public static class Relate
 
         return typeof(Comparer<>)
             .MakeGenericType(type)
-            .GetMethod("get_Default", BindingFlags.NonPublic | BindingFlags.Static)
+            .GetMethod("get_Default", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase)
             .ThrowIfNull($"Could not find Comparer<{type.Render()}>.get_Default method")
             .Invoke(null, null)
             .ThrowIfNot(typeof(IComparer<>).MakeGenericType(type));
