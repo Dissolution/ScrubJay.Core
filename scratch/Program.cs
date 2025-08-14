@@ -2,25 +2,32 @@
 // ReSharper disable UnusedVariable
 
 using System.Diagnostics;
+using System.Dynamic;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using scratch;
 using ScrubJay.Collections.Pooling;
 using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
-var d = new Dom();
-var s = new Sub();
+TB builder = default!;
+builder.NewLines(3)
+    .Append('x')
+    .NewLine()
+    .
 
-var eq = Relate.Values(147, 13);
+
+
+
 
 
 Debugger.Break();
 return 0;
 
-
 namespace ScrubJay.Scratch
 {
+
     public record class Sub { }
 
     public record class Dom : Sub { }
@@ -46,7 +53,7 @@ namespace ScrubJay.Scratch
     }
 
 
-    public static class Util
+    public static partial class Util
     {
 
 
