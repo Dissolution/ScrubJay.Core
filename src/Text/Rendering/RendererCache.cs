@@ -1,10 +1,8 @@
-using ScrubJay.Collections.NonGeneric;
-
 namespace ScrubJay.Text.Rendering;
 
 public static class RendererCache
 {
-    private static readonly List<Renderer> _renderers;
+    private static readonly List<IRenderer> _renderers;
 
     static RendererCache()
     {
@@ -12,148 +10,94 @@ public static class RendererCache
             .CurrentDomain
             .GetAssemblies()
             .SelectMany(static assembly => Result.TryInvoke(assembly.GetTypes).OkOr([]))
-            .Where(static type => type.Implements(typeof(Renderer<>)))
+            .Where(static type => type.Implements(typeof(IRenderer<>)))
             .Where(static type => !type.IsAbstract)
             .SelectWhere(static type => Result.TryInvoke(type, static t => Activator.CreateInstance(t)))
-            .OfType<Renderer>()
+            .OfType<IRenderer>()
             .ToList();
     }
 
-    // ReSharper disable once UnusedMethodReturnValue.Local
-    private static TextBuilder DefaultRenderTo<T>(T? value, TextBuilder builder)
-    {
-        switch (value)
-        {
-            case null:
-                return builder.Append("null");
-            case DBNull:
-                return builder.Append(nameof(DBNull));
-            case bool b:
-                return builder.IfAppend(b, bool.TrueString, bool.FalseString);
-            case byte u8:
-                return builder.Append("(byte)").Format(u8);
-            case sbyte i8:
-                return builder.Append("(sbyte)").Format(i8);
-            case short i16:
-                return builder.Append("(short)").Format(i16);
-            case ushort u16:
-                return builder.Append("(ushort)").Format(u16);
-            case int i32:
-                return builder.Format(i32);
-            case uint u32:
-                return builder.Format(u32).Append('U');
-            case long i64:
-                return builder.Format(i64).Append('L');
-            case ulong u64:
-                return builder.Format(u64).Append("UL");
-            case float f32:
-                return builder.Format(f32, "N1").Append('f');
-            case double f64:
-                return builder.Format(f64, "N1").Append('d');
-            case decimal dec:
-                return builder.Format(dec, "N1").Append('m');
-            case TimeSpan ts:
-                return builder.Format(ts, "g");
-            case DateTime dt:
-                return builder.Format(dt, "yyyy-MM-dd HH:mm:ss");
-            case char ch:
-                return builder.Append('\'').Append(ch).Append('\'');
-            case string str:
-                return builder.Append('"').Append(str).Append('"');
-#if !NETSTANDARD2_0
-            case ITuple tuple:
-            {
-                return builder
-                    .Append('(')
-                    .EnumerateAndDelimit(
-                        Enumerable.Range(0, tuple.Length),
-                        (tb, i) => RenderTo(tuple[i], tb),
-                        ", ")
-                    .Append(')');
-            }
-#endif
-            case Array array:
-            {
-                var wrapper = new ArrayAdapterND<object?>(array);
-                return builder.Append('[')
-                    .EnumerateAndDelimit(wrapper,
-                        static (tb, item) => RenderTo(item, tb),
-                        ", ")
-                    .Append(']');
-            }
-            case IEnumerable enumerable:
-            {
-                return builder.Append('{')
-                    .EnumerateAndDelimit(enumerable.OfType<object?>(),
-                        static (tb, item) => RenderTo(item, tb),
-                        ", ")
-                    .Append('}');
-            }
-            default:
-            {
-                return builder.Format<T>(value);
-            }
-        }
-    }
-
-    public static void RenderTo<T>(T? value, TextBuilder builder)
+    public static TextBuilder FluentRender<T>(TextBuilder builder, T? value)
     {
         if (value is IRenderable)
         {
             ((IRenderable)value).RenderTo(builder);
-            return;
+            return builder;
         }
 
         Type valueType = value?.GetType() ?? typeof(T);
 
         if (_renderers.TryGetFirst(r => r.CanRender(valueType)).IsOk(out var renderer))
         {
-            if (renderer.Is<Renderer<T>>(out var typedRenderer))
+            if (renderer.Is<IRenderer<T>>(out var typedRenderer))
             {
-                typedRenderer.RenderTo(value, builder);
-                return;
+                return typedRenderer.FluentRender(builder, value);
             }
+
+            var tt = typeof(T);
 
             Debugger.Break();
             throw new NotImplementedException();
         }
 
-        DefaultRenderTo<T>(value, builder);
+        return value switch
+        {
+            null => builder.Append("null"),
+            DBNull => builder.Append(nameof(DBNull)),
+            bool b => builder.IfAppend(b, bool.TrueString, bool.FalseString),
+            byte u8 => builder.Append("(byte)").Format(u8),
+            sbyte i8 => builder.Append("(sbyte)").Format(i8),
+            short i16 => builder.Append("(short)").Format(i16),
+            ushort u16 => builder.Append("(ushort)").Format(u16),
+            int i32 => builder.Format(i32),
+            uint u32 => builder.Format(u32).Append('U'),
+            long i64 => builder.Format(i64).Append('L'),
+            ulong u64 => builder.Format(u64).Append("UL"),
+            float f32 => builder.Format(f32, "N1").Append('f'),
+            double f64 => builder.Format(f64, "N1").Append('d'),
+            decimal dec => builder.Format(dec, "N1").Append('m'),
+            TimeSpan ts => builder.Format(ts, "g"),
+            DateTime dt => builder.Format(dt, "yyyy-MM-dd HH:mm:ss"),
+            char ch => builder.Append('\'').Append(ch).Append('\''),
+            string str => builder.Append('"').Append(str).Append('"'),
+            _ => builder.Format<T>(value),
+        };
     }
 
-    public static void RenderTo<T>(T[]? array, TextBuilder builder)
+    public static TextBuilder FluentRender<T>(TextBuilder builder, T[]? array)
     {
         if (array is null)
         {
-            builder.Append("`null`");
-            return;
+            return builder.Append("`null`");
         }
 
-        builder.Append('[')
+        return builder.Append('[')
             .EnumerateAndDelimit(array,
-                static (tb, item) => RenderTo(item, tb),
+                static (tb, item) => tb.Render(item),
                 ", ")
             .Append(']');
     }
 
-    public static void RenderTo<T>(scoped ReadOnlySpan<T> span, TextBuilder builder)
+    public static TextBuilder FluentRender<T>(TextBuilder builder, scoped ReadOnlySpan<T> span)
     {
-        builder.Append('[')
+        return builder
+            .Append('[')
             .EnumerateAndDelimit(span,
-                static (tb, item) => RenderTo(item, tb),
+                static (tb, item) => tb.Render(item),
                 ", ")
             .Append(']');
     }
 
-    public static void RenderTo<T>(scoped Span<T> span, TextBuilder builder)
+    public static TextBuilder FluentRender<T>(TextBuilder builder, scoped Span<T> span)
     {
-        builder.Append('[')
+        return builder
+            .Append('[')
             .EnumerateAndDelimit(span,
-                static (tb, item) => RenderTo(item, tb),
+                static (tb, item) => tb.Render(item),
                 ", ")
             .Append(']');
     }
 
-    public static void RenderTo(scoped text text, TextBuilder builder)
+    public static TextBuilder FluentRender(TextBuilder builder, scoped text text)
         => builder.Append('"').Append(text).Append('"');
 }

@@ -34,7 +34,7 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         [typeof(nuint)] = "nuint",
     };
 
-    private static TextBuilder RenderType(Type? type, TextBuilder builder)
+    private static TextBuilder RenderType(TextBuilder builder, Type? type)
     {
         if (type is null)
             return builder;
@@ -49,7 +49,7 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         underType = Nullable.GetUnderlyingType(type);
         if (underType is not null)
         {
-            return RenderType(underType, builder).Append('?');
+            return RenderType(builder, underType).Append('?');
         }
 
         // Array is `T[,,,n]`
@@ -57,7 +57,7 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         {
             underType = type.GetElementType()!;
             Debug.Assert(underType is not null);
-            return RenderType(underType, builder)
+            return RenderType(builder, underType)
                 .Append('[')
                 .RepeatAppend(type.GetArrayRank() - 1, ',')
                 .Append(']');
@@ -68,7 +68,7 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         {
             underType = type.GetElementType()!;
             Debug.Assert(underType is not null);
-            return RenderType(underType, builder).Append('*');
+            return RenderType(builder, underType).Append('*');
         }
 
         // Refs are `ref T` (could also be `&T`)
@@ -76,13 +76,13 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         {
             underType = type.GetElementType()!;
             Debug.Assert(underType is not null);
-            return RenderType(underType, builder.Append("ref "));
+            return RenderType(builder.Append("ref "), underType);
         }
 
         // Nested types we want to indicate their parent (but not generic parameters)
         if (type.IsNested && !type.IsGenericParameter)
         {
-            RenderType(type.DeclaringType, builder).Append('.');
+            RenderType(builder, type.DeclaringType).Append('.');
         }
 
         // If we are not generic or are an enum, we append the name only
@@ -111,9 +111,10 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         ).IfNotEmpty(genericTypes,
             static (tb, types) => tb
                 .Append('<')
-                .EnumerateAndDelimit(types, static (t, type) => RenderType(type, t), ", ")
+                .EnumerateAndDelimit(types, static (b, type) => RenderType(b, type), ", ")
                 .Append('>'));
     }
 
-    public override void RenderTo(Type? type, TextBuilder builder) => RenderType(type, builder);
+    public override TextBuilder FluentRender(TextBuilder builder, Type? type)
+        => RenderType(builder, type);
 }

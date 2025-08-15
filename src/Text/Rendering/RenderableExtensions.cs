@@ -25,7 +25,7 @@ public static class GenericRenderableExtensions
     public static string Render<T>(this T? value)
     {
         using var builder = new TextBuilder();
-        RendererCache.RenderTo<T>(value, builder);
+        RendererCache.FluentRender(builder, value);
         return builder.ToString();
     }
 
@@ -33,7 +33,7 @@ public static class GenericRenderableExtensions
     {
         using var builder = new TextBuilder();
         Type valueType = value?.GetType() ?? typeof(T);
-        TypeRenderer.Default.RenderTo(valueType, builder);
+        TypeRenderer.Default.FluentRender(builder, valueType);
         return builder.ToString();
     }
 }

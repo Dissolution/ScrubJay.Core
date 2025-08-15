@@ -5,7 +5,7 @@ namespace ScrubJay.Text.Rendering;
 [PublicAPI]
 public sealed class GuidRenderer : Renderer<Guid>
 {
-    public override void RenderTo(Guid guid, TextBuilder builder)
+    public override TextBuilder FluentRender(TextBuilder builder, Guid guid)
     {
         var buffer = builder.Allocate(32);
 #if NETFRAMEWORK || NETSTANDARD2_0
@@ -15,5 +15,6 @@ public sealed class GuidRenderer : Renderer<Guid>
         guid.TryFormat(buffer, out _, format: "N");
 #endif
         buffer.ForEach((ref char ch) => ch = char.ToUpper(ch, CultureInfo.InvariantCulture));
+        return builder;
     }
 }

@@ -27,18 +27,17 @@ public sealed class ExceptionRenderer : Renderer<Exception>
         return builder;
     }
 
-    public override void RenderTo(Exception? exception, TextBuilder builder)
+    public override TextBuilder FluentRender( TextBuilder builder, Exception? exception)
     {
         if (exception is null)
         {
-            builder.Append("null");
-            return;
+            return builder.Append("null");
         }
 
         HResult hresult = exception.HResult;
         string helpLink = exception.HelpLink ?? hresult.HelpLink.ToString();
 
-        builder
+        return builder
             .RenderType(exception)
             .Append(':')
             .Indent()
@@ -68,7 +67,7 @@ public sealed class ExceptionRenderer : Renderer<Exception>
                 (tb, inner) => tb
                     .Append("Inner ")
                     .Indent()
-                    .Invoke(b => RenderTo(inner, b))
+                    .Invoke(b => FluentRender(b, inner))
                     .Dedent())
             .If(exception.Is<AggregateException>(),
                 (tb, agg) => tb

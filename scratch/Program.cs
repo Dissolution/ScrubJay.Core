@@ -9,10 +9,20 @@ using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
-var d = new Dom();
-var s = new Sub();
+List<Delegate> cache = [];
 
-var eq = Relate.Values(147, 13);
+void add<D>(D del)
+    where D : Delegate
+{
+    cache.Add(del);
+}
+
+add<Action<TextBuilder, int>>((tb, i) => tb.Format(i));
+
+var matches =
+cache.Where(d => d is Action<TextBuilder, long>)
+    .ToList();
+
 
 
 Debugger.Break();
@@ -21,6 +31,11 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
+
+
+
+
+
     public record class Sub { }
 
     public record class Dom : Sub { }

@@ -3,23 +3,25 @@
 [PublicAPI]
 public sealed class EnumRenderer : Renderer<Enum>
 {
-    public override bool CanRender(Type type)
+    public override bool CanRender(Type? type)
     {
-        return type.IsEnum;
+        return type is not null && type.IsEnum;
     }
 
-    public override void RenderTo(Enum? e, TextBuilder builder)
+    public override TextBuilder FluentRender(TextBuilder builder, Enum? e)
     {
-        if (e is null) return;
+        if (e is null)
+            return builder;
 
         var enumInfo = EnumInfo.For(e.GetType());
         var enumMemberInfo = enumInfo.GetMemberInfo(e);
         if (enumMemberInfo is null)
         {
             Debugger.Break();
-            return;
+            return builder;
         }
 
         enumMemberInfo.RenderTo(builder);
+        return builder;
     }
 }

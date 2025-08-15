@@ -1,7 +1,6 @@
 #pragma warning disable CA1710
 
 using System.Buffers;
-using ScrubJay.Maths;
 using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Text;
@@ -50,12 +49,12 @@ public sealed class TextBuilder :
         return builder.ToString();
     }
 
-    public static string Build<S>(S state, Action<S, TextBuilder>? build)
+    public static string Build<S>(S state, Action<TextBuilder, S>? build)
     {
         if (build is null)
             return string.Empty;
         using var builder = new TextBuilder();
-        build(state, builder);
+        build(builder, state);
         return builder.ToString();
     }
 
@@ -280,8 +279,7 @@ public sealed class TextBuilder :
 
 #pragma warning disable IDE0060, CA2000
     public TextBuilder Append(
-        [HandlesResourceDisposal]
-        [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
+        [HandlesResourceDisposal] [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
         InterpolatedTextBuilder interpolatedTextBuilder)
     {
         // as this TextBuilder instance was passed into the InterpolatedTextBuilder's constructor,
@@ -305,8 +303,7 @@ public sealed class TextBuilder :
 
 #pragma warning disable IDE0060
     public TextBuilder AppendLine(
-        [InterpolatedStringHandlerArgument("")]
-        [HandlesResourceDisposal]
+        [InterpolatedStringHandlerArgument("")] [HandlesResourceDisposal]
         InterpolatedTextBuilder interpolatedText) => Append(interpolatedText).NewLine();
 #pragma warning restore IDE0060
 
@@ -430,39 +427,33 @@ public sealed class TextBuilder :
 
     public TextBuilder Render<T>(T? value)
     {
-        RendererCache.RenderTo<T>(value, this);
-        return this;
+        return RendererCache.FluentRender<T>(this, value);
     }
 
     public TextBuilder Render<T>(T[]? array)
     {
-        RendererCache.RenderTo<T>(array, this);
-        return this;
+        return RendererCache.FluentRender<T>(this, array);
     }
 
     public TextBuilder Render<T>(scoped ReadOnlySpan<T> span)
     {
-        RendererCache.RenderTo<T>(span, this);
-        return this;
+        return RendererCache.FluentRender<T>(this, span);
     }
 
     public TextBuilder Render<T>(scoped Span<T> span)
     {
-        RendererCache.RenderTo<T>(span, this);
-        return this;
+        return RendererCache.FluentRender<T>(this, span);
     }
 
     public TextBuilder Render(scoped text text)
     {
-        RendererCache.RenderTo(text, this);
-        return this;
+        return RendererCache.FluentRender(this, text);
     }
 
     public TextBuilder RenderType<T>(T? value)
     {
         Type valueType = value?.GetType() ?? typeof(T);
-        RendererCache.RenderTo<Type>(valueType, this);
-        return this;
+        return RendererCache.FluentRender<Type>(this, valueType);
     }
 
 #endregion
