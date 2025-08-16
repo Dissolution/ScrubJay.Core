@@ -88,9 +88,6 @@ public static class TypeExtensions
             if (type.HasGenericTypeDefinition(checkType))
                 return true;
 
-            if (checkType.IsInterface)
-                Debugger.Break();
-
             // Check my base types
             for (Type? baseType = type.BaseType; baseType is not null/* && baseType != typeof(object)*/; baseType = baseType.BaseType)
             {

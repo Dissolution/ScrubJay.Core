@@ -29,7 +29,9 @@ public static class RendererCache
 
         if (_renderers.TryGetFirst(r => r.CanRender(valueType)).IsOk(out var renderer))
         {
-            if (renderer.Is<IRenderer<T>>(out var typedRenderer))
+            var typedRenderer = renderer as IRenderer<T>;
+
+            if (typedRenderer is not null)
             {
                 return typedRenderer.FluentRender(builder, value);
             }
