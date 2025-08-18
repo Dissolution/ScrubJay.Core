@@ -27,7 +27,7 @@ public sealed class ExceptionRenderer : Renderer<Exception>
         return builder;
     }
 
-    public override TextBuilder FluentRender( TextBuilder builder, Exception? exception)
+    public override TextBuilder RenderTo( TextBuilder builder, Exception? exception)
     {
         if (exception is null)
         {
@@ -38,7 +38,7 @@ public sealed class ExceptionRenderer : Renderer<Exception>
         string helpLink = exception.HelpLink ?? hresult.HelpLink.ToString();
 
         return builder
-            .RenderType(exception)
+            .Render(exception.GetType())
             .Append(':')
             .Indent()
             .NewLine()
@@ -67,7 +67,7 @@ public sealed class ExceptionRenderer : Renderer<Exception>
                 (tb, inner) => tb
                     .Append("Inner ")
                     .Indent()
-                    .Invoke(b => FluentRender(b, inner))
+                    .Invoke(b => RenderTo(b, inner))
                     .Dedent())
             .If(exception.Is<AggregateException>(),
                 (tb, agg) => tb

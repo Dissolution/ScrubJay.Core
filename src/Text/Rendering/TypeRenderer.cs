@@ -89,10 +89,10 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         if (!type.IsGenericType || type.IsEnum)
             return builder.Append(type.Name);
 
-        return RenderNameAndGenericTypes(type.Name, type.GetGenericArguments(), builder);
+        return RenderNameAndGenericTypes(builder, type.Name, type.GetGenericArguments());
     }
 
-    private static TextBuilder RenderNameAndGenericTypes(string? name, Type[]? genericTypes, TextBuilder builder)
+    private static TextBuilder RenderNameAndGenericTypes(TextBuilder builder, string? name, Type[]? genericTypes)
     {
         return builder.IfNotNull(name,
             static (tb, n) =>
@@ -115,6 +115,6 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
                 .Append('>'));
     }
 
-    public override TextBuilder FluentRender(TextBuilder builder, Type? type)
+    public override TextBuilder RenderTo(TextBuilder builder, Type? type)
         => RenderType(builder, type);
 }

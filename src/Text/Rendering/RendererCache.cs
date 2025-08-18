@@ -3,6 +3,7 @@ namespace ScrubJay.Text.Rendering;
 public static class RendererCache
 {
     private static readonly List<IRenderer> _renderers;
+    private static readonly ConcurrentTypeMap<IRenderer?> _rendererMap = [];
 
     static RendererCache()
     {
@@ -10,38 +11,32 @@ public static class RendererCache
             .CurrentDomain
             .GetAssemblies()
             .SelectMany(static assembly => Result.TryInvoke(assembly.GetTypes).OkOr([]))
-            .Where(static type => type.Implements(typeof(IRenderer<>)))
-            .Where(static type => !type.IsAbstract)
+            .Where(static type => type.Implements<IRenderer>())
+            .Where(static type => !type.IsAbstract && !type.IsGenericType)
             .SelectWhere(static type => Result.TryInvoke(type, static t => Activator.CreateInstance(t)))
             .OfType<IRenderer>()
             .ToList();
     }
 
-    public static TextBuilder FluentRender<T>(TextBuilder builder, T? value)
+    private static IRenderer<T>? GetRenderer<T>()
     {
-        if (value is IRenderable)
+        return _rendererMap.GetOrAdd<T>(findRenderer) as IRenderer<T>;
+
+        static IRenderer<T>? findRenderer(Type type)
         {
-            ((IRenderable)value).RenderTo(builder);
-            return builder;
-        }
-
-        Type valueType = value?.GetType() ?? typeof(T);
-
-        if (_renderers.TryGetFirst(r => r.CanRender(valueType)).IsOk(out var renderer))
-        {
-            var typedRenderer = renderer as IRenderer<T>;
-
-            if (typedRenderer is not null)
+            foreach (var renderer in _renderers)
             {
-                return typedRenderer.FluentRender(builder, value);
+                if (renderer is IRenderer<T> typedRenderer &&
+                    typedRenderer.CanRender(type))
+                    return typedRenderer;
             }
 
-            var tt = typeof(T);
-
-            Debugger.Break();
-            throw new NotImplementedException();
+            return null;
         }
+    }
 
+    private static TextBuilder DefaultRenderTo<T>(TextBuilder builder, T? value)
+    {
         return value switch
         {
             null => builder.Append("null"),
@@ -66,40 +61,102 @@ public static class RendererCache
         };
     }
 
-    public static TextBuilder FluentRender<T>(TextBuilder builder, T[]? array)
+
+    public static TextBuilder RenderTo<T>(TextBuilder builder, T? value)
     {
-        if (array is null)
+        // If the value is Renderable, use its func
+        if (value is IRenderable)
         {
-            return builder.Append("`null`");
+            return ((IRenderable)value).RenderTo(builder);
         }
 
-        return builder.Append('[')
-            .EnumerateAndDelimit(array,
-                static (tb, item) => tb.Render(item),
-                ", ")
-            .Append(']');
+        // We're looking for something that can render T
+        Type valueType = typeof(T);
+        Type vt = value?.GetType() ?? typeof(void);
+        if (vt != valueType)
+            Debugger.Break();
+
+        // see if we have a direct IRenderer<T>
+        IRenderer<T>? typedRenderer = GetRenderer<T>();
+        if (typedRenderer is not null)
+        {
+            Debugger.Break();
+            return typedRenderer.RenderTo(builder, value);
+        }
+
+        // see if we have something that can render this value
+        foreach (var renderer in _renderers)
+        {
+            if (renderer.CanRender(valueType))
+            {
+                Debugger.Break();
+                return renderer.RenderTo(builder, (object?)value);
+            }
+        }
+
+        Debugger.Break();
+        return DefaultRenderTo(builder, value);
     }
 
-    public static TextBuilder FluentRender<T>(TextBuilder builder, scoped ReadOnlySpan<T> span)
+#region Extensions
+
+#if NET9_0_OR_GREATER
+    public static string Render<R>(this R renderable,
+        GenericTypeConstraint.AllowsRefStruct<R> _ = default)
+        where R : IRenderable
+        , allows ref struct
     {
-        return builder
-            .Append('[')
-            .EnumerateAndDelimit(span,
-                static (tb, item) => tb.Render(item),
-                ", ")
-            .Append(']');
+        using var builder = new TextBuilder();
+        renderable.RenderTo(builder);
+        return builder.ToString();
     }
+#endif
 
-    public static TextBuilder FluentRender<T>(TextBuilder builder, scoped Span<T> span)
+    public static string Render<T>(this T? value)
     {
-        return builder
-            .Append('[')
-            .EnumerateAndDelimit(span,
-                static (tb, item) => tb.Render(item),
-                ", ")
-            .Append(']');
+        var builder = new TextBuilder();
+        _ = RenderTo(builder, value);
+        return builder.ToStringAndDispose();
     }
 
-    public static TextBuilder FluentRender(TextBuilder builder, scoped text text)
-        => builder.Append('"').Append(text).Append('"');
+#endregion
+
+    // }
+    //
+    // public static TextBuilder FluentRender<T>(TextBuilder builder, T[]? array)
+    // {
+    //     if (array is null)
+    //     {
+    //         return builder.Append("`null`");
+    //     }
+    //
+    //     return builder.Append('[')
+    //         .EnumerateAndDelimit(array,
+    //             static (tb, item) => tb.Render(item),
+    //             ", ")
+    //         .Append(']');
+    // }
+    //
+    // public static TextBuilder FluentRender<T>(TextBuilder builder, scoped ReadOnlySpan<T> span)
+    // {
+    //     return builder
+    //         .Append('[')
+    //         .EnumerateAndDelimit(span,
+    //             static (tb, item) => tb.Render(item),
+    //             ", ")
+    //         .Append(']');
+    // }
+    //
+    // public static TextBuilder FluentRender<T>(TextBuilder builder, scoped Span<T> span)
+    // {
+    //     return builder
+    //         .Append('[')
+    //         .EnumerateAndDelimit(span,
+    //             static (tb, item) => tb.Render(item),
+    //             ", ")
+    //         .Append(']');
+    // }
+    //
+    // public static TextBuilder FluentRender(TextBuilder builder, scoped text text)
+    //     => builder.Append('"').Append(text).Append('"');
 }

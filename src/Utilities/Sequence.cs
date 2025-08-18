@@ -1282,6 +1282,34 @@ public static class Sequence
 
     #endregion
 
+#region EndsWith
+    public static bool EndsWith<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match, IsEquatable<T> _ = default)
+        where T : IEquatable<T>
+        => source.EndsWith(match);
+
+    public static bool EndsWith<T>(ReadOnlySpan<T> source, T[]? match, IsEquatable<T> _ = default)
+        where T : IEquatable<T>
+        => source.EndsWith(new ReadOnlySpan<T>(match));
+
+
+    public static bool EndsWith<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match)
+        => EndsWith(source, match, null);
+
+    public static bool EndsWith<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match, IEqualityComparer<T>? itemComparer)
+    {
+        int matchLen = match.Length;
+        if (matchLen == 0)
+            return false;
+        if (matchLen > source.Length)
+            return false;
+        // slice source down and equate
+        return Equal(source[^matchLen..], match, itemComparer);
+    }
+
+
+
+#endregion
+
     public static bool Contains<T>(T[] array, T item, IEqualityComparer<T>? comparer = null)
     {
         if (comparer is null)

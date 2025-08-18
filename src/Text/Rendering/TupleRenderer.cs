@@ -4,7 +4,7 @@ namespace ScrubJay.Text.Rendering;
 [PublicAPI]
 public sealed class TupleRenderer : Renderer<ITuple>
 {
-    public override TextBuilder FluentRender(TextBuilder builder, ITuple? tuple)
+    public override TextBuilder RenderTo(TextBuilder builder, ITuple? tuple)
     {
         if (tuple is null)
             return builder;

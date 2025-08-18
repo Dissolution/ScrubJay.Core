@@ -399,7 +399,7 @@ public readonly struct Result<T> :
         }
         else
         {
-            writer.Add(_error?.RenderType());
+            writer.Add(_error?.GetType().Render());
             writer.Add('(');
             writer.Add(_error?.Message);
             writer.Add(')');

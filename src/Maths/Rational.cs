@@ -1476,9 +1476,9 @@ public readonly struct Rational :
         }
     }
 
-    public void RenderTo(TextBuilder builder)
+    public TextBuilder RenderTo(TextBuilder builder)
     {
-        builder.Format(Numerator).Append('/').Format(Denominator);
+        return builder.Format(Numerator).Append('/').Format(Denominator);
     }
 
     public bool TryFormat(

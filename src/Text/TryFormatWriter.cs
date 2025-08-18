@@ -236,7 +236,7 @@ public ref struct TryFormatWriter : IEnumerable
         if (format == "@")
             return AddImpl(value.Render(), callingMethod, valueName);
         if (format == "@T")
-            return AddImpl(value.RenderType(), callingMethod, valueName);
+            return AddImpl(value.GetType().Render(), callingMethod, valueName);
 
         string? str;
         if (value is IFormattable)
@@ -286,7 +286,7 @@ public ref struct TryFormatWriter : IEnumerable
         if (format.Equate("@"))
             return AddImpl(value.Render(), callingMethod, valueName);
         if (format.Equate("@T"))
-            return AddImpl(value.RenderType(), callingMethod, valueName);
+            return AddImpl(value.GetType().Render(), callingMethod, valueName);
 
         string? str;
         if (value is IFormattable)

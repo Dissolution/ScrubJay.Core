@@ -132,9 +132,9 @@ public abstract class EnumMemberInfo :
         return Hasher.HashMany(EnumInfo, Name);
     }
 
-    public void RenderTo(TextBuilder builder)
+    public TextBuilder RenderTo(TextBuilder builder)
     {
-        builder.Append(_render);
+        return builder.Append(_render);
     }
 
     public override string ToString() => Name;

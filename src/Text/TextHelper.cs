@@ -264,8 +264,13 @@ public static class TextHelper
     public static bool Equate(this char left, scoped text right)
         => Equate(left.AsSpan(), right);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Equate(this string? left, char right)
-        => Equate(left.AsSpan(), right.AsSpan());
+    {
+        return left is not null &&
+               left.Length == 1 &&
+               left[0] == right;
+    }
 
     public static bool Equate(this string? left, string? right)
         => string.Equals(left, right, StringComparison.Ordinal);
@@ -288,8 +293,9 @@ public static class TextHelper
     public static bool Equate(this char[]? left, scoped text right)
         => Equate(left.AsSpan(), right);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Equate(this scoped text left, char right)
-        => Equate(left, right.AsSpan());
+        => left.Length == 1 && left[0] == right;
 
     public static bool Equate(this scoped text left, string? right)
         => Equate(left, right.AsSpan());
@@ -318,8 +324,9 @@ public static class TextHelper
     public static bool Equate(this string? left, char right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Equate(this string? left, string? right, StringComparison comparison)
-        => Equate(left.AsSpan(), right.AsSpan(), comparison);
+        => string.Equals(left, right, comparison);
 
     public static bool Equate(this string? left, char[]? right, StringComparison comparison)
         => Equate(left.AsSpan(), right.AsSpan(), comparison);

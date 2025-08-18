@@ -9,21 +9,16 @@ using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
-List<Delegate> cache = [];
+using var builder = new TextBuilder();
 
-void add<D>(D del)
-    where D : Delegate
+builder
+    .Append("Eat at Joes!")
+    .Block(TextBuilder.BlockSpec.Allman, tb =>
 {
-    cache.Add(del);
-}
+    tb.Append("public void Nothing() { };");
+});
 
-add<Action<TextBuilder, int>>((tb, i) => tb.Format(i));
-
-var matches =
-cache.Where(d => d is Action<TextBuilder, long>)
-    .ToList();
-
-
+string str = builder.ToString();
 
 Debugger.Break();
 return 0;
@@ -31,7 +26,6 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
-
 
 
 
