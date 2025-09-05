@@ -1,5 +1,7 @@
 ﻿// CA1716: Identifiers should not match keywords
 
+using ScrubJay.Functional.IMPL;
+
 #pragma warning disable CA1716
 
 // CA1710: Identifiers should have correct suffix
@@ -19,10 +21,16 @@ namespace ScrubJay.Functional;
 /// The <see cref="Type"/> of value associated with a <see cref="Some"/> Option
 /// </typeparam>
 ///  <seealso href="https://doc.rust-lang.org/std/option/index.html"/>
+/// <remarks>
+/// All <c>None</c> values are equal, <c>Some</c> values equate and compare the contained values,
+/// <c>None</c> compares less than <c>Some</c>.
+/// </remarks>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public readonly struct Option<T> :
-    /* All listed interfaces are implemented, but cannot be declared because they may unify for some type parameter substitutions */
+    /* All listed interfaces are implemented,
+     * but cannot be declared because they may unify for some type parameter substitutions
+     */
 #if NET7_0_OR_GREATER
     IEqualityOperators<Option<T>, Option<T>, bool>,
     IEqualityOperators<Option<T>, None, bool>,
@@ -38,7 +46,6 @@ public readonly struct Option<T> :
     IComparable<None>,
     //IComparable<T>,
     IEnumerable<T>,
-    IEnumerable,
 #if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
@@ -46,66 +53,32 @@ public readonly struct Option<T> :
 {
 #region Operators
 
-    /// <summary>
-    /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Option<T> option) => option._isSome;
+    public static implicit operator Option<T>(None _) => None;
 
-    /// <summary>
-    /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator true(Option<T> option) => option._isSome;
-
-    /// <summary>
-    /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator false(Option<T> option) => !option._isSome;
 
-    /// <summary>
-    /// Implicitly convert a standalone <see cref="None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Option<T>(None _) => None();
-
-    // We pass equality and comparison down to T values
 
     public static bool operator ==(Option<T> left, Option<T> right) => left.Equals(right);
-
     public static bool operator !=(Option<T> left, Option<T> right) => !left.Equals(right);
-
     public static bool operator >(Option<T> left, Option<T> right) => left.CompareTo(right) > 0;
-
     public static bool operator >=(Option<T> left, Option<T> right) => left.CompareTo(right) >= 0;
-
     public static bool operator <(Option<T> left, Option<T> right) => left.CompareTo(right) < 0;
-
     public static bool operator <=(Option<T> left, Option<T> right) => left.CompareTo(right) <= 0;
 
     public static bool operator ==(Option<T> option, None _) => option.IsNone();
-
     public static bool operator !=(Option<T> option, None _) => option._isSome;
-
     public static bool operator >(Option<T> option, None none) => option.CompareTo(none) > 0;
-
     public static bool operator >=(Option<T> option, None none) => option.CompareTo(none) >= 0;
-
     public static bool operator <(Option<T> option, None none) => option.CompareTo(none) < 0;
-
     public static bool operator <=(Option<T> option, None none) => option.CompareTo(none) <= 0;
 
-    public static bool operator ==(Option<T> option, T? some) => option.Equals(some);
-
-    public static bool operator !=(Option<T> option, T? some) => !option.Equals(some);
-
+    public static bool operator ==(Option<T> option, T some) => option.Equals(some);
+    public static bool operator !=(Option<T> option, T some) => !option.Equals(some);
     public static bool operator >(Option<T> option, T some) => option.CompareTo(some) > 0;
-
     public static bool operator >=(Option<T> option, T some) => option.CompareTo(some) >= 0;
-
     public static bool operator <(Option<T> option, T some) => option.CompareTo(some) < 0;
-
     public static bool operator <=(Option<T> option, T some) => option.CompareTo(some) <= 0;
 
 #endregion
@@ -113,23 +86,13 @@ public readonly struct Option<T> :
     /// <summary>
     /// Gets <see cref="Option{T}"/>.None, which represents the lack of a value
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None() => default;
+    public static readonly Option<T> None;
 
     /// <summary>
     /// Get an <see cref="Option{T}"/>.Some containing a <paramref name="value"/>
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some(T value) => new(value);
 
-    public delegate bool TryOut([MaybeNullWhen(false)] out T value);
-
-    public static Option<T> From(TryOut tryOut)
-    {
-        if (tryOut(out var value))
-            return new(value);
-        return default;
-    }
 
     // Is this Option.Some?
     // if someone does default(Option), this will be false, so default(Option) == None
@@ -145,24 +108,12 @@ public readonly struct Option<T> :
         _value = value;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsNone() => !_isSome;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#region Some-ness
+
     public bool IsSome() => _isSome;
 
-    /// <summary>
-    /// Does this <see cref="Option{T}"/> contain <see cref="Some"/> value?
-    /// </summary>
-    /// <param name="value">
-    /// If this is <see cref="Some"/>, this will be the contained value<br/>
-    /// if this is <see cref="None"/>, it will be <c>default(T)</c>
-    /// </param>
-    /// <returns>
-    /// <c>true</c> and fills <paramref name="value"/> if this is <see cref="Some"/><br/>
-    /// <c>false</c> if it is <see cref="None"/>
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSome([MaybeNullWhen(false)] out T value)
     {
         if (_isSome)
@@ -175,36 +126,8 @@ public readonly struct Option<T> :
         return false;
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.is_some_and"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSomeAnd(Fn<T, bool> predicate) => _isSome && predicate(_value!);
+    public bool IsSomeAnd(Func<T, bool> predicate) => _isSome && predicate(_value!);
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T SomeOrThrow(string? errorMessage = null)
-    {
-        if (_isSome)
-            return _value!;
-        throw new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
-    }
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="fallback"></param>
-    /// <returns></returns>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T SomeOr(T fallback)
     {
         if (_isSome)
@@ -212,26 +135,13 @@ public readonly struct Option<T> :
         return fallback;
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="getFallback"></param>
-    /// <returns></returns>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_else"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T SomeOr(Fn<T> getFallback)
+    public T SomeOr(Func<T> getFallback)
     {
         if (_isSome)
             return _value!;
         return getFallback();
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <returns></returns>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or_default"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T? SomeOrDefault()
     {
         if (_isSome)
@@ -239,54 +149,18 @@ public readonly struct Option<T> :
         return default;
     }
 
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="map"></param>
-    /// <param name="defaultValue"></param>
-    /// <typeparam name="N"></typeparam>
-    /// <returns></returns>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or"/>
-    public N SelectOr<N>(Fn<T, N> map, N defaultValue)
+    public T SomeOrThrow(string? errorMessage = null)
     {
-        if (IsSome(out var value))
-        {
-            return map(value);
-        }
-
-        return defaultValue;
+        if (_isSome)
+            return _value!;
+        throw new InvalidOperationException(errorMessage ?? $"{ToString()} is not Some");
     }
 
-    public N? SelectOrDefault<N>(Fn<T, N> map)
-    {
-        if (IsSome(out var value))
-        {
-            return map(value);
-        }
 
-        return default(N);
-    }
+#endregion
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="map"></param>
-    /// <param name="getDefaultValue"></param>
-    /// <typeparam name="N"></typeparam>
-    /// <returns></returns>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.map_or_else"/>
-    public N SelectOrElse<N>(Fn<T, N> map, Fn<N> getDefaultValue)
-    {
-        if (IsSome(out var value))
-        {
-            return map(value);
-        }
+#region Match
 
-        return getDefaultValue();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Match(Action<T> onSome, Action onNone)
     {
         if (_isSome)
@@ -299,7 +173,7 @@ public readonly struct Option<T> :
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Match(Action<T> onSome, Action<None> onNone)
     {
         if (_isSome)
@@ -312,8 +186,8 @@ public readonly struct Option<T> :
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public R Match<R>(Fn<T, R> some, Fn<R> none)
+
+    public R Match<R>(Func<T, R> some, Func<R> none)
     {
         if (_isSome)
         {
@@ -325,8 +199,8 @@ public readonly struct Option<T> :
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public R Match<R>(Fn<T, R> some, Fn<None, R> none)
+
+    public R Match<R>(Func<T, R> some, Func<None, R> none)
     {
         if (_isSome)
         {
@@ -338,16 +212,9 @@ public readonly struct Option<T> :
         }
     }
 
-    public Result<T> AsResult(string? errorMessage = null)
-    {
-        if (_isSome)
-            return Ok(_value!);
-        return new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
-    }
+#endregion
 
 #region Compare
-
-    /* None always compares as less than any Some */
 
     public int CompareTo(Option<T> other)
     {
@@ -377,17 +244,57 @@ public readonly struct Option<T> :
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int CompareTo(Option<T> other, IComparer<T>? comparer)
+    {
+        if (_isSome)
+        {
+            if (other._isSome)
+            {
+                // We both are Some, compare our values
+                return (comparer ?? Comparer<T>.Default).Compare(_value!, other._value!);
+            }
+            else // other is none
+            {
+                return 1; // My Some is greater than their None
+            }
+        }
+        else // this is None
+        {
+            if (other._isSome)
+            {
+                return -1; // My None is lesser than their Some
+            }
+            else
+            {
+                // None == None
+                return 0;
+            }
+        }
+    }
+
     public int CompareTo(T? other)
     {
         if (_isSome)
+        {
             return Comparer<T>.Default.Compare(_value!, other!);
+        }
 
         // My None is less than a Some value
         return -1;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int CompareTo(T? other, IComparer<T>? comparer)
+    {
+        if (_isSome)
+        {
+            return (comparer ?? Comparer<T>.Default).Compare(_value!, other!);
+        }
+
+        // My None is less than a Some value
+        return -1;
+    }
+
+
     public int CompareTo(None none) =>
         // Some > None, None == None
         _isSome ? 1 : 0;
@@ -395,12 +302,10 @@ public readonly struct Option<T> :
     public int CompareTo(object? obj)
         => obj switch
         {
-#if !NET9_0_OR_GREATER
             Option<T> option => CompareTo(option),
-#endif
             T some => CompareTo(some),
             None none => CompareTo(none),
-            _ => 1, // Unknown | Null | None values sort before
+            _ => 1, // unknown values are always less
         };
 
 #endregion
@@ -409,18 +314,43 @@ public readonly struct Option<T> :
 
     public bool Equals(Option<T> other)
     {
-        // If I am Some
         if (_isSome)
         {
-            // Other has to be Some and our values have to be equal
             return other._isSome && EqualityComparer<T>.Default.Equals(_value!, other._value!);
         }
 
-        // Both of us must be None
         return !other._isSome;
     }
 
-    public bool Equals(T? value) => _isSome && EqualityComparer<T>.Default.Equals(_value!, value!);
+    public bool Equals(Option<T> other, IEqualityComparer<T>? comparer)
+    {
+        if (_isSome)
+        {
+            return other._isSome && (comparer ?? EqualityComparer<T>.Default).Equals(_value!, other._value!);
+        }
+
+        return !other._isSome;
+    }
+
+    public bool Equals(T? value)
+    {
+        if (_isSome)
+        {
+            return EqualityComparer<T>.Default.Equals(_value!, value!);
+        }
+
+        return false;
+    }
+
+    public bool Equals(T? value, IEqualityComparer<T>? comparer)
+    {
+        if (_isSome)
+        {
+            return (comparer ?? EqualityComparer<T>.Default).Equals(_value!, value!);
+        }
+
+        return false;
+    }
 
     public bool Equals(None none) => !_isSome;
 
@@ -428,9 +358,7 @@ public readonly struct Option<T> :
     {
         return obj switch
         {
-#if !NET9_0_OR_GREATER
             Option<T> option => Equals(option),
-#endif
             T value => Equals(value),
             None none => Equals(none),
             bool isSome => _isSome == isSome,
@@ -441,44 +369,68 @@ public readonly struct Option<T> :
     public override int GetHashCode()
     {
         if (_isSome)
-            return Hasher.Hash<T>(_value);
-        return Hasher.EmptyHash;
+        {
+            if (_value is not null)
+            {
+                return _value.GetHashCode();
+            }
+
+            return 0;
+        }
+
+        return -1;
     }
 
 #endregion
 
 #region LINQ + IEnumerable
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Option<N> Select<N>(Fn<T, N> selector)
+    public Option<N> Select<N>(Func<T, N> selector)
     {
         if (_isSome)
             return Some<N>(selector(_value!));
-        return None<N>();
+        return Option<N>.None;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Option<N> SelectMany<N>(Fn<T, Option<N>> newSelector)
+    public Option<N> SelectMany<N>(Func<T, Option<N>> newSelector)
     {
         if (_isSome)
         {
             return newSelector(_value!);
         }
 
-        return None<N>();
+        return Option<N>.None;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Option<N> SelectMany<K, N>(
-        Fn<T, Option<K>> keySelector,
-        Fn<T, K, N> newSelector)
+        Func<T, K> keySelector,
+        Func<T, K, N> newSelector)
     {
-        if (_isSome && keySelector(_value!).IsSome(out var key))
+        if (_isSome)
         {
-            return Some<N>(newSelector(_value!, key));
+            var key = keySelector(_value!);
+            var newValue = newSelector(_value!, key);
+            return Some<N>(newValue);
         }
 
-        return None<N>();
+        return Option<N>.None;
+    }
+
+    public Option<N> SelectMany<K, N>(
+        Func<T, Option<K>> keySelector,
+        Func<T, K, N> newSelector)
+    {
+        if (_isSome)
+        {
+            var key = keySelector(_value!);
+            if (key.IsSome(out var k))
+            {
+                var newValue = newSelector(_value!, k);
+                return Some<N>(newValue);
+            }
+        }
+
+        return Option<N>.None;
     }
 
     /// <summary>
@@ -493,11 +445,17 @@ public readonly struct Option<T> :
     /// <param name="predicate"></param>
     /// <returns></returns>
     /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
-    public Option<T> Where(Fn<T, bool> predicate)
+    public Option<T> Where(Func<T, bool> predicate)
     {
-        if (IsSome(out var value) && predicate(value))
-            return Some<T>(_value!);
-        return None();
+        if (_isSome)
+        {
+            if (predicate(_value!))
+            {
+                return this;
+            }
+        }
+
+        return None;
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -505,19 +463,18 @@ public readonly struct Option<T> :
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.iter"/>
     [MustDisposeResource(false)]
     public OptionEnumerator GetEnumerator() => new OptionEnumerator(this);
 
     [PublicAPI]
     [MustDisposeResource(false)]
-    public sealed class OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
+    public struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
     {
         private readonly Option<T> _option;
         private bool _canYield;
 
-        object? IEnumerator.Current => _option.SomeOrThrow();
-        public T Current => _option.SomeOrThrow();
+        readonly object? IEnumerator.Current => _option.SomeOrThrow();
+        public readonly T Current => _option.SomeOrThrow();
 
         public OptionEnumerator(Option<T> option)
         {
@@ -540,50 +497,66 @@ public readonly struct Option<T> :
 
         public void Reset()
         {
-            _canYield = true;
+            _canYield = _option._isSome;
         }
 
-        void IDisposable.Dispose()
+        readonly void IDisposable.Dispose()
         {
             /* Do Nothing */
         }
     }
+
 #endregion
+
+#region Formatting
 
     public bool TryFormat(
         Span<char> destination,
         out int charsWritten,
-        text format = default,
+        ReadOnlySpan<char> format = default,
         IFormatProvider? provider = null)
     {
-        var writer = new TryFormatWriter(destination);
-        if (_isSome)
+        // todo: Make this more efficient
+        string fmt = ToString(format.ToString(), provider);
+        if (fmt.TryCopyTo(destination))
         {
-            writer.Add("Some(");
-            writer.Add(_value, format, provider);
-            writer.Add(')');
-        }
-        else
-        {
-            writer.Add("None");
+            charsWritten = fmt.Length;
+            return true;
         }
 
-        return writer.Wrote(out charsWritten);
+        charsWritten = 0;
+        return false;
     }
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         if (_isSome)
         {
-            return TextBuilder.New
-                .Append("Some(")
-                .Format(_value, format, provider)
-                .Append(')')
-                .ToStringAndDispose();
+            string? str;
+            if (_value is IFormattable)
+            {
+                str = ((IFormattable)_value).ToString(format, provider);
+            }
+            else
+            {
+                str = _value?.ToString();
+            }
+
+            return $"Option<{typeof(T).Name}>.Some({str})";
         }
 
-        return "None";
+        return $"Option<{typeof(T).Name}>.None";
     }
 
-    public override string ToString() => ToString(null);
+    public override string ToString()
+    {
+        if (_isSome)
+        {
+            return $"Option<{typeof(T)}>.Some({_value})";
+        }
+
+        return $"Option<{typeof(T)}>.None";
+    }
+
+#endregion
 }

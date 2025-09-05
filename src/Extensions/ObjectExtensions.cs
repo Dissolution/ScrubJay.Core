@@ -39,7 +39,7 @@ public static class ObjectExtensions
         {
             return Some((T)input);
         }
-        return None();
+        return None;
     }
 
     public static bool As<T>(this object? input, [NotNullIfNotNull(nameof(input))] out T? output)
@@ -66,22 +66,22 @@ public static class ObjectExtensions
             return Some<T?>(default(T));
         }
 
-        return None();
+        return None;
     }
 
     public static Option<object?> As(this object? input, Type? type)
     {
         if (input is null)
-            return type.CanContainNull() ? Some<object?>(null) : None();
+            return type.CanContainNull() ? Some<object?>(null) : None;
         if (input.GetType().Implements(type))
             return Some<object?>(input);
-        return None();
+        return None;
     }
 
     public static Option<T> NotNull<T>(this T? input)
     {
         if (input is not null)
             return Some<T>(input);
-        return None<T>();
+        return None;
     }
 }

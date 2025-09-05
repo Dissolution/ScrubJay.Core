@@ -32,7 +32,7 @@ public static class RangeExtensions
             }
         }
 
-        return None();
+        return None;
     }
 
     public static IEnumerator<int> GetEnumerator(this Range range)

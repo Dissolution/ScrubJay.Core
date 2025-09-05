@@ -28,7 +28,7 @@ public partial class TextBuilder
         if (index.TryGetValue(out Index idx))
         {
             if (!Validate.Index(idx, pos).IsOk(out offset))
-                return None<int>();
+                return None;
         }
         else
         {
@@ -63,7 +63,7 @@ public partial class TextBuilder
         }
 
         // no match
-        return None<int>();
+        return None;
     }
 
     public Option<int> TryFindIndex(
@@ -81,7 +81,7 @@ public partial class TextBuilder
         if (index.TryGetValue(out Index idx))
         {
             if (!Validate.Index(idx, pos).IsOk(out offset))
-                return None<int>();
+                return None;
         }
         else
         {
@@ -111,7 +111,7 @@ public partial class TextBuilder
         }
 
         // no match
-        return None<int>();
+        return None;
     }
 
 
@@ -126,7 +126,7 @@ public partial class TextBuilder
 
         // nothing to find or thing to find is bigger than we are
         if ((len == 0) || (len > pos))
-            return None<int>();
+            return None;
 
         // we can only scan until a certain ending item
         // any further and there wouldn't be enough characters to match
@@ -137,7 +137,7 @@ public partial class TextBuilder
         if (index.TryGetValue(out Index idx))
         {
             if (!Validate.Index(idx, pos).IsOk(out offset))
-                return None<int>();
+                return None;
         }
         else
         {
@@ -169,7 +169,7 @@ public partial class TextBuilder
         }
 
         // no match
-        return None<int>();
+        return None;
     }
 
     public Option<int> TryFindIndex(string? str, bool firstToLast = true, Index? index = null,
@@ -182,7 +182,7 @@ public partial class TextBuilder
         Index? index = null)
     {
         if (charPredicate is null)
-            return None();
+            return None;
 
         int pos = _position;
         int end = pos - 1;
@@ -192,7 +192,7 @@ public partial class TextBuilder
         if (index.TryGetValue(out Index idx))
         {
             if (!Validate.Index(idx, pos).IsOk(out offset))
-                return None();
+                return None;
         }
         else
         {
@@ -227,7 +227,7 @@ public partial class TextBuilder
         }
 
         // no match
-        return None();
+        return None;
     }
 
 #endregion

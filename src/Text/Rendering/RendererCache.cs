@@ -10,10 +10,10 @@ public static class RendererCache
         _renderers = AppDomain
             .CurrentDomain
             .GetAssemblies()
-            .SelectMany(static assembly => Result.TryInvoke(assembly.GetTypes).OkOr([]))
+            .SelectMany(static assembly => Result.Try(assembly.GetTypes).OkOr([]))
             .Where(static type => type.Implements<IRenderer>())
             .Where(static type => !type.IsAbstract && !type.IsGenericType)
-            .SelectWhere(static type => Result.TryInvoke(type, static t => Activator.CreateInstance(t)))
+            .SelectWhere(static type => Result.Try(type, static t => Activator.CreateInstance(t)))
             .OfType<IRenderer>()
             .ToList();
     }

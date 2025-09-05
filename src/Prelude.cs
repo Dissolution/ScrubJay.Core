@@ -1,10 +1,13 @@
-﻿// alias `ReadOnlySpan<char>` to `text`
+﻿#pragma warning disable CA1715
 
+
+// alias `ReadOnlySpan<char>` to `text`
+global using text = System.ReadOnlySpan<char>;
 // prevent attribute name conflict with `JetBrains.Annotations.NotNullAttribute`
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
-global using text = System.ReadOnlySpan<char>;
 
-#pragma warning disable CA1715
+using ScrubJay.Functional.IMPL;
+
 
 namespace ScrubJay;
 
@@ -26,57 +29,18 @@ namespace ScrubJay;
 [PublicAPI]
 public static class Prelude
 {
-    /// <summary>
-    /// <see cref="ScrubJay.Functional.Unit"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Unit Unit() => default(Unit);
+    public static None None { get; } = default(None);
 
-
-    /// <summary>
-    /// <see cref="ScrubJay.Functional.None"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static None None() => default(None);
-
-    /// <summary>
-    /// <see cref="ScrubJay.Functional.Option{T}"/>.<see cref="ScrubJay.Functional.Option{T}.None"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None<T>() => Option<T>.None();
-
-    /// <summary>
-    /// <see cref="ScrubJay.Functional.Option{T}"/>.<see cref="ScrubJay.Functional.Option{T}.Some"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
 
+    public static Ok<T> Ok<T>(T value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => new Ok<T>(value);
 
-    /// <summary>
-    /// <see cref="ScrubJay.Functional.Result{T}"/>.<see cref="ScrubJay.Functional.Result{T}.Ok"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T> Ok<T>(T value)
-        => Result<T>.Ok(value);
+    public static Error<T> Error<T>(T error)
+        => new Error<T>(error);
 
-    /// <summary>
-    /// <see cref="ScrubJay.Functional.Result{T,E}"/>.<see cref="ScrubJay.Functional.Result{T,E}.Ok"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T, E> Ok<T, E>(T value)
-        => Result<T, E>.Ok(value);
-
-    /// <summary>
-    /// <see cref="ScrubJay.Functional.Result{T}"/>.<see cref="ScrubJay.Functional.Result{T}.Error"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T> Error<T>(Exception error)
-        => Result<T>.Error(error);
-
-    /// <summary>
-    /// <see cref="ScrubJay.Functional.Result{T,E}"/>.<see cref="ScrubJay.Functional.Result{T,E}.Error"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T, E> Error<T, E>(E error)
-        => Result<T, E>.Error(error);
+    public static Unit Unit() => default(Unit);
 }

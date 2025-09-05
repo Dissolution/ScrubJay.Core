@@ -8,7 +8,7 @@ namespace ScrubJay.Tests.FunctionalTests;
 public class AsyncResultTests
 {
     private static Result<double> ParseDouble(string? str)
-        => Result.TryInvoke(() => double.Parse(str!));
+        => Result.Try(() => double.Parse(str!));
 
     private static Result<double> DivideDoubles(double numerator, double denominator)
     {

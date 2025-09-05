@@ -6,7 +6,7 @@ public class OptionTests
 {
     public static TheoryData<Option<int>> Options { get; } =
     [
-        Option<int>.None(),
+        Option<int>.None,
         Option<int>.Some(147),
     ];
 

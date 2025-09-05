@@ -1,4 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
+
 #pragma warning disable CA1031, CA1715
 
 namespace ScrubJay.Functional;
@@ -13,7 +14,7 @@ public static class Result
     /// <returns>
     /// The <see cref="Result{T}"/> of the invocation
     /// </returns>
-    public static Result<Unit> TryInvoke(Action? action)
+    public static Result<Unit> Try(Action? action)
     {
         if (action is null)
         {
@@ -23,7 +24,7 @@ public static class Result
         try
         {
             action.Invoke();
-            return Ok(Unit());
+            return Result<Unit>.Ok(default);
         }
         catch (Exception ex)
         {
@@ -31,7 +32,7 @@ public static class Result
         }
     }
 
-    public static Result<Unit> TryInvoke<I>(
+    public static Result<Unit> Try<I>(
         [NotNullWhen(true)] I? instance,
         [NotNullWhen(true)] Action<I>? instanceAction)
     {
@@ -43,7 +44,7 @@ public static class Result
         try
         {
             instanceAction.Invoke(instance);
-            return Ok(Unit());
+            return Result<Unit>.Ok(default);
         }
         catch (Exception ex)
         {
@@ -52,7 +53,7 @@ public static class Result
     }
 
 
-    public static Result<T> TryInvoke<T>(Fn<T>? func)
+    public static Result<T> Try<T>(Func<T>? func)
     {
         if (func is null)
             return new ArgumentNullException(nameof(func));
@@ -67,9 +68,9 @@ public static class Result
         }
     }
 
-    public static Result<T> TryInvoke<I, T>(
+    public static Result<T> Try<I, T>(
         [NotNullWhen(true)] I? instance,
-        [NotNullWhen(true)] Fn<I, T>? instanceFunc)
+        [NotNullWhen(true)] Func<I, T>? instanceFunc)
     {
         if (instance is null)
             return new ArgumentNullException(nameof(instance));
@@ -86,12 +87,13 @@ public static class Result
         }
     }
 
-    #region Extensions
-    public static Result<T> Flatten<T>(this Result<Result<T>> resultResult)
-        => resultResult.Select(static result => result);
+#region Extensions
 
-    public static Result<T> Flatten<T>(this Result<Option<T>> resultResult)
-        => resultResult.Select(static option => option);
+    // public static Result<T> Flatten<T>(this Result<Result<T>> resultResult)
+    //     => resultResult.Select(static result => result);
+    //
+    // public static Result<T> Flatten<T>(this Result<Option<T>> resultResult)
+    //     => resultResult.Select(static option => option);
 
 #endregion
 }

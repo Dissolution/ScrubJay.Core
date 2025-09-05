@@ -23,7 +23,7 @@ public class TypeExtensionsTests
         typeof(byte),
         typeof(void*),
         typeof(object),
-        typeof(None),
+        typeof(Unit),
         typeof(ValueType),
         typeof(TypeExtensions),
         typeof(IEnumerable),

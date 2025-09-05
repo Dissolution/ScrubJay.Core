@@ -12,7 +12,7 @@ public class RenderTests
         AllTypes = new(AppDomain
             .CurrentDomain
             .GetAssemblies()
-            .SelectMany(static ass => Result.TryInvoke(ass, static a => a.GetTypes()).OkOr([]))
+            .SelectMany(static ass => Result.Try(ass, static a => a.GetTypes()).OkOr([]))
             .ToHashSet());
     }
 

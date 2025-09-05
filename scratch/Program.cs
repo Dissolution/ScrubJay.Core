@@ -12,11 +12,25 @@ using ScrubJay.Text.Rendering;
 using var builder = new TextBuilder();
 
 builder
+    .If(true, "blah", "notblah")
+    .If(true, 'a', new char[2]{'a','b'})
+    .If(true, TextBuilder.Payload.Invoke(tb => tb.Append("nope")))
+
+
+
+
     .Append("Eat at Joes!")
     .Block(TextBuilder.BlockSpec.Allman, tb =>
-{
-    tb.Append("public void Nothing() { };");
-});
+    {
+        tb.Append("public void Nothing()")
+            .NewLine()
+            .Append('{')
+            .NewLine()
+            .Append("")
+            .NewLine()
+            .Append('}')
+            .NewLine();
+    });
 
 string str = builder.ToString();
 
@@ -59,9 +73,9 @@ namespace ScrubJay.Scratch
     {
 
 
-        private static Result<double> parse(string input) => Result.TryInvoke(() => double.Parse(input));
+        private static Result<double> parse(string input) => Result.Try(() => double.Parse(input));
 
-        private static Result<double> divide(double x, double y) => Result.TryInvoke(() =>
+        private static Result<double> divide(double x, double y) => Result.Try(() =>
         {
             if (y == 0)
                 throw new DivideByZeroException();
@@ -71,7 +85,7 @@ namespace ScrubJay.Scratch
         public static async Result<double> ParseDivideAsync(string a, string b)
         {
             var x = await parse(a);
-            var y = await Result.TryInvoke(() => double.Parse(b));
+            var y = await Result.Try(() => double.Parse(b));
             Console.WriteLine("Successfully parsed inputs");
             return await divide(x, y);
         }

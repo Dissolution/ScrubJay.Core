@@ -42,7 +42,7 @@ public class BaseNTextEncoder
         } while (iBig > BigInteger.Zero);
 
         // have to reverse
-        builder.Reverse();
+        builder.Written.Reverse();
         return Ok(builder.ToString());
     }
 

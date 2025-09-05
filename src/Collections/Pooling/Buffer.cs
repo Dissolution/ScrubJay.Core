@@ -486,7 +486,6 @@ public ref struct Buffer<T> :
 
         // Enumerate to a temporary PooledList, then insert
         InsertManyEnumerable(offset, items);
-        return;
     }
 
     #endregion
@@ -595,7 +594,7 @@ public ref struct Buffer<T> :
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
                 {
-                    return None();
+                    return None;
                 }
             }
             else
@@ -623,7 +622,7 @@ public ref struct Buffer<T> :
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
                 {
-                    return None();
+                    return None;
                 }
             }
             else
@@ -642,7 +641,7 @@ public ref struct Buffer<T> :
             }
         }
 
-        return None();
+        return None;
     }
 
     /// <summary>
@@ -675,7 +674,7 @@ public ref struct Buffer<T> :
 
         if ((itemCount == 0) || (itemCount > pos))
         {
-            return None();
+            return None;
         }
 
         // we can only scan until an end item (past that there wouldn't be enough items to match)
@@ -694,7 +693,7 @@ public ref struct Buffer<T> :
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
                 {
-                    return None();
+                    return None;
                 }
             }
             else
@@ -721,7 +720,7 @@ public ref struct Buffer<T> :
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
                 {
-                    return None();
+                    return None;
                 }
 
                 // No point in scanning until the last valid index
@@ -746,7 +745,7 @@ public ref struct Buffer<T> :
             }
         }
 
-        return None();
+        return None;
     }
 
     /// <summary>
@@ -772,7 +771,7 @@ public ref struct Buffer<T> :
     {
         if (itemPredicate is null)
         {
-            return None();
+            return None;
         }
 
         int pos = _position;
@@ -790,7 +789,7 @@ public ref struct Buffer<T> :
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
                 {
-                    return None();
+                    return None;
                 }
             }
             else
@@ -818,7 +817,7 @@ public ref struct Buffer<T> :
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
                 {
-                    return None();
+                    return None;
                 }
             }
             else
@@ -838,7 +837,7 @@ public ref struct Buffer<T> :
             }
         }
 
-        return None();
+        return None;
     }
 
     /// <summary>
@@ -855,7 +854,7 @@ public ref struct Buffer<T> :
     {
         if (!Validate.Index(index, _position).IsOk(out int offset))
         {
-            return None<T>();
+            return None;
         }
 
         Sequence.SelfCopy(Written, (offset + 1).., offset..);
@@ -875,7 +874,7 @@ public ref struct Buffer<T> :
     {
         if (!Validate.Index(index, _position).IsOk(out int offset))
         {
-            return None<T>();
+            return None;
         }
 
         T item = Written[offset];
@@ -919,7 +918,7 @@ public ref struct Buffer<T> :
     {
         if (!Validate.Range(range, _position).IsOk(out var ol))
         {
-            return None<T[]>();
+            return None;
         }
 
         (int offset, int length) = ol;
@@ -1029,13 +1028,13 @@ public ref struct Buffer<T> :
     }
 
     /// <summary>
-    /// Try to use the available capacity of this <see cref="Buffer{T}"/> using a <see cref="SpanDelegates.FuncS{T1,R}"/> delegate
+    /// Try to use the available capacity of this <see cref="Buffer{T}"/> using a <see cref="FnSpan{T1,R}"/> delegate
     /// </summary>
     /// <param name="useAvailable">
-    /// <see cref="SpanDelegates.FuncS{T1,R}"/> to apply to any currently available space
+    /// <see cref="FnSpan{T1,R}"/> to apply to any currently available space
     /// </param>
     /// <returns>
-    /// <c>true</c> if the <see cref="SpanDelegates.FuncS{T1,R}"/> operation succeeded<br/>
+    /// <c>true</c> if the <see cref="FnSpan{T1,R}"/> operation succeeded<br/>
     /// <c>false</c> if it did not
     /// </returns>
     public bool TryUseAvailable(FnSpan<T, int> useAvailable)
@@ -1051,12 +1050,12 @@ public ref struct Buffer<T> :
     }
 
     /// <summary>
-    /// Performs a <see cref="ActionRef{T}"/> operation on each item in this <see cref="Buffer{T}"/>
+    /// Performs a <see cref="ActRef{T}"/> operation on each item in this <see cref="Buffer{T}"/>
     /// </summary>
     /// <param name="perItem">
-    /// The <see cref="ActionRef{T}"/> delegate that can mutate items
+    /// The <see cref="ActRef{T}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(FnRef<T,None>? perItem)
+    public void ForEach(ActRef<T>? perItem)
     {
         if (perItem is null)
         {

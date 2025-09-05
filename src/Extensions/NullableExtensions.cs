@@ -22,6 +22,6 @@ public static class NullableExtensions
     {
         if (nullable.HasValue)
             return Some<T>(nullable.GetValueOrDefault());
-        return None<T>();
+        return None;
     }
 }

@@ -123,20 +123,6 @@ public sealed partial class TextBuilder :
     void ICollection<char>.Add(char item) => Append(item);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #region Invoke + ForEach
 
     public TextBuilder Invoke(Action<TextBuilder>? buildText)
@@ -179,42 +165,7 @@ public sealed partial class TextBuilder :
         return this;
     }
 
-    public TextBuilder ForEach(FnRef<char, None>? refChar)
-    {
-        if (refChar is not null)
-        {
-            var span = Written;
-            for (var i = 0; i < span.Length; i++)
-            {
-                refChar(ref span[i]);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder ForEach(FnRef<char, int, None>? refCharIndex)
-    {
-        if (refCharIndex is not null)
-        {
-            var span = Written;
-            for (var i = 0; i < span.Length; i++)
-            {
-                refCharIndex(ref span[i], i);
-            }
-        }
-
-        return this;
-    }
-
 #endregion
-
-    public TextBuilder Reverse()
-    {
-        Written.Reverse();
-        return this;
-    }
-
 
 #region Getters & Setters
 
@@ -233,8 +184,6 @@ public sealed partial class TextBuilder :
 
 #endregion
 
-
-#region Non-Fluent
 
     public Span<char> Allocate(int length)
     {
@@ -333,9 +282,93 @@ public sealed partial class TextBuilder :
 
     public char[] ToArray() => _chars.Slice(0, _position);
 
-#endregion
+    public readonly ref struct Payload<T>
+    {
+        public static implicit operator Payload<T>(T? value) => new(value);
+        public static implicit operator Payload<T>(ValueTuple<T?, string> tuple) => new(tuple.Item1, tuple.Item2);
 
-#region Former Extensions
+        public static implicit operator Payload(Payload<T> payload) =>
+            new Payload($"___format___{payload._format}", payload._value);
+
+        private readonly T? _value;
+        private readonly text _format;
+
+        private Payload(T? value, text format = default)
+        {
+            _value = value;
+            _format = format;
+        }
+#if NETFRAMEWORK || NETSTANDARD2_0
+        private Payload(T? value, string? format)
+        {
+            _value = value;
+            _format = format.AsSpan();
+        }
+#endif
+    }
+
+    public readonly ref struct Payload
+    {
+        public static implicit operator Payload(in char ch) => Append(in ch);
+        public static implicit operator Payload(text text) => Append(text);
+        public static implicit operator Payload(string? str) => Append(str);
+        public static implicit operator Payload(char[]? chars) => Append(chars);
+        public static implicit operator Payload(Action<TextBuilder>? buildText) => Invoke(buildText);
+
+        public static Payload Append(in char ch) => new(ch.AsSpan());
+        public static Payload Append(text text) => new(text);
+        public static Payload Append(string? str) => new(str.AsSpan());
+        public static Payload Append(params char[]? chars) => new(chars.AsSpan());
+        public static Payload Invoke(Action<TextBuilder>? buildText) => new([], buildText);
+        public static Payload Render<T>(T? value) => new("___render___", (object?)value);
+        public static Payload Format<T>(T? value, string? format) => new(format, (object?)value);
+        public static Payload Format<T>(T? value, text format) => new(format, (object?)value);
+
+
+        private readonly text _text;
+        private readonly object? _object;
+
+        internal Payload(text text, object? obj = null)
+        {
+            _text = text;
+            _object = obj;
+        }
+
+#if NETFRAMEWORK || NETSTANDARD2_0
+        internal Payload(string? str, object? obj)
+        {
+            _text = str.AsSpan();
+            _object = obj;
+        }
+#endif
+
+        public void Deconstruct(out text text, out object? obj)
+        {
+            text = _text;
+            obj = _object;
+        }
+    }
+
+    public TextBuilder Accept(in Payload payload)
+    {
+        var (text, obj) = payload;
+
+        if (text.Equate("___render___"))
+            return Render(obj);
+
+        if (obj is null)
+        {
+            return Append(text);
+        }
+
+        return Format(obj, text);
+    }
+
+    public TextBuilder If(bool condition, Payload onTrue = default, Payload onFalse = default)
+    {
+        throw new NotImplementedException();
+    }
+
 
 #region AppendIf, FormatIf
 
@@ -1009,7 +1042,6 @@ public sealed partial class TextBuilder :
 
 #endregion
 
-#endregion
 
 #region Enumerate, Format, and Line Delimit
 
@@ -1181,6 +1213,7 @@ public sealed partial class TextBuilder :
     [HandlesResourceDisposal]
     public void Dispose()
     {
+        _whitespace?.Dispose();
         _position = 0;
         char[] toReturn = Reference.Exchange(ref _chars, []);
         if (toReturn.Length > 0)

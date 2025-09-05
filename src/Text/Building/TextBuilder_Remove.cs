@@ -10,7 +10,7 @@ public partial class TextBuilder
 
     public Result<char> RemoveAt(Index index)
     {
-        if (!Validate.Index(index, _position).IsOkWithError(out var offset, out var ex))
+        if (!Validate.Index(index, _position).IsOk(out var offset, out var ex))
             return ex;
 
         char removed = _chars[offset];
@@ -22,7 +22,7 @@ public partial class TextBuilder
 
     public Result<char[]> RemoveAt(Range range)
     {
-        if (!Validate.Range(range, _position).IsOkWithError(out var ok, out var ex))
+        if (!Validate.Range(range, _position).IsOk(out var ok, out var ex))
             return ex;
 
         (int offset, int len) = ok;
@@ -48,7 +48,7 @@ public partial class TextBuilder
             freeIndex++;
 
         if (freeIndex >= pos)
-            return 0;
+            return Ok(0);
 
         int current = freeIndex + 1;
         while (current < pos)

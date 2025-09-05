@@ -1,54 +1,5 @@
 ﻿namespace ScrubJay.Text;
 
-internal sealed class Whitespace : IDisposable
-{
-    private string _newLine = Environment.NewLine;
-
-    public string DefaultNewLine
-    {
-        get => _newLine;
-        set { throw new NotImplementedException(); }
-    }
-
-    public string DefaultIndent { get; set; } = "    "; // 4 spaces
-
-    public text NewLineAndIndents => _newLineAndIndents.Written;
-
-    private readonly PooledList<char> _newLineAndIndents;
-    private readonly Stack<int> _indentOffsets;
-
-    public Whitespace()
-    {
-        _indentOffsets = [];
-        _newLineAndIndents = [];
-        _newLineAndIndents.AddMany(DefaultNewLine.AsSpan());
-    }
-
-    public void WriteNewLine(TextBuilder builder)
-    {
-        builder.Append(_newLineAndIndents.Written);
-    }
-
-    public void AddIndent(string? indent = null)
-    {
-        indent ??= DefaultIndent;
-        int offset = _newLineAndIndents.Count;
-        _newLineAndIndents.AddMany(indent.AsSpan());
-        _indentOffsets.Push(offset);
-    }
-
-    public void RemoveIndent()
-    {
-        int offset = _indentOffsets.Pop();
-        _newLineAndIndents.Count = offset;
-    }
-
-    public void Dispose()
-    {
-        _newLineAndIndents.Dispose();
-    }
-}
-
 public partial class TextBuilder
 {
     private Whitespace? _whitespace;
@@ -181,6 +132,27 @@ public partial class TextBuilder
         return Written.EndsWith(nl);
     }
 
+    private bool OnStartOfDedentNewLine()
+    {
+        if (_position == 0) return true;
+
+        text nl;
+        if (_whitespace is null)
+        {
+#if NETFRAMEWORK || NETSTANDARD2_0
+            nl = Environment.NewLine.AsSpan();
+#else
+            nl = Environment.NewLine;
+#endif
+        }
+        else
+        {
+            nl = _whitespace.DedentNLI();
+        }
+
+        return Written.EndsWith(nl);
+    }
+
     public TextBuilder Block(BlockSpec? spec, Action<TextBuilder>? buildBlock)
     {
         _whitespace ??= new Whitespace();
@@ -219,6 +191,7 @@ public partial class TextBuilder
         buildBlock?.Invoke(this);
 
         onStart = OnStartOfNewLine();
+        var onDedentStart = OnStartOfDedentNewLine();
 
         if (spec.NewLineBeforePostfix)
         {
@@ -226,7 +199,12 @@ public partial class TextBuilder
             if (!spec.IndentPostfix)
             {
                 // now
-                _whitespace.RemoveIndent();
+                _whitespace.RemoveIndent(out var indent);
+                // do we have to also remove the indent chars?
+                if (onStart)
+                {
+                    _position -= indent.Length;
+                }
             }
 
             if (!onStart)

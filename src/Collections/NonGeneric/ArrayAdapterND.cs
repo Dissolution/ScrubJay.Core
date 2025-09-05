@@ -105,7 +105,7 @@ public sealed class ArrayAdapterND<T> :
             if (comparer.Equals(element!, arrayElement!))
                 return Some(index);
         }
-        return None<int[]>();
+        return None;
     }
 
     public void Clear() => Array.Clear(_array, 0, Count);

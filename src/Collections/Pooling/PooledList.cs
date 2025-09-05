@@ -495,7 +495,7 @@ public sealed class PooledList<T> : PooledArray<T>,
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
-                    return None();
+                    return None;
             }
             else
             {
@@ -521,7 +521,7 @@ public sealed class PooledList<T> : PooledArray<T>,
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
-                    return None();
+                    return None;
             }
             else
             {
@@ -539,7 +539,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             }
         }
 
-        return None();
+        return None;
     }
 
     /// <summary>
@@ -571,7 +571,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         var span = new Span<T>(_array);
 
         if ((itemCount == 0) || (itemCount > pos))
-            return None();
+            return None;
 
         // we can only scan until an end item (past that there wouldn't be enough items to match)
         int end = pos - itemCount;
@@ -588,7 +588,7 @@ public sealed class PooledList<T> : PooledArray<T>,
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
-                    return None();
+                    return None;
             }
             else
             {
@@ -611,7 +611,7 @@ public sealed class PooledList<T> : PooledArray<T>,
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
-                    return None();
+                    return None;
 
                 // No point in scanning until the last valid index
                 if (index > end)
@@ -631,7 +631,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             }
         }
 
-        return None();
+        return None;
     }
 
     /// <summary>
@@ -656,7 +656,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         Index? offset = null)
     {
         if (itemPredicate is null)
-            return None();
+            return None;
 
         int pos = _position;
         var span = new Span<T>(_array);
@@ -672,7 +672,7 @@ public sealed class PooledList<T> : PooledArray<T>,
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
-                    return None();
+                    return None;
             }
             else
             {
@@ -698,7 +698,7 @@ public sealed class PooledList<T> : PooledArray<T>,
                 // Validate that offset
                 var validIndex = Validate.Index(offsetIndex, pos);
                 if (!validIndex.IsOk(out index))
-                    return None();
+                    return None;
             }
             else
             {
@@ -717,7 +717,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             }
         }
 
-        return None();
+        return None;
     }
 
 
@@ -733,7 +733,7 @@ public sealed class PooledList<T> : PooledArray<T>,
 
     public Result<Unit> TryGetManyTo(Range range, Span<T> destination)
     {
-        if (!Validate.Range(range, _position).IsOkWithError(out var ol, out var error))
+        if (!Validate.Range(range, _position).IsOk(out var ol, out var error))
             return error;
         if (ol.Length > destination.Length)
             return new ArgumentException($"Destination span cannot hold {ol.Length} items", nameof(destination));
@@ -750,7 +750,7 @@ public sealed class PooledList<T> : PooledArray<T>,
 
     public Result<Unit> TrySetMany(Range range, scoped ReadOnlySpan<T> items)
     {
-        if (!Validate.Range(range, _position).IsOkWithError(out var ol, out var error))
+        if (!Validate.Range(range, _position).IsOk(out var ol, out var error))
             return error;
         if (ol.Length > items.Length)
             return new ArgumentException($"{items.Length} items cannot fit in a Range Length of {ol.Length}");
@@ -796,7 +796,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public Result<T> TryRemoveAndGetAt(Index index)
     {
         var valid = Validate.Index(index, _position);
-        if (!valid.IsOkWithError(out int offset, out var ex))
+        if (!valid.IsOk(out int offset, out var ex))
             return ex;
         T item = Written[offset];
         _version++;
@@ -818,7 +818,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public Result<int> TryRemoveMany(Range range)
     {
         var valid = Validate.Range(range, _position);
-        if (!valid.IsOkWithError(out var ol, out var ex))
+        if (!valid.IsOk(out var ol, out var ex))
             return ex;
         (int offset, int length) = ol;
         _version++;
@@ -839,7 +839,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public Result<T[]> TryRemoveAndGetMany(Range range)
     {
         var valid = Validate.Range(range, _position);
-        if (!valid.IsOkWithError(out var ol, out var ex))
+        if (!valid.IsOk(out var ol, out var ex))
             return ex;
         (int offset, int length) = ol;
         T[] items = _array.AsSpan(offset, length).ToArray();
@@ -956,12 +956,12 @@ public sealed class PooledList<T> : PooledArray<T>,
     }
 
     /// <summary>
-    /// Performs a <see cref="ActionRef{T}"/> operation on each item in this <see cref="PooledList{T}"/>
+    /// Performs a <see cref="ActRef{T}"/> operation on each item in this <see cref="PooledList{T}"/>
     /// </summary>
     /// <param name="perItem">
-    /// The <see cref="ActionRef{T}"/> delegate that can mutate items
+    /// The <see cref="ActRef{T}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(FnRef<T, None> perItem)
+    public void ForEach(ActRef<T> perItem)
     {
         int pos = _position;
         var array = _array;
@@ -973,12 +973,12 @@ public sealed class PooledList<T> : PooledArray<T>,
     }
 
     /// <summary>
-    /// Performs a <see cref="ActionRef{T,I}"/> operation on each item in this <see cref="PooledList{T}"/>
+    /// Performs a <see cref="ActRef{T,I}"/> operation on each item in this <see cref="PooledList{T}"/>
     /// </summary>
     /// <param name="perItem">
-    /// The <see cref="ActionRef{T,I}"/> delegate that can mutate items
+    /// The <see cref="ActRef{T,I}"/> delegate that can mutate items
     /// </param>
-    public void ForEach(FnRef<T, int, None> perItem)
+    public void ForEach(ActRef<T, int> perItem)
     {
         int pos = _position;
         var array = _array;

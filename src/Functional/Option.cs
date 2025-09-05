@@ -1,87 +1,118 @@
-﻿// CA1716: Identifiers should not match keywords
-// CA1045: Consider a design that does not require ref parameters
-#pragma warning disable CA1716, CA1045
+﻿namespace ScrubJay.Functional;
 
-namespace ScrubJay.Functional;
-
-[PublicAPI]
 public static class Option
 {
-    /// <summary>
-    /// Converts a nullable <paramref name="value"/> to an <see cref="Option{T}"/>
-    /// </summary>
-    /// <param name="value">
-    /// The <typeparamref name="T"/> value that might be <c>null</c>
-    /// </param>
-    /// <returns>
-    /// <see cref="Option{T}.Some"/> containing a non-<c>null</c> <paramref name="value"/> or <br/>
-    /// <see cref="Option{T}.None"/> if <paramref name="value"/> is <c>null</c>
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#region Constructors
+
+    public static IMPL.None None() => default;
+    public static Option<T> None<T>() => default;
+    public static Option<T> Some<T>(T value) => Option<T>.Some(value);
+
     public static Option<T> NotNull<T>(T? value)
-        where T : notnull
     {
         if (value is not null)
             return Option<T>.Some(value);
-        return Option<T>.None();
+        return Option<T>.None;
     }
 
-    /// <summary>
-    /// Converts a <see cref="Nullable{T}"/> to an <see cref="Option{T}"/>
-    /// </summary>
-    /// <param name="value">
-    /// The <see cref="Nullable{T}"/> that might contain <c>null</c>
-    /// </param>
-    /// <returns>
-    /// <see cref="Option{T}.Some"/> containing a non-<c>null</c> <paramref name="value"/> or <br/>
-    /// <see cref="Option{T}.None"/> if <paramref name="value"/> is <c>null</c>
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     // ReSharper disable once ConvertNullableToShortForm
-    public static Option<T> NotNull<T>(Nullable<T> value)
+    public static Option<T> NotNull<T>(Nullable<T> nullableValue)
         where T : struct
     {
-        if (value.HasValue)
+        if (nullableValue.HasValue)
         {
-            return Option<T>.Some(value.GetValueOrDefault()); // fastest path to a known value (.Value has an exception path)
+            return Some(nullableValue.GetValueOrDefault());
         }
-        return Option<T>.None();
+
+        return default;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static None None() => default(None);
+#endregion
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> None<T>() => default(Option<T>);
+#region Extensions
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Option<T> Some<T>(T value) => Option<T>.Some(value);
-
-
-    public static Option<T> Flatten<T>(this Option<Option<T>> nestedOption)
+    public static Option<T> Flatten<T>(this Option<Option<T>> nestedOptions)
     {
-        if (nestedOption.IsSome(out var option) && option.IsSome(out var value))
-            return Some<T>(value);
-        return None<T>();
+        if (nestedOptions.IsSome(out var option))
+            return option;
+        return default;
     }
 
-
-    public static T SomeOrFill<T>(this ref Option<T> option, T value)
+    public static Option<T> Insert<T>(this ref Option<T> option, T value)
     {
-        if (option.IsSome(out var some))
-            return some;
+        if (option.IsSome(out var existingValue))
+        {
+            option = Some(value);
+            return Some(existingValue);
+        }
+        else
+        {
+            option = Some(value);
+            return default;
+        }
+    }
 
+    public static T GetOrInsert<T>(this ref Option<T> option, T value)
+    {
+        if (option.IsSome(out var existingValue))
+            return existingValue;
+        option = Some(value);
+        return value;
+    }
+    
+    
+    public static T GetOrInsert<T>(this ref Option<T> option, Func<T> valueFactory)
+    {
+        if (option.IsSome(out var value))
+            return value;
+        value = valueFactory();
         option = Some(value);
         return value;
     }
 
-    public static T SomeOrFill<T>(this ref Option<T> option, Func<T> getValue)
+    public static Option<T> Take<T>(this ref Option<T> option)
     {
-        if (option.IsSome(out var some))
-            return some;
-
-        some = getValue();
-        option = Some(some);
-        return some;
+        if (option.IsSome(out var existingValue))
+        {
+            option = default;
+            return Some(existingValue);
+        }
+        else
+        {
+            option = default;
+            return default;
+        }
     }
+
+    public static void Swap<T>(this ref Option<T> left, ref Option<T> right)
+    {
+        if (left.IsSome(out var leftValue))
+        {
+            if (right.IsSome(out var rightValue))
+            {
+                left = Some(rightValue);
+                right = Some(leftValue);
+            }
+            else // right is None
+            {
+                left = default;
+                right = Some(leftValue);
+            }
+        }
+        else // left is None
+        {
+            if (right.IsSome(out var rightValue))
+            {
+                left = Some(rightValue);
+                right = default;
+            }
+            else // right is None
+            {
+                // no need to do anything
+            }
+        }
+    }
+
+#endregion
 }

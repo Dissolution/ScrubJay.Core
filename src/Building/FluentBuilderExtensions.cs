@@ -139,7 +139,7 @@ public static class FluentBuilderExtensions
         Action<B, Exception>? onError = null)
         where B : IFluentBuilder<B>
     {
-        if (result.IsOkWithError(out var ok, out var error))
+        if (result.IsOk(out var ok, out var error))
         {
             onOk?.Invoke(builder, ok);
         }
@@ -158,7 +158,7 @@ public static class FluentBuilderExtensions
         Action<B, E>? onError = null)
         where B : IFluentBuilder<B>
     {
-        if (result.IsOkWithError(out var ok, out var error))
+        if (result.IsOk(out var ok, out var error))
         {
             onOk?.Invoke(builder, ok);
         }

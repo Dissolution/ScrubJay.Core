@@ -72,7 +72,7 @@ public ref struct SpanReader<T>
             return Some(value);
         }
 
-        return None<T>();
+        return None;
     }
 
     public T Take()
@@ -87,20 +87,22 @@ public ref struct SpanReader<T>
         throw GetEx();
     }
 
-    public OptionROSpan<T> TryTake(int count)
+#if NET9_0_OR_GREATER
+    public RefOption<ReadOnlySpan<T>> TryTake(int count)
     {
         if (count <= 0)
-            return ReadOnlySpan<T>.Empty;
+            return RefOption<ReadOnlySpan<T>>.Some(ReadOnlySpan<T>.Empty);
 
         if (_position + count <= _spanLength)
         {
             var slice = _span.Slice(_position, count);
             _position += count;
-            return slice;
+            return RefOption<ReadOnlySpan<T>>.Some(slice);
         }
 
-        return None();
+        return None;
     }
+#endif
 
 
     public ReadOnlySpan<T> Take(int count)
@@ -328,7 +330,7 @@ public ref struct SpanReader<T>
     {
         if (_position < _spanLength)
             return Some(_span[_position]);
-        return None<T>();
+        return None;
     }
 
     public readonly T Peek()
@@ -338,17 +340,18 @@ public ref struct SpanReader<T>
         throw GetEx();
     }
 
-    public readonly OptionROSpan<T> TryPeek(int count)
+#if NET9_0_OR_GREATER
+    public readonly RefOption<ReadOnlySpan<T>> TryPeek(int count)
     {
         if (count <= 0)
-            return ReadOnlySpan<T>.Empty;
+            return RefOption<ReadOnlySpan<T>>.Some(ReadOnlySpan<T>.Empty);
 
         if (_position + count <= _spanLength)
-            return _span.Slice(_position, count);
+            return RefOption<ReadOnlySpan<T>>.Some(_span.Slice(_position, count));
 
-        return None();
+        return None;
     }
-
+#endif
 
     public readonly ReadOnlySpan<T> Peek(int count)
     {

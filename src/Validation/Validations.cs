@@ -73,7 +73,7 @@ public class Validations : Validations<Exception>
         var exceptions = _errors;
         return exceptions.Count switch
         {
-            0 => None(),
+            0 => None,
             1 => Some(exceptions[0]),
             _ => Some<Exception>(new AggregateException($"{exceptions.Count} Validations Failed", exceptions)),
         };

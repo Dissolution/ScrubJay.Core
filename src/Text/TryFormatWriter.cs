@@ -55,7 +55,7 @@ public ref struct TryFormatWriter : IEnumerable
     {
         _destination = destination;
         _position = 0;
-        _hasFailed = None<Exception>();
+        _hasFailed = None;
     }
 
     public TryFormatWriter(Span<char> destination, int position)
@@ -63,7 +63,7 @@ public ref struct TryFormatWriter : IEnumerable
         Throw.IfNotBetween(position, 0, destination.Length);
         _destination = destination;
         _position = position;
-        _hasFailed = None<Exception>();
+        _hasFailed = None;
     }
 
 #region Private Methods

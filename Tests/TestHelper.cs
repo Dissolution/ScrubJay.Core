@@ -15,7 +15,7 @@ public static class TestHelper
         // primitive
         (byte)147,
         // custom primitive
-        default(None),
+        default(Unit),
         // struct
         IntPtr.Zero,
         (Nullable<int>)147,
@@ -81,7 +81,7 @@ public static class TestHelper
             .CurrentDomain
             .GetAssemblies()
             // Assemblies can be tricky to access
-            .SelectMany(assembly => Result.TryInvoke(assembly, static a => a.GetTypes()).OkOr([]))
+            .SelectMany(assembly => Result.Try(assembly, static a => a.GetTypes()).OkOr([]))
             .ToHashSet();
 
         var rand = new Random();
