@@ -152,7 +152,7 @@ public partial class TextBuilder
 
 #region FormatMany
 
-    public TextBuilder FormatMany<T>(params ReadOnlySpan<T?> values)
+    public TextBuilder FormatMany<T>(params ReadOnlySpan<T> values)
     {
         if (!values.IsEmpty)
         {
@@ -165,7 +165,7 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder FormatMany<T>(scoped ReadOnlySpan<T?> values, string? format, IFormatProvider? provider = null)
+    public TextBuilder FormatMany<T>(scoped ReadOnlySpan<T> values, string? format, IFormatProvider? provider = null)
     {
         if (!values.IsEmpty)
         {
@@ -178,7 +178,7 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder FormatMany<T>(scoped ReadOnlySpan<T?> values, scoped text format, IFormatProvider? provider = null)
+    public TextBuilder FormatMany<T>(scoped ReadOnlySpan<T> values, scoped text format, IFormatProvider? provider = null)
     {
         if (!values.IsEmpty)
         {
@@ -191,7 +191,7 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder FormatMany<T>(IEnumerable<T?>? values)
+    public TextBuilder FormatMany<T>(IEnumerable<T>? values)
     {
         if (values is not null)
         {
@@ -204,7 +204,7 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder FormatMany<T>(IEnumerable<T?>? values, string? format, IFormatProvider? provider = null)
+    public TextBuilder FormatMany<T>(IEnumerable<T>? values, string? format, IFormatProvider? provider = null)
     {
         if (values is not null)
         {
@@ -217,7 +217,7 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder FormatMany<T>(IEnumerable<T?>? values, scoped text format, IFormatProvider? provider = null)
+    public TextBuilder FormatMany<T>(IEnumerable<T>? values, scoped text format, IFormatProvider? provider = null)
     {
         if (values is not null)
         {
@@ -230,62 +230,31 @@ public partial class TextBuilder
         return this;
     }
 
-#endregion
+    public TextBuilder FormatMany<T>(Func<Option<T>>? iterator, string? format, IFormatProvider? provider = null)
+    {
+        if (iterator is not null)
+        {
+            while (iterator().IsSome(out var value))
+            {
+                WriteValue<T>(value, format, provider);
+            }
+        }
 
-#region FormatMany with Delimiter
-    //
-    // public TextBuilder AppendMany(scoped text text, Delimiter delimiter)
-    // {
-    //     if (!text.IsEmpty)
-    //     {
-    //         Write(text[0]);
-    //         for (var i = 1; i < text.Length; i++)
-    //         {
-    //             delimiter.Invoke(this);
-    //             Write(text[i]);
-    //         }
-    //     }
-    //
-    //     return this;
-    // }
-    //
-    // public TextBuilder AppendMany(IEnumerable<char>? characters, Delimiter delimiter)
-    // {
-    //     if (characters is not null)
-    //     {
-    //         using var e = characters.GetEnumerator();
-    //         if (!e.MoveNext())
-    //             return this;
-    //
-    //         Write(e.Current);
-    //         while (e.MoveNext())
-    //         {
-    //             delimiter.Invoke(this);
-    //             Write(e.Current);
-    //         }
-    //     }
-    //
-    //     return this;
-    // }
-    //
-    // public TextBuilder AppendMany(IEnumerable<string?>? strings, Delimiter delimiter)
-    // {
-    //     if (strings is not null)
-    //     {
-    //         using var e = strings.GetEnumerator();
-    //         if (!e.MoveNext())
-    //             return this;
-    //
-    //         Write(e.Current);
-    //         while (e.MoveNext())
-    //         {
-    //             delimiter.Invoke(this);
-    //             Write(e.Current);
-    //         }
-    //     }
-    //
-    //     return this;
-    // }
+        return this;
+    }
+
+    public TextBuilder FormatMany<T>(Func<Option<T>>? iterator, scoped text format, IFormatProvider? provider = null)
+    {
+        if (iterator is not null)
+        {
+            while (iterator().IsSome(out var value))
+            {
+                WriteValue<T>(value, format, provider);
+            }
+        }
+
+        return this;
+    }
 
 #endregion
 

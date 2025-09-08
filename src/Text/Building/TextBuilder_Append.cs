@@ -54,6 +54,8 @@ public partial class TextBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder AppendMany(params text characters) => Append(characters);
 
+    public TextBuilder AppendMany(char[]? characters) => Append(new text(characters));
+
     public TextBuilder AppendMany(IEnumerable<char>? characters)
     {
         if (characters is not null)
@@ -74,63 +76,6 @@ public partial class TextBuilder
             foreach (string? str in strings)
             {
                 Write(str);
-            }
-        }
-
-        return this;
-    }
-
-#endregion
-
-#region AppendMany with Delimiter
-
-    public TextBuilder AppendMany(scoped text text, Delimiter delimiter)
-    {
-        if (!text.IsEmpty)
-        {
-            Write(text[0]);
-            for (var i = 1; i < text.Length; i++)
-            {
-                delimiter.Invoke(this);
-                Write(text[i]);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder AppendMany(IEnumerable<char>? characters, Delimiter delimiter)
-    {
-        if (characters is not null)
-        {
-            using var e = characters.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
-
-            Write(e.Current);
-            while (e.MoveNext())
-            {
-                delimiter.Invoke(this);
-                Write(e.Current);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder AppendMany(IEnumerable<string?>? strings, Delimiter delimiter)
-    {
-        if (strings is not null)
-        {
-            using var e = strings.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
-
-            Write(e.Current);
-            while (e.MoveNext())
-            {
-                delimiter.Invoke(this);
-                Write(e.Current);
             }
         }
 

@@ -19,21 +19,21 @@ public partial class TextBuilder
     public TextBuilder Render<T>(scoped ReadOnlySpan<T> span)
     {
         return Append('[')
-            .RenderMany<T>(span, ", ")
+            .Delimit<T>(Delimiter.CommaSpace, span)
             .Append(']');
     }
 
     public TextBuilder Render<T>(scoped Span<T> span)
     {
         return Append('[')
-            .RenderMany<T>(span, ", ")
+            .Delimit<T>(Delimiter.CommaSpace, span)
             .Append(']');
     }
 
     public TextBuilder Render<T>(T[]? array)
     {
         return Append('[')
-            .RenderMany<T>(array, ", ")
+            .Delimit<T>(Delimiter.CommaSpace, array)
             .Append(']');
     }
 
@@ -41,10 +41,7 @@ public partial class TextBuilder
     {
         return
             Append('[')
-                .EnumerateAndDelimit(
-                    dictionary,
-                    static (tb, kvp) => tb.Append($"({kvp.Key:@}: {kvp.Value:@})"),
-                    ", ")
+                .Delimit(", ", dictionary, static (tb, kvp) => tb.Append($"({kvp.Key:@}: {kvp.Value:@})")
                 .Append(']');
     }
 
@@ -77,7 +74,7 @@ public partial class TextBuilder
 
 #region RenderMany
 
-    public TextBuilder RenderMany<T>(params ReadOnlySpan<T?> values)
+    public TextBuilder RenderMany<T>(params ReadOnlySpan<T> values)
     {
         if (!values.IsEmpty)
         {
@@ -90,7 +87,7 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder RenderMany<T>(scoped Span<T?> values)
+    public TextBuilder RenderMany<T>(scoped Span<T> values)
     {
         if (!values.IsEmpty)
         {
@@ -103,7 +100,7 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder RenderMany<T>(T?[]? values)
+    public TextBuilder RenderMany<T>(T[]? values)
     {
         if (!values.IsNullOrEmpty())
         {
@@ -116,7 +113,7 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder RenderMany<T>(IEnumerable<T?>? values)
+    public TextBuilder RenderMany<T>(IEnumerable<T>? values)
     {
         if (values is not null)
         {
@@ -129,68 +126,14 @@ public partial class TextBuilder
         return this;
     }
 
-#endregion
-
-#region RenderMany with Delimiter
-
-    public TextBuilder RenderMany<T>(scoped ReadOnlySpan<T> values, Delimiter delimiter)
+    public TextBuilder RenderMany<T>(Func<Option<T>>? iterator)
     {
-        if (!values.IsEmpty)
+        if (iterator is not null)
         {
-            RendererCache.RenderTo<T>(this, values[0]);
-            for (var i = 1; i < values.Length; i++)
+            T? value;
+            while (iterator().IsSome(out value))
             {
-                delimiter.Invoke(this);
-                RendererCache.RenderTo<T>(this, values[i]);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder RenderMany<T>(scoped Span<T> values, Delimiter delimiter)
-    {
-        if (!values.IsEmpty)
-        {
-            RendererCache.RenderTo<T>(this, values[0]);
-            for (var i = 1; i < values.Length; i++)
-            {
-                delimiter.Invoke(this);
-                RendererCache.RenderTo<T>(this, values[i]);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder RenderMany<T>(T[]? values, Delimiter delimiter)
-    {
-        if (!values.IsNullOrEmpty())
-        {
-            RendererCache.RenderTo<T>(this, values[0]);
-            for (var i = 1; i < values.Length; i++)
-            {
-                delimiter.Invoke(this);
-                RendererCache.RenderTo<T>(this, values[i]);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder RenderMany<T>(IEnumerable<T>? values, Delimiter delimiter)
-    {
-        if (values is not null)
-        {
-            using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
-
-            RendererCache.RenderTo<T>(this, e.Current);
-            while (e.MoveNext())
-            {
-                delimiter.Invoke(this);
-                RendererCache.RenderTo<T>(this, e.Current);
+                RendererCache.RenderTo<T>(this, value);
             }
         }
 
@@ -198,7 +141,6 @@ public partial class TextBuilder
     }
 
 #endregion
-
 
 #region RenderLine
 
