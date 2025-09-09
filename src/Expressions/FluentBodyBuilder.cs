@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace ScrubJay.Expressions;
 
-public class FluentBodyBuilder<B> : FluentBuilderBase<B>
+public class FluentBodyBuilder<B>
     where B : FluentBodyBuilder<B>
 {
     public IReadOnlyList<ParameterExpression> Parameters { get; }

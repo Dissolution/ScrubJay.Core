@@ -2,12 +2,6 @@
 
 public partial class TextBuilder
 {
-    #region Removal
-
-    bool ICollection<char>.Remove(char item) => throw new NotImplementedException();
-
-    void IList<char>.RemoveAt(int index) => throw new NotImplementedException();
-
     public Result<char> RemoveAt(Index index)
     {
         if (!Validate.Index(index, _position).IsOk(out var offset, out var ex))
@@ -69,24 +63,21 @@ public partial class TextBuilder
         return Ok(removedCount);
     }
 
-    public Result<int> RemoveLast(int count)
+
+    public Result<int> TryRemoveLast(int count)
     {
         if (count > _position)
+        {
             return new ArgumentOutOfRangeException(nameof(count), count, $"There are only {_position} items to remove");
+        }
+
         _position -= count;
         return Ok(count);
     }
 
-    void ICollection<char>.Clear() => Clear();
-
-    public TextBuilder Clear(bool zeroFill = false)
+    public TextBuilder Clear()
     {
-        if (zeroFill)
-            Notsafe.Text.ClearBlock(Written);
         _position = 0;
         return this;
     }
-
-#endregion
-
 }

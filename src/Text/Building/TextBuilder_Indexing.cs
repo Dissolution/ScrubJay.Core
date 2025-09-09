@@ -13,8 +13,6 @@ public partial class TextBuilder
 #endif
     }
 
-    int IList<char>.IndexOf(char item) => TryFindIndex(item).SomeOr(-1);
-
     public Option<int> TryFindIndex(
         char ch,
         bool firstToLast = true,

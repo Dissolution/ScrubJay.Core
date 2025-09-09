@@ -39,33 +39,33 @@ public partial class TextBuilder
 
     public TextBuilder Render<K, V>(IDictionary<K, V>? dictionary)
     {
-        return
-            Append('[')
-                .Delimit(", ", dictionary, static (tb, kvp) => tb.Append($"({kvp.Key:@}: {kvp.Value:@})")
-                .Append(']');
+        return Append('[')
+            .Delimit(", ", dictionary, static (tb, kvp) => tb.Append($"({kvp.Key:@}: {kvp.Value:@})"))
+            .Append(']');
     }
 
     public TextBuilder Render<T>(IEnumerable<T>? values)
     {
         if (values is null)
+        {
             return this;
-
-        if (values is IList<T> list)
+        }
+        else if (values is IList<T> list)
         {
             return Append('[')
-                .RenderMany(list, ", ")
+                .Delimit(", ", list)
                 .Append(']');
         }
         else if (values is ICollection<T> collection)
         {
             return Append('(')
-                .RenderMany(collection, ", ")
+                .Delimit(", ", collection)
                 .Append(')');
         }
         else
         {
             return Append('{')
-                .RenderMany(values, ", ")
+                .Delimit(", ", values)
                 .Append('}');
         }
     }
@@ -78,7 +78,7 @@ public partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 RendererCache.RenderTo<T>(this, value);
             }
@@ -91,7 +91,7 @@ public partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 RendererCache.RenderTo<T>(this, value);
             }
@@ -104,7 +104,7 @@ public partial class TextBuilder
     {
         if (!values.IsNullOrEmpty())
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 RendererCache.RenderTo<T>(this, value);
             }
@@ -117,7 +117,7 @@ public partial class TextBuilder
     {
         if (values is not null)
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 RendererCache.RenderTo<T>(this, value);
             }

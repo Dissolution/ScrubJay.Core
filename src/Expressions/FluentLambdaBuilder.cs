@@ -2,9 +2,11 @@
 
 namespace ScrubJay.Expressions;
 
-public class FluentLambdaBuilder<B> : FluentBuilderBase<B>
+public class FluentLambdaBuilder<B>
     where B : FluentLambdaBuilder<B>
 {
+    protected B _builder;
+
     protected readonly Type _delegateType;
 
     protected readonly ParameterExpression[] _parameters;
@@ -16,6 +18,8 @@ public class FluentLambdaBuilder<B> : FluentBuilderBase<B>
 
     public FluentLambdaBuilder(Type delegateType)
     {
+        _builder = (B)this;
+
         Validate.Implements(delegateType, typeof(Delegate)).ThrowIfError();
         _delegateType = delegateType;
 

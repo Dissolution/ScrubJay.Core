@@ -824,7 +824,7 @@ public ref struct SpanReader<T>
         }
 
         // Append them
-        builder.EnumerateFormatAndDelimit(prev[^captureCount..], delimiter);
+        builder.Delimit(delimiter, prev[^captureCount..]);
 
         // position indicator
         builder.Append(pointer);
@@ -839,7 +839,7 @@ public ref struct SpanReader<T>
         }
 
         // Append them
-        builder.EnumerateFormatAndDelimit(next[..captureCount], delimiter);
+        builder.Delimit(delimiter, next[..captureCount]);
 
         if (len > captureCount)
         {

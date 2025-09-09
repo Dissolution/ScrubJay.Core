@@ -19,9 +19,7 @@ public sealed class ExceptionRenderer : Renderer<Exception>
         }
         builder.Append(method.Name)
             .Append('(')
-            .EnumerateAndDelimit(method.GetParameters(),
-                static (tb, param) => tb.Render(param.ParameterType),
-                ", ")
+            .Delimit(", ", method.GetParameters(), static (tb, param) => tb.Render(param.ParameterType))
             .Append(')');
 
         return builder;

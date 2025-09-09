@@ -2,8 +2,118 @@
 
 partial class TextBuilder
 {
+    #region Enumerate
+
     public TextBuilder Enumerate<T>(scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
     {
-        throw new NotImplementedException();
+        if (!values.IsEmpty && build is not null)
+        {
+            foreach (var value in values)
+            {
+                build(this, value);
+            }
+        }
+
+        return this;
     }
+
+    public TextBuilder Enumerate<T>(T[]? values, Action<TextBuilder, T>? build)
+    {
+        if (values is not null && build is not null)
+        {
+            foreach (var value in values)
+            {
+                build(this, value);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate<T>(IEnumerable<T>? values, Action<TextBuilder, T>? build)
+    {
+        if (values is not null && build is not null)
+        {
+            foreach (var value in values)
+            {
+                build(this, value);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate<T>(Func<Option<T>>? iterate, Action<TextBuilder, T>? build)
+    {
+        if (iterate is not null && build is not null)
+        {
+            while (iterate().IsSome(out var value))
+            {
+                build(this, value);
+            }
+        }
+
+        return this;
+    }
+
+    #endregion
+
+    #region Enumerate w/Index
+    public TextBuilder Enumerate<T>(scoped ReadOnlySpan<T> values, Action<TextBuilder, T, int>? build)
+    {
+        if (!values.IsEmpty && build is not null)
+        {
+            for (int i = 0; i < values.Length; i++)
+            {
+                build(this, values[i], i);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate<T>(T[]? values, Action<TextBuilder, T, int>? build)
+    {
+        if (values is not null && build is not null)
+        {
+            for (int i = 0; i < values.Length; i++)
+            {
+                build(this, values[i], i);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate<T>(IEnumerable<T>? values, Action<TextBuilder, T, int>? build)
+    {
+        if (values is not null && build is not null)
+        {
+            int i = 0;
+            foreach (var value in values)
+            {
+                build(this, value, i);
+                i++;
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate<T>(Func<Option<T>>? iterate, Action<TextBuilder, T, int>? build)
+    {
+        if (iterate is not null && build is not null)
+        {
+            int i = 0;
+            while (iterate().IsSome(out var value))
+            {
+                build(this, value, i);
+                i++;
+            }
+        }
+
+        return this;
+    }
+
+    #endregion
 }

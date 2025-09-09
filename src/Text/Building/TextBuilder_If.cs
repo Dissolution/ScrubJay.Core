@@ -1,0 +1,513 @@
+﻿namespace ScrubJay.Text;
+
+partial class TextBuilder
+{
+#region Accept (Payload)
+
+    public TextBuilder Accept(in Payload payload)
+    {
+        Write(payload._text);
+        return this;
+    }
+
+    public TextBuilder Accept<T>(in Payload<T> payload)
+    {
+        if (payload._format is null)
+        {
+            return Render<T>(payload._value);
+        }
+        else
+        {
+            return Format<T>(payload._value, payload._format, payload._provider);
+        }
+    }
+
+#endregion
+
+#region If (bool)
+
+    public TextBuilder If(bool condition, Payload onTrue = default, Payload onFalse = default)
+    {
+        if (condition)
+        {
+            return Accept(onTrue);
+        }
+        else
+        {
+            return Accept(onFalse);
+        }
+    }
+
+    public TextBuilder If<T>(bool condition, Payload<T> onTrue = default, Payload<T> onFalse = default)
+    {
+        if (condition)
+        {
+            return Accept<T>(onTrue);
+        }
+        else
+        {
+            return Accept<T>(onFalse);
+        }
+    }
+
+    public TextBuilder If(bool condition, Action<TextBuilder>? onTrue = default, Action<TextBuilder>? onFalse = default)
+    {
+        if (condition)
+        {
+            return Invoke(onTrue);
+        }
+        else
+        {
+            return Invoke(onFalse);
+        }
+    }
+
+#endregion
+
+    public TextBuilder If<T>(Option<T> option, Action<TextBuilder, T>? onSome = default,
+        Action<TextBuilder>? onNone = default)
+    {
+        if (option.IsSome(out var some))
+        {
+            onSome?.Invoke(this, some);
+        }
+        else
+        {
+            onNone?.Invoke(this);
+        }
+
+        return this;
+    }
+
+    public TextBuilder If<T>(Result<T> result, Action<TextBuilder, T>? onOk = default,
+        Action<TextBuilder, Exception>? onError = default)
+    {
+        if (result.IsOk(out var ok, out var error))
+        {
+            onOk?.Invoke(this, ok);
+        }
+        else
+        {
+            onError?.Invoke(this, error);
+        }
+
+        return this;
+    }
+
+    public TextBuilder If<T>(T value,
+        Func<T, bool> predicate,
+        Action<TextBuilder, T>? onTrue = default,
+        Action<TextBuilder, T>? onFalse = default)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Throw.IfNull(predicate);
+        if (predicate(value))
+        {
+            onTrue?.Invoke(this, value);
+        }
+        else
+        {
+            onFalse?.Invoke(this, value);
+        }
+
+        return this;
+    }
+
+#region IfNotNull
+
+    public TextBuilder IfNotNull<T>(T? value, Action<TextBuilder, T>? onNotNull = default,
+        Action<TextBuilder>? onNull = default)
+    {
+        if (value is not null)
+        {
+            onNotNull?.Invoke(this, value);
+        }
+        else
+        {
+            onNull?.Invoke(this);
+        }
+
+        return this;
+    }
+
+    // ReSharper disable once ConvertNullableToShortForm
+    public TextBuilder IfNotNull<T>(Nullable<T> nullable,
+        Action<TextBuilder, T>? onNotNull = default,
+        Action<TextBuilder>? onNull = default)
+        where T : struct
+    {
+        if (nullable.TryGetValue(out var value))
+        {
+            onNotNull?.Invoke(this, value);
+        }
+        else
+        {
+            onNull?.Invoke(this);
+        }
+
+        return this;
+    }
+
+#endregion
+
+#region IfNotEmpty
+
+    public TextBuilder IfNotEmpty(string? str,
+        Action<TextBuilder, string>? onNotEmpty = default,
+        Action<TextBuilder>? onEmpty = default)
+    {
+        if (!string.IsNullOrEmpty(str))
+        {
+            onNotEmpty?.Invoke(this, str!);
+        }
+        else
+        {
+            onEmpty?.Invoke(this);
+        }
+
+        return this;
+    }
+
+#if !NET9_0_OR_GREATER
+    public delegate void BuildWithSpan<T>(TextBuilder builder, ReadOnlySpan<T> span);
+#endif
+
+    public TextBuilder IfNotEmpty<T>(scoped ReadOnlySpan<T> span,
+#if NET9_0_OR_GREATER
+        Action<TextBuilder, ReadOnlySpan<T>>? onNotEmpty = default,
+#else
+        BuildWithSpan<T>? onNotEmpty = default,
+#endif
+        Action<TextBuilder>? onEmpty = default)
+    {
+        if (!span.IsEmpty)
+        {
+            onNotEmpty?.Invoke(this, span);
+        }
+        else
+        {
+            onEmpty?.Invoke(this);
+        }
+
+        return this;
+    }
+
+    public TextBuilder IfNotEmpty<T>(T[]? array,
+        Action<TextBuilder, T[]>? onNotEmpty = default,
+        Action<TextBuilder>? onEmpty = default)
+    {
+        if (array is not null && array.Length > 0)
+        {
+            onNotEmpty?.Invoke(this, array);
+        }
+        else
+        {
+            onEmpty?.Invoke(this);
+        }
+
+        return this;
+    }
+
+    public TextBuilder IfNotEmpty<C, T>(C? collection,
+        Action<TextBuilder, C>? onNotEmpty = default,
+        Action<TextBuilder>? onEmpty = default)
+        where C : ICollection<T>
+    {
+        if (collection is not null && collection.Count > 0)
+        {
+            onNotEmpty?.Invoke(this, collection);
+        }
+        else
+        {
+            onEmpty?.Invoke(this);
+        }
+
+        return this;
+    }
+
+    public TextBuilder IfNotEmpty<C>(C? collection,
+        Action<TextBuilder, C>? onNotEmpty = default,
+        Action<TextBuilder>? onEmpty = default)
+        where C : ICollection
+    {
+        if (collection is not null && collection.Count > 0)
+        {
+            onNotEmpty?.Invoke(this, collection);
+        }
+        else
+        {
+            onEmpty?.Invoke(this);
+        }
+
+        return this;
+    }
+
+#endregion
+
+/*
+
+#region FormatSome, FormatOk, FormatError, RenderSome, RenderOk, RenderError
+
+    public TextBuilder FormatSome<T>(Option<T> option, string? format = null, IFormatProvider? provider = null)
+    {
+        if (option.IsSome(out var value))
+            return Format<T>(value, format, provider);
+        return this;
+    }
+
+    public TextBuilder FormatOk<T>(Result<T> result, string? format = null, IFormatProvider? provider = null)
+    {
+        if (result.IsOk(out var value))
+            return Format<T>(value, format, provider);
+        return this;
+    }
+
+    public TextBuilder FormatOk<T, E>(Result<T, E> result, string? format = null, IFormatProvider? provider = null)
+    {
+        if (result.IsOk(out var value))
+            return Format<T>(value, format, provider);
+        return this;
+    }
+
+    public TextBuilder FormatError<T>(Result<T> result, string? format = null, IFormatProvider? provider = null)
+    {
+        if (result.IsError(out var error))
+            return Format<Exception>(error, format, provider);
+        return this;
+    }
+
+    public TextBuilder FormatError<T, E>(Result<T, E> result, string? format = null, IFormatProvider? provider = null)
+    {
+        if (result.IsError(out var error))
+            return Format<E>(error, format, provider);
+        return this;
+    }
+
+    public TextBuilder RenderSome<T>(Option<T> option)
+    {
+        if (option.IsSome(out var value))
+            return Render<T>(value);
+        return this;
+    }
+
+    public TextBuilder RenderOk<T>(Result<T> result)
+    {
+        if (result.IsOk(out var value))
+            return Render<T>(value);
+        return this;
+    }
+
+    public TextBuilder RenderOk<T, E>(Result<T, E> result)
+    {
+        if (result.IsOk(out var value))
+            return Render<T>(value);
+        return this;
+    }
+
+    public TextBuilder RenderError<T>(Result<T> result)
+    {
+        if (result.IsError(out var error))
+            return Render<Exception>(error);
+        return this;
+    }
+
+    public TextBuilder RenderError<T, E>(Result<T, E> result)
+    {
+        if (result.IsError(out var error))
+            return Render<E>(error);
+        return this;
+    }
+
+#endregion
+
+
+#region Enumerate
+
+    public TextBuilder Enumerate<T>(scoped ReadOnlySpan<T> values, Action<TextBuilder, T> buildValue)
+    {
+        foreach (var t in values)
+        {
+            buildValue(this, t);
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate<T>(scoped Span<T> values, Action<TextBuilder, T> buildValue)
+    {
+        foreach (var t in values)
+        {
+            buildValue(this, t);
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate<T>(T[]? values, Action<TextBuilder, T> buildValue)
+    {
+        if (values is not null)
+        {
+            foreach (var t in values)
+            {
+                buildValue(this, t);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate<T>(IEnumerable<T>? values, Action<TextBuilder, T> buildValue)
+    {
+        if (values is not null)
+        {
+            foreach (var value in values)
+            {
+                buildValue(this, value);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate(string? str, Action<TextBuilder, char> buildValue)
+    {
+        if (str is not null)
+        {
+            foreach (char ch in str)
+            {
+                buildValue(this, ch);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Enumerate<T>(SpanSplitter<T> splitSpan, BuildSegment<T> buildSegment)
+        where T : IEquatable<T>
+    {
+        while (splitSpan.MoveNext())
+        {
+            buildSegment(this, splitSpan.Current);
+        }
+
+        return this;
+    }
+
+#endregion
+
+#region EnumerateFormat, EnumerateRender
+
+    public TextBuilder EnumerateFormat<T>(scoped ReadOnlySpan<T> values,
+        string? format = null,
+        IFormatProvider? provider = null)
+        => Enumerate<T>(values, (tb, value) => tb.Format<T>(value, format, provider));
+
+    public TextBuilder EnumerateFormat<T>(scoped Span<T> values,
+        string? format = null,
+        IFormatProvider? provider = null)
+        => Enumerate<T>(values, (tb, value) => tb.Format<T>(value, format, provider));
+
+    public TextBuilder EnumerateFormat<T>(T[]? values,
+        string? format = null,
+        IFormatProvider? provider = null)
+        => Enumerate<T>(values, (tb, value) => tb.Format<T>(value, format, provider));
+
+    public TextBuilder EnumerateFormat<T>(IEnumerable<T>? values,
+        string? format = null,
+        IFormatProvider? provider = null)
+        => Enumerate<T>(values, (tb, value) => tb.Format<T>(value, format, provider));
+
+    public TextBuilder EnumerateRender<T>(scoped ReadOnlySpan<T> values)
+        => Enumerate<T>(values, static (tb, value) => tb.Render<T>(value));
+
+    public TextBuilder EnumerateRender<T>(scoped Span<T> values)
+        => Enumerate<T>(values, static (tb, value) => tb.Render<T>(value));
+
+    public TextBuilder EnumerateRender<T>(T[]? values)
+        => Enumerate<T>(values, static (tb, value) => tb.Render<T>(value));
+
+    public TextBuilder EnumerateRender<T>(IEnumerable<T>? values)
+        => Enumerate<T>(values, static (tb, value) => tb.Render<T>(value));
+
+#endregion
+
+
+#region Iterate
+
+    public TextBuilder Iterate<T>(
+        scoped ReadOnlySpan<T> values,
+        Action<TextBuilder, T, int> buildTextWithValueIndex)
+    {
+        for (int i = 0; i < values.Length; i++)
+        {
+            buildTextWithValueIndex(this, values[i], i);
+        }
+
+        return this;
+    }
+
+    public TextBuilder Iterate<T>(
+        scoped Span<T> values,
+        Action<TextBuilder, T, int> buildTextWithValueIndex)
+    {
+        for (int i = 0; i < values.Length; i++)
+        {
+            buildTextWithValueIndex(this, values[i], i);
+        }
+
+        return this;
+    }
+
+    public TextBuilder Iterate<T>(
+        T[]? values,
+        Action<TextBuilder, T, int> buildTextWithValueIndex)
+    {
+        if (values is not null)
+        {
+            for (int i = 0; i < values.Length; i++)
+            {
+                buildTextWithValueIndex(this, values[i], i);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Iterate<T>(
+        IList<T>? values,
+        Action<TextBuilder, T, int> buildTextWithValueIndex)
+    {
+        if (values is not null)
+        {
+            for (int i = 0; i < values.Count; i++)
+            {
+                buildTextWithValueIndex(this, values[i], i);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Iterate<T>(
+        IEnumerable<T>? values,
+        Action<TextBuilder, T, int> buildTextWithValueIndex)
+    {
+        if (values is not null)
+        {
+            int index = 0;
+            foreach (var value in values)
+            {
+                buildTextWithValueIndex(this, value, index);
+                index++;
+            }
+        }
+
+        return this;
+    }
+
+#endregion
+
+*/
+}

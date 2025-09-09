@@ -2,10 +2,6 @@
 
 public partial class TextBuilder
 {
-    #region Insert
-
-    void IList<char>.Insert(int index, char item) => Insert(index, item);
-
     public TextBuilder Insert(Index index, char ch)
     {
         AllocateAt(index, 1)[0] = ch;
@@ -86,7 +82,4 @@ public partial class TextBuilder
 
         return this;
     }
-
-#endregion
-
 }

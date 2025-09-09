@@ -100,7 +100,6 @@
         <!-- Recommendations for downstream -->
         <Using Include="ScrubJay.Prelude" Static="true"/>
 
-        <Using Include="ScrubJay.Building"/>
         <Using Include="ScrubJay.Collections"/>
         <Using Include="ScrubJay.Collections.Pooling"/>
         <Using Include="ScrubJay.Comparison"/>

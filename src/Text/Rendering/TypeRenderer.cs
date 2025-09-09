@@ -111,7 +111,7 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
         ).IfNotEmpty(genericTypes,
             static (tb, types) => tb
                 .Append('<')
-                .EnumerateAndDelimit(types, static (b, type) => RenderType(b, type), ", ")
+                .Delimit(", ", types, static (b, type) => RenderType(b, type))
                 .Append('>'));
     }
 

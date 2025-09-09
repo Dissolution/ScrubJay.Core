@@ -169,7 +169,7 @@ public class Validations<E> : IReadOnlyCollection<E>
             .Format(_errors.Count)
             .Append(" validations failed:")
             .NewLine()
-            .EnumerateFormatAndDelimitLines(_errors)
+            .Delimit(Delimiter.NewLine, _errors)
             .ToStringAndDispose();
         throw new InvalidOperationException(message);
     }

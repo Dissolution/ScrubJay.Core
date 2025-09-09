@@ -41,7 +41,7 @@ public static class RendererCache
         {
             null => builder.Append("null"),
             DBNull => builder.Append(nameof(DBNull)),
-            bool b => builder.IfAppend(b, bool.TrueString, bool.FalseString),
+            bool b => builder.If(b, bool.TrueString, bool.FalseString),
             byte u8 => builder.Append("(byte)").Format(u8),
             sbyte i8 => builder.Append("(sbyte)").Format(i8),
             short i16 => builder.Append("(short)").Format(i16),

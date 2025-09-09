@@ -14,7 +14,7 @@ using var builder = new TextBuilder();
 builder
     .If(true, "blah", "notblah")
     .If(true, 'a', new char[2]{'a','b'})
-    .If(true, TextBuilder.Payload.Invoke(tb => tb.Append("nope")))
+    .If(true, tb => tb.Append("nope"))
 
 
 
