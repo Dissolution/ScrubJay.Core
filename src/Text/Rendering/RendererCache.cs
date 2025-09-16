@@ -72,15 +72,17 @@ public static class RendererCache
 
         // We're looking for something that can render T
         Type valueType = typeof(T);
+
+#if DEBUG
         Type vt = value?.GetType() ?? typeof(void);
-        if (vt != valueType)
+        if (valueType != typeof(Type) && valueType != vt)
             Debugger.Break();
+#endif
 
         // see if we have a direct IRenderer<T>
         IRenderer<T>? typedRenderer = GetRenderer<T>();
         if (typedRenderer is not null)
         {
-            Debugger.Break();
             return typedRenderer.RenderTo(builder, value);
         }
 
@@ -100,23 +102,9 @@ public static class RendererCache
 
 #region Extensions
 
-#if NET9_0_OR_GREATER
-    public static string Render<R>(this R renderable,
-        GenericTypeConstraint.AllowsRefStruct<R> _ = default)
-        where R : IRenderable
-        , allows ref struct
-    {
-        using var builder = new TextBuilder();
-        renderable.RenderTo(builder);
-        return builder.ToString();
-    }
-#endif
-
     public static string Render<T>(this T? value)
     {
-        var builder = new TextBuilder();
-        _ = RenderTo(builder, value);
-        return builder.ToStringAndDispose();
+        return TextBuilder.New.Invoke(value, RenderTo).ToStringAndDispose();
     }
 
 #endregion

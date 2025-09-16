@@ -5,35 +5,20 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using ScrubJay.Collections.Pooling;
+using ScrubJay.Core.Utilities;
 using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
-using var builder = new TextBuilder();
+RS rs = new();
 
-builder
-    .If(true, "blah", "notblah")
-    .If(true, 'a', new char[2]{'a','b'})
-    .If(true, tb => tb.Append("nope"))
+var str = rs.ToString();
 
+var s = Any<RS>.ToString(rs);
+var h = Any<RS>.GetHashCode(rs);
+var t = Any<RS>.GetType(rs);
 
-
-
-    .Append("Eat at Joes!")
-    .Block(TextBuilder.BlockSpec.Allman, tb =>
-    {
-        tb.Append("public void Nothing()")
-            .NewLine()
-            .Append('{')
-            .NewLine()
-            .Append("")
-            .NewLine()
-            .Append('}')
-            .NewLine();
-    });
-
-string str = builder.ToString();
-
+Console.WriteLine("-------");
 Debugger.Break();
 return 0;
 
@@ -41,154 +26,35 @@ return 0;
 namespace ScrubJay.Scratch
 {
 
-
-
-
-    public record class Sub { }
-
-    public record class Dom : Sub { }
-
-    [StructLayout(LayoutKind.Explicit, Size = 3)]
-    public readonly struct RGB
+    public ref struct RS
     {
-        [FieldOffset(2)]
-        public readonly byte Red;
+        private ReadOnlySpan<char> _text;
 
-        [FieldOffset(1)]
-        public readonly byte Green;
-
-        [FieldOffset(0)]
-        public readonly byte Blue;
-
-        public RGB(byte red, byte green, byte blue)
+        public RS()
         {
-            Red = red;
-            Green = green;
-            Blue = blue;
+            _text = default;
+        }
+
+        public override string ToString()
+        {
+            return nameof(RS);
         }
     }
-
 
     public static class Util
     {
-
-
-        private static Result<double> parse(string input) => Result.Try(() => double.Parse(input));
-
-        private static Result<double> divide(double x, double y) => Result.Try(() =>
+        public static void Accept<T>(T value)
+            where T : allows ref struct
         {
-            if (y == 0)
-                throw new DivideByZeroException();
-            return x / y;
-        });
-
-        public static async Result<double> ParseDivideAsync(string a, string b)
-        {
-            var x = await parse(a);
-            var y = await Result.Try(() => double.Parse(b));
-            Console.WriteLine("Successfully parsed inputs");
-            return await divide(x, y);
+            // var a = value.Equals(default);
+            // var b = value.GetHashCode();
+            // var c = value.GetType();
+            // var d = value.ToString();
+            //
+            // var f = Any<T>.Equals(value, default);
+            // var g = Any<T>.GetHashCode(value);
+            // var h = Any<T>.GetType(value);
+            // var i = Any<T>.ToString(value);
         }
     }
-
-/*
-
-static AsyncResult<double> Parse(string input)
-{
-    try
-    {
-        double f64 = double.Parse(input);
-        return AsyncResult<double>.Success(f64);
-    }
-    catch (Exception ex)
-    {
-        return AsyncResult<double>.Fail(ex);
-    }
-}
-
-static async AsyncResult<double> Add(string a, string b)
-{
-    var ad = await Parse(a);
-    var bd = await Parse(b);
-    return ad + bd;
-}
-*/
-
-/*
-object obj = (decimal)147.13m;
-// if (obj is char)
-// {
-//     char ch = (char)obj;
-//     Console.WriteLine(ch);
-// }
-// else
-// {
-//     Console.WriteLine("IS NOT");
-// }
-
-ref char ch = ref Notsafe.TryUnboxRef<char>(obj);
-if (Notsafe.IsNullRef(ref ch))
-{
-    Console.WriteLine("Null ref");
-}
-else
-{
-    Console.WriteLine(ch);
-}
-
-ReadOnlySpan<char> text = new ReadOnlySpan<char>(in ch);
-var str = text.AsString();
-Console.WriteLine(str);
-*/
-/*
-ReadOnlySpan<char> left = ['a', 'b', 'c'];
-ReadOnlySpan<char> right = "abc".ToCharArray().AsSpan();
-
-var eq = Equate
-    .GetEqualityComparer<ReadOnlySpan<char>>()
-    .Equals(left, right);
-Debugger.Break();
-
-
-char[] chars = new char[128];
-var writer = new TryFormatWriter(chars)
-{
-    '(',
-    (""),
-    (147),
-    {147, "F1"},
-    (147, "F2", (IFormatProvider)CultureInfo.CurrentCulture),
-    (ref TryFormatWriter w) => w.Add("^_^"),
-};
-string str = writer.GetString();
-var result = writer.GetResult();
-
-Debugger.Break();
-
-
-
-Console.WriteLine(str);
-
-Point pt = new(1, 2);
-
-var property = typeof(Point).GetProperty(nameof(Point.X), BindingFlags.Public | BindingFlags.Instance);
-
-object? x = property!.GetValue((object?)pt);
-
-var getMethod = property.GetMethod;
-object? x2 = getMethod!.Invoke((object?)pt, null);
-
-DynamicMethod dyn = default!;
-var gen = dyn.GetILGenerator();
-
-gen.Emit(OpCodes.Ldarg_0);
-gen.Emit(OpCodes.Call, getMethod);
-gen.Emit(OpCodes.Ret);
-
-var getter = dyn.CreateDelegate<Func<Point, int>>();
-
-
-int x3 = getter(pt);
-
-*/
 }

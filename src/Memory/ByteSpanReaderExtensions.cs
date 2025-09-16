@@ -222,7 +222,7 @@ public static class ByteSpanReaderExtensions
             @enum = Bytes.ReadEnum<E>(buffer);
         }
 
-#if NET6_0_OR_GREATER
+#if NET5_0_OR_GREATER
         if (!Enum.IsDefined<E>(@enum))
 #else
         if (!Enum.IsDefined(typeof(E), @enum))

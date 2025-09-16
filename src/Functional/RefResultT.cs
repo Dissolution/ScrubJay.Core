@@ -2,8 +2,6 @@
 // Do not declare static methods on generic types
 // Do not catch Exception
 
-using System.Diagnostics;
-
 #pragma warning disable CA1715, CA1000, CA1031
 
 
@@ -381,8 +379,12 @@ public readonly ref struct RefResult<T>
     public override string ToString()
     {
         if (_isOk)
-            return $"RefResult<{typeof(T)}>.Ok({Any.ToString(_value)})";
-
-        return $"RefResult<{typeof(T)}>.Error({_error!})";
+        {
+            return TextBuilder.Build($"RefResult<{typeof(T):@}>.Ok({_value})");
+        }
+        else
+        {
+            return TextBuilder.Build($"RefResult<{typeof(T):@}>.Error({_error})");
+        }
     }
 }

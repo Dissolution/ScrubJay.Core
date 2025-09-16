@@ -32,6 +32,7 @@ public sealed class LapTimer
     }
 }
 
+[PublicAPI]
 [MustDisposeResource(false)]
 public sealed class Lap : IDisposable
 {

@@ -1,68 +1,100 @@
 ﻿namespace ScrubJay.Text;
 
-internal sealed class Whitespace : IDisposable
+internal partial class Whitespace
 {
-    private string _newLine = Environment.NewLine;
+    private static string _defaultNewLine = Environment.NewLine;
+    private static string _defaultIndent = "    "; // 4 spaces
 
-    public string DefaultNewLine
+    [NotNull, AllowNull]
+    public static string DefaultNewLine
+    {
+        get => _defaultNewLine;
+        set => _defaultNewLine = value ?? Environment.NewLine;
+    }
+
+    [NotNull, AllowNull]
+    public static string DefaultIndent
+    {
+        get => _defaultIndent;
+        set => _defaultIndent = value ?? "    "; // 4 spaces
+    }
+}
+
+
+/// <summary>
+/// Manages whitespace for a <see cref="TextBuilder"/>
+/// </summary>
+internal sealed partial class Whitespace
+{
+    private string _newLine = _defaultNewLine;
+    private string _indent = _defaultIndent;
+    private readonly List<string> _indents = [];
+
+    [NotNull, AllowNull]
+    public string NewLine
     {
         get => _newLine;
-        set { throw new NotImplementedException(); }
+        set => _newLine = value ?? _defaultNewLine;
     }
 
-    public string DefaultIndent { get; set; } = "    "; // 4 spaces
-
-    public text NewLineAndIndents => _newLineAndIndents.Written;
-
-    private readonly PooledList<char> _newLineAndIndents;
-    private readonly Stack<int> _indentOffsets;
-
-    public Whitespace()
+    [NotNull, AllowNull]
+    public string Indent
     {
-        _indentOffsets = [];
-        _newLineAndIndents = [];
-        _newLineAndIndents.AddMany(DefaultNewLine.AsSpan());
+        get => _indent;
+        set => _indent = value ?? _defaultIndent;
     }
 
-    internal text DedentNLI()
+    internal void WriteFullNewLineTo(TextBuilder builder)
     {
-        text nli = _newLineAndIndents.Written;
-        if (_indentOffsets.Count > 0)
+        builder.Write(_newLine);
+        foreach (var indent in _indents)
         {
-            nli = nli[.._indentOffsets.Peek()];
+            builder.Write(indent);
         }
-
-        return nli;
     }
 
-    public void WriteNewLine(TextBuilder builder)
+    internal void WriteFixedTextTo(TextBuilder builder, scoped text text)
     {
-        builder.Append(_newLineAndIndents.Written);
+        text newline = _newLine;
+        if (text.Length < newline.Length)
+        {
+            builder.Write(text);
+        }
+        else if (text.Equate(newline))
+        {
+            WriteFullNewLineTo(builder);
+        }
+        else
+        {
+            var split = SpanSplitter<char>.Split(text, newline);
+            if (!split.MoveNext())
+                return;
+            // write the first (only?) chunk
+            builder.Write(split.Current);
+
+            // do we have more?
+            while (split.MoveNext())
+            {
+                // write the full newline
+                WriteFullNewLineTo(builder);
+                // write this chunk
+                builder.Write(split.Current);
+            }
+        }
     }
 
-    public void AddIndent(string? indent = null)
-    {
-        indent ??= DefaultIndent;
-        int offset = _newLineAndIndents.Count;
-        _newLineAndIndents.AddMany(indent.AsSpan());
-        _indentOffsets.Push(offset);
-    }
+    public void AddIndent() => _indents.Add(_indent);
+
+    public void AddIndent(char indent) => _indents.Add(indent.AsString());
+
+    public void AddIndent(string? indent) => _indents.Add(indent ?? string.Empty);
 
     public void RemoveIndent()
     {
-        int offset = _indentOffsets.Pop();
-        _newLineAndIndents.Count = offset;
-    }
-
-    public void RemoveIndent(out text indent)
-    {
-        int offset = _indentOffsets.Pop();
-        indent = _newLineAndIndents.Written[offset..];
-        _newLineAndIndents.Count = offset;
-    }
-
-    public void Dispose()
-    {
-        _newLineAndIndents.Dispose();
+        if (_indents.Count == 0)
+        {
+            throw new InvalidOperationException();
+        }
+        _indents.RemoveAt(_indents.Count - 1);
     }
 }

@@ -21,6 +21,6 @@ public readonly ref struct Ok<T>
 
     public override string ToString()
     {
-        return $"Ok<{typeof(T)}>({Any.ToString(Value)})";
+        return TextBuilder.Build($"Ok<{typeof(T):@}>({Value})");
     }
 }

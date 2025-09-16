@@ -431,7 +431,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public void Reverse()
     {
         _version++;
-        _array.Reverse();
+        Array.Reverse(_array);
     }
 
     /// <summary>
@@ -935,16 +935,6 @@ public sealed class PooledList<T> : PooledArray<T>,
         return _array.AsSpan(pos, length);
     }
 
-    /// <summary>
-    /// Try to use the available capacity of this <see cref="PooledList{T}"/> using a <see cref="SpanDelegates.FuncS{T1,R}"/> delegate
-    /// </summary>
-    /// <param name="useAvailable">
-    /// <see cref="SpanDelegates.FuncS{T1,R}"/> to apply to any currently available space
-    /// </param>
-    /// <returns>
-    /// <c>true</c> if the <see cref="SpanDelegates.FuncS{T1,R}"/> operation succeeded<br/>
-    /// <c>false</c> if it did not
-    /// </returns>
     public bool TryUseAvailable(FnSpan<T, int> useAvailable)
     {
         int used = useAvailable(Available);

@@ -6,31 +6,31 @@
 [PublicAPI]
 public static class StackExtensions
 {
-#if NETFRAMEWORK || NETSTANDARD2_0
-    public static bool TryPeek<T>(this Stack<T> stack, [MaybeNullWhen(false)] out T value)
-    {
-        if (stack.Count > 0)
-        {
-            value = stack.Peek();
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
-
-    public static bool TryPop<T>(this Stack<T> stack, [MaybeNullWhen(false)] out T value)
-    {
-        if (stack.Count > 0)
-        {
-            value = stack.Pop();
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
-#endif
+// #if NETFRAMEWORK || NETSTANDARD2_0
+//     public static bool TryPeek<T>(this Stack<T> stack, [MaybeNullWhen(false)] out T value)
+//     {
+//         if (stack.Count > 0)
+//         {
+//             value = stack.Peek();
+//             return true;
+//         }
+//
+//         value = default;
+//         return false;
+//     }
+//
+//     public static bool TryPop<T>(this Stack<T> stack, [MaybeNullWhen(false)] out T value)
+//     {
+//         if (stack.Count > 0)
+//         {
+//             value = stack.Pop();
+//             return true;
+//         }
+//
+//         value = default;
+//         return false;
+//     }
+// #endif
 
     public static T PeekOr<T>(this Stack<T> stack, T defaultValue) => stack.Count > 0 ? stack.Peek() : defaultValue;
 

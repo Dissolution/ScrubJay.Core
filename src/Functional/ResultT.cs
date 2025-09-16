@@ -2,8 +2,6 @@
 // Do not declare static methods on generic types
 // Do not catch Exception
 
-using System.Diagnostics;
-
 #pragma warning disable CA1715, CA1000, CA1031
 
 
@@ -469,7 +467,6 @@ public readonly struct Result<T> :
 
         charsWritten = 0;
         return false;
-        ;
     }
 
     public override string ToString()

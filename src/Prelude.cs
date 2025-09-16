@@ -29,18 +29,31 @@ namespace ScrubJay;
 [PublicAPI]
 public static class Prelude
 {
-    public static None None { get; } = default(None);
+    public static None None { get; }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Ok<T> Ok<T>(T value)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
         => new Ok<T>(value);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Error<T> Error<T>(T error)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
         => new Error<T>(error);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Unit Unit() => default(Unit);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string Build(ref InterpolatedTextBuilder interpolatedText)
+    {
+        return interpolatedText.ToStringAndDispose();
+    }
 }

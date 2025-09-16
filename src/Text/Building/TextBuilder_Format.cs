@@ -1,6 +1,8 @@
 ﻿// ReSharper disable MergeCastWithTypeCheck
 
-
+#if NET9_0_OR_GREATER
+using ScrubJay.Core.Utilities;
+#endif
 using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Text;
@@ -77,8 +79,6 @@ public partial class TextBuilder
         {
             Write(value.ToString());
         }
-
-        return;
     }
 
     internal void WriteValue<T>(T? value, scoped text format, IFormatProvider? provider)
@@ -121,8 +121,6 @@ public partial class TextBuilder
         {
             Write(value.ToString());
         }
-
-        return;
     }
 
 
@@ -130,8 +128,16 @@ public partial class TextBuilder
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder Format<T>(T? value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
+#if NET9_0_OR_GREATER
+        string str = Any<T>.ToString(value);
+        Write(str);
+#else
         WriteValue<T>(value);
+#endif
         return this;
     }
 
@@ -156,7 +162,7 @@ public partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 WriteValue<T>(value);
             }
@@ -169,7 +175,7 @@ public partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 WriteValue<T>(value, format, provider);
             }
@@ -182,7 +188,7 @@ public partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 WriteValue<T>(value, format, provider);
             }
@@ -195,7 +201,7 @@ public partial class TextBuilder
     {
         if (values is not null)
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 WriteValue<T>(value);
             }
@@ -208,7 +214,7 @@ public partial class TextBuilder
     {
         if (values is not null)
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 WriteValue<T>(value, format, provider);
             }
@@ -221,7 +227,7 @@ public partial class TextBuilder
     {
         if (values is not null)
         {
-            foreach (T? value in values)
+            foreach (var value in values)
             {
                 WriteValue<T>(value, format, provider);
             }

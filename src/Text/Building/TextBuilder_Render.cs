@@ -11,6 +11,7 @@ public partial class TextBuilder
         return Append('"').Append(text).Append('"');
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder Render<T>(T? value)
     {
         return RendererCache.RenderTo<T>(this, value);

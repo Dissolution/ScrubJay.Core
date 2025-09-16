@@ -2,55 +2,159 @@
 
 partial class TextBuilder
 {
-#region Accept (Payload)
-
-    public TextBuilder Accept(in Payload payload)
-    {
-        Write(payload._text);
-        return this;
-    }
-
-    public TextBuilder Accept<T>(in Payload<T> payload)
-    {
-        if (payload._format is null)
-        {
-            return Render<T>(payload._value);
-        }
-        else
-        {
-            return Format<T>(payload._value, payload._format, payload._provider);
-        }
-    }
-
-#endregion
 
 #region If (bool)
 
-    public TextBuilder If(bool condition, Payload onTrue = default, Payload onFalse = default)
+    private TextBuilder Add<T>(T? value, string? format = null)
+    {
+        if (format is not null)
+        {
+            return Format<T>(value, format);
+        }
+
+        if (value is char ch)
+            return Append(ch);
+
+        if (value is string str)
+            return Append(str);
+
+        return Render<T>(value);
+    }
+
+
+    public TextBuilder If<T>(bool condition, T onTrue)
     {
         if (condition)
         {
-            return Accept(onTrue);
+            return Add<T>(onTrue);
         }
         else
         {
-            return Accept(onFalse);
+            return this;
         }
     }
 
-    public TextBuilder If<T>(bool condition, Payload<T> onTrue = default, Payload<T> onFalse = default)
+    public TextBuilder If<T>(bool condition, (T Value, string? Format) onTrue)
     {
         if (condition)
         {
-            return Accept<T>(onTrue);
+            return Add<T>(onTrue.Value, onTrue.Format);
         }
         else
         {
-            return Accept<T>(onFalse);
+            return this;
         }
     }
 
-    public TextBuilder If(bool condition, Action<TextBuilder>? onTrue = default, Action<TextBuilder>? onFalse = default)
+    public TextBuilder If(bool condition, Action<TextBuilder>? onTrue)
+    {
+        if (condition)
+        {
+            return Invoke(onTrue);
+        }
+        else
+        {
+            return this;
+        }
+    }
+
+    public TextBuilder If<T, F>(bool condition, T onTrue, F onFalse)
+    {
+        if (condition)
+        {
+            return Add<T>(onTrue);
+        }
+        else
+        {
+            return Add<F>(onFalse);
+        }
+    }
+
+    public TextBuilder If<T, F>(bool condition, T onTrue, (F Value, string? Format) onFalse)
+    {
+        if (condition)
+        {
+            return Add<T>(onTrue);
+        }
+        else
+        {
+            return Add<F>(onFalse.Value, onFalse.Format);
+        }
+    }
+
+    public TextBuilder If<T>(bool condition, T onTrue, Action<TextBuilder>? onFalse)
+    {
+        if (condition)
+        {
+            return Add<T>(onTrue);
+        }
+        else
+        {
+            return Invoke(onFalse);
+        }
+    }
+
+    public TextBuilder If<T, F>(bool condition, (T Value, string? Format) onTrue, F onFalse)
+    {
+        if (condition)
+        {
+            return Add<T>(onTrue.Value, onTrue.Format);
+        }
+        else
+        {
+            return Add<F>(onFalse);
+        }
+    }
+
+    public TextBuilder If<T, F>(bool condition, (T Value, string? Format) onTrue, (F Value, string? Format) onFalse)
+    {
+        if (condition)
+        {
+            return Add<T>(onTrue.Value, onTrue.Format);
+        }
+        else
+        {
+            return Add<F>(onFalse.Value, onFalse.Format);
+        }
+    }
+
+    public TextBuilder If<T>(bool condition, (T Value, string? Format) onTrue, Action<TextBuilder>? onFalse)
+    {
+        if (condition)
+        {
+            return Add<T>(onTrue.Value, onTrue.Format);
+        }
+        else
+        {
+            return Invoke(onFalse);
+        }
+    }
+
+    public TextBuilder If<F>(bool condition, Action<TextBuilder>? onTrue, F onFalse)
+    {
+        if (condition)
+        {
+            return Invoke(onTrue);
+        }
+        else
+        {
+            return Add<F>(onFalse);
+        }
+    }
+
+    public TextBuilder If<F>(bool condition, Action<TextBuilder>? onTrue, (F Value, string? Format) onFalse)
+    {
+        if (condition)
+        {
+            return Invoke(onTrue);
+        }
+        else
+        {
+            return Add<F>(onFalse.Value, onFalse.Format);
+        }
+    }
+
+    public TextBuilder If(bool condition, Action<TextBuilder>? onTrue, Action<TextBuilder>? onFalse)
     {
         if (condition)
         {
@@ -210,10 +314,9 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder IfNotEmpty<C, T>(C? collection,
-        Action<TextBuilder, C>? onNotEmpty = default,
+    public TextBuilder IfNotEmpty<T>(ICollection<T>? collection,
+        Action<TextBuilder, ICollection<T>>? onNotEmpty = default,
         Action<TextBuilder>? onEmpty = default)
-        where C : ICollection<T>
     {
         if (collection is not null && collection.Count > 0)
         {
@@ -227,10 +330,9 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder IfNotEmpty<C>(C? collection,
-        Action<TextBuilder, C>? onNotEmpty = default,
+    public TextBuilder IfNotEmpty(ICollection? collection,
+        Action<TextBuilder, ICollection>? onNotEmpty = default,
         Action<TextBuilder>? onEmpty = default)
-        where C : ICollection
     {
         if (collection is not null && collection.Count > 0)
         {

@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Functional;
+﻿#pragma warning disable CA1716
+
+namespace ScrubJay.Functional;
 
 public static class Option
 {
@@ -60,8 +62,8 @@ public static class Option
         option = Some(value);
         return value;
     }
-    
-    
+
+
     public static T GetOrInsert<T>(this ref Option<T> option, Func<T> valueFactory)
     {
         if (option.IsSome(out var value))

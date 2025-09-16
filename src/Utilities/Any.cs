@@ -1,43 +1,10 @@
-﻿using System.Reflection;
+﻿#if NET9_0_OR_GREATER
+using System.Reflection;
 using System.Reflection.Emit;
-
-namespace ScrubJay.Utilities;
-
-[PublicAPI]
-public static class Any
-{
-    public static string ToString<T>(T? value)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
+using ScrubJay.Text.Rendering;
 #endif
-    {
-        return Any<T>.ToString(value);
-    }
 
-    public static bool Equals<T>(T? left, T? right)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
-    {
-        return Any<T>.Equals(left, right);
-    }
-
-    public static int GetHashCode<T>(T? value)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
-    {
-        return Any<T>.GetHashCode(value);
-    }
-
-    public static int Compare<T>(T? left, T? right)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
-    {
-        return Any<T>.Compare(left, right);
-    }
-}
+namespace ScrubJay.Core.Utilities;
 
 public static class Any<T>
 #if NET9_0_OR_GREATER
@@ -45,281 +12,310 @@ public static class Any<T>
 #endif
 {
 #if NET9_0_OR_GREATER
-    private static readonly Func<T, string> _toString;
-    private static readonly Func<T?, T?, bool> _equals;
+    private static readonly Func<T, object?, bool> _equalsObject;
+    private static readonly Func<T, T?, bool> _equals;
     private static readonly Func<T, int> _getHashCode;
-    private static readonly Func<T?, T?, int> _compare;
+    private static readonly Func<T, string> _toString;
+    private static readonly Func<T, string?, IFormatProvider?, string> _format;
+    private static readonly Func<T, Type> _getType;
 
     static Any()
     {
-        _toString = CreateToString();
-        _getHashCode = CreateGetHashCode();
-        _equals = CreateEquals();
-        _compare = CreateCompare();
+        var type = typeof(T);
+        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        if (type.IsByRef || type.IsByRefLike)
+        {
+            methods = methods.Where(m => m.DeclaringType == type).ToArray();
+        }
+
+        // Equals(object) -> bool
+        // Equals(T) -> bool
+        var equalsMethods = methods
+            .Where(static method => method.Name == nameof(Equals) && method.ReturnType == typeof(bool))
+            .ToList();
+
+        var equalsObjectMethod = equalsMethods.FirstOrDefault(method =>
+        {
+            var mp = method.GetParameters();
+            return mp.Length == 1 && mp[0].ParameterType == typeof(object);
+        });
+
+        if (equalsObjectMethod is not null)
+        {
+            _equalsObject = EmitDelegate<Func<T, object?, bool>>(
+                $"{type.Render()}_Equals_Object",
+                gen => EmitLoadCall(gen, equalsObjectMethod, 1));
+        }
+        else
+        {
+            _equalsObject = static (_, _) => false;
+        }
+
+        var equalsMethod = equalsMethods.FirstOrDefault(method =>
+        {
+            var mp = method.GetParameters();
+            return mp.Length == 1 && mp[0].ParameterType == type;
+        });
+
+        if (equalsMethod is not null)
+        {
+            _equals = EmitDelegate<Func<T, T?, bool>>(
+                $"{type.Render()}_Equals",
+                gen => EmitLoadCall(gen, equalsMethod, 1));
+        }
+        else
+        {
+            _equals = static (_, _) => false;
+        }
+
+        // GetHashCode
+        var getHashCodeMethod = methods
+            .Where(static method => method.Name == nameof(GetHashCode) && method.ReturnType == typeof(int))
+            .FirstOrDefault();
+
+        if (getHashCodeMethod is not null)
+        {
+            _getHashCode = EmitDelegate<Func<T, int>>(
+                $"{type.Render()}_GetHashCode",
+                gen => EmitLoadCall(gen, getHashCodeMethod, 0));
+        }
+        else
+        {
+            _getHashCode = static _ => 0;
+        }
+
+        // ToString + ToString(format, provider)
+        var toStringMethods = methods
+            .Where(static method => method.Name == nameof(ToString) && method.ReturnType == typeof(string))
+            .ToList();
+
+        // ToString()
+        var toStringMethod = toStringMethods.FirstOrDefault(static method => method.GetParameters().Length == 0);
+
+        if (toStringMethod is not null)
+        {
+            _toString = EmitDelegate<Func<T, string>>(
+                $"{type.Render()}_ToString",
+                gen => EmitLoadCall(gen, toStringMethod, 0));
+        }
+        else
+        {
+            _toString = FallbackToString;
+        }
+
+        // ToString(string? format, IFormatProvider? provider)
+        var formatMethod = toStringMethods.FirstOrDefault(static method =>
+        {
+            var mp = method.GetParameters();
+            if (mp.Length != 2) return false;
+            if (mp[0].ParameterType != typeof(string))
+                return false;
+            if (mp[1].ParameterType != typeof(IFormatProvider))
+                return false;
+            return true;
+        });
+
+        if (formatMethod is not null)
+        {
+            _format = EmitDelegate<Func<T, string?, IFormatProvider?, string>>(
+                $"{type.Render()}_ToString_Format_Provider",
+                gen => EmitLoadCall(gen, formatMethod, 2));
+        }
+        else
+        {
+            _format = (value, _, _) => _toString(value);
+        }
+
+        // GetType
+        var getTypeMethod =
+            methods.FirstOrDefault(static method => method.Name == nameof(GetType) && method.ReturnType == typeof(Type));
+
+        if (getTypeMethod is not null)
+        {
+            _getType = EmitDelegate<Func<T, Type>>(
+                $"{type.Render()}_GetType",
+                gen => EmitLoadCall(gen, getTypeMethod, 0));
+        }
+        else
+        {
+            _getType = static _ => typeof(T);
+        }
     }
 
-    private static D EmitDelegate<D>(string name, Action<ILGenerator> emit)
+    private static D EmitDelegate<D>(string name, Action<ILGenerator> emissions)
         where D : Delegate
     {
-        var invokeMethod = typeof(D).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
-        if (invokeMethod is null)
-            throw new MissingMethodException(typeof(D).FullName, "Invoke");
+        // the invoke method of the delegate contains the 'true' signature of the delegate
+        var invokeMethod = typeof(D)
+            .GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance)
+            .ThrowIfNull();
 
-        DynamicMethod method = new DynamicMethod(
-            name,
+        DynamicMethod method = new DynamicMethod(name,
             MethodAttributes.Public | MethodAttributes.Static,
             CallingConventions.Standard,
             invokeMethod.ReturnType,
-            invokeMethod.GetParameters().ConvertAll(p => p.ParameterType),
-            typeof(Unit).Module,
+            invokeMethod.GetParameters().ConvertAll(static p => p.ParameterType),
+            typeof(Any<>).Module,
             true);
 
-        var gen = method.GetILGenerator();
-        emit(gen);
-        return method.CreateDelegate<D>();
+        emissions(method.GetILGenerator());
+        return method.CreateDelegate(typeof(D)).ThrowIfNot<D>();
     }
 
-    private static Func<T, string> CreateToString()
+    private static void EmitLoadCall(ILGenerator generator, MethodInfo method, int args)
     {
         var type = typeof(T);
 
-        MethodInfo? toStringMethod = type
-            .GetMethod("ToString",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
-        if (toStringMethod is null)
-            return (_ => type.Name);
-
-        var func = EmitDelegate<Func<T, string>>($"{typeof(T).Name}_ToString", gen =>
+        // load value types as a ref
+        if (type.IsValueType || type.IsByRef || type.IsByRefLike)
         {
-            gen.Emit(OpCodes.Ldarg_0);
-            if (type.IsByRef || type.IsByRefLike)
-            {
-                gen.Emit(OpCodes.Constrained, typeof(T));
-                gen.Emit(OpCodes.Callvirt, toStringMethod);
-            }
-            else if (type.IsValueType)
-            {
-                //gen.Emit(OpCodes.Constrained, typeof(T));
-                //gen.Emit(OpCodes.Callvirt, toStringMethod);
-                gen.Emit(OpCodes.Call, toStringMethod);
-            }
-            else if (type.IsClass || type.IsInterface)
-            {
-                gen.Emit(OpCodes.Ldind_Ref);
-                gen.Emit(OpCodes.Callvirt, toStringMethod);
-            }
-            else
-            {
-                Debugger.Break();
-                throw new NotImplementedException();
-            }
-
-            gen.Emit(OpCodes.Ret);
-        });
-
-        return func;
-    }
-
-    private static Func<T, int> CreateGetHashCode()
-    {
-        var type = typeof(T);
-
-        MethodInfo? getHashCodeMethod = type
-            .GetMethod("GetHashCode",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
-        if (getHashCodeMethod is null)
-            return (_ => 0);
-
-        var func = EmitDelegate<Func<T, int>>($"{typeof(T).Name}_GetHashCode", gen =>
+            generator.Emit(OpCodes.Ldarga, 0);
+        }
+        else
         {
-            gen.Emit(OpCodes.Ldarg_0);
-            if (type.IsByRef || type.IsByRefLike)
-            {
-                gen.Emit(OpCodes.Constrained, typeof(T));
-                gen.Emit(OpCodes.Callvirt, getHashCodeMethod);
-            }
-            else if (type.IsValueType)
-            {
-                //gen.Emit(OpCodes.Constrained, typeof(T));
-                //gen.Emit(OpCodes.Callvirt, toStringMethod);
-                gen.Emit(OpCodes.Call, getHashCodeMethod);
-            }
-            else if (type.IsClass || type.IsInterface)
-            {
-                gen.Emit(OpCodes.Ldind_Ref);
-                gen.Emit(OpCodes.Callvirt, getHashCodeMethod);
-            }
-            else
-            {
-                Debugger.Break();
-                throw new NotImplementedException();
-            }
+            generator.Emit(OpCodes.Ldarg_0);
+        }
 
-            gen.Emit(OpCodes.Ret);
-        });
+        var mp = method.GetParameters();
+        var mpc = mp.Length;
+        var mps = method.IsStatic;
 
-        return func;
-    }
+        if (args != mpc)
+            Debugger.Break();
 
-    private static Func<T?, T?, bool> CreateEquals()
-    {
-        var type = typeof(T);
-
-        var equalsMethod = type
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Where(static method => method.Name == "Equals")
-            .Where(static method => method.ReturnType == typeof(bool))
-            .Where(method =>
-            {
-                var parameters = method.GetParameters();
-                if (parameters.Length != 1)
-                    return false;
-                if (parameters[0].ParameterType != typeof(T))
-                    return false;
-                return true;
-            })
-            .OneOrDefault();
-
-        if (equalsMethod is null)
+        // load any additional args
+        for (int a = 1; a <= args; a++)
         {
+            generator.Emit(OpCodes.Ldarg, a);
+        }
+
+        // special call handling for special types
+        if (type.IsByRef || type.IsByRefLike)
+        {
+            generator.Emit(OpCodes.Constrained, type);
+        }
+        else if (type.IsValueType)
+        {
+            generator.Emit(OpCodes.Constrained, type);
+        }
+        else if (type.IsClass || type.IsInterface)
+        {
+            // generator.Emit(OpCodes.Ldind_Ref);
+        }
+        else
+        {
+            Debugger.Break();
             throw new NotImplementedException();
         }
 
-        var func = EmitDelegate<Func<T?, T?, bool>>($"{typeof(T).Name}_Equals", gen =>
-        {
-            gen.Emit(OpCodes.Ldarg_0);
-            // might have to deref
-            if (type.IsClass || type.IsInterface)
-                gen.Emit(OpCodes.Ldind_Ref, type);
-
-            gen.Emit(OpCodes.Ldarg_1);
-            if (type.IsByRef || type.IsByRefLike)
-            {
-                gen.Emit(OpCodes.Constrained, typeof(T));
-                gen.Emit(OpCodes.Callvirt, equalsMethod);
-            }
-            else if (type.IsValueType)
-            {
-                //gen.Emit(OpCodes.Constrained, typeof(T));
-                //gen.Emit(OpCodes.Callvirt, toStringMethod);
-                gen.Emit(OpCodes.Call, equalsMethod);
-            }
-            else if (type.IsClass || type.IsInterface)
-            {
-                gen.Emit(OpCodes.Callvirt, equalsMethod);
-            }
-            else
-            {
-                Debugger.Break();
-                throw new NotImplementedException();
-            }
-
-            gen.Emit(OpCodes.Ret);
-        });
-
-        return func;
+        // call the method
+        generator.Emit(OpCodes.Callvirt, method);
+        // return
+        generator.Emit(OpCodes.Ret);
     }
 
-    private static Func<T?, T?, int> CreateCompare()
+    private static string FallbackToString(T value)
     {
         var type = typeof(T);
-
-        var compareToMethod = type
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Where(static method => method.Name == "CompareTo")
-            .Where(static method => method.ReturnType == typeof(int))
-            .Where(method =>
-            {
-                var parameters = method.GetParameters();
-                if (parameters.Length != 1)
-                    return false;
-                if (parameters[0].ParameterType != typeof(T))
-                    return false;
-                return true;
-            })
-            .OneOrDefault();
-
-        if (compareToMethod is null)
+        if (type.IsValueType || type.IsByRef || type.IsByRefLike)
         {
-            throw new NotImplementedException();
+            var sz = Notsafe.SizeOf<T>();
+            Span<byte> buffer = stackalloc byte[sz];
+            Notsafe.Bytes.Write(value, buffer);
+            string str =  Convert.ToHexString(buffer);
+            Debugger.Break();
+            return str;
         }
-
-        var func = EmitDelegate<Func<T?, T?, int>>($"{typeof(T).Name}_CompareTo", gen =>
+        else
         {
-            gen.Emit(OpCodes.Ldarg_0);
-            // might have to deref
-            if (type.IsClass || type.IsInterface)
-                gen.Emit(OpCodes.Ldind_Ref, type);
-
-            gen.Emit(OpCodes.Ldarg_1);
-            if (type.IsByRef || type.IsByRefLike)
+            unsafe
             {
-                gen.Emit(OpCodes.Constrained, typeof(T));
-                gen.Emit(OpCodes.Callvirt, compareToMethod);
-            }
-            else if (type.IsValueType)
-            {
-                //gen.Emit(OpCodes.Constrained, typeof(T));
-                //gen.Emit(OpCodes.Callvirt, toStringMethod);
-                gen.Emit(OpCodes.Call, compareToMethod);
-            }
-            else if (type.IsClass || type.IsInterface)
-            {
-                gen.Emit(OpCodes.Callvirt, compareToMethod);
-            }
-            else
-            {
+                IntPtr ptr = new(Notsafe.InAsVoidPtr(in value));
+                string str = ptr.ToString();
                 Debugger.Break();
-                throw new NotImplementedException();
+                return str;
             }
-
-            gen.Emit(OpCodes.Ret);
-        });
-
-        return func;
+        }
     }
-
-
 #endif
 
-    public static string ToString(T? value)
+
+    public static bool Equals(T? value, object? obj)
     {
         if (value is null)
-            return string.Empty;
-
-#if NET9_0_OR_GREATER
-        return _toString(value);
+            return obj is null;
+#if !NET9_0_OR_GREATER
+        return value.Equals(obj);
 #else
-        return value.ToString() ?? string.Empty;
+        return _equalsObject(value, obj);
 #endif
     }
 
-    public static bool Equals(T? left, T? right)
+    public static bool Equals(T? value, T? other)
     {
-#if NET9_0_OR_GREATER
-        return _equals(left, right);
+        if (value is null)
+            return other is null;
+#if !NET9_0_OR_GREATER
+        if (value is IEquatable<T>)
+        {
+            return ((IEquatable<T>)value).Equals(other!);
+        }
+        else
+        {
+            return value.Equals(other);
+        }
 #else
-        return EqualityComparer<T>.Default.Equals(left!, right!);
+        return _equals(value, other);
 #endif
     }
 
     public static int GetHashCode(T? value)
     {
         if (value is null)
-            return 0;
-#if NET9_0_OR_GREATER
-        return _getHashCode(value);
-#else
+            return Hasher.NullHash;
+
+#if !NET9_0_OR_GREATER
         return value.GetHashCode();
+#else
+        return _getHashCode(value);
 #endif
     }
 
-    public static int Compare(T? left, T? right)
+    public static string ToString(T? value)
     {
-#if NET9_0_OR_GREATER
-        return _compare(left, right);
+        if (value is null)
+            return string.Empty;
+
+#if !NET9_0_OR_GREATER
+        return value.ToString() ?? string.Empty;
 #else
-        return Comparer<T>.Default.Compare(left!, right!);
+        return _toString(value);
+#endif
+    }
+
+    public static string ToString(T? value, string? format, IFormatProvider? provider = default)
+    {
+        if (value is null)
+            return string.Empty;
+
+#if !NET9_0_OR_GREATER
+        return value.ToString() ?? string.Empty;
+#else
+        return _format(value, format, provider);
+#endif
+    }
+
+    [return: NotNullIfNotNull(nameof(value))]
+    public static Type? GetType(T? value)
+    {
+        if (value is null)
+            return null;
+
+#if !NET9_0_OR_GREATER
+        return value.GetType();
+#else
+        return _getType(value);
 #endif
     }
 }

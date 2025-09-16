@@ -2,9 +2,11 @@
 
 public partial class TextBuilder
 {
-    #region Wrap
 
 #region single
+
+    public TextBuilder Wrap<T>(char wrap, T? value)
+        => Append(wrap).Add<T>(value).Append(wrap);
 
     public TextBuilder Wrap(char wrapChar, Action<TextBuilder>? buildText)
         => Append(wrapChar).Invoke(buildText).Append(wrapChar);
@@ -141,5 +143,5 @@ public partial class TextBuilder
 
 #endregion
 
-#endregion
+
 }

@@ -520,7 +520,6 @@ public readonly struct Result<T, E> :
 
         charsWritten = 0;
         return false;
-        ;
     }
 
     public override string ToString()

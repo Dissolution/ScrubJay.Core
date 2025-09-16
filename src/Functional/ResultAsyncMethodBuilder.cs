@@ -1,10 +1,18 @@
-﻿using System.Diagnostics;
-
-namespace ScrubJay.Functional;
+﻿namespace ScrubJay.Functional;
 
 [PublicAPI]
-public struct ResultAsyncMethodBuilder<T>
+public struct ResultAsyncMethodBuilder<T> :
+#if NET7_0_OR_GREATER
+    IEqualityOperators<ResultAsyncMethodBuilder<T>, ResultAsyncMethodBuilder<T>, bool>,
+#endif
+    IEquatable<ResultAsyncMethodBuilder<T>>
 {
+    public static bool operator ==(ResultAsyncMethodBuilder<T> left, ResultAsyncMethodBuilder<T> right)
+        => left.Equals(right);
+
+    public static bool operator !=(ResultAsyncMethodBuilder<T> left, ResultAsyncMethodBuilder<T> right)
+        => !left.Equals(right);
+
     public static ResultAsyncMethodBuilder<T> Create() => new();
 
     private IAsyncStateMachine? _stateMachine;
@@ -23,7 +31,9 @@ public struct ResultAsyncMethodBuilder<T>
             else
             {
                 Debugger.Break();
+#pragma warning disable CA1065
                 throw new NotImplementedException();
+#pragma warning restore CA1065
             }
         }
     }
@@ -103,5 +113,34 @@ public struct ResultAsyncMethodBuilder<T>
 
         Action continuation = _stateMachine.MoveNext;
         awaiter.UnsafeOnCompleted(continuation);
+    }
+
+    public bool Equals(ResultAsyncMethodBuilder<T> other)
+    {
+        return ReferenceEquals(_stateMachine, other._stateMachine) &&
+               _result == other._result;
+    }
+
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        return obj is ResultAsyncMethodBuilder<T> asyncMethodBuilder &&
+               Equals(asyncMethodBuilder);
+    }
+
+    public override int GetHashCode()
+    {
+        return Hasher.HashMany(_stateMachine, _result);
+    }
+
+    public override string ToString()
+    {
+        if (_result == default(Result<T>))
+        {
+            return "Result: Unknown";
+        }
+        else
+        {
+            return _result.ToString();
+        }
     }
 }

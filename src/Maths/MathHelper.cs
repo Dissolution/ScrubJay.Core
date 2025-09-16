@@ -1,8 +1,6 @@
 ﻿// BigInt is nested on purpose
 #pragma warning disable CA1034, IDE0060
 
-using static InlineIL.IL;
-
 namespace ScrubJay.Maths;
 
 [PublicAPI]

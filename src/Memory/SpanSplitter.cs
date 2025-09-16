@@ -23,7 +23,7 @@ public enum SpanSplitterOptions
 /// </remarks>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public ref struct SpanSplitter<T> // : IEnumerable<ReadOnlySpan<T>>
+public ref struct SpanSplitter<T>
     where T : IEquatable<T> // IndexOf requires this
 {
     public static SpanSplitter<T> Split(ReadOnlySpan<T> span, T separator, SpanSplitterOptions options = SpanSplitterOptions.None)

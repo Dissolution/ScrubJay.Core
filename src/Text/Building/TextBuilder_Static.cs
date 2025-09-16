@@ -12,30 +12,35 @@ public partial class TextBuilder
         get => new();
     }
 
-    /// <summary>
-    /// Builds a <see cref="string"/> using a temporary <see cref="TextBuilder"/> instance
-    /// </summary>
-    /// <param name="buildText">
-    /// The <see cref="Action{T}"/> to invoke on a temporary <see cref="TextBuilder"/> instance
-    /// </param>
-    /// <returns>
-    /// The <see cref="string"/> produced by calling <see cref="TextBuilder.ToString"/> on the temporary instance before disposing it
-    /// </returns>
-    public static string Build(Action<TextBuilder>? buildText)
+    public static string Build(Action<TextBuilder> buildText)
     {
-        if (buildText is null)
-            return string.Empty;
+        return New.Invoke(buildText).ToStringAndDispose();
+    }
+
+    public static string Build<R>(Func<TextBuilder, R> buildText)
+#if NET9_0_OR_GREATER
+        where R : allows ref struct
+#endif
+    {
+        return New.Invoke(buildText).ToStringAndDispose();
+    }
+
+    public static string Build<S>(S state, Action<TextBuilder, S> buildText)
+#if NET9_0_OR_GREATER
+        where S : allows ref struct
+#endif
+    {
         using var builder = new TextBuilder();
-        buildText(builder);
+        buildText(builder, state);
         return builder.ToString();
     }
 
-    public static string Build<S>(S state, Action<TextBuilder, S>? buildStatefulText)
+    public static string Build<S, R>(S state, Func<TextBuilder, S, R>? buildStatefulText)
     {
         if (buildStatefulText is null)
             return string.Empty;
         using var builder = new TextBuilder();
-        buildStatefulText(builder, state);
+        _ = buildStatefulText(builder, state);
         return builder.ToString();
     }
 
@@ -43,5 +48,4 @@ public partial class TextBuilder
     {
         return interpolatedText.ToStringAndDispose();
     }
-
 }

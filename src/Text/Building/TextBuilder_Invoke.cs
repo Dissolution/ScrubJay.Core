@@ -28,6 +28,10 @@ partial class TextBuilder
     }
 
     public TextBuilder Invoke<R>(Func<TextBuilder, R>? buildText)
+#if NET9_0_OR_GREATER
+        where R : allows ref struct
+#endif
+
     {
         if (buildText is not null)
         {
@@ -37,15 +41,26 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder Invoke<R>(Func<TextBuilder, R> buildText, out R result)
+    public TextBuilder Invoke<R>(Func<TextBuilder, R>? buildText, [MaybeNull] out R result)
+#if NET9_0_OR_GREATER
+        where R : allows ref struct
+#endif
     {
-        result = buildText.Invoke(this);
+        if (buildText is not null)
+        {
+
+            result = buildText.Invoke(this);
+            return this;
+        }
+
+        result = default;
         return this;
     }
 
     public TextBuilder Invoke<S, R>(S state, Func<TextBuilder, S, R>? buildText)
 #if NET9_0_OR_GREATER
         where S : allows ref struct
+        where R : allows ref struct
 #endif
     {
         if (buildText is not null)
@@ -56,14 +71,39 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder Invoke<S, R>(S state, Func<TextBuilder, S, R> buildText, out R result)
+    public TextBuilder Invoke<S, R>(S state, Func<TextBuilder, S, R>? buildText, [MaybeNull] out R result)
 #if NET9_0_OR_GREATER
         where S : allows ref struct
+        where R : allows ref struct
 #endif
     {
-        result = buildText.Invoke(this, state);
+        if (buildText is not null)
+        {
+
+            result = buildText.Invoke(this, state);
+            return this;
+        }
+
+        result = default;
         return this;
     }
 
 #endregion
+
+    public TextBuilder Measure(Action<TextBuilder>? buildText, out Span<char> written)
+    {
+        if (buildText is not null)
+        {
+            int start = _position;
+            buildText(this);
+            int end = _position;
+            written = _chars.AsSpan(start, end - start);
+        }
+        else
+        {
+            written = default;
+        }
+
+        return this;
+    }
 }

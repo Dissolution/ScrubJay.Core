@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Functional.IMPL;
+﻿#pragma warning disable CA1716
+
+namespace ScrubJay.Functional.IMPL;
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
@@ -21,6 +23,6 @@ public readonly ref struct Error<E>
 
     public override string ToString()
     {
-        return $"Error<{typeof(E)}>({Any.ToString(Value)})";
+        return TextBuilder.Build($"Error<{typeof(E):@}>({Value})");
     }
 }

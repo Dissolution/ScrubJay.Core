@@ -9,16 +9,23 @@ public partial class TextBuilder
     public TextBuilder NewLine()
     {
         if (_whitespace is null)
+        {
             return Append(Environment.NewLine);
-
-        _whitespace.WriteNewLine(this);
-        return this;
+        }
+        else
+        {
+            _whitespace.WriteFullNewLineTo(this);
+            return this;
+        }
     }
 
     public TextBuilder NewLines(int count)
     {
         if (_whitespace is null)
+        {
             return RepeatAppend(count, Environment.NewLine);
+        }
+
         for (int i = 0; i < count; i++)
         {
             NewLine();
@@ -40,26 +47,24 @@ public partial class TextBuilder
 
     public TextBuilder Dedent()
     {
-        _whitespace ??= new Whitespace();
+        if (_whitespace is null)
+        {
+            throw new InvalidOperationException();
+        }
+
         _whitespace.RemoveIndent();
+
         return this;
     }
 
     public TextBuilder Indented(Action<TextBuilder>? buildText)
     {
-        if (buildText is not null)
-        {
-            _whitespace ??= new Whitespace();
-            _whitespace.AddIndent();
-            buildText(this);
-            _whitespace.RemoveIndent();
-        }
-
-        return this;
+        return Indent().Invoke(buildText).Dedent();
     }
 
 #endregion
 
+    /*
 #region Blocks
 
     public sealed record class BlockSpec
@@ -230,4 +235,5 @@ public partial class TextBuilder
     }
 
 #endregion
+    */
 }

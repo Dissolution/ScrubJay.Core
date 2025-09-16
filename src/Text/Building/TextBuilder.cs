@@ -7,7 +7,13 @@ namespace ScrubJay.Text;
 
 [PublicAPI]
 [MustDisposeResource(true)]
-public sealed partial class TextBuilder : IDisposable
+public sealed partial class TextBuilder :
+#if NET6_0_OR_GREATER
+    ISpanFormattable,
+#endif
+    IFormattable,
+    IRenderable,
+    IDisposable
 {
     // character array rented from ArrayPool<char>.Shared
     private char[] _chars;
@@ -33,12 +39,22 @@ public sealed partial class TextBuilder : IDisposable
         get => _chars.AsSpan(_position);
     }
 
+    /// <summary>
+    /// Gets the current capacity for this <see cref="TextBuilder"/> to store characters;<br/>
+    /// this will automatically be increased as needed.
+    /// </summary>
     internal int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _chars.Length;
     }
 
+    /// <summary>
+    /// Gets a <c>ref</c> to the written <see cref="char"/> at <paramref name="index"/>
+    /// </summary>
+    /// <param name="index">
+    /// The <see cref="Index"/> of the character to reference
+    /// </param>
     public ref char this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -49,6 +65,15 @@ public sealed partial class TextBuilder : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets a <see cref="Span{T}">Span&lt;char&gt;</see> over the <paramref name="range"/> of written characters
+    /// </summary>
+    /// <param name="range">
+    /// The <see cref="Range"/> of the characters to reference
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown if the given <paramref name="range"/> is invalid
+    /// </exception>
     public Span<char> this[Range range]
     {
         get
@@ -97,40 +122,17 @@ public sealed partial class TextBuilder : IDisposable
     [HandlesResourceDisposal]
     ~TextBuilder() => Dispose();
 
-#region Getters & Setters
-
     public Option<char> GetAt(Index index)
         => Validate
             .Index(index, _position)
             .Select(i => _chars[i])
             .AsOption();
 
-    public RefOption<Span<char>> GetAt(Range range)
-    {
-        if (!Validate.Range(range, _position).IsOk(out var ol))
-            return None;
-        var span = _chars.AsSpan(ol.Offset, ol.Length);
-        return RefOption<Span<char>>.Some(span);
-    }
-
     public Option<char> SetAt(Index index, char ch)
     {
         return Validate.Index(index, _position)
             .Select(i => _chars[i] = ch)
             .AsOption();
-    }
-
-#endregion
-
-
-    public Result<int> TryCopyTo(Span<char> destination)
-    {
-        int len = _position;
-        if (len > destination.Length)
-            return new ArgumentException($"{len} characters will not fit in a span of capacity {destination.Length}",
-                nameof(destination));
-        Notsafe.Text.CopyBlock(_chars, destination, len);
-        return Ok(len);
     }
 
 
@@ -172,21 +174,13 @@ public sealed partial class TextBuilder : IDisposable
 
     public char[] ToArray() => _chars.Slice(0, _position);
 
-    public TextBuilder Measure(Action<TextBuilder>? buildText, out Span<char> written)
+    public Result<int> TryCopyTo(Span<char> destination)
     {
-        if (buildText is not null)
-        {
-            int start = _position;
-            buildText(this);
-            int end = _position;
-            written = _chars.AsSpan(start, end - start);
-        }
-        else
-        {
-            written = [];
-        }
-
-        return this;
+        int len = _position;
+        if (Validate.CanCopyTo(destination, len).IsError(out var error))
+            return error;
+        Notsafe.Text.CopyBlock(_chars, destination, len);
+        return Ok(len);
     }
 
     public override bool Equals(object? obj)
@@ -208,7 +202,6 @@ public sealed partial class TextBuilder : IDisposable
     [HandlesResourceDisposal]
     public void Dispose()
     {
-        _whitespace?.Dispose();
         _position = 0;
         char[] toReturn = Reference.Exchange(ref _chars, []);
         if (toReturn.Length > 0)
@@ -217,6 +210,36 @@ public sealed partial class TextBuilder : IDisposable
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    public TextBuilder RenderTo(TextBuilder builder)
+    {
+        return builder.Append(Written);
+    }
+
+    public bool TryFormat(
+        Span<char> destination,
+        out int charsWritten,
+        text format = default,
+        IFormatProvider? provider = default)
+    {
+        int len = _position;
+        if (len <= destination.Length)
+        {
+            Notsafe.Text.CopyBlock(_chars, destination, len);
+            charsWritten = len;
+            return true;
+        }
+        else
+        {
+            charsWritten = 0;
+            return false;
+        }
+    }
+
+    public string ToString(string? format, IFormatProvider? provider = null)
+    {
+        return Written.AsString();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

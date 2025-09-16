@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0060, CS8500, CA1045, CA1034, CA1715, CA1724
+﻿#pragma warning disable IDE0060, CS8500, CA1045, CA1034, CA1715, CA1724, CS9080
 // ReSharper disable InconsistentNaming
 
 using InlineIL;
@@ -265,6 +265,9 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static U ReadImpl<U>(ref readonly byte source)
             // where U : unmanaged
+#if NET9_0_OR_GREATER
+            where U : allows ref struct
+#endif
         {
             Emit.Ldarg(nameof(source));
             Emit.Unaligned(0x1);
@@ -275,6 +278,9 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static U Read<U>(scoped ReadOnlySpan<byte> bytes)
             where U : unmanaged
+#if NET9_0_OR_GREATER
+            , allows ref struct
+#endif
         {
             return ReadImpl<U>(in bytes.GetPinnableReference());
         }
@@ -282,6 +288,9 @@ public static unsafe class Notsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static U Read<U>(scoped Span<byte> bytes)
             where U : unmanaged
+#if NET9_0_OR_GREATER
+            , allows ref struct
+#endif
         {
             return ReadImpl<U>(in bytes.GetPinnableReference());
         }
@@ -298,6 +307,33 @@ public static unsafe class Notsafe
             where E : struct, Enum
         {
             return ReadImpl<E>(in bytes.GetPinnableReference());
+        }
+
+#endregion
+
+#region Write
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void WriteImpl<U>(in U source, ref byte dest)
+            // where U : unmanaged
+#if NET9_0_OR_GREATER
+            where U : allows ref struct
+#endif
+        {
+            Emit.Ldarg(nameof(dest));
+            Emit.Ldarg(nameof(source));
+            Emit.Unaligned(0x1);
+            Emit.Stobj<U>();
+            Emit.Ret();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Write<U>(in U source, Span<byte> destination)
+#if NET9_0_OR_GREATER
+            where U : allows ref struct
+#endif
+        {
+            WriteImpl<U>(in source, ref destination.GetPinnableReference());
         }
 
 #endregion

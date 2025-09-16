@@ -216,7 +216,7 @@ public class PooledStack<T> : PooledArray<T>,
             return new InvalidOperationException($"Cannot Peek({peekCount}): There are only {size} items");
 
         var peeked = _array.Slice(new Range(start, size));
-        peeked.Reverse();
+        Array.Reverse(peeked);
         return Ok(peeked);
     }
 
@@ -246,7 +246,7 @@ public class PooledStack<T> : PooledArray<T>,
     {
         _version++;
         T[] popped = _array.Slice(0, _size);
-        popped.Reverse();
+        Array.Reverse(popped);
         _size = 0;
         return popped;
     }
@@ -275,7 +275,7 @@ public class PooledStack<T> : PooledArray<T>,
         _version++;
         _size = start;
         var popped = _array.Slice(new Range(start, size));
-        popped.Reverse();
+        Array.Reverse(popped);
         return Ok(popped);
     }
 

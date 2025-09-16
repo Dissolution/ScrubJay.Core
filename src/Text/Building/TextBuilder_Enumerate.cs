@@ -2,7 +2,7 @@
 
 partial class TextBuilder
 {
-    #region Enumerate
+#region Enumerate
 
     public TextBuilder Enumerate<T>(scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
     {
@@ -56,9 +56,10 @@ partial class TextBuilder
         return this;
     }
 
-    #endregion
+#endregion
 
-    #region Enumerate w/Index
+#region Enumerate w/Index
+
     public TextBuilder Enumerate<T>(scoped ReadOnlySpan<T> values, Action<TextBuilder, T, int>? build)
     {
         if (!values.IsEmpty && build is not null)
@@ -89,11 +90,21 @@ partial class TextBuilder
     {
         if (values is not null && build is not null)
         {
-            int i = 0;
-            foreach (var value in values)
+            if (values is IList<T> list)
             {
-                build(this, value, i);
-                i++;
+                for (var i = 0; i < list.Count; i++)
+                {
+                    build(this, list[i], i);
+                }
+            }
+            else
+            {
+                int i = 0;
+                foreach (var value in values)
+                {
+                    build(this, value, i);
+                    i++;
+                }
             }
         }
 
@@ -115,5 +126,5 @@ partial class TextBuilder
         return this;
     }
 
-    #endregion
+#endregion
 }

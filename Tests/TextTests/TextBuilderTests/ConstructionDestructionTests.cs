@@ -9,11 +9,11 @@ public class ConstructionDestructionTests
     {
         TextBuilder builder = new TextBuilder();
         Assert.NotNull(builder);
-        Assert.Empty(builder);
+        Assert.Equal(0, builder.Length);
 
         builder.Dispose();
         Assert.NotNull(builder);
-        Assert.Empty(builder);
+        Assert.Equal(0, builder.Length);
     }
 
     [Fact]
@@ -21,11 +21,11 @@ public class ConstructionDestructionTests
     {
         TextBuilder builder = TextBuilder.New;
         Assert.NotNull(builder);
-        Assert.Empty(builder);
+        Assert.Equal(0, builder.Length);
 
         builder.Dispose();
         Assert.NotNull(builder);
-        Assert.Empty(builder);
+        Assert.Equal(0, builder.Length);
     }
 
     // [Theory]

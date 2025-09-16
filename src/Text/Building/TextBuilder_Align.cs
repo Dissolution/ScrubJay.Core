@@ -2,8 +2,6 @@
 
 public partial class TextBuilder
 {
-#region Align
-
     public TextBuilder Align(
         char ch,
         int width,
@@ -50,7 +48,9 @@ public partial class TextBuilder
         {
             // if there is only one char available, we don't even show that, only an indicator
             if (width == 1)
+            {
                 return Append('…');
+            }
 
             // right align, write the ellipsis and then the trailing text
             if (alignment == Alignment.Right)
@@ -67,7 +67,10 @@ public partial class TextBuilder
             // center alignment requires two ellipsis
             Debug.Assert(alignment.HasFlags(Alignment.Center));
             if (width == 2)
+            {
+                // as above, only two available we only show indicator
                 return Append("……");
+            }
 
             // get the center part of the text
             width -= 2;
@@ -378,6 +381,4 @@ public partial class TextBuilder
             .Repeat(post, paddingChar);
         */
     }
-
-#endregion
 }

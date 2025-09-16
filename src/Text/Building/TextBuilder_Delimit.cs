@@ -2,6 +2,16 @@
 
 namespace ScrubJay.Text;
 
+[PublicAPI]
+public enum Delimiter
+{
+    None = 0,
+    Comma,
+    Space,
+    CommaSpace,
+    NewLine,
+}
+
 partial class TextBuilder
 {
     private const char COMMA = ',';
