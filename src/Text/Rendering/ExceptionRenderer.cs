@@ -45,8 +45,8 @@ public sealed class ExceptionRenderer : Renderer<Exception>
             .IfNotEmpty(helpLink,
                 static (tb, hl) => tb
                     .AppendLine($"HelpLink: {hl}"))
-            .IfNotEmpty(exception.Data,
-                static (tb, data) => tb
+            .If(exception.Data, static data => data.Count > 0,
+                static (tb,data) => tb
                     .Append($"Data x{data.Count}")
                     .Indented(t => t
                         .NewLine()

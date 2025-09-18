@@ -5,14 +5,14 @@ internal partial class Whitespace
     private static string _defaultNewLine = Environment.NewLine;
     private static string _defaultIndent = "    "; // 4 spaces
 
-    [NotNull, AllowNull]
+    [AllowNull]
     public static string DefaultNewLine
     {
         get => _defaultNewLine;
         set => _defaultNewLine = value ?? Environment.NewLine;
     }
 
-    [NotNull, AllowNull]
+    [AllowNull]
     public static string DefaultIndent
     {
         get => _defaultIndent;
@@ -30,14 +30,14 @@ internal sealed partial class Whitespace
     private string _indent = _defaultIndent;
     private readonly List<string> _indents = [];
 
-    [NotNull, AllowNull]
+    [AllowNull]
     public string NewLine
     {
         get => _newLine;
         set => _newLine = value ?? _defaultNewLine;
     }
 
-    [NotNull, AllowNull]
+    [AllowNull]
     public string Indent
     {
         get => _indent;

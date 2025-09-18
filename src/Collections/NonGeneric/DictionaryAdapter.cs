@@ -150,7 +150,7 @@ public sealed class DictionaryAdapter<K, V> :
             var values = UntypedValues;
             foreach (object? value in values)
             {
-                array[arrayIndex++] = ObjectToValue(value)!;
+                array[arrayIndex++] = ObjectToValue(value);
             }
         }
 
@@ -171,7 +171,7 @@ public sealed class DictionaryAdapter<K, V> :
             var e = UntypedValues.GetEnumerator();
             while (e.MoveNext())
             {
-                V value = ObjectToValue(e.Current)!;
+                V value = ObjectToValue(e.Current);
                 yield return value;
             }
             e.Dispose();

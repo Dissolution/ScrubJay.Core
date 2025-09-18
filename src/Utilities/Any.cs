@@ -1,10 +1,51 @@
 ﻿#if NET9_0_OR_GREATER
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 using ScrubJay.Text.Rendering;
 #endif
 
 namespace ScrubJay.Core.Utilities;
+
+public static class Any
+{
+    public static bool Equals<T>(T? value, object? obj)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => Any<T>.Equals(value, obj);
+
+    public static bool Equals<T>(T? value, T? other)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => Any<T>.Equals(value, other);
+
+    public static int GetHashCode<T>(T? value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => Any<T>.GetHashCode(value);
+
+    public static string ToString<T>(T? value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => Any<T>.ToString(value);
+
+    public static string Format<T>(T? value, string? format = null, IFormatProvider? provider = null)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => Any<T>.ToString(value, format, provider);
+
+    [return: NotNullIfNotNull(nameof(value))]
+    public static Type? GetType<T>(T? value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => Any<T>.GetType(value);
+}
 
 public static class Any<T>
 #if NET9_0_OR_GREATER
@@ -24,6 +65,9 @@ public static class Any<T>
         var type = typeof(T);
         var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
+        // ByRef and ByRefLike indicate things like Ref Structs, which cannot have the object methods (tostring, equals, gethashcode)
+        // called upon them as they cannot be boxed
+        // So we must filter the methods down to only one that can be called on the exact instance.
         if (type.IsByRef || type.IsByRefLike)
         {
             methods = methods.Where(m => m.DeclaringType == type).ToArray();
@@ -179,7 +223,6 @@ public static class Any<T>
 
         var mp = method.GetParameters();
         var mpc = mp.Length;
-        var mps = method.IsStatic;
 
         if (args != mpc)
             Debugger.Break();
@@ -223,7 +266,9 @@ public static class Any<T>
             var sz = Notsafe.SizeOf<T>();
             Span<byte> buffer = stackalloc byte[sz];
             Notsafe.Bytes.Write(value, buffer);
-            string str =  Convert.ToHexString(buffer);
+            string str = Convert.ToHexString(buffer);
+            var utf8 = Encoding.UTF8.GetString(buffer);
+            var ascii = Encoding.ASCII.GetString(buffer);
             Debugger.Break();
             return str;
         }

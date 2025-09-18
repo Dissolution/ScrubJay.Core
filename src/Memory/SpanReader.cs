@@ -104,6 +104,33 @@ public ref struct SpanReader<T>
     }
 #endif
 
+    public Option<T[]> TryTakeToArray(int count)
+    {
+        if (count <= 0)
+            return Some<T[]>([]);
+
+        if (_position + count <= _spanLength)
+        {
+            var taken = _span.Slice(_position, count).ToArray();
+            _position += count;
+            return Some(taken);
+        }
+
+        return None;
+    }
+
+    public T[] TakeToArray(int count)
+    {
+        Throw.IfLessThan(count, 0);
+        if (_position + count <= _spanLength)
+        {
+            var taken = _span.Slice(_position, count).ToArray();
+            _position += count;
+            return taken;
+        }
+
+        throw GetEx();
+    }
 
     public ReadOnlySpan<T> Take(int count)
     {
@@ -132,6 +159,18 @@ public ref struct SpanReader<T>
         }
 
         throw GetEx();
+    }
+
+    public bool TryTakeInto(Span<T> buffer)
+    {
+        if (_position + buffer.Length <= _spanLength)
+        {
+            _span.Slice(_position, buffer.Length).CopyTo(buffer);
+            _position += buffer.Length;
+            return true;
+        }
+
+        return false;
     }
 
 #endregion
@@ -321,10 +360,10 @@ public ref struct SpanReader<T>
 #endregion
 
 #endregion
+#region Peek!
 
-#region Peek
 
-#region (Try)Peek
+#region Peek / Try / Into
 
     public readonly Option<T> TryPeek()
     {
@@ -361,6 +400,53 @@ public ref struct SpanReader<T>
 
         throw GetEx();
     }
+
+
+    public readonly Option<T[]> TryPeekToArray(int count)
+    {
+        if (count <= 0)
+            return Some<T[]>([]);
+
+        if (_position + count <= _spanLength)
+            return Some(_span.Slice(_position, count).ToArray());
+
+        return None;
+    }
+
+    public readonly T[] PeekToArray(int count)
+    {
+        Throw.IfLessThan(count, 0);
+        if (_position + count <= _spanLength)
+            return _span.Slice(_position, count).ToArray();
+
+        throw GetEx();
+    }
+
+
+    public readonly bool TryPeekInto(Span<T> destination)
+    {
+        int count = destination.Length;
+        if (_position + count <= _spanLength)
+        {
+            _span.Slice(_position, count).CopyTo(destination);
+            return true;
+        }
+
+        return false;
+    }
+
+    public readonly void PeekInto(Span<T> destination)
+    {
+        int count = destination.Length;
+        if (_position + count <= _spanLength)
+        {
+            _span.Slice(_position, count).CopyTo(destination);
+            return;
+        }
+
+        throw GetEx();
+    }
+
 
 #endregion
 
@@ -536,7 +622,7 @@ public ref struct SpanReader<T>
 
 #endregion
 
-#endregion
+#endregion /Peek!
 
 #region Skip
 

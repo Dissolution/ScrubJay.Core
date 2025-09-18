@@ -1,6 +1,8 @@
 // ReSharper disable RedundantUsingDirective
 // ReSharper disable UnusedVariable
 
+using text = System.ReadOnlySpan<char>;
+
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -10,13 +12,10 @@ using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
-RS rs = new();
+ReadOnlySpan<char> text = "abc";
+var str = Any.ToString(text);
 
-var str = rs.ToString();
 
-var s = Any<RS>.ToString(rs);
-var h = Any<RS>.GetHashCode(rs);
-var t = Any<RS>.GetType(rs);
 
 Console.WriteLine("-------");
 Debugger.Break();

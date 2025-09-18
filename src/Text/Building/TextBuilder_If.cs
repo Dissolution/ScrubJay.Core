@@ -330,17 +330,23 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder IfNotEmpty(ICollection? collection,
-        Action<TextBuilder, ICollection>? onNotEmpty = default,
+    public TextBuilder IfNotEmpty<T>(IEnumerable<T>? enumerable,
+        Action<TextBuilder, IEnumerable<T>>? onNotEmpty = default,
         Action<TextBuilder>? onEmpty = default)
     {
-        if (collection is not null && collection.Count > 0)
+        if (enumerable is not null)
         {
-            onNotEmpty?.Invoke(this, collection);
-        }
-        else
-        {
-            onEmpty?.Invoke(this);
+            if (enumerable.TryGetNonEnumeratedCount(out var count))
+            {
+                if (count != 0)
+                {
+                    onNotEmpty?.Invoke(this, enumerable);
+                }
+                else
+                {
+                    onEmpty?.Invoke(this);
+                }
+            }
         }
 
         return this;
