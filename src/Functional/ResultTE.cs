@@ -487,7 +487,7 @@ public readonly struct Result<T, E> :
                 str = _value?.ToString();
             }
 
-            return $"Result<{typeof(T)}, {typeof(E)}>.Ok({str})";
+            return Build($"Result<{typeof(T):@}, {typeof(E):@}>.Ok({str})");
         }
         else
         {
@@ -500,7 +500,7 @@ public readonly struct Result<T, E> :
                 str = _error?.ToString();
             }
 
-            return $"Result<{typeof(T)}, {typeof(E)}>.Error({str})";
+            return Build($"Result<{typeof(T):@}, {typeof(E):@}>.Error({str})");
         }
     }
 
@@ -526,11 +526,11 @@ public readonly struct Result<T, E> :
     {
         if (_isOk)
         {
-            return $"Result<{typeof(T)}, {typeof(E)}>.Ok({_value})";
+            return Build($"Result<{typeof(T):@}, {typeof(E):@}>.Ok({_value:@})");
         }
         else
         {
-            return $"Result<{typeof(T)}, {typeof(E)}>.Error({_error})";
+            return Build($"Result<{typeof(T):@}, {typeof(E):@}>.Error({_error:@})");
         }
     }
 

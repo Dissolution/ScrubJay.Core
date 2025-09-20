@@ -91,12 +91,10 @@ public static class RendererCache
         {
             if (renderer.CanRender(valueType))
             {
-                Debugger.Break();
                 return renderer.RenderTo(builder, (object?)value);
             }
         }
 
-        Debugger.Break();
         return DefaultRenderTo(builder, value);
     }
 

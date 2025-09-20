@@ -443,11 +443,11 @@ public readonly struct Result<T> :
                 str = _value?.ToString();
             }
 
-            return $"Result<{typeof(T)}>.Ok({str})";
+            return Build($"Result<{typeof(T):@}>.Ok({str})");
         }
         else
         {
-            return $"Result<{typeof(T)}>.Error({_error})";
+            return Build($"Result<{typeof(T):@}>.Error({_error:@})");
         }
     }
 
@@ -473,11 +473,11 @@ public readonly struct Result<T> :
     {
         if (_isOk)
         {
-            return $"Result<{typeof(T)}>.Ok({_value})";
+            return Build($"Result<{typeof(T):@}>.Ok({_value:@})");
         }
         else
         {
-            return $"Result<{typeof(T)}>.Error({_error})";
+            return Build($"Result<{typeof(T):@}>.Error({_error:@})");
         }
     }
 

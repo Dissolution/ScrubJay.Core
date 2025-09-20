@@ -380,11 +380,11 @@ public readonly ref struct RefResult<T>
     {
         if (_isOk)
         {
-            return TextBuilder.Build($"RefResult<{typeof(T):@}>.Ok({_value})");
+            return Build($"RefResult<{typeof(T):@}>.Ok({_value})");
         }
         else
         {
-            return TextBuilder.Build($"RefResult<{typeof(T):@}>.Error({_error})");
+            return Build($"RefResult<{typeof(T):@}>.Error({_error:@})");
         }
     }
 }

@@ -301,9 +301,9 @@ public readonly ref struct RefOption<T>
     {
         if (_isSome)
         {
-            return TextBuilder.Build($"RefOption<{typeof(T):@}>.Some({_value})");
+            return Build($"RefOption<{typeof(T):@}>.Some({_value})");
         }
 
-        return $"RefOption<{typeof(T)}>.None";
+        return Build($"RefOption<{typeof(T):@}>.None");
     }
 }

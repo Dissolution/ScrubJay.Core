@@ -542,20 +542,20 @@ public readonly struct Option<T> :
                 str = _value?.ToString();
             }
 
-            return $"Option<{typeof(T).Name}>.Some({str})";
+            return Build($"Option<{typeof(T):@}>.Some({str})");
         }
 
-        return $"Option<{typeof(T).Name}>.None";
+        return Build($"Option<{typeof(T):@}>.None");
     }
 
     public override string ToString()
     {
         if (_isSome)
         {
-            return $"Option<{typeof(T)}>.Some({_value})";
+            return Build($"Option<{typeof(T):@}>.Some({_value:@})");
         }
 
-        return $"Option<{typeof(T)}>.None";
+        return Build($"Option<{typeof(T):@}>.None");
     }
 
 #endregion
