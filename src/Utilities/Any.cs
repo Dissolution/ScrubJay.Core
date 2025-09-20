@@ -1,7 +1,10 @@
-﻿#if NET9_0_OR_GREATER
+﻿using static InlineIL.IL;
+
+#if NET9_0_OR_GREATER
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using InlineIL;
 using ScrubJay.Text.Rendering;
 #endif
 
@@ -220,12 +223,12 @@ public static class Any<T>
         {
             generator.Emit(OpCodes.Ldarg_0);
         }
-
-        var mp = method.GetParameters();
-        var mpc = mp.Length;
-
-        if (args != mpc)
-            Debugger.Break();
+        //
+        // var mp = method.GetParameters();
+        // var mpc = mp.Length;
+        //
+        // if (args != mpc)
+        //     Debugger.Break();
 
         // load any additional args
         for (int a = 1; a <= args; a++)

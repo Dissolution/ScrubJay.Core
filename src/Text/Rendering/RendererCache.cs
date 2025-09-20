@@ -2,20 +2,40 @@ namespace ScrubJay.Text.Rendering;
 
 public static class RendererCache
 {
-    private static readonly List<IRenderer> _renderers;
+    private static readonly IRenderer[] _renderers;
     private static readonly ConcurrentTypeMap<IRenderer?> _rendererMap = [];
+
+    internal static IReadOnlyList<IRenderer> Renderers => _renderers;
+    internal static IReadOnlyDictionary<Type, IRenderer?> RendererMap => _rendererMap;
 
     static RendererCache()
     {
         _renderers = AppDomain
             .CurrentDomain
+            // Get every assembly we can see
             .GetAssemblies()
+            // Extract all their types (we use Result as dynamic and other secure assemblies can throw)
             .SelectMany(static assembly => Result.Try(assembly.GetTypes).OkOr([]))
-            .Where(static type => type.Implements<IRenderer>())
-            .Where(static type => !type.IsAbstract && !type.IsGenericType)
-            .SelectWhere(static type => Result.Try(type, static t => Activator.CreateInstance(t)))
+            // Looking for renderers that we can instantiate
+            .Where(static type =>
+            {
+                if (!type.Implements<IRenderer>())
+                    return false;
+                if (type.IsInterface || type.IsAbstract)
+                    return false;
+                if (type.IsGenericType)
+                {
+                    return false;
+                }
+
+                return true;
+            })
+            // Try to instantiate them (ignoring any that we cannot)
+            .SelectWhere(static type => Result.Try(type, Activator.CreateInstance))
+            // Cast to the base interface
             .OfType<IRenderer>()
-            .ToList();
+            // and store
+            .ToArray();
     }
 
     private static IRenderer<T>? GetRenderer<T>()
@@ -97,6 +117,10 @@ public static class RendererCache
 
         return DefaultRenderTo(builder, value);
     }
+
+    public static bool CanRender<T>() => GetRenderer<T>() is not null;
+
+    public static bool CanRender(Type type) => _renderers.Any(r => r.CanRender(type));
 
 #region Extensions
 

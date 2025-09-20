@@ -48,7 +48,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>ScrubJay.Core</PackageId>
         <Title>ScrubJay - Core</Title>
-        <Version>0.61.3-alpha</Version>
+        <Version>0.61.4-alpha</Version>
         <Authors>Dissolution</Authors>
 
         <Description>
@@ -81,9 +81,12 @@
 
     <!-- Expose our internals to Benchmarks, Test, and downstream ScrubJay libraries -->
     <ItemGroup>
+        <InternalsVisibleTo Include="ScrubJay.Scratch"/>
         <InternalsVisibleTo Include="ScrubJay.Benchmarks"/>
         <InternalsVisibleTo Include="ScrubJay.Tests"/>
+
         <InternalsVisibleTo Include="ScrubJay.Reflection"/>
+        <InternalsVisibleTo Include="ScrubJay.Reflection.Scratch"/>
     </ItemGroup>
 
     <!-- Global Usings -->

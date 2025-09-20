@@ -5,6 +5,7 @@ using text = System.ReadOnlySpan<char>;
 
 using System.Diagnostics;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using ScrubJay.Collections.Pooling;
 using ScrubJay.Core.Utilities;
@@ -12,10 +13,9 @@ using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
-ReadOnlySpan<char> text = "abc";
-var str = Any.ToString(text);
-
-
+Thing thing = new Thing();
+var r = RendererCache.Render(thing);
+Console.WriteLine(r);
 
 Console.WriteLine("-------");
 Debugger.Break();
@@ -24,6 +24,19 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
+    public abstract class GenericRenderer<T> : Renderer<T>
+    {
+
+    }
+
+    public sealed class InstanceRenderer : GenericRenderer<Thing>
+    {
+        public override TextBuilder RenderTo(TextBuilder builder, Thing? thing)
+        {
+            return builder.Format(thing);
+        }
+    }
+
 
     public ref struct RS
     {
@@ -38,6 +51,13 @@ namespace ScrubJay.Scratch
         {
             return nameof(RS);
         }
+    }
+
+    public class Thing
+    {
+        public object Object { get; set; }
+
+        public object? ObjectQ { get; set; }
     }
 
     public static class Util
