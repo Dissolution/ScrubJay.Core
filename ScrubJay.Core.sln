@@ -10,11 +10,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "tests\Tests.csproj", "{D6CDBB16-B3BD-4335-AF46-F439933DCA18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XUnit", "tests\Tests.XUnit.csproj", "{D6CDBB16-B3BD-4335-AF46-F439933DCA18}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scratch", "scratch\Scratch.csproj", "{B78A22B7-BFAA-41CB-AC24-52564E08AB23}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "benchmarks\Benchmarks.csproj", "{947790F3-DE84-458E-BB78-867AD4F31EAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.TUnit", "Tests.TUnit\Tests.TUnit.csproj", "{10961398-6188-4D09-969E-55D173BEE8A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{947790F3-DE84-458E-BB78-867AD4F31EAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{947790F3-DE84-458E-BB78-867AD4F31EAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{947790F3-DE84-458E-BB78-867AD4F31EAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10961398-6188-4D09-969E-55D173BEE8A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10961398-6188-4D09-969E-55D173BEE8A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10961398-6188-4D09-969E-55D173BEE8A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10961398-6188-4D09-969E-55D173BEE8A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

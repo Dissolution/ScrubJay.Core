@@ -20,7 +20,7 @@ public sealed class ArrayAdapterND<T> :
     {
         if (obj.As<T>(out var value))
             return Ok(value);
-        return new ArgumentException($"Object `{obj}` is not a {typeof(T).Render()}", objName);
+        return new ArgumentException(Build($"Object `{obj}` is not a {typeof(T):@}"), objName);
     }
 
 

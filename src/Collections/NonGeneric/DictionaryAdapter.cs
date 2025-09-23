@@ -30,7 +30,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objKey.Is<K>(out var key))
             return key;
-        throw new ArgumentException($"Invalid Key - '{objKey}' is not a {typeof(K).Render()}", keyName);
+        throw new ArgumentException(Build($"Invalid Key - '{objKey}' is not a {typeof(K):@}"), keyName);
     }
 
     [return: NotNullIfNotNull(nameof(objValue))]
@@ -40,7 +40,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objValue.As<V>(out var value))
             return value;
-        throw new ArgumentException($"Invalid Value - '{objValue}' is not a {typeof(V).Render()}", valueName);
+        throw new ArgumentException(Build($"Invalid Value - '{objValue}' is not a {typeof(V):@}"), valueName);
     }
 
     private sealed class KeyCollection : IReadOnlyCollection<K>, ICollection<K>, ICollection

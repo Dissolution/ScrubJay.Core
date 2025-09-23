@@ -43,12 +43,15 @@ public partial class TextBuilder
     {
         // special format codes for Rendering
         // this is to support interpolated text
+
+        // render this value
         if (format.Equate('@'))
         {
             RendererCache.RenderTo(this, value);
             return;
         }
 
+        // render this value's type
         if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
         {
             RendererCache.RenderTo(this, value?.GetType() ?? typeof(T));
@@ -85,12 +88,15 @@ public partial class TextBuilder
     {
         // special format codes for Rendering
         // this is to support interpolated text
+
+        // render this value
         if (format.Equate('@'))
         {
             RendererCache.RenderTo(this, value);
             return;
         }
 
+        // render this value's type
         if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
         {
             RendererCache.RenderTo(this, value?.GetType() ?? typeof(T));

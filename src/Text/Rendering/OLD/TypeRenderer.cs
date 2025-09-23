@@ -115,6 +115,6 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
                 .Append('>'));
     }
 
-    public override TextBuilder RenderTo(TextBuilder builder, Type? type)
+    public override void RenderValue(TextBuilder builder, Type? type)
         => RenderType(builder, type);
 }

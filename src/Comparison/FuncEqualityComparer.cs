@@ -14,7 +14,7 @@ public sealed class FuncEqualityComparer<T> : IEqualityComparer<T>, IEqualityCom
 #endif
 {
     private static readonly Fn<T?, int> _throwCannotHash =
-        _ => throw new InvalidOperationException($"{typeof(T).Render()} values cannot be hashed");
+        _ => throw new InvalidOperationException(Build($"{typeof(T):@} values cannot be hashed"));
 
     private readonly Fn<T?, T?, bool> _equals;
     private readonly Fn<T?, int> _getHashCode;
@@ -51,7 +51,7 @@ public sealed class FuncEqualityComparer<T> : IEqualityComparer<T>, IEqualityCom
                 return Hasher.NullHash;
         }
 
-        throw new ArgumentException($"Object was not a {typeof(T).Render()}", nameof(obj));
+        throw new ArgumentException(Build($"Object was not a {typeof(T):@}"), nameof(obj));
     }
 
     public bool Equals(T? x, T? y) => _equals(x, y);

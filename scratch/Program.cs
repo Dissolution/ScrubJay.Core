@@ -13,9 +13,14 @@ using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
-Thing thing = new Thing();
-var r = RendererCache.Render(thing);
-Console.WriteLine(r);
+Type[] types = [typeof(float), typeof(int), typeof(List<>), typeof(List<int>)];
+foreach (var type in types)
+{
+    string? str = type.ToString();
+    Console.WriteLine(str);
+}
+
+
 
 Console.WriteLine("-------");
 Debugger.Break();
@@ -24,18 +29,6 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
-    public abstract class GenericRenderer<T> : Renderer<T>
-    {
-
-    }
-
-    public sealed class InstanceRenderer : GenericRenderer<Thing>
-    {
-        public override TextBuilder RenderTo(TextBuilder builder, Thing? thing)
-        {
-            return builder.Format(thing);
-        }
-    }
 
 
     public ref struct RS

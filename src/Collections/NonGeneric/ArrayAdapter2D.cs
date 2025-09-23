@@ -32,7 +32,7 @@ public sealed class ArrayAdapter2D<T> :
     {
         if (objValue.As<T>(out var value))
             return value;
-        throw new ArgumentException($"Value '{objValue}' is not a '{typeof(T).Render()}'", valueName);
+        throw new ArgumentException(Build($"Value '{objValue}' is not a '{typeof(T):@}'"), valueName);
     }
 
     private readonly Array _array;

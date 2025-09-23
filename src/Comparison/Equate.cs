@@ -33,7 +33,7 @@ public static class Equate
         return typeof(EqualityComparer<>)
             .MakeGenericType(type)
             .GetMethod("get_Default", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase)
-            .ThrowIfNull($"Could not find EqualityComparer<{type.Render()}>.get_Default method")
+            .ThrowIfNull($"Could not find EqualityComparer<{type:@}>.get_Default method")
             .Invoke(null, null)
             .ThrowIfNot(typeof(IEqualityComparer<>).MakeGenericType(type));
     }

@@ -84,6 +84,9 @@ public static class RendererCache
 
     public static TextBuilder RenderTo<T>(TextBuilder builder, T? value)
     {
+        if (value is null)
+            return builder;
+
         // If the value is Renderable, use its func
         if (value is IRenderable)
         {
@@ -94,7 +97,7 @@ public static class RendererCache
         Type valueType = typeof(T);
 
 #if DEBUG
-        Type vt = value?.GetType() ?? typeof(void);
+        Type vt = value.GetType();
         if (valueType != typeof(Type) && valueType != vt)
             Debugger.Break();
 #endif
@@ -103,7 +106,8 @@ public static class RendererCache
         IRenderer<T>? typedRenderer = GetRenderer<T>();
         if (typedRenderer is not null)
         {
-            return typedRenderer.RenderTo(builder, value);
+            typedRenderer.RenderValue(builder, value);
+            return builder;
         }
 
         // see if we have something that can render this value
@@ -111,7 +115,8 @@ public static class RendererCache
         {
             if (renderer.CanRender(valueType))
             {
-                return renderer.RenderTo(builder, (object?)value);
+                renderer.RenderObject(builder, (object)value!);
+                return builder;
             }
         }
 
@@ -124,7 +129,7 @@ public static class RendererCache
 
 #region Extensions
 
-    public static string Render<T>(this T? value)
+    public static string Render<T>(T? value)
     {
         return TextBuilder.New.Invoke(value, RenderTo).ToStringAndDispose();
     }

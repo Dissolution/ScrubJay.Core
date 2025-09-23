@@ -36,7 +36,7 @@ public abstract class EnumInfo :
     {
         Throw.IfNull(enumType);
         if (!enumType.IsEnum)
-            throw new ArgumentException($"Invalid Enum Type: {enumType.Render()}", nameof(enumType));
+            throw new ArgumentException(Build($"Invalid Enum Type: {enumType:@}"), nameof(enumType));
         return _enumInfoCache.GetOrAdd(enumType, CreateEnumInfo);
     }
 

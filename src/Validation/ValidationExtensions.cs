@@ -42,6 +42,21 @@ public static class ValidationExtensions
         throw new ArgumentNullException(valueName, message);
     }
 
+    [return: NotNull]
+    public static T ThrowIfNull<T>(
+        [AllowNull, NotNull] this T value,
+        ref InterpolatedTextBuilder interpolatedMessage,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+        where T : class?
+    {
+        if (value is not null)
+            return value;
+        string message = interpolatedMessage.ToStringAndDispose();
+        throw new ArgumentNullException(valueName, message);
+    }
+
+
     /// <summary>
     /// Casts this <see cref="object"/> <c>as</c> a <typeparamref name="T"/> value and returns it
     /// </summary>
@@ -108,7 +123,8 @@ public static class ValidationExtensions
     {
         if (obj.As<T?>(out T? output))
             return output;
-        throw new ArgumentException($"The given {obj?.GetType().Render()} value is not a valid {typeof(T).Render()} instance",
+        throw new ArgumentException(
+            Build($"The given {obj:@T} value is not a valid {typeof(T):@} instance"),
             objName);
     }
 }
