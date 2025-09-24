@@ -1,5 +1,6 @@
 ﻿// Identifiers should have correct suffix
 
+using ScrubJay.Exceptions;
 using ScrubJay.Text.Rendering;
 
 #pragma warning disable CA1710
@@ -30,7 +31,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objKey.Is<K>(out var key))
             return key;
-        throw new ArgumentException(Build($"Invalid Key - '{objKey}' is not a {typeof(K):@}"), keyName);
+        throw Ex.Arg(objKey, $"Invalid Key - '{objKey}' is not a {typeof(K):@}", keyName);
     }
 
     [return: NotNullIfNotNull(nameof(objValue))]
@@ -40,7 +41,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objValue.As<V>(out var value))
             return value;
-        throw new ArgumentException(Build($"Invalid Value - '{objValue}' is not a {typeof(V):@}"), valueName);
+        throw Ex.Arg(objValue, $"Invalid Value - '{objValue}' is not a {typeof(V):@}", valueName);
     }
 
     private sealed class KeyCollection : IReadOnlyCollection<K>, ICollection<K>, ICollection
@@ -126,11 +127,11 @@ public sealed class DictionaryAdapter<K, V> :
             _adapter = adapter;
         }
 
-        void ICollection<V>.Add(V item) => throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
+        void ICollection<V>.Add(V item) => throw Ex.Invalid($"A DictionaryAdapter's Keys are readonly");
 
-        bool ICollection<V>.Remove(V item) => throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
+        bool ICollection<V>.Remove(V item) => throw Ex.Invalid($"A DictionaryAdapter's Keys are readonly");
 
-        void ICollection<V>.Clear() => throw new InvalidOperationException($"A DictionaryAdapter's Keys are readonly");
+        void ICollection<V>.Clear() => throw Ex.Invalid($"A DictionaryAdapter's Keys are readonly");
 
         void ICollection.CopyTo(Array array, int index)
         {

@@ -14,10 +14,10 @@ namespace ScrubJay.Collections.Pooling;
 public sealed class InstancePool<T> : IInstancePool<T>, IDisposable
     where T : class
 {
-    private readonly Func<T>        _createInstance;
+    private readonly Func<T> _createInstance;
     private readonly Func<T, bool>? _tryReadyInstance;
     private readonly Func<T, bool>? _tryCleanInstance;
-    private readonly Action<T>?     _disposeInstance;
+    private readonly Action<T>? _disposeInstance;
 
 
     /// <summary>
@@ -74,8 +74,9 @@ public sealed class InstancePool<T> : IInstancePool<T>, IDisposable
                     instance = _createInstance();
                     if (_tryReadyInstance is not null && !_tryReadyInstance(instance))
                     {
-                        throw new InvalidOperationException("Could not Ready brand new Instance");
+                        throw Ex.Invalid("Could not Ready brand new Instance");
                     }
+
                     return instance;
                 }
             }
@@ -122,7 +123,7 @@ public sealed class InstancePool<T> : IInstancePool<T>, IDisposable
             return; // stored
         }
 
-    dispose:
+        dispose:
         // Run any available dispose action
         _disposeInstance?.Invoke(instance);
         // not stored

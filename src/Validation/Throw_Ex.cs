@@ -104,7 +104,7 @@ static partial class Throw
             .Append($"Duplicate Key `{key}` was found")
             .IfNotNull(info, static (tb, nfo) => tb.Append($": {nfo}"))
             .ToStringAndDispose();
-        throw new ArgumentException(message, keyName);
+        throw Ex.Arg(key, message, keyName);
     }
 
     [DoesNotReturn]

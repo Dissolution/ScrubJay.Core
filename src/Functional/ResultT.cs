@@ -256,7 +256,7 @@ public readonly struct Result<T> :
                 throw _error;
             }
 
-            throw new InvalidOperationException($"{ToString()} is not Ok");
+            throw Ex.Invalid($"{ToString()} is not Ok");
         }
     }
 

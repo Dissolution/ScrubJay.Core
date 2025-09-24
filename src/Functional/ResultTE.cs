@@ -217,7 +217,7 @@ public readonly struct Result<T, E> :
             return _value!;
         if (_error is Exception ex)
             throw ex;
-        throw new InvalidOperationException(exceptionMessage ?? $"{ToString()} is not Ok");
+        throw Ex.Invalid(exceptionMessage ?? $"{ToString()} is not Ok");
     }
 
 #endregion
@@ -286,7 +286,7 @@ public readonly struct Result<T, E> :
     {
         if (!_isOk)
             return _error!;
-        throw new InvalidOperationException(exceptionMessage ?? $"{ToString()} is not Error");
+        throw Ex.Invalid(exceptionMessage ?? $"{ToString()} is not Error");
     }
 
 #endregion

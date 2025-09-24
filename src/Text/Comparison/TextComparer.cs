@@ -48,12 +48,12 @@ public abstract class TextComparer :
             }
             else
             {
-                throw new ArgumentException($"Cannot compare non-textual object containing `{x.GetType().Render()}`", nameof(y));
+                throw Ex.Arg(y, $"Cannot compare non-textual object containing `{x:@T}`");
             }
         }
         else
         {
-            throw new ArgumentException($"Cannot compare non-textual object containing `{y.GetType().Render()}`", nameof(y));
+            throw Ex.Arg(y, $"Cannot compare non-textual object containing `{y:@T}`");
         }
     }
 
@@ -72,12 +72,12 @@ public abstract class TextComparer :
             }
             else
             {
-                throw new ArgumentException($"Cannot equate non-textual object containing `{x.GetType().Render()}`", nameof(y));
+                throw Ex.Arg(y, $"Cannot equate non-textual object containing `{y:@T}`");
             }
         }
         else
         {
-            throw new ArgumentException($"Cannot equate non-textual object containing `{y.GetType().Render()}`", nameof(y));
+            throw Ex.Arg(x, $"Cannot equate non-textual object containing `{x:@T}`");
         }
     }
 
@@ -87,7 +87,7 @@ public abstract class TextComparer :
             return Hasher.NullHash;
         if (TextHelper.TryUnboxText(obj, out text text))
             return Hasher.HashMany<char>(text);
-        throw new ArgumentException($"Cannot get a hashcode for non-textual object containing `{obj.GetType().Render()}`", nameof(obj));
+        throw Ex.Arg(obj, $"Cannot get a hashcode for non-textual object containing `{obj:@T}`");
     }
 
 

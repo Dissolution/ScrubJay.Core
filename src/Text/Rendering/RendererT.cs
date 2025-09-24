@@ -16,7 +16,7 @@ public abstract class Renderer<T> : IRenderer<T>, IRenderer
         }
         else
         {
-            throw new ArgumentException(Build($"Object `{obj:@}` is not a {typeof(T):@} value"), nameof(obj));
+            throw Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} value");
         }
     }
 

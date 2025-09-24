@@ -108,6 +108,7 @@
         <Using Include="ScrubJay.Collections.Pooling"/>
         <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.Enums"/>
+        <Using Include="ScrubJay.Exceptions"/>
         <Using Include="ScrubJay.Extensions"/>
         <Using Include="ScrubJay.Functional"/>
         <Using Include="ScrubJay.Memory"/>

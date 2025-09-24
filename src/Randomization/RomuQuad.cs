@@ -21,7 +21,7 @@ public sealed class RomuQuad : RomuPrng
         // We require four seeds
         Seed.GetSeeds(out _wState, out _xState, out _yState, out _zState);
         if (_wState == 0UL && _xState == 0UL && _yState == 0UL && _zState == 0UL)
-            throw new InvalidOperationException("At least one seed value must be non-zero");
+            throw Ex.Invalid("At least one seed value must be non-zero");
     }
 
     public override ulong NextU64()

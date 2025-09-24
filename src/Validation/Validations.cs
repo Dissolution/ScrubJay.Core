@@ -171,7 +171,7 @@ public class Validations<E> : IReadOnlyCollection<E>
             .NewLine()
             .Delimit(Delimiter.NewLine, _errors)
             .ToStringAndDispose();
-        throw new InvalidOperationException(message);
+        throw Ex.Invalid(message);
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

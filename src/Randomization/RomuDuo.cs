@@ -20,7 +20,7 @@ public sealed class RomuDuo : RomuPrng
         // We require two seeds
         Seed.GetSeeds(out _xState, out _yState);
         if (_xState == 0UL && _yState == 0UL)
-            throw new InvalidOperationException("At least one seed value must be non-zero");
+            throw Ex.Invalid("At least one seed value must be non-zero");
     }
 
 

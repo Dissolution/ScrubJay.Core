@@ -93,7 +93,7 @@ internal sealed partial class Whitespace
     {
         if (_indents.Count == 0)
         {
-            throw new InvalidOperationException();
+            throw Ex.Invalid();
         }
         _indents.RemoveAt(_indents.Count - 1);
     }

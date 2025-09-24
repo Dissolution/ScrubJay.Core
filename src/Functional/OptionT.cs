@@ -153,7 +153,7 @@ public readonly struct Option<T> :
     {
         if (_isSome)
             return _value!;
-        throw new InvalidOperationException(errorMessage ?? $"{ToString()} is not Some");
+        throw Ex.Invalid(errorMessage ?? $"{ToString()} is not Some");
     }
 
 

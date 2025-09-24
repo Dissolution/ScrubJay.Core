@@ -246,7 +246,7 @@ public static class Sequence
         }
 
         if (sourceCount > destination.Count)
-            throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destination.Count}", nameof(destination));
+            throw Ex.Arg(destination, $"Source count of {sourceCount} will not fit in destination length of {destination.Count}");
 
         for (int i = 0; i < sourceCount; i++)
         {
@@ -276,7 +276,9 @@ public static class Sequence
         {
             int sourceCount = collection.Count;
             if (sourceCount > destinationLength)
-                throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destinationLength}", nameof(destination));
+                throw Ex.Arg<Unit>(default,
+                    $"Source count of {sourceCount} will not fit in destination length of {destinationLength}",
+                    nameof(destination));
 
             int i = 0;
             foreach (var item in collection)
@@ -294,7 +296,9 @@ public static class Sequence
                     if (clearOnFailure)
                         destination.Clear();
 
-                    throw new ArgumentException($"Source count of at least {i} will not fit in destination length of {destinationLength}", nameof(destination));
+                    throw Ex.Arg<Unit>(default,
+                        $"Source count of at least {i} will not fit in destination length of {destinationLength}",
+                        nameof(destination));
                 }
 
                 destination[i++] = item;
@@ -320,7 +324,7 @@ public static class Sequence
 
             int destinationLength = destination.Length;
             if (sourceCount > destinationLength)
-                throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destinationLength}", nameof(destination));
+                throw Ex.Arg(destination, $"Source count of {sourceCount} will not fit in destination length of {destinationLength}");
 
             collection.CopyTo(destination, 0);
         }
@@ -336,7 +340,7 @@ public static class Sequence
                     if (clearOnFailure)
                         Array.Clear(destination, 0, destinationLength);
 
-                    throw new ArgumentException($"Source count of at least {i} will not fit in destination length of {destinationLength}", nameof(destination));
+                    throw Ex.Arg(destination, $"Source count of at least {i} will not fit in destination length of {destinationLength}");
                 }
 
                 destination[i++] = item;
@@ -362,7 +366,7 @@ public static class Sequence
 
             int destinationLength = destination.Count;
             if (sourceCount > destinationLength)
-                throw new ArgumentException($"Source count of {sourceCount} will not fit in destination length of {destinationLength}", nameof(destination));
+                throw Ex.Arg(destination, $"Source count of {sourceCount} will not fit in destination length of {destinationLength}");
 
             int i = 0;
             foreach (var item in source)
@@ -382,7 +386,7 @@ public static class Sequence
                     if (clearOnFailure)
                         destination.Clear();
 
-                    throw new ArgumentException($"Source count of at least {i} will not fit in destination length of {destinationLength}", nameof(destination));
+                    throw Ex.Arg(destination, $"Source count of at least {i} will not fit in destination length of {destinationLength}");
                 }
 
                 destination[i++] = item;

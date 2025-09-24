@@ -200,7 +200,7 @@ public class PooledQueue<T> : PooledArray<T>,
     private void ThrowForEmptyQueue()
     {
         Debug.Assert(_size == 0);
-        throw new InvalidOperationException(SR.InvalidOperation_EmptyQueue);
+        throw Ex.Invalid(SR.InvalidOperation_EmptyQueue);
     }
 
     public void TrimExcess()
@@ -325,7 +325,7 @@ public class PooledQueue<T> : PooledArray<T>,
         private void ThrowEnumerationNotStartedOrEnded()
         {
             Debug.Assert(_index == -1 || _index == -2);
-            throw new InvalidOperationException(_index == -1 ? SR.InvalidOperation_EnumNotStarted : SR.InvalidOperation_EnumEnded);
+            throw Ex.Invalid(_index == -1 ? SR.InvalidOperation_EnumNotStarted : SR.InvalidOperation_EnumEnded);
         }
 
         object? IEnumerator.Current

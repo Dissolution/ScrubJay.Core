@@ -39,7 +39,7 @@ public static class DecimalExtensions
         if (flagsFields.Count != 1)
         {
             Debugger.Break();
-            //throw new InvalidOperationException("Could not find decimal's flags field!");
+            //throw Ex.Invalid("Could not find decimal's flags field!");
         }
 
         string flagsFieldName = flagsFields[0].Name;

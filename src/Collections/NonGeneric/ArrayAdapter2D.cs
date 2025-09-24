@@ -1,5 +1,6 @@
 // Identifiers should have correct suffix
 
+using ScrubJay.Exceptions;
 using ScrubJay.Text.Rendering;
 
 #pragma warning disable CA1710
@@ -32,7 +33,7 @@ public sealed class ArrayAdapter2D<T> :
     {
         if (objValue.As<T>(out var value))
             return value;
-        throw new ArgumentException(Build($"Value '{objValue}' is not a '{typeof(T):@}'"), valueName);
+        throw Ex.Arg(objValue, $"Value '{objValue:@}' is not a '{typeof(T):@}'", valueName);
     }
 
     private readonly Array _array;
@@ -52,7 +53,7 @@ public sealed class ArrayAdapter2D<T> :
         _array = array.ThrowIfNull();
         int dims = array.Rank;
         if (dims != 1)
-            throw new ArgumentException("Array must have a Rank of 1", nameof(array));
+            throw Ex.Arg(nameof(array), "Array must have a Rank of 1");
         _lowerBounds = array.GetLowerBound(0);
         _upperBound = array.GetUpperBound(0);
     }

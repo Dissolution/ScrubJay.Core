@@ -84,8 +84,7 @@ public static class ValidationExtensions
         {
             null => throw new ArgumentNullException(objName),
             T output => output,
-            _ => throw new ArgumentException(
-                TextBuilder.Build($"(object){obj.GetType():@} `{obj:@}` is not a {typeof(T):@} instance"), objName),
+            _ => throw Ex.Arg(obj,$"(object){obj.GetType():@} `{obj:@}` is not a {typeof(T):@} instance", objName),
         };
     }
 
@@ -100,8 +99,7 @@ public static class ValidationExtensions
         {
             if (obj is null)
                 return obj;
-            throw new ArgumentException(
-                TextBuilder.Build($"(object){obj.GetType():@} `{obj:@}` was expected to be null"), objName);
+            throw Ex.Arg(obj,$"(object){obj.GetType():@} `{obj:@}` was expected to be null", objName);
         }
 
         if (obj is null)
@@ -110,8 +108,7 @@ public static class ValidationExtensions
         if (obj.GetType().Implements(type))
             return obj;
 
-        throw new ArgumentException(
-            TextBuilder.Build($"(object){obj.GetType():@} `{obj:@}` is not a {type:@} instance"), objName);
+        throw Ex.Arg(obj,$"(object){obj.GetType():@} `{obj:@}` is not a {type:@} instance", objName);
     }
 
 
@@ -123,8 +120,7 @@ public static class ValidationExtensions
     {
         if (obj.As<T?>(out T? output))
             return output;
-        throw new ArgumentException(
-            Build($"The given {obj:@T} value is not a valid {typeof(T):@} instance"),
+        throw Ex.Arg(obj,$"The given {obj:@T} value is not a valid {typeof(T):@} instance",
             objName);
     }
 }

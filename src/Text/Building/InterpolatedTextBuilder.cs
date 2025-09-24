@@ -94,7 +94,7 @@ public ref struct InterpolatedTextBuilder
 
     public void Dispose()
     {
-        if (_disposeBuilder)
+        if (_disposeBuilder && _builder is not null)
         {
             _builder.Dispose();
         }
@@ -102,10 +102,23 @@ public ref struct InterpolatedTextBuilder
 
     public string ToStringAndDispose()
     {
-        string str = ToString();
-        Dispose();
-        return str;
+        if (_builder is not null)
+        {
+            string str = _builder.ToString();
+            if (_disposeBuilder)
+            {
+                _builder.Dispose();
+            }
+            return str;
+        }
+
+        return string.Empty;
     }
 
-    public override string ToString() => _builder.ToString();
+    public override string ToString()
+    {
+        if (_builder is not null)
+            return _builder.ToString();
+        return string.Empty;
+    }
 }

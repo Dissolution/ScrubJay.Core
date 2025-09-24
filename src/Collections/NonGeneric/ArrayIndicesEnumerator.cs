@@ -1,4 +1,7 @@
 ﻿// Properties should not return arrays
+
+using ScrubJay.Exceptions;
+
 #pragma warning disable CA1819
 
 namespace ScrubJay.Collections.NonGeneric;
@@ -18,11 +21,11 @@ public sealed class ArrayIndicesEnumerator : IEnumerator<int[]>
         {
             int lower = array.GetLowerBound(d);
             if (lower == int.MinValue)
-                throw new ArgumentException($"Dimension {d} has an unsupported lower bound of int.MinValue ({int.MinValue})", nameof(array));
+                throw Ex.Arg(array, $"Dimension {d} has an unsupported lower bound of int.MinValue ({int.MinValue})");
             lowerBounds[d] = lower;
             int upper = array.GetUpperBound(d);
             if (upper < lower)
-                throw new ArgumentException($"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}", nameof(array));
+                throw Ex.Arg(array, $"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}");
             upperBounds[d] = upper;
         }
 
@@ -50,17 +53,17 @@ public sealed class ArrayIndicesEnumerator : IEnumerator<int[]>
         Throw.IfNull(upperBounds);
         int dimensions = lowerBounds.Length;
         if (dimensions == 0)
-            throw new ArgumentException("Lower Bounds must have at least one dimension", nameof(lowerBounds));
+            throw Ex.Arg(lowerBounds, "Lower Bounds must have at least one dimension");
         if (upperBounds.Length != dimensions)
-            throw new ArgumentException("Upper Bounds must have the same dimensions as lower bounds", nameof(upperBounds));
+            throw Ex.Arg(upperBounds, "Upper Bounds must have the same dimensions as lower bounds");
         for (int d = 0; d < dimensions; d++)
         {
             int lower = lowerBounds[d];
             if (lower == int.MinValue)
-                throw new ArgumentException($"Dimension {d} has an unsupported lower bound of int.MinValue ({int.MinValue})", nameof(lowerBounds));
+                throw Ex.Arg(lowerBounds, $"Dimension {d} has an unsupported lower bound of int.MinValue ({int.MinValue})");
             int upper = upperBounds[d];
             if (upper < lower)
-                throw new ArgumentException($"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}", nameof(upperBounds));
+                throw Ex.Arg(upperBounds, $"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}");
         }
 
         return new(lowerBounds, upperBounds);
@@ -71,7 +74,7 @@ public sealed class ArrayIndicesEnumerator : IEnumerator<int[]>
         Throw.IfNull(dimensionLengths);
         int dimensions = dimensionLengths.Length;
         if (dimensions == 0)
-            throw new ArgumentException("Lengths must include at least one dimension", nameof(dimensionLengths));
+            throw Ex.Arg(dimensionLengths, "Lengths must include at least one dimension");
 
         int[] lowerBounds = new int[dimensions];
         int[] upperBounds = new int[dimensions];
@@ -80,7 +83,7 @@ public sealed class ArrayIndicesEnumerator : IEnumerator<int[]>
             lowerBounds[d] = 0;
             int length = dimensionLengths[0];
             if (length <= 0)
-                throw new ArgumentException($"Dimension {d} has an unsupported length zero or less", nameof(dimensionLengths));
+                throw Ex.Arg(dimensionLengths, $"Dimension {d} has an unsupported length zero or less");
             upperBounds[d] = length - 1;
         }
 
@@ -178,7 +181,7 @@ public sealed class ArrayIndicesEnumerator : IEnumerator<int[]>
         }
         else
         {
-            return new InvalidOperationException();
+            return Ex.Invalid();
         }
     }
 

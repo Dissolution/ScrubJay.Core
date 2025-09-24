@@ -87,7 +87,7 @@ public readonly ref struct RefOption<T>
     {
         if (_isSome)
             return _value!;
-        throw new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
+        throw Ex.Invalid(errorMessage ?? $"Option<{typeof(T)}> is None");
     }
 
     public T SomeOr(T fallback)

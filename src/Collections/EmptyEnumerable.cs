@@ -21,9 +21,9 @@ public sealed class EmptyEnumerable<T> :
 {
     public static EmptyEnumerable<T> Default { get; } = new();
 
-    object IEnumerator.Current => throw new InvalidOperationException("Empty");
+    object IEnumerator.Current => throw Ex.Invalid("Empty");
 
-    T IEnumerator<T>.Current => throw new InvalidOperationException("Empty");
+    T IEnumerator<T>.Current => throw Ex.Invalid("Empty");
 
     IEnumerator IEnumerable.GetEnumerator() => this;
 

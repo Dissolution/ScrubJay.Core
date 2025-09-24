@@ -1,4 +1,6 @@
-﻿using static InlineIL.IL;
+﻿using System.Reflection;
+using System.Reflection.Emit;
+using static InlineIL.IL;
 
 #if NET9_0_OR_GREATER
 using System.Reflection;
@@ -12,6 +14,27 @@ namespace ScrubJay.Core.Utilities;
 
 public static class Any
 {
+    internal static D EmitDelegate<D>(string name, Action<ILGenerator> emissions)
+        where D : Delegate
+    {
+        // the invoke method of the delegate contains the 'true' signature of the delegate
+        var invokeMethod = typeof(D)
+            .GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance)
+            .ThrowIfNull();
+
+        DynamicMethod method = new DynamicMethod(name,
+            MethodAttributes.Public | MethodAttributes.Static,
+            CallingConventions.Standard,
+            invokeMethod.ReturnType,
+            invokeMethod.GetParameters().ConvertAll(static p => p.ParameterType),
+            typeof(Any<>).Module,
+            true);
+
+        emissions(method.GetILGenerator());
+        return method.CreateDelegate(typeof(D)).ThrowIfNot<D>();
+    }
+
+
     public static bool Equals<T>(T? value, object? obj)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
@@ -190,25 +213,7 @@ public static class Any<T>
         }
     }
 
-    private static D EmitDelegate<D>(string name, Action<ILGenerator> emissions)
-        where D : Delegate
-    {
-        // the invoke method of the delegate contains the 'true' signature of the delegate
-        var invokeMethod = typeof(D)
-            .GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance)
-            .ThrowIfNull();
 
-        DynamicMethod method = new DynamicMethod(name,
-            MethodAttributes.Public | MethodAttributes.Static,
-            CallingConventions.Standard,
-            invokeMethod.ReturnType,
-            invokeMethod.GetParameters().ConvertAll(static p => p.ParameterType),
-            typeof(Any<>).Module,
-            true);
-
-        emissions(method.GetILGenerator());
-        return method.CreateDelegate(typeof(D)).ThrowIfNot<D>();
-    }
 
     private static void EmitLoadCall(ILGenerator generator, MethodInfo method, int args)
     {

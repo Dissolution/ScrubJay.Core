@@ -71,7 +71,7 @@ public class FluentLambdaBuilder<B>
     {
         int count = _parameters.Length;
         if (names.Length != count)
-            throw new ArgumentException(null, nameof(names));
+            throw Ex.Arg(names);
         for (int i = 0; i < count; i++)
         {
             ParameterExpression param = _parameters[i];

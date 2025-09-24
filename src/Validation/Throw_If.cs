@@ -406,7 +406,7 @@ public static partial class Throw
             if (!set.Add(argument[i]))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw new ArgumentException(message, argumentName);
+                throw Ex.Arg<T>(default, message, argumentName);
             }
         }
 
@@ -426,7 +426,7 @@ public static partial class Throw
             if (!set.Add(argument[i]))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw new ArgumentException(message, argumentName);
+                throw Ex.Arg<T>(default, message, argumentName);
             }
         }
 
@@ -448,7 +448,7 @@ public static partial class Throw
             if (!set.Add(argument[i]))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw new ArgumentException(message, argumentName);
+                throw Ex.Arg(argument, message, argumentName);
             }
         }
 
@@ -470,7 +470,7 @@ public static partial class Throw
             if (!set.Add(value))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw new ArgumentException(message, argumentName);
+                throw Ex.Arg(argument, message, argumentName);
             }
         }
 
@@ -768,7 +768,7 @@ public static partial class Throw
     {
         if (versionHasChanged)
         {
-            throw new InvalidOperationException("Enumeration Failed: Source has changed");
+            throw Ex.Invalid("Enumeration Failed: Source has changed");
         }
     }
 
@@ -777,7 +777,7 @@ public static partial class Throw
     {
         if (newVersion != oldVersion)
         {
-            throw new InvalidOperationException("Enumeration Failed: Source has changed");
+            throw Ex.Invalid("Enumeration Failed: Source has changed");
         }
     }
 
@@ -786,7 +786,7 @@ public static partial class Throw
         [DoesNotReturnIf(true)] bool badState)
     {
         if (badState)
-            throw new InvalidOperationException("Enumeration has not yet started or has finished");
+            throw Ex.Invalid("Enumeration has not yet started or has finished");
     }
 
     [StackTraceHidden]
@@ -795,9 +795,9 @@ public static partial class Throw
         [DoesNotReturnIf(true)] bool hasFinished)
     {
         if (notYetStarted)
-            throw new InvalidOperationException("Enumeration has not yet started");
+            throw Ex.Invalid("Enumeration has not yet started");
         if (hasFinished)
-            throw new InvalidOperationException("Enumeration has finished");
+            throw Ex.Invalid("Enumeration has finished");
     }
 
 #endregion

@@ -212,9 +212,9 @@ public sealed partial class TextBuilder :
         GC.SuppressFinalize(this);
     }
 
-    public TextBuilder RenderTo(TextBuilder builder)
+    public void RenderTo(TextBuilder builder)
     {
-        return builder.Append(Written);
+        builder.Write(Written);
     }
 
     public bool TryFormat(

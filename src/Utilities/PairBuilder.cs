@@ -76,19 +76,19 @@ public ref struct PairBuilder<K, V>
             if (ch == '(')
             {
                 if (_step != Step.PreStartParen)
-                    throw new InvalidOperationException();
+                    throw Ex.Invalid();
                 _step = Step.PreKey;
             }
             else if (ch == ')')
             {
                 if (_step != Step.PreEndParen)
-                    throw new InvalidOperationException();
+                    throw Ex.Invalid();
                 _step = Step.Finished;
             }
             else if (ch == ',')
             {
                 if (_step != Step.PreComma)
-                    throw new InvalidOperationException();
+                    throw Ex.Invalid();
                 _step = Step.PreValue;
             }
         }
@@ -101,9 +101,9 @@ public ref struct PairBuilder<K, V>
     public void AppendFormatted(K key)
     {
         if (_key.IsSome())
-            throw new InvalidOperationException();
+            throw Ex.Invalid();
         if (_step != Step.PreKey)
-            throw new InvalidOperationException();
+            throw Ex.Invalid();
         _key = Some(key);
         _step = Step.PreComma;
     }
@@ -111,9 +111,9 @@ public ref struct PairBuilder<K, V>
     public void AppendFormatted(V value)
     {
         if (_value.IsSome())
-            throw new InvalidOperationException();
+            throw Ex.Invalid();
         if (_step != Step.PreValue)
-            throw new InvalidOperationException();
+            throw Ex.Invalid();
         _value = Some(value);
         _step = Step.PreEndParen;
     }

@@ -7,6 +7,7 @@
 
 using System.Buffers;
 using System.Text;
+using ScrubJay.Exceptions;
 
 namespace ScrubJay.Collections.Pooling;
 
@@ -164,7 +165,7 @@ public ref struct Buffer<T> :
         {
             if (value < _position)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), value, $"Capacity cannot be less that Count of {Count}");
+                throw Ex.ArgRange(value, $"Capacity cannot be less that Count of {Count}");
             }
             else if (value > _span.Length)
             {

@@ -90,7 +90,8 @@ public static class RendererCache
         // If the value is Renderable, use its func
         if (value is IRenderable)
         {
-            return ((IRenderable)value).RenderTo(builder);
+            ((IRenderable)value).RenderTo(builder);
+            return builder;
         }
 
         // We're looking for something that can render T

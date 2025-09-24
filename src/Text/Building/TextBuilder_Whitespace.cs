@@ -49,7 +49,7 @@ public partial class TextBuilder
     {
         if (_whitespace is null)
         {
-            throw new InvalidOperationException();
+            throw Ex.Invalid();
         }
 
         _whitespace.RemoveIndent();

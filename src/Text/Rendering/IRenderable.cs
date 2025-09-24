@@ -12,5 +12,5 @@ public interface IRenderable
     /// <param name="builder">
     /// The <see cref="TextBuilder"/> that a rendered representation of this instance will be written to
     /// </param>
-    TextBuilder RenderTo(TextBuilder builder);
+    void RenderTo(TextBuilder builder);
 }

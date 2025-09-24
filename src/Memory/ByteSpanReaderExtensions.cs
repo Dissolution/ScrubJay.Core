@@ -328,7 +328,7 @@ public static class ByteSpanReaderExtensions
             {
                 ulong len = ReadU64(ref reader);
                 if (len > (ulong)int.MaxValue)
-                    throw new InvalidOperationException();
+                    throw Ex.Invalid();
                 return ReadString(ref reader, (int)len, endianness, encoding);
             }
             case StringFix.I8Prefix:
@@ -350,7 +350,7 @@ public static class ByteSpanReaderExtensions
             {
                 long len = ReadI64(ref reader);
                 if (len > (long)int.MaxValue)
-                    throw new InvalidOperationException();
+                    throw Ex.Invalid();
                 return ReadString(ref reader, (int)len, endianness, encoding);
             }
             case StringFix.NullTerminated:
@@ -393,7 +393,7 @@ public static class ByteSpanReaderExtensions
         u8 = reader.ReadU8();
         if (u8 > 0b_1111u)
         {
-            throw new InvalidOperationException();
+            throw Ex.Invalid();
         }
 
         result |= (uint)u8 << (MAX_BYTES_WITHOUT_OVERFLOW * 7);
@@ -421,7 +421,7 @@ public static class ByteSpanReaderExtensions
         u8 = reader.ReadU8();
         if (u8 > 0b_1u)
         {
-            throw new InvalidOperationException();
+            throw Ex.Invalid();
         }
 
         result |= (ulong)u8 << (MAX_BYTES_WITHOUT_OVERFLOW * 7);

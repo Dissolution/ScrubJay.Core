@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reflection;
 
 namespace ScrubJay.Text.Rendering;
@@ -6,7 +7,7 @@ namespace ScrubJay.Text.Rendering;
 public static class Render
 {
     private static readonly Lock _lock = new();
-    private static readonly List<IRenderer> _renderers = [];
+    private static readonly OrderedList<(int, IRenderer)> _renderers = new(IdTupleComparer<IRenderer>.Default);
     private static readonly ConcurrentTypeMap<IRenderer?> _rendererMap = [];
 
     // internal static IReadOnlyList<IRenderer> Renderers => _renderers;
@@ -73,8 +74,9 @@ public static class Render
             {
                 foreach (var (renderer, priority) in renderers)
                 {
-                    //_renderers.Add(renderer, priority);
+                    _renderers.Add((priority, renderer));
                 }
+                _rendererMap.Clear();
             }
         }
     }
@@ -90,7 +92,7 @@ public static class Render
 
         static IRenderer<T>? findRenderer(Type type)
         {
-            foreach (var renderer in _renderers)
+            foreach (var (_, renderer) in _renderers)
             {
                 if (renderer is IRenderer<T> typedRenderer &&
                     typedRenderer.CanRender(type))
@@ -157,7 +159,7 @@ public static class Render
         }
 
         // see if we have something that can render this value
-        foreach (var renderer in _renderers)
+        foreach (var (_, renderer) in _renderers)
         {
             if (renderer.CanRender(valueType))
             {
@@ -171,7 +173,7 @@ public static class Render
 
     public static bool CanRender<T>() => GetRenderer<T>() is not null;
 
-    public static bool CanRender(Type type) => _renderers.Any(r => r.CanRender(type));
+    public static bool CanRender(Type type) => _renderers.Any(r => r.Item2.CanRender(type));
 
 
     // }

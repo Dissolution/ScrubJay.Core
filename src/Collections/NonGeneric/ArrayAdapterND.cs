@@ -1,5 +1,6 @@
 ﻿// Exception to Identifiers Require Correct Suffix
 
+using ScrubJay.Exceptions;
 using ScrubJay.Text.Rendering;
 
 #pragma warning disable CA1710
@@ -20,7 +21,7 @@ public sealed class ArrayAdapterND<T> :
     {
         if (obj.As<T>(out var value))
             return Ok(value);
-        return new ArgumentException(Build($"Object `{obj}` is not a {typeof(T):@}"), objName);
+        return Ex.Arg(obj,$"Object `{obj:@}` is not a {typeof(T):@}", objName);
     }
 
 
@@ -49,11 +50,11 @@ public sealed class ArrayAdapterND<T> :
         {
             int lower = array.GetLowerBound(d);
             if (lower == int.MinValue)
-                throw new ArgumentException($"Dimension {d} has an unsupported lower bound of int.MinValue ({int.MinValue})", nameof(array));
+                throw Ex.Arg(array, $"Dimension {d} has an unsupported lower bound of int.MinValue ({int.MinValue})");
             lowerBounds[d] = lower;
             int upper = array.GetUpperBound(d);
             if (upper < lower)
-                throw new ArgumentException($"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}", nameof(array));
+                throw Ex.Arg(array, $"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}");
             upperBounds[d] = upper;
         }
 
@@ -72,7 +73,7 @@ public sealed class ArrayAdapterND<T> :
             int lower = _lowerBounds[d];
             int upper = _upperBounds[d];
             if ((index < lower) || (index > upper))
-                return new ArgumentOutOfRangeException(indicesName, indices, $"Indices[{d}] of {index} was not in [{lower}..{upper}]");
+                return Ex.ArgRange(indices, $"Indices[{d}] of {index} was not in [{lower}..{upper}]", indicesName);
         }
         return Ok(indices);
     }
