@@ -77,6 +77,7 @@ public partial class TextBuilder
     public sealed record class BlockFix
     {
         public required string Text { get; init; }
+
         //public bool IndentBefore { get; init; } = false;
         public bool NewLineBefore { get; init; } = false;
         //public bool NewLineAfter { get; init; } = false;
@@ -171,9 +172,18 @@ public partial class TextBuilder
         if (postfix is not null)
         {
             // if we want to start on a newline, only if not already
-            if (postfix.NewLineBefore && !_whitespace.IsStartLine(this))
+            if (postfix.NewLineBefore)
             {
-                NewLine();
+                if (_whitespace.IsStartDedentedLine(this))
+                {
+                    // do not add a newline, instead remove the indent
+                    Debug.Assert(Written.EndsWith(indent));
+                    this.Length -= (indent?.Length ?? 0);
+                }
+                else if (!_whitespace.IsStartLine(this))
+                {
+                    NewLine();
+                }
             }
 
             // write the actual prefix, add the indent and [then a newline]
