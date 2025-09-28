@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text.Rendering;
-
-namespace ScrubJay.Validation;
+﻿namespace ScrubJay.Validation;
 
 /// <summary>
 /// Extensions related to validation

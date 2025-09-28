@@ -15,10 +15,22 @@ public class ArgException : Exception
 
     public string? ArgumentName { get; }
 
-    public ArgException(object? argumentValue,
+    public ArgException(
+        object? argumentValue,
         string? message,
         [CallerArgumentExpression(nameof(argumentValue))] string? argumentName = null)
         : base(GetMessage(argumentValue, message, argumentName))
+    {
+        this.ArgumentValue = argumentValue;
+        this.ArgumentName = argumentName;
+    }
+
+    public ArgException(
+        object? argumentValue,
+        ref InterpolatedTextBuilder interpolatedMessage,
+        [CallerArgumentExpression(nameof(argumentValue))]
+        string? argumentName = null)
+        : base(GetMessage(argumentValue, interpolatedMessage.ToStringAndDispose(), argumentName))
     {
         this.ArgumentValue = argumentValue;
         this.ArgumentName = argumentName;

@@ -45,6 +45,13 @@ public partial class TextBuilder
         return this;
     }
 
+    public TextBuilder Indent(string? indent)
+    {
+        _whitespace ??= new Whitespace();
+        _whitespace.AddIndent(indent);
+        return this;
+    }
+
     public TextBuilder Dedent()
     {
         if (_whitespace is null)
@@ -64,8 +71,26 @@ public partial class TextBuilder
 
 #endregion
 
-    /*
+
 #region Blocks
+
+    public sealed record class BlockFix
+    {
+        public required string Text { get; init; }
+        //public bool IndentBefore { get; init; } = false;
+        public bool NewLineBefore { get; init; } = false;
+        //public bool NewLineAfter { get; init; } = false;
+
+        public BlockFix()
+        {
+        }
+
+        [SetsRequiredMembers]
+        public BlockFix(string text)
+        {
+            Text = text;
+        }
+    }
 
     public sealed record class BlockSpec
     {
@@ -73,167 +98,91 @@ public partial class TextBuilder
 
         public static BlockSpec Allman { get; } = new BlockSpec()
         {
-            Prefix = "{",
-            IndentPrefix = false,
-            NewLineBeforePrefix = true,
-            NewLineAfterPrefix = true,
-
+            Prefix = new()
+            {
+                Text = "{",
+                NewLineBefore = true,
+            },
             Indent = "    ",
-
-            Postfix = "}",
-            IndentPostfix = false,
-            NewLineBeforePostfix = true,
-            NewLineAfterPostfix = true,
+            Postfix = new()
+            {
+                Text = "}",
+                NewLineBefore = true,
+            },
         };
 
         public static BlockSpec KnR { get; } = new BlockSpec()
         {
-            Prefix = "{",
-            IndentPrefix = false,
-            NewLineBeforePrefix = false,
-            NewLineAfterPrefix = true,
-
+            Prefix = new()
+            {
+                Text = " {",
+            },
             Indent = "    ",
-
-            Postfix = "}",
-            IndentPostfix = false,
-            NewLineBeforePostfix = true,
-            NewLineAfterPostfix = true,
+            Postfix = new()
+            {
+                Text = "}",
+                NewLineBefore = true,
+            },
         };
 
-        public string? Prefix { get; init; } = null;
-        public bool NewLineBeforePrefix { get; init; } = false;
-        public bool IndentPrefix { get; init; } = false;
-        public bool NewLineAfterPrefix { get; init; } = false;
 
         public string? Indent { get; init; } = null;
+        public BlockFix? Prefix { get; init; } = null;
+        public BlockFix? Postfix { get; init; } = null;
 
-        public string? Postfix { get; init; } = null;
-        public bool NewLineBeforePostfix { get; init; } = false;
-        public bool IndentPostfix { get; init; } = false;
-        public bool NewLineAfterPostfix { get; init; } = false;
-
-        public bool AutodetectPosition { get; init; } = true;
+        public void Deconstruct(out BlockFix? prefix, out string? indent, out BlockFix? postfix)
+        {
+            prefix = Prefix;
+            indent = Indent;
+            postfix = Postfix;
+        }
     }
 
-    private bool OnStartOfNewLine()
-    {
-        if (_position == 0) return true;
-
-        text nl;
-        if (_whitespace is null)
-        {
-#if NETFRAMEWORK || NETSTANDARD2_0
-            nl = Environment.NewLine.AsSpan();
-#else
-            nl = Environment.NewLine;
-#endif
-        }
-        else
-        {
-            nl = _whitespace.NewLineAndIndents;
-        }
-
-        return Written.EndsWith(nl);
-    }
-
-    private bool OnStartOfDedentNewLine()
-    {
-        if (_position == 0) return true;
-
-        text nl;
-        if (_whitespace is null)
-        {
-#if NETFRAMEWORK || NETSTANDARD2_0
-            nl = Environment.NewLine.AsSpan();
-#else
-            nl = Environment.NewLine;
-#endif
-        }
-        else
-        {
-            nl = _whitespace.DedentNLI();
-        }
-
-        return Written.EndsWith(nl);
-    }
 
     public TextBuilder Block(BlockSpec? spec, Action<TextBuilder>? buildBlock)
     {
         _whitespace ??= new Whitespace();
         spec ??= BlockSpec.Allman; // c# default
+        (BlockFix? prefix, string? indent, BlockFix? postfix) = spec;
 
-        bool onStart = OnStartOfNewLine();
-
-        if (spec.NewLineBeforePrefix)
+        if (prefix is not null)
         {
-            // do we add the indent now or later?
-            if (spec.IndentPrefix)
+            // if we want to start on a newline, only if not already
+            if (prefix.NewLineBefore && !_whitespace.IsStartLine(this))
             {
-                // now
-                _whitespace.AddIndent(spec.Indent);
+                NewLine();
             }
 
-            if (!onStart)
-            {
-                _whitespace.WriteNewLine(this);
-            }
-
-            if (!spec.IndentPrefix)
-            {
-                // later
-                _whitespace.AddIndent(spec.Indent);
-            }
+            // write the actual prefix, add the indent and [then a newline]
+            Write(prefix.Text);
+            Indent(indent);
+            NewLine();
+        }
+        else
+        {
+            Indent(indent);
         }
 
-        Write(spec.Prefix);
-
-        if (spec.NewLineAfterPrefix)
-        {
-            _whitespace.WriteNewLine(this);
-        }
-
+        // build the block
         buildBlock?.Invoke(this);
 
-        onStart = OnStartOfNewLine();
-        var onDedentStart = OnStartOfDedentNewLine();
+        Dedent();
 
-        if (spec.NewLineBeforePostfix)
+        if (postfix is not null)
         {
-            // do we remove the indent now or later?
-            if (!spec.IndentPostfix)
+            // if we want to start on a newline, only if not already
+            if (postfix.NewLineBefore && !_whitespace.IsStartLine(this))
             {
-                // now
-                _whitespace.RemoveIndent(out var indent);
-                // do we have to also remove the indent chars?
-                if (onStart)
-                {
-                    _position -= indent.Length;
-                }
+                NewLine();
             }
 
-            if (!onStart)
-            {
-                _whitespace.WriteNewLine(this);
-            }
-
-            if (spec.IndentPostfix)
-            {
-                // later
-                _whitespace.RemoveIndent();
-            }
-        }
-
-        Write(spec.Postfix);
-
-        if (spec.NewLineAfterPostfix)
-        {
-            _whitespace.WriteNewLine(this);
+            // write the actual prefix, add the indent and [then a newline]
+            Write(postfix.Text);
+            NewLine();
         }
 
         return this;
     }
 
 #endregion
-    */
 }

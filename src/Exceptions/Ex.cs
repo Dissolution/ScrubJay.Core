@@ -16,7 +16,7 @@ public static class Ex
     }
 
 
-    public static ArgumentException Arg<T>(T? argument,
+    public static ArgException Arg<T>(T? argument,
         ref InterpolatedTextBuilder interpolatedMessage,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -24,11 +24,10 @@ public static class Ex
         where T : allows ref struct
 #endif
     {
-        string message = interpolatedMessage.ToStringAndDispose();
-        return new ArgumentException(message, argumentName);
+        return new ArgException(Any<T>.Box(argument), ref interpolatedMessage, argumentName);
     }
 
-    public static ArgumentException Arg<T>(T? argument,
+    public static ArgException Arg<T>(T? argument,
         string? message = default,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -36,11 +35,28 @@ public static class Ex
         where T : allows ref struct
 #endif
     {
-        return new ArgumentException(message, argumentName);
+        return new ArgException(Any<T>.Box(argument), message, argumentName);
+    }
+
+    public static ArgException Arg<T>(scoped ReadOnlySpan<T> argument,
+        ref InterpolatedTextBuilder interpolatedMessage,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+        return new ArgException(Any.ToString(argument), ref interpolatedMessage, argumentName);
+    }
+
+    public static ArgException Arg<T>(scoped ReadOnlySpan<T> argument,
+        string? message = default,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+        return new ArgException(Any.ToString(argument), message, argumentName);
     }
 
 
-    public static ArgumentException ArgNull<T>(T? argument,
+
+    public static ArgumentNullException ArgNull<T>(T? argument,
         ref InterpolatedTextBuilder interpolatedMessage,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -49,7 +65,7 @@ public static class Ex
         return new ArgumentNullException(argumentName, message);
     }
 
-    public static ArgumentException ArgNull<T>(T? argument,
+    public static ArgumentNullException ArgNull<T>(T? argument,
         string? message = default,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -58,7 +74,7 @@ public static class Ex
     }
 
 
-    public static ArgumentException ArgRange<T>(T? argument,
+    public static ArgumentOutOfRangeException ArgRange<T>(T? argument,
         ref InterpolatedTextBuilder interpolatedMessage,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -67,7 +83,7 @@ public static class Ex
         return new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 
-    public static ArgumentException ArgRange<T>(T? argument,
+    public static ArgumentOutOfRangeException ArgRange<T>(T? argument,
         string? message = default,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)

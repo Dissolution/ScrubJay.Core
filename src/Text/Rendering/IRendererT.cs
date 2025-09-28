@@ -6,9 +6,6 @@
 /// <typeparam name="T"></typeparam>
 [PublicAPI]
 public interface IRenderer<in T> : IRenderer
-#if NET9_0_OR_GREATER
-    where T : allows ref struct
-#endif
 {
     /// <summary>
     ///

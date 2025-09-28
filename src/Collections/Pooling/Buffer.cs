@@ -7,7 +7,6 @@
 
 using System.Buffers;
 using System.Text;
-using ScrubJay.Exceptions;
 
 namespace ScrubJay.Collections.Pooling;
 

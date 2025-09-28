@@ -8,18 +8,17 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using ScrubJay.Collections.Pooling;
-using ScrubJay.Core.Utilities;
 using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 
-Type[] types = [typeof(float), typeof(int), typeof(List<>), typeof(List<int>)];
-foreach (var type in types)
-{
-    string? str = type.ToString();
-    Console.WriteLine(str);
-}
+object[] objects = [147.13m, DateTime.Now, Guid.NewGuid(), "jkl", null!, BindingFlags.CreateInstance, new Exception()];
 
+foreach (object? obj in objects)
+{
+    string r = obj.Render();
+    Console.WriteLine($"{r}  |  {obj}");
+}
 
 
 Console.WriteLine("-------");

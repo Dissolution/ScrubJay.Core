@@ -406,7 +406,7 @@ public static partial class Throw
             if (!set.Add(argument[i]))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg<T>(default, message, argumentName);
+                throw Ex.Arg(argument, message, argumentName);
             }
         }
 
@@ -426,7 +426,7 @@ public static partial class Throw
             if (!set.Add(argument[i]))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg<T>(default, message, argumentName);
+                throw Ex.Arg(argument, message, argumentName);
             }
         }
 

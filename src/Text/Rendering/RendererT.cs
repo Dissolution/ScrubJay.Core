@@ -2,11 +2,11 @@
 
 [PublicAPI]
 public abstract class Renderer<T> : IRenderer<T>, IRenderer
-#if NET9_0_OR_GREATER
-    where T : allows ref struct
-#endif
 {
-    bool IRenderer.CanRender(Type type) => type.Implements(typeof(T));
+    public virtual bool CanRender(Type type)
+    {
+        return type.Implements(typeof(T));
+    }
 
     void IRenderer.RenderObject(TextBuilder builder, object obj)
     {

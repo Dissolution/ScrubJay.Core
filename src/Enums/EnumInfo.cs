@@ -84,7 +84,6 @@ public abstract class EnumInfo :
                 .First()
                 .Invoke(parameters: [this, memberField])
                 .ThrowIfNot<EnumMemberInfo>();
-            Debugger.Break();
             _members[i] = instance;
         }
     }

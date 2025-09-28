@@ -1,7 +1,5 @@
 ﻿// Properties should not return arrays
 
-using ScrubJay.Exceptions;
-
 #pragma warning disable CA1819
 
 namespace ScrubJay.Collections.NonGeneric;

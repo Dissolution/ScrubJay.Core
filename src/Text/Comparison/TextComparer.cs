@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text.Rendering;
-
-namespace ScrubJay.Text.Comparison;
+﻿namespace ScrubJay.Text.Comparison;
 
 [PublicAPI]
 public abstract class TextComparer :

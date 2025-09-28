@@ -15,7 +15,7 @@ public static class RenderingExtensions
             }
 
             using var builder = new TextBuilder();
-            Rendering.Render.RenderValue(builder, value);
+            Rendering.Renderer.RenderValue(builder, value);
             return builder.ToString();
         }
     }

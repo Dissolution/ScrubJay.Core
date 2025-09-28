@@ -1,6 +1,4 @@
-﻿using ScrubJay.Exceptions;
-
-namespace ScrubJay.Collections;
+﻿namespace ScrubJay.Collections;
 
 [PublicAPI]
 public class OrderedList<T> : IList<T>

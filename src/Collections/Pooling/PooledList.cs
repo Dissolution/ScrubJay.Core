@@ -736,7 +736,7 @@ public sealed class PooledList<T> : PooledArray<T>,
         if (!Validate.Range(range, _position).IsOk(out var ol, out var error))
             return error;
         if (ol.Length > destination.Length)
-            return new ArgumentException($"Destination span cannot hold {ol.Length} items", nameof(destination));
+            return Ex.Arg(destination, $"Destination span cannot hold {ol.Length} items");
         Sequence.CopyTo(_array.AsSpan(range), destination);
         return Ok(Unit());
     }

@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text.Rendering;
-
-namespace ScrubJay.Text;
+﻿namespace ScrubJay.Text;
 
 public partial class TextBuilder
 {
@@ -14,7 +12,8 @@ public partial class TextBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder Render<T>(T? value)
     {
-        return RendererCache.RenderTo<T>(this, value);
+        Rendering.Renderer.RenderValue<T>(this, value);
+        return this;
     }
 
     public TextBuilder Render<T>(scoped ReadOnlySpan<T> span)
@@ -81,7 +80,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                RendererCache.RenderTo<T>(this, value);
+                Rendering.Renderer.RenderValue<T>(this, value);
             }
         }
 
@@ -94,7 +93,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                RendererCache.RenderTo<T>(this, value);
+                Rendering.Renderer.RenderValue<T>(this, value);
             }
         }
 
@@ -107,7 +106,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                RendererCache.RenderTo<T>(this, value);
+                Rendering.Renderer.RenderValue<T>(this, value);
             }
         }
 
@@ -120,7 +119,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                RendererCache.RenderTo<T>(this, value);
+                Rendering.Renderer.RenderValue<T>(this, value);
             }
         }
 
@@ -134,7 +133,7 @@ public partial class TextBuilder
             T? value;
             while (iterator().IsSome(out value))
             {
-                RendererCache.RenderTo<T>(this, value);
+                Rendering.Renderer.RenderValue<T>(this, value);
             }
         }
 

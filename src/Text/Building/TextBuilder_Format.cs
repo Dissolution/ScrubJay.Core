@@ -1,10 +1,7 @@
 ﻿// ReSharper disable MergeCastWithTypeCheck
 
 #if NET9_0_OR_GREATER
-using ScrubJay.Core.Utilities;
 #endif
-using ScrubJay.Text.Rendering;
-
 namespace ScrubJay.Text;
 
 public partial class TextBuilder
@@ -47,14 +44,14 @@ public partial class TextBuilder
         // render this value
         if (format.Equate('@'))
         {
-            RendererCache.RenderTo(this, value);
+            Rendering.Renderer.RenderValue<T>(this, value);
             return;
         }
 
         // render this value's type
         if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
         {
-            RendererCache.RenderTo(this, value?.GetType() ?? typeof(T));
+            Rendering.Renderer.RenderValue<Type>(this, value?.GetType() ?? typeof(T));
             return;
         }
 
@@ -92,14 +89,14 @@ public partial class TextBuilder
         // render this value
         if (format.Equate('@'))
         {
-            RendererCache.RenderTo(this, value);
+            Rendering.Renderer.RenderValue<T>(this, value);
             return;
         }
 
         // render this value's type
         if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
         {
-            RendererCache.RenderTo(this, value?.GetType() ?? typeof(T));
+            Rendering.Renderer.RenderValue<Type>(this, value?.GetType() ?? typeof(T));
             return;
         }
 
@@ -134,16 +131,8 @@ public partial class TextBuilder
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder Format<T>(T? value)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
     {
-#if NET9_0_OR_GREATER
-        string str = Any<T>.ToString(value);
-        Write(str);
-#else
         WriteValue<T>(value);
-#endif
         return this;
     }
 

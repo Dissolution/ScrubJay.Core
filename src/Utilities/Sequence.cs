@@ -276,9 +276,8 @@ public static class Sequence
         {
             int sourceCount = collection.Count;
             if (sourceCount > destinationLength)
-                throw Ex.Arg<Unit>(default,
-                    $"Source count of {sourceCount} will not fit in destination length of {destinationLength}",
-                    nameof(destination));
+                throw Ex.Arg(destination,
+                    $"Source count of {sourceCount} will not fit in destination length of {destinationLength}");
 
             int i = 0;
             foreach (var item in collection)
@@ -296,9 +295,8 @@ public static class Sequence
                     if (clearOnFailure)
                         destination.Clear();
 
-                    throw Ex.Arg<Unit>(default,
-                        $"Source count of at least {i} will not fit in destination length of {destinationLength}",
-                        nameof(destination));
+                    throw Ex.Arg(destination,
+                        $"Source count of at least {i} will not fit in destination length of {destinationLength}");
                 }
 
                 destination[i++] = item;

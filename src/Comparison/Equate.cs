@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Comparison;
 

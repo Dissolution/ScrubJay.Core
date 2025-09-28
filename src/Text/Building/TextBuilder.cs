@@ -203,6 +203,7 @@ public sealed partial class TextBuilder :
     public void Dispose()
     {
         _position = 0;
+        _whitespace?.Dispose();
         char[] toReturn = Reference.Exchange(ref _chars, []);
         if (toReturn.Length > 0)
         {

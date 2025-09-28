@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Comparison;
 
@@ -38,9 +37,6 @@ public static class Relate
     }
 
     public static IComparer<T> GetComparer<T>()
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
     {
         return _comparers.GetOrAdd<T>(GetComparerInstance)
             .ThrowIfNot<IComparer<T>>();
@@ -61,15 +57,9 @@ public static class Relate
 
 
     public static int Values<T>(T? left, T? right)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
         => GetComparer<T>().Compare(left!, right!);
 
     public static int Values<T>(T? left, T? right, IComparer<T>? valueComparer)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
     {
         if (valueComparer is null)
             return Values<T>(left, right);

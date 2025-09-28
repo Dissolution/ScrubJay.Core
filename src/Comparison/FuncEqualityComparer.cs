@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text.Rendering;
-
-namespace ScrubJay.Comparison;
+﻿namespace ScrubJay.Comparison;
 
 /// <summary>
 /// An <see cref="IEqualityComparer{T}"/> and <see cref="IEqualityComparer"/> implementation

@@ -1,19 +1,15 @@
-using System.Collections.ObjectModel;
 using System.Reflection;
 
 namespace ScrubJay.Text.Rendering;
 
 [PublicAPI]
-public static class Render
+public static class Renderer
 {
     private static readonly Lock _lock = new();
     private static readonly OrderedList<(int, IRenderer)> _renderers = new(IdTupleComparer<IRenderer>.Default);
     private static readonly ConcurrentTypeMap<IRenderer?> _rendererMap = [];
 
-    // internal static IReadOnlyList<IRenderer> Renderers => _renderers;
-    // internal static IReadOnlyDictionary<Type, IRenderer?> RendererMap => _rendererMap;
-
-    static Render()
+    static Renderer()
     {
         var domain = AppDomain.CurrentDomain;
         domain.AssemblyLoad += DomainOnAssemblyLoad;
@@ -86,28 +82,11 @@ public static class Render
         LoadRenderers(args.LoadedAssembly);
     }
 
-    private static IRenderer<T>? GetRenderer<T>()
+    internal static TextBuilder DefaultRenderValue<T>(TextBuilder builder, T value)
     {
-        return _rendererMap.GetOrAdd<T>(findRenderer) as IRenderer<T>;
-
-        static IRenderer<T>? findRenderer(Type type)
-        {
-            foreach (var (_, renderer) in _renderers)
-            {
-                if (renderer is IRenderer<T> typedRenderer &&
-                    typedRenderer.CanRender(type))
-                    return typedRenderer;
-            }
-
-            return null;
-        }
-    }
-
-    private static TextBuilder DefaultRenderTo<T>(TextBuilder builder, T? value)
-    {
+        Debug.Assert(value is not null);
         return value switch
         {
-            null => builder.Append("null"),
             DBNull => builder.Append(nameof(DBNull)),
             bool b => builder.If(b, bool.TrueString, bool.FalseString),
             byte u8 => builder.Append("(byte)").Format(u8),
@@ -118,16 +97,46 @@ public static class Render
             uint u32 => builder.Format(u32).Append('U'),
             long i64 => builder.Format(i64).Append('L'),
             ulong u64 => builder.Format(u64).Append("UL"),
-            float f32 => builder.Format(f32, "N1").Append('f'),
-            double f64 => builder.Format(f64, "N1").Append('d'),
-            decimal dec => builder.Format(dec, "N1").Append('m'),
+            float f32 => builder.Format(f32, "G9").Append('f'),
+            double f64 => builder.Format(f64, "G17").Append('d'),
+            decimal dec => builder.Format(dec, "G").Append('m'),
             TimeSpan ts => builder.Format(ts, "g"),
             DateTime dt => builder.Format(dt, "yyyy-MM-dd HH:mm:ss"),
+            DateTimeOffset dto => builder.Format(dto, "yyyy-MM-dd HH:mm:ss"),
             char ch => builder.Append('\'').Append(ch).Append('\''),
             string str => builder.Append('"').Append(str).Append('"'),
             _ => builder.Format<T>(value),
         };
     }
+
+    internal static IRenderer? GetRenderer(Type type)
+    {
+        foreach (var (_, renderer) in _renderers)
+        {
+            if (renderer.CanRender(type))
+                return renderer;
+        }
+
+        return null;
+    }
+
+    internal static IRenderer<T>? GetRenderer<T>()
+    {
+        return _rendererMap.GetOrAdd<T>(findRenderer) as IRenderer<T>;
+
+        static IRenderer<T>? findRenderer(Type type)
+        {
+            foreach (var (_, renderer) in _renderers)
+            {
+                if (renderer is IRenderer<T> r && renderer.CanRender(type))
+                    return r;
+            }
+
+            return null;
+        }
+    }
+
+
 
 
     public static void RenderValue<T>(TextBuilder builder, T? value)
@@ -145,73 +154,27 @@ public static class Render
         // We're looking for something that can render T
         Type valueType = typeof(T);
 
-#if DEBUG
-        Type vt = value.GetType();
-        if (valueType != typeof(Type) && valueType != vt)
-            Debugger.Break();
-#endif
-
         // see if we have a direct IRenderer<T>
         IRenderer<T>? typedRenderer = GetRenderer<T>();
         if (typedRenderer is not null)
         {
             typedRenderer.RenderValue(builder, value);
+            return;
         }
 
         // see if we have something that can render this value
-        foreach (var (_, renderer) in _renderers)
+        IRenderer? renderer = GetRenderer(valueType);
+        if (renderer is not null)
         {
-            if (renderer.CanRender(valueType))
-            {
-                renderer.RenderObject(builder, (object)value!);
-                return;
-            }
+            renderer.RenderObject(builder, (object)value);
+            return;
         }
 
-        DefaultRenderTo(builder, value);
+        // fallback to default
+        DefaultRenderValue(builder, value);
     }
 
     public static bool CanRender<T>() => GetRenderer<T>() is not null;
 
     public static bool CanRender(Type type) => _renderers.Any(r => r.Item2.CanRender(type));
-
-
-    // }
-    //
-    // public static TextBuilder FluentRender<T>(TextBuilder builder, T[]? array)
-    // {
-    //     if (array is null)
-    //     {
-    //         return builder.Append("`null`");
-    //     }
-    //
-    //     return builder.Append('[')
-    //         .EnumerateAndDelimit(array,
-    //             static (tb, item) => tb.Render(item),
-    //             ", ")
-    //         .Append(']');
-    // }
-    //
-    // public static TextBuilder FluentRender<T>(TextBuilder builder, scoped ReadOnlySpan<T> span)
-    // {
-    //     return builder
-    //         .Append('[')
-    //         .EnumerateAndDelimit(span,
-    //             static (tb, item) => tb.Render(item),
-    //             ", ")
-    //         .Append(']');
-    // }
-    //
-    // public static TextBuilder FluentRender<T>(TextBuilder builder, scoped Span<T> span)
-    // {
-    //     return builder
-    //         .Append('[')
-    //         .EnumerateAndDelimit(span,
-    //             static (tb, item) => tb.Render(item),
-    //             ", ")
-    //         .Append(']');
-    // }
-    //
-    // public static TextBuilder FluentRender(TextBuilder builder, scoped text text)
-    //     => builder.Append('"').Append(text).Append('"');
 }

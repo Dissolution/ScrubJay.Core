@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text.Rendering;
-
-namespace ScrubJay.Text;
+﻿namespace ScrubJay.Text;
 
 [PublicAPI]
 public enum Delimiter
@@ -26,11 +24,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            RendererCache.RenderTo<T>(this, values[0]);
+            Rendering.Renderer.RenderValue<T>(this, values[0]);
             for (var i = 1; i < values.Length; i++)
             {
                 Write(delimiter);
-                RendererCache.RenderTo<T>(this, values[i]);
+                Rendering.Renderer.RenderValue<T>(this, values[i]);
             }
         }
 
@@ -41,11 +39,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            RendererCache.RenderTo<T>(this, values[0]);
+            Rendering.Renderer.RenderValue<T>(this, values[0]);
             for (var i = 1; i < values.Length; i++)
             {
                 Write(delimiter);
-                RendererCache.RenderTo<T>(this, values[i]);
+                Rendering.Renderer.RenderValue<T>(this, values[i]);
             }
         }
 
@@ -61,11 +59,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            RendererCache.RenderTo<T>(this, values[0]);
+            Rendering.Renderer.RenderValue<T>(this, values[0]);
             for (var i = 1; i < values.Length; i++)
             {
                 Invoke(delimit);
-                RendererCache.RenderTo<T>(this, values[i]);
+                Rendering.Renderer.RenderValue<T>(this, values[i]);
             }
         }
 
@@ -312,11 +310,11 @@ partial class TextBuilder
             if (!e.MoveNext())
                 return this;
 
-            RendererCache.RenderTo<T>(this, e.Current);
+            Rendering.Renderer.RenderValue<T>(this, e.Current);
             while (e.MoveNext())
             {
                 Write(delimiter);
-                RendererCache.RenderTo<T>(this, e.Current);
+                Rendering.Renderer.RenderValue<T>(this, e.Current);
             }
         }
 
@@ -331,11 +329,11 @@ partial class TextBuilder
             if (!e.MoveNext())
                 return this;
 
-            RendererCache.RenderTo<T>(this, e.Current);
+            Rendering.Renderer.RenderValue<T>(this, e.Current);
             while (e.MoveNext())
             {
                 Write(delimiter);
-                RendererCache.RenderTo<T>(this, e.Current);
+                Rendering.Renderer.RenderValue<T>(this, e.Current);
             }
         }
 
@@ -355,11 +353,11 @@ partial class TextBuilder
             if (!e.MoveNext())
                 return this;
 
-            RendererCache.RenderTo<T>(this, e.Current);
+            Rendering.Renderer.RenderValue<T>(this, e.Current);
             while (e.MoveNext())
             {
                 Invoke(delimit);
-                RendererCache.RenderTo<T>(this, e.Current);
+                Rendering.Renderer.RenderValue<T>(this, e.Current);
             }
         }
 

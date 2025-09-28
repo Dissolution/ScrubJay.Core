@@ -47,6 +47,18 @@ public partial class TextBuilder
     }
 #pragma warning restore IDE0060, CA2000
 
+    public TextBuilder Append<T>(T? value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        if (value is null)
+            return this;
+
+        Write(Any<T>.ToString(value));
+        return this;
+    }
+
 #endregion
 
 #region AppendMany
@@ -82,6 +94,22 @@ public partial class TextBuilder
         return this;
     }
 
+    public TextBuilder AppendMany<T>(IEnumerable<T>? values)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        if (values is not null)
+        {
+            foreach (var value in values)
+            {
+                Write(Any<T>.ToString(value));
+            }
+        }
+
+        return this;
+    }
+
 #endregion
 
 #region AppendLine
@@ -99,6 +127,12 @@ public partial class TextBuilder
         [InterpolatedStringHandlerArgument("")] [HandlesResourceDisposal]
         ref InterpolatedTextBuilder interpolatedText) => Append(ref interpolatedText).NewLine();
 #pragma warning restore IDE0060, CA2000
+
+    public TextBuilder AppendLine<T>(T? value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => Append(value).NewLine();
 
 #endregion
 }

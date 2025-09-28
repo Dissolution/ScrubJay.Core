@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text.Rendering;
-
-namespace ScrubJay.Text;
+﻿namespace ScrubJay.Text;
 
 public partial class TextBuilder
 {
@@ -184,7 +182,7 @@ public partial class TextBuilder
         if (count > 0)
         {
             int start = _position;
-            RendererCache.RenderTo<T>(this, value);
+            Rendering.Renderer.RenderValue<T>(this, value);
             int pos = _position;
             Span<char> written = _chars.AsSpan(start, pos - start);
             return RepeatAppend(count - 1, written);

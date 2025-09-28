@@ -1,8 +1,5 @@
 ﻿// Identifiers should have correct suffix
 
-using ScrubJay.Exceptions;
-using ScrubJay.Text.Rendering;
-
 #pragma warning disable CA1710
 // Properties should not copy collections
 #pragma warning disable S2365

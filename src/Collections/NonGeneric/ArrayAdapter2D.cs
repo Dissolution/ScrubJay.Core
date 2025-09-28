@@ -1,8 +1,5 @@
 // Identifiers should have correct suffix
 
-using ScrubJay.Exceptions;
-using ScrubJay.Text.Rendering;
-
 #pragma warning disable CA1710
 // Remove unnecessary cast (IDE0004)
 #pragma warning disable IDE0004

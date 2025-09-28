@@ -71,7 +71,7 @@ public ref struct InterpolatedTextBuilder
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
-        => _builder.Format(value);
+        => _builder.Append<T>(value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AppendFormatted<T>(T value, string? format) => _builder.Format(value, format);

@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace ScrubJay.Tests;
+﻿namespace ScrubJay.Tests;
 
 public readonly record struct IdName(int Id, string Name);
 
