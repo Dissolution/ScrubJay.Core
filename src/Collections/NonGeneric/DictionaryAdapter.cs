@@ -28,7 +28,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objKey.Is<K>(out var key))
             return key;
-        throw Ex.Arg(objKey, $"Invalid Key - '{objKey}' is not a {typeof(K):@}", keyName);
+        throw Ex.Arg(objKey, $"Invalid Key - '{objKey}' is not a {typeof(K):@}", null, keyName);
     }
 
     [return: NotNullIfNotNull(nameof(objValue))]
@@ -38,7 +38,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objValue.As<V>(out var value))
             return value;
-        throw Ex.Arg(objValue, $"Invalid Value - '{objValue}' is not a {typeof(V):@}", valueName);
+        throw Ex.Arg(objValue, $"Invalid Value - '{objValue}' is not a {typeof(V):@}", null, valueName);
     }
 
     private sealed class KeyCollection : IReadOnlyCollection<K>, ICollection<K>, ICollection

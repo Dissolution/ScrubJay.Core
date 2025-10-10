@@ -2,25 +2,29 @@
 // ReSharper disable UnusedVariable
 
 using text = System.ReadOnlySpan<char>;
-
 using System.Diagnostics;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ScrubJay.Collections.Pooling;
 using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
+using ScrubJay.Text.Scratch;
 
-object[] objects = [147.13m, DateTime.Now, Guid.NewGuid(), "jkl", null!, BindingFlags.CreateInstance, new Exception()];
+using var builder = new TextBuilder();
 
-foreach (object? obj in objects)
-{
-    string r = obj.Render();
-    Console.WriteLine($"{r}  |  {obj}");
-}
+var super = new TestSuperClass1(147, "TRJ");
+
+ScratchRenderer.AddRenderer<TestBaseClass>(static (builder, test) => builder.Append($"TestBaseClass({test.Id}, {test.Name})"));
+ScratchRenderer.RenderTo(builder, super);
+
+var str = builder.ToString();
+Console.WriteLine(str);
 
 
+//Console.WriteLine(Build($"Type: {output:@T}  Value: {output:@}"));
 Console.WriteLine("-------");
 Debugger.Break();
 return 0;
@@ -28,7 +32,36 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
+    public class TestBaseClass
+    {
+        public int Id { get; init; }
+        public string Name { get; init; }
 
+        public TestBaseClass(int id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
+    }
+
+    public class TestSuperClass1 : TestBaseClass
+    {
+        public TestSuperClass1(int id, string name)
+            : base(id * 2, name)
+        {
+
+        }
+    }
+
+
+    partial class Util
+    {
+        public static Nullable<T> ToNullable<T>(T value)
+            where T : struct
+        {
+            return value;
+        }
+    }
 
     public ref struct RS
     {
@@ -52,7 +85,7 @@ namespace ScrubJay.Scratch
         public object? ObjectQ { get; set; }
     }
 
-    public static class Util
+    public static partial class Util
     {
         public static void Accept<T>(T value)
             where T : allows ref struct

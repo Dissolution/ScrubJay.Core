@@ -450,7 +450,7 @@ public class PooledStack<T> : PooledArray<T>,
     public IEnumerator<T> GetEnumerator(bool popOrder = true)
     {
         if (_size == 0)
-            return Enumerator.Empty<T>();
+            return Iterator.Empty<T>();
 
         return new ArrayEnumerator<T>(
             _array,

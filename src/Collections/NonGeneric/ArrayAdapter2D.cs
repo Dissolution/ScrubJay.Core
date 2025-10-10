@@ -14,7 +14,7 @@ namespace ScrubJay.Collections.NonGeneric;
 public sealed class ArrayAdapter2D<T> :
     /* Does not implement
      * IList<T>, IList, ICollection<T>, nor ICollection
-     * as those types imply the capacity to Add and Remove from a collection
+     * as those types imply the capability to Add and Remove
      * that Array does not have
      */
     IReadOnlyList<T>,
@@ -30,7 +30,7 @@ public sealed class ArrayAdapter2D<T> :
     {
         if (objValue.As<T>(out var value))
             return value;
-        throw Ex.Arg(objValue, $"Value '{objValue:@}' is not a '{typeof(T):@}'", valueName);
+        throw Ex.Arg(objValue, $"Value '{objValue:@}' is not a '{typeof(T):@}'", null, valueName);
     }
 
     private readonly Array _array;

@@ -6,125 +6,6 @@ namespace ScrubJay.Text;
 
 public partial class TextBuilder
 {
-    internal void WriteValue<T>(T? value)
-    {
-        if (value is IFormattable)
-        {
-#if NET6_0_OR_GREATER
-            if (value is ISpanFormattable)
-            {
-                int charsWritten;
-                while (!((ISpanFormattable)value)
-                       .TryFormat(Available, out charsWritten,
-                           default, default))
-                {
-                    GrowBy(16);
-                }
-
-                _position += charsWritten;
-                return;
-            }
-#endif
-
-            Write(((IFormattable)value).ToString(default, default));
-            return;
-        }
-
-        if (value is not null)
-        {
-            Write(value.ToString());
-        }
-    }
-
-    internal void WriteValue<T>(T? value, string? format, IFormatProvider? provider)
-    {
-        // special format codes for Rendering
-        // this is to support interpolated text
-
-        // render this value
-        if (format.Equate('@'))
-        {
-            Rendering.Renderer.RenderValue<T>(this, value);
-            return;
-        }
-
-        // render this value's type
-        if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
-        {
-            Rendering.Renderer.RenderValue<Type>(this, value?.GetType() ?? typeof(T));
-            return;
-        }
-
-        if (value is IFormattable)
-        {
-#if NET6_0_OR_GREATER
-            if (value is ISpanFormattable)
-            {
-                int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, format, provider))
-                {
-                    GrowBy(16);
-                }
-
-                _position += charsWritten;
-                return;
-            }
-#endif
-
-            Write(((IFormattable)value).ToString(format, provider));
-            return;
-        }
-
-        if (value is not null)
-        {
-            Write(value.ToString());
-        }
-    }
-
-    internal void WriteValue<T>(T? value, scoped text format, IFormatProvider? provider)
-    {
-        // special format codes for Rendering
-        // this is to support interpolated text
-
-        // render this value
-        if (format.Equate('@'))
-        {
-            Rendering.Renderer.RenderValue<T>(this, value);
-            return;
-        }
-
-        // render this value's type
-        if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
-        {
-            Rendering.Renderer.RenderValue<Type>(this, value?.GetType() ?? typeof(T));
-            return;
-        }
-
-        if (value is IFormattable)
-        {
-#if NET6_0_OR_GREATER
-            if (value is ISpanFormattable)
-            {
-                int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, format, provider))
-                {
-                    GrowBy(16);
-                }
-
-                _position += charsWritten;
-                return;
-            }
-#endif
-
-            Write(((IFormattable)value).ToString(format.AsString(), provider));
-            return;
-        }
-
-        if (value is not null)
-        {
-            Write(value.ToString());
-        }
-    }
 
 
 #region Format
@@ -132,20 +13,20 @@ public partial class TextBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder Format<T>(T? value)
     {
-        WriteValue<T>(value);
+        Write<T>(value);
         return this;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder Format<T>(T? value, string? format, IFormatProvider? provider = null)
     {
-        WriteValue<T>(value, format, provider);
+        Write<T>(value, format, provider);
         return this;
     }
 
     public TextBuilder Format<T>(T? value, scoped text format, IFormatProvider? provider = null)
     {
-        WriteValue<T>(value, format, provider);
+        Write<T>(value, format, provider);
         return this;
     }
 
@@ -159,7 +40,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                WriteValue<T>(value);
+                Write<T>(value);
             }
         }
 
@@ -172,7 +53,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                WriteValue<T>(value, format, provider);
+                Write<T>(value, format, provider);
             }
         }
 
@@ -185,7 +66,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                WriteValue<T>(value, format, provider);
+                Write<T>(value, format, provider);
             }
         }
 
@@ -198,7 +79,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                WriteValue<T>(value);
+                Write<T>(value);
             }
         }
 
@@ -211,7 +92,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                WriteValue<T>(value, format, provider);
+                Write<T>(value, format, provider);
             }
         }
 
@@ -224,7 +105,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                WriteValue<T>(value, format, provider);
+                Write<T>(value, format, provider);
             }
         }
 
@@ -237,7 +118,7 @@ public partial class TextBuilder
         {
             while (iterator().IsSome(out var value))
             {
-                WriteValue<T>(value, format, provider);
+                Write<T>(value, format, provider);
             }
         }
 
@@ -250,7 +131,7 @@ public partial class TextBuilder
         {
             while (iterator().IsSome(out var value))
             {
-                WriteValue<T>(value, format, provider);
+                Write<T>(value, format, provider);
             }
         }
 

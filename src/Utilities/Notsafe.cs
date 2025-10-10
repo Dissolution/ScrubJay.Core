@@ -314,7 +314,7 @@ public static unsafe class Notsafe
 #region Write
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void WriteImpl<U>(in U source, ref byte dest)
+        private static void WriteToImpl<U>(ref byte dest, in U source)
             // where U : unmanaged
 #if NET9_0_OR_GREATER
             where U : allows ref struct
@@ -328,12 +328,12 @@ public static unsafe class Notsafe
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Write<U>(in U source, Span<byte> destination)
+        public static void WriteTo<U>(Span<byte> destination, in U source)
 #if NET9_0_OR_GREATER
             where U : allows ref struct
 #endif
         {
-            WriteImpl<U>(in source, ref destination.GetPinnableReference());
+            WriteToImpl<U>(ref destination.GetPinnableReference(), in source);
         }
 
 #endregion

@@ -20,18 +20,6 @@ public class Validations : Validations<Exception>
     }
 
     public void Add<T>(Func<T> func)
-    {
-        try
-        {
-            _ = func();
-        }
-        catch (Exception ex)
-        {
-            base.Add(ex);
-        }
-    }
-
-    public void Add<T>(Fn<T> func)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif

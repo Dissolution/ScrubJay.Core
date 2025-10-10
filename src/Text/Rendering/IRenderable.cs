@@ -7,10 +7,7 @@
 public interface IRenderable
 {
     /// <summary>
-    /// Renders this instance to <paramref name="builder"/>
+    /// Fluently render this instance to the given <see cref="TextBuilder"/>
     /// </summary>
-    /// <param name="builder">
-    /// The <see cref="TextBuilder"/> that a rendered representation of this instance will be written to
-    /// </param>
-    void RenderTo(TextBuilder builder);
+    TextBuilder RenderTo(TextBuilder builder);
 }

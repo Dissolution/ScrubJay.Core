@@ -444,8 +444,8 @@ public ref struct TryFormatWriter : IEnumerable
     public readonly IEnumerator GetEnumerator()
     {
         if (_hasFailed.IsSome(out var error))
-            return Enumerator.One<Exception>(error);
-        return Enumerator.Empty<Exception>();
+            return Iterator.One<Exception>(error);
+        return Iterator.Empty<Exception>();
     }
 
     public readonly override string ToString()

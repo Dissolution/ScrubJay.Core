@@ -7,7 +7,7 @@ namespace ScrubJay.Collections;
 /// </summary>
 [PublicAPI]
 [MustDisposeResource(false)]
-public sealed class SingleEnumerable<T> :
+public sealed class SingleIterator<T> :
     IEnumerable<T>, IEnumerable,
     IEnumerator<T>, IEnumerator, IDisposable
 {
@@ -18,7 +18,7 @@ public sealed class SingleEnumerable<T> :
 
     public T Current => _value;
 
-    public SingleEnumerable(T value)
+    public SingleIterator(T value)
     {
         _value = value;
         _canYield = true;
@@ -38,5 +38,5 @@ public sealed class SingleEnumerable<T> :
 
     public void Reset() => _canYield = true;
 
-    public SingleEnumerable<T> GetEnumerator() => this;
+    public SingleIterator<T> GetEnumerator() => this;
 }

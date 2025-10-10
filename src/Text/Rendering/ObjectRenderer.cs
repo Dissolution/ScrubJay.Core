@@ -6,7 +6,7 @@ public sealed class ObjectRenderer : Renderer<object>
 {
     public override bool CanRender(Type type) => type == typeof(object);
 
-    public override void RenderValue(TextBuilder builder, object obj)
+    public override TextBuilder RenderValue(TextBuilder builder, object obj)
     {
         Type type = obj.GetType();
         // prevent infinite recursion
@@ -18,10 +18,9 @@ public sealed class ObjectRenderer : Renderer<object>
 
         if (renderer is not null)
         {
-            renderer.RenderObject(builder, obj);
-            return;
+            return renderer.RenderObject(builder, obj);
         }
 
-        Renderer.DefaultRenderValue(builder, obj);
+        return Renderer.DefaultRenderValue(builder, obj);
     }
 }

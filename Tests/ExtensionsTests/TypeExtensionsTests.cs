@@ -150,13 +150,13 @@ public class TypeExtensionsTests
     [MemberData(nameof(MemberDataTypes))]
     public void TypeCanContainNullWorks(Type? type)
     {
-        bool canBeNull = TypeExtensions.CanContainNull(type);
+        bool canBeNull = TypeExtensions.get_CanBeNull(type);
 
         if (type is null || type.IsPointer)
         {
             Assert.True(canBeNull);
         }
-        else if (type.IsStatic())
+        else if (type.IsStatic)
         {
             Assert.False(canBeNull);
         }

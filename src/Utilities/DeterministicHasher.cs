@@ -199,7 +199,7 @@ public ref struct DeterministicHasher
         Add((uint)ch);
     }
 
-    public void Add(text text)
+    public void Add(scoped text text)
     {
         Add(MemoryMarshal.Cast<char, byte>(text));
     }

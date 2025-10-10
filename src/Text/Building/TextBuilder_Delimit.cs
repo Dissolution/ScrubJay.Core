@@ -79,7 +79,7 @@ partial class TextBuilder
             Delimiter.Space => Delimit<T>(SPACE, values),
             Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values),
             Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values),
-            _ => throw InvalidEnumException.New(delimiter),
+            _ => throw Ex.Enum(delimiter),
         };
     }
 
@@ -92,11 +92,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            WriteValue<T>(values[0], format, provider);
+            Write<T>(values[0], format, provider);
             for (var i = 1; i < values.Length; i++)
             {
                 Write(delimiter);
-                WriteValue<T>(values[i], format, provider);
+                Write<T>(values[i], format, provider);
             }
         }
 
@@ -108,11 +108,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            WriteValue<T>(values[0], format, provider);
+            Write<T>(values[0], format, provider);
             for (var i = 1; i < values.Length; i++)
             {
                 Write(delimiter);
-                WriteValue<T>(values[i], format, provider);
+                Write<T>(values[i], format, provider);
             }
         }
 
@@ -130,11 +130,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            WriteValue<T>(values[0], format, provider);
+            Write<T>(values[0], format, provider);
             for (var i = 1; i < values.Length; i++)
             {
                 Invoke(delimit);
-                WriteValue<T>(values[i], format, provider);
+                Write<T>(values[i], format, provider);
             }
         }
 
@@ -151,7 +151,7 @@ partial class TextBuilder
             Delimiter.Space => Delimit<T>(SPACE, values, format, provider),
             Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values, format, provider),
             Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values, format, provider),
-            _ => throw InvalidEnumException.New(delimiter),
+            _ => throw Ex.Enum(delimiter),
         };
     }
 
@@ -218,7 +218,7 @@ partial class TextBuilder
             Delimiter.Space => Delimit<T>(SPACE, values, build),
             Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values, build),
             Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values, build),
-            _ => throw InvalidEnumException.New(delimiter),
+            _ => throw Ex.Enum(delimiter),
         };
     }
 
@@ -373,7 +373,7 @@ partial class TextBuilder
             Delimiter.Space => Delimit<T>(SPACE, values),
             Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values),
             Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values),
-            _ => throw InvalidEnumException.New(delimiter),
+            _ => throw Ex.Enum(delimiter),
         };
     }
 
@@ -390,11 +390,11 @@ partial class TextBuilder
             if (!e.MoveNext())
                 return this;
 
-            WriteValue<T>(e.Current, format, provider);
+            Write<T>(e.Current, format, provider);
             while (e.MoveNext())
             {
                 Write(delimiter);
-                WriteValue<T>(e.Current, format, provider);
+                Write<T>(e.Current, format, provider);
             }
         }
 
@@ -410,11 +410,11 @@ partial class TextBuilder
             if (!e.MoveNext())
                 return this;
 
-            WriteValue<T>(e.Current, format, provider);
+            Write<T>(e.Current, format, provider);
             while (e.MoveNext())
             {
                 Write(delimiter);
-                WriteValue<T>(e.Current, format, provider);
+                Write<T>(e.Current, format, provider);
             }
         }
 
@@ -436,11 +436,11 @@ partial class TextBuilder
             if (!e.MoveNext())
                 return this;
 
-            WriteValue<T>(e.Current, format, provider);
+            Write<T>(e.Current, format, provider);
             while (e.MoveNext())
             {
                 Invoke(delimit);
-                WriteValue<T>(e.Current, format, provider);
+                Write<T>(e.Current, format, provider);
             }
         }
 
@@ -457,7 +457,7 @@ partial class TextBuilder
             Delimiter.Space => Delimit<T>(SPACE, values, format, provider),
             Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values, format, provider),
             Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values, format, provider),
-            _ => throw InvalidEnumException.New(delimiter),
+            _ => throw Ex.Enum(delimiter),
         };
     }
 
@@ -536,7 +536,7 @@ partial class TextBuilder
             Delimiter.Space => Delimit<T>(SPACE, values, build),
             Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values, build),
             Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values, build),
-            _ => throw InvalidEnumException.New(delimiter),
+            _ => throw Ex.Enum(delimiter),
         };
     }
 
@@ -552,11 +552,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            WriteValue<T>(value);
+            Write<T>(value);
             while (iterate().IsSome(out value))
             {
                 Write(delimiter);
-                WriteValue<T>(value);
+                Write<T>(value);
             }
         }
 
@@ -567,11 +567,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            WriteValue<T>(value);
+            Write<T>(value);
             while (iterate().IsSome(out value))
             {
                 Write(delimiter);
-                WriteValue<T>(value);
+                Write<T>(value);
             }
         }
 
@@ -587,11 +587,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            WriteValue<T>(value);
+            Write<T>(value);
             while (iterate().IsSome(out value))
             {
                 Invoke(delimit);
-                WriteValue<T>(value);
+                Write<T>(value);
             }
         }
 
@@ -607,7 +607,7 @@ partial class TextBuilder
             Delimiter.Space => Delimit<T>(SPACE, iterate),
             Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), iterate),
             Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), iterate),
-            _ => throw InvalidEnumException.New(delimiter),
+            _ => throw Ex.Enum(delimiter),
         };
     }
 
@@ -620,11 +620,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            WriteValue<T>(value, format, provider);
+            Write<T>(value, format, provider);
             while (iterate().IsSome(out value))
             {
                 Write(delimiter);
-                WriteValue<T>(value, format, provider);
+                Write<T>(value, format, provider);
             }
         }
 
@@ -636,11 +636,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            WriteValue<T>(value, format, provider);
+            Write<T>(value, format, provider);
             while (iterate().IsSome(out value))
             {
                 Write(delimiter);
-                WriteValue<T>(value, format, provider);
+                Write<T>(value, format, provider);
             }
         }
 
@@ -658,11 +658,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            WriteValue<T>(value, format, provider);
+            Write<T>(value, format, provider);
             while (iterate().IsSome(out value))
             {
                 Invoke(delimit);
-                WriteValue<T>(value, format, provider);
+                Write<T>(value, format, provider);
             }
         }
 
@@ -679,7 +679,7 @@ partial class TextBuilder
             Delimiter.Space => Delimit<T>(SPACE, iterate, format, provider),
             Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), iterate, format, provider),
             Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), iterate, format, provider),
-            _ => throw InvalidEnumException.New(delimiter),
+            _ => throw Ex.Enum(delimiter),
         };
     }
 
@@ -752,7 +752,7 @@ partial class TextBuilder
             Delimiter.Space => Delimit<T>(SPACE, iterate, build),
             Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), iterate, build),
             Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), iterate, build),
-            _ => throw InvalidEnumException.New(delimiter),
+            _ => throw Ex.Enum(delimiter),
         };
     }
 

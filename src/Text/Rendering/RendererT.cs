@@ -5,20 +5,18 @@ public abstract class Renderer<T> : IRenderer<T>, IRenderer
 {
     public virtual bool CanRender(Type type)
     {
-        return type.Implements(typeof(T));
+        return type.Implements<T>();
     }
 
-    void IRenderer.RenderObject(TextBuilder builder, object obj)
+    TextBuilder IRenderer.RenderObject(TextBuilder builder, object obj)
     {
         if (obj is T value)
         {
-            RenderValue(builder, value);
+            return RenderValue(builder, value);
         }
-        else
-        {
-            throw Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} value");
-        }
+
+        throw Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} value");
     }
 
-    public abstract void RenderValue(TextBuilder builder, T value);
+    public abstract TextBuilder RenderValue(TextBuilder builder, T value);
 }

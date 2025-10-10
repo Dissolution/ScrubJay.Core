@@ -91,7 +91,7 @@ public sealed class ArrayIndicesEnumerator : IEnumerator<int[]>
 
     private readonly int[] _lowerBounds;
     private readonly int[] _upperBounds;
-    private int[] _indices;
+    private readonly int[] _indices;
 
     object IEnumerator.Current => _indices;
     public int[] Current => _indices;

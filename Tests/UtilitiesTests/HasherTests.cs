@@ -56,7 +56,7 @@ public class HasherTests
         Assert.Equal(Hasher.EmptyHash, hashA);
         var hashB = Hasher.HashMany<char>("".ToCharArray());
         Assert.Equal(Hasher.EmptyHash, hashB);
-        var hashC = Hasher.HashMany<int>(EmptyEnumerable<int>.Default);
+        var hashC = Hasher.HashMany<int>(EmptyIterator<int>.Default);
         Assert.Equal(Hasher.EmptyHash, hashC);
 
         var hasher = new Hasher();

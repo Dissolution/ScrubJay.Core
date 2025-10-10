@@ -3,23 +3,19 @@
 [PublicAPI]
 public class EnumRenderer : Renderer<Enum>
 {
-    public bool CanRender(Type type) => type.IsEnum;
+    public override bool CanRender(Type type) => type.IsEnum;
 
-    public override void RenderValue(TextBuilder builder, Enum? e)
+    public override TextBuilder RenderValue(TextBuilder builder, Enum? e)
     {
         if (e is null)
-            return;
+            return builder;
 
         var enumInfo = EnumInfo.For(e.GetType());
         var enumMemberInfo = enumInfo.GetMemberInfo(e);
         if (enumMemberInfo is null)
-        {
-            builder.Append(e.ToString());
-        }
-        else
-        {
-            enumMemberInfo.RenderTo(builder);
-        }
+            return builder.Append(e.ToString());
+
+        return enumMemberInfo.RenderTo(builder);
     }
 }
 
@@ -27,8 +23,8 @@ public class EnumRenderer : Renderer<Enum>
 public class EnumRenderer<E> : EnumRenderer, IRenderer<E>
     where E : struct, Enum
 {
-    public void RenderValue(TextBuilder builder, E @enum)
+    public TextBuilder RenderValue(TextBuilder builder, E @enum)
     {
-        EnumInfo.For<E>().GetMemberInfo(@enum)!.RenderTo(builder);
+        return EnumInfo.For<E>().GetMemberInfo(@enum)!.RenderTo(builder);
     }
 }

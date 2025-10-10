@@ -9,52 +9,48 @@ public enum Endianness
     NonSystem = 3,
 }
 
-/// <summary>
-///
-/// </summary>
-/// <remarks>
-/// See <see cref="System.Buffers.Binary.BinaryPrimitives"/>
-/// </remarks>
 [PublicAPI]
-public static class EndianHelper
+public static class EndiannessExtensions
 {
-    public static readonly Endianness SystemEndianness = BitConverter.IsLittleEndian ? Endianness.Little : Endianness.Big;
-
-    // public static ReadOnlySpan<byte> AsSpan<U>(in U value, Endianness endianness = Endianness.Little)
-    //     where U : unmanaged
-    // {
-    //     unsafe
-    //     {
-    //         if (endianness == SystemEndianness)
-    //         {
-    //             return new ReadOnlySpan<byte>(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
-    //         }
-    //
-    //         Span<byte> span = new Span<byte>(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
-    //         span.Reverse();
-    //         return span;
-    //     }
-    // }
-
-    public static Endianness Flipped(this Endianness endianness)
+    extension(Endianness endianness)
     {
-        return endianness switch
+        public Endianness Reverse()
+            => endianness == Endianness.Little ? Endianness.Big : Endianness.Little;
+
+        public Endianness Resolve()
         {
-            Endianness.Little => Endianness.Big,
-            Endianness.Big => Endianness.Little,
-            Endianness.System => Endianness.NonSystem,
-            Endianness.NonSystem => Endianness.System,
-            _ => throw InvalidEnumException.New(endianness),
+            switch (endianness)
+            {
+                case Endianness.Little:
+                    return Endianness.Little;
+                case Endianness.Big:
+                    return Endianness.Big;
+                case Endianness.System:
+                    return BitConverter.IsLittleEndian ? Endianness.Little : Endianness.Big;
+                case Endianness.NonSystem:
+                    return BitConverter.IsLittleEndian ? Endianness.Big : Endianness.Little;
+                default:
+                    throw Ex.Enum(endianness);
+            }
+        }
+
+        public bool IsSwap => endianness switch
+        {
+            Endianness.System => false,
+            Endianness.NonSystem => true,
+            Endianness.Little => !BitConverter.IsLittleEndian,
+            Endianness.Big => BitConverter.IsLittleEndian,
+            _ => throw Ex.Enum(endianness),
         };
-    }
 
-    public static Endianness Resolve(this Endianness endianness)
-    {
-        return endianness switch
+
+        public bool IsNoSwap => endianness switch
         {
-            Endianness.System => SystemEndianness,
-            Endianness.NonSystem => SystemEndianness == Endianness.Little ? Endianness.Big : Endianness.Little,
-            _ => endianness,
+            Endianness.System => true,
+            Endianness.NonSystem => false,
+            Endianness.Little => BitConverter.IsLittleEndian,
+            Endianness.Big => !BitConverter.IsLittleEndian,
+            _ => throw Ex.Enum(endianness),
         };
     }
 }

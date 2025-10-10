@@ -10,18 +10,6 @@ namespace ScrubJay.Memory;
 [PublicAPI]
 public static class ByteSpanReaderExtensions
 {
-    private static bool NoSwap(Endianness endianness)
-    {
-        return endianness switch
-        {
-            Endianness.System => true,
-            Endianness.NonSystem => false,
-            Endianness.Little => BitConverter.IsLittleEndian,
-            Endianness.Big => !BitConverter.IsLittleEndian,
-            _ => throw InvalidEnumException.New(endianness),
-        };
-    }
-
 #region Read
 
 #region Primitives
@@ -46,7 +34,7 @@ public static class ByteSpanReaderExtensions
     {
         var bytes = reader.Take(sizeof(short));
         short i16 = Bytes.Read<short>(bytes);
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
             return i16;
         return BinaryPrimitives.ReverseEndianness(i16);
     }
@@ -57,7 +45,7 @@ public static class ByteSpanReaderExtensions
     {
         var bytes = reader.Take(sizeof(ushort));
         ushort u16 = Bytes.Read<ushort>(bytes);
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
             return u16;
         return BinaryPrimitives.ReverseEndianness(u16);
     }
@@ -68,7 +56,7 @@ public static class ByteSpanReaderExtensions
     {
         var bytes = reader.Take(sizeof(int));
         int i32 = Bytes.Read<int>(bytes);
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
             return i32;
         return BinaryPrimitives.ReverseEndianness(i32);
     }
@@ -79,7 +67,7 @@ public static class ByteSpanReaderExtensions
     {
         var bytes = reader.Take(sizeof(uint));
         uint u32 = Bytes.Read<uint>(bytes);
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
             return u32;
         return BinaryPrimitives.ReverseEndianness(u32);
     }
@@ -90,7 +78,7 @@ public static class ByteSpanReaderExtensions
     {
         var bytes = reader.Take(sizeof(long));
         long i64 = Bytes.Read<long>(bytes);
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
             return i64;
         return BinaryPrimitives.ReverseEndianness(i64);
     }
@@ -101,7 +89,7 @@ public static class ByteSpanReaderExtensions
     {
         var bytes = reader.Take(sizeof(ulong));
         ulong u64 = Bytes.Read<ulong>(bytes);
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
             return u64;
         return BinaryPrimitives.ReverseEndianness(u64);
     }
@@ -111,7 +99,7 @@ public static class ByteSpanReaderExtensions
         this ref SpanReader<byte> reader,
         Endianness endianness = Endianness.System)
     {
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
         {
             return Bytes.Read<Half>(reader.Take(2)); // sizeof(Half)
         }
@@ -127,7 +115,7 @@ public static class ByteSpanReaderExtensions
         this ref SpanReader<byte> reader,
         Endianness endianness = Endianness.System)
     {
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
         {
             return Bytes.Read<float>(reader.Take(sizeof(float)));
         }
@@ -142,7 +130,7 @@ public static class ByteSpanReaderExtensions
         this ref SpanReader<byte> reader,
         Endianness endianness = Endianness.System)
     {
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
         {
             return Bytes.Read<double>(reader.Take(sizeof(double)));
         }
@@ -157,7 +145,7 @@ public static class ByteSpanReaderExtensions
         this ref SpanReader<byte> reader,
         Endianness endianness = Endianness.System)
     {
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
         {
             return Bytes.Read<decimal>(reader.Take(sizeof(decimal)));
         }
@@ -191,7 +179,7 @@ public static class ByteSpanReaderExtensions
         Endianness endianness = Endianness.System)
         where U : unmanaged
     {
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
         {
             return Bytes.Read<U>(reader.Take(SizeOf<U>()));
         }
@@ -209,7 +197,7 @@ public static class ByteSpanReaderExtensions
         E @enum;
         int size = SizeOf<E>();
 
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
         {
             var bytes = reader.Take(size);
             @enum = Bytes.ReadEnum<E>(bytes);
@@ -229,7 +217,7 @@ public static class ByteSpanReaderExtensions
 #endif
 
         {
-            throw InvalidEnumException.New(@enum);
+            throw Ex.Enum(@enum);
         }
 
         return @enum;
@@ -239,28 +227,10 @@ public static class ByteSpanReaderExtensions
 
 #region Text
 
-    /// <summary>
-    /// Indicates what kind of prefix or postfix that will be used to determine the length of the resulting string
-    /// </summary>
-    [PublicAPI]
-    public enum StringFix
-    {
-        SevenBitEncodedLenPrefix,
-        U8Prefix,
-        U16Prefix,
-        U32Prefix,
-        U64Prefix,
-        I8Prefix,
-        I16Prefix,
-        I32Prefix,
-        I64Prefix,
-        NullTerminated,
-    }
-
     public static char ReadChar(this ref SpanReader<byte> reader,
         Endianness endianness = Endianness.System)
     {
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
         {
             return Bytes.Read<char>(reader.Take(sizeof(char)));
         }
@@ -278,7 +248,7 @@ public static class ByteSpanReaderExtensions
         Encoding? encoding = null)
     {
         Throw.IfLessThan(length, 0);
-        if (NoSwap(endianness))
+        if (endianness.IsNoSwap)
         {
             return (encoding ?? Encoding.UTF8).GetString(reader.Take(length));
         }
@@ -364,7 +334,7 @@ public static class ByteSpanReaderExtensions
                 return str;
             }
             default:
-                throw InvalidEnumException.New(fix);
+                throw Ex.Enum(fix);
         }
     }
 
@@ -432,31 +402,6 @@ public static class ByteSpanReaderExtensions
 
 #region Time
 
-    public enum TimeFix
-    {
-        /// <summary>
-        /// Specifies the date as the number of 100-nanosecond intervals
-        /// that have elapsed since <c>0001-01-01 00:00</c>
-        /// </summary>
-        /// <remarks>
-        /// Size = 8 bytes
-        /// </remarks>
-        Ticks,
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <remarks>
-        /// Size = 4 bytes
-        /// </remarks>
-        /// <seealso href="https://en.cppreference.com/w/c/chrono/time_t"/>
-        TimeU32,
-        TimeU64,
-    }
-
-    private static readonly DateTime _dateOrigin = new DateTime(1970, 1, 1);
-
-
     public static TimeSpan ReadTimeSpan(
         this ref SpanReader<byte> reader,
         TimeFix fix)
@@ -479,7 +424,7 @@ public static class ByteSpanReaderExtensions
                 return TimeSpan.FromSeconds(seconds);
             }
             default:
-                throw InvalidEnumException.New(fix);
+                throw Ex.Enum(fix);
         }
     }
 
@@ -497,15 +442,15 @@ public static class ByteSpanReaderExtensions
             case TimeFix.TimeU32:
             {
                 uint seconds = ReadU32(ref reader);
-                return _dateOrigin.AddSeconds(seconds);
+                return TimeFix.OriginDateTime.AddSeconds(seconds);
             }
             case TimeFix.TimeU64:
             {
                 ulong seconds = ReadU64(ref reader);
-                return _dateOrigin.AddSeconds(seconds);
+                return TimeFix.OriginDateTime.AddSeconds(seconds);
             }
             default:
-                throw InvalidEnumException.New(fix);
+                throw Ex.Enum(fix);
         }
     }
 

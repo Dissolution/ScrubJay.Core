@@ -12,16 +12,16 @@ public interface IRenderer<in T> : IRenderer
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="value"></param>
-    void RenderValue(TextBuilder builder, T value);
+    TextBuilder RenderValue(TextBuilder builder, T value);
 
 #if !NETFRAMEWORK && !NETSTANDARD2_0
-    bool IRenderer.CanRender(Type type) => type.Implements(typeof(T));
+    bool IRenderer.CanRender(Type type) => type.Implements<T>();
 
-    void IRenderer.RenderObject(TextBuilder builder, object obj)
+    TextBuilder IRenderer.RenderObject(TextBuilder builder, object obj)
     {
         if (obj is T value)
         {
-            RenderValue(builder, value);
+            return RenderValue(builder, value);
         }
         else
         {

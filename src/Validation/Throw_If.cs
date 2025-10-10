@@ -51,8 +51,7 @@ public static partial class Throw
     }
 
     private static string GetArgumentExceptionMessage<T>(
-        [NoEnumeration]
-        T? argument,
+        [NoEnumeration] T? argument,
         string? info,
         string? argumentName,
         string? baseMessage)
@@ -145,6 +144,7 @@ public static partial class Throw
 
 #endregion
 
+
 #region Equatable
 
     public static void IfEqual<T>(T? argument, T? other,
@@ -187,7 +187,7 @@ public static partial class Throw
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        if (Relate.Values(argument, other, comparer) >= 0)
+        if (Compare.Values(argument, other, comparer) >= 0)
             return;
 
         string message = GetArgumentExceptionMessage(argument, info, argumentName,
@@ -202,7 +202,7 @@ public static partial class Throw
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        if (Relate.Values(argument, other, comparer) > 0)
+        if (Compare.Values(argument, other, comparer) > 0)
             return;
 
         string message = GetArgumentExceptionMessage(argument, info, argumentName,
@@ -217,7 +217,7 @@ public static partial class Throw
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        if (Relate.Values(argument, other, comparer) <= 0)
+        if (Compare.Values(argument, other, comparer) <= 0)
             return;
 
         string message = GetArgumentExceptionMessage(argument, info, argumentName,
@@ -232,7 +232,7 @@ public static partial class Throw
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        if (Relate.Values(argument, other, comparer) < 0)
+        if (Compare.Values(argument, other, comparer) < 0)
             return;
 
         string message = GetArgumentExceptionMessage(argument, info, argumentName,
@@ -394,7 +394,7 @@ public static partial class Throw
 #region IfNotDistinct
 
     public static HashSet<T> IfNotDistinct<T>(
-        ReadOnlySpan<T> argument,
+        scoped ReadOnlySpan<T> argument,
         IEqualityComparer<T>? itemComparer = null,
         string? info = null,
         [CallerArgumentExpression(nameof(argument))]
@@ -406,7 +406,7 @@ public static partial class Throw
             if (!set.Add(argument[i]))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg(argument, message, argumentName);
+                throw Ex.Arg(argument, message, null, argumentName);
             }
         }
 
@@ -426,7 +426,7 @@ public static partial class Throw
             if (!set.Add(argument[i]))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg(argument, message, argumentName);
+                throw Ex.Arg(argument, message, null, argumentName);
             }
         }
 
@@ -448,7 +448,7 @@ public static partial class Throw
             if (!set.Add(argument[i]))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg(argument, message, argumentName);
+                throw Ex.Arg(argument, message, null, argumentName);
             }
         }
 
@@ -470,7 +470,7 @@ public static partial class Throw
             if (!set.Add(value))
             {
                 string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg(argument, message, argumentName);
+                throw Ex.Arg(argument, message, null, argumentName);
             }
         }
 
@@ -682,7 +682,7 @@ public static partial class Throw
 
 #endregion
 
-    public static void IfNotBetween<T>(T argument,
+    public static T IfNotBetween<T>(T argument,
         T lowerBound,
         T upperBound,
         bool lowerBoundIsInclusive = true,
@@ -716,7 +716,7 @@ public static partial class Throw
                 goto FAIL;
         }
 
-        return;
+        return argument;
 
         FAIL:
 

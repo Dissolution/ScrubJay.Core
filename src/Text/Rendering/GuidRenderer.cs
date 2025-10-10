@@ -5,7 +5,7 @@ namespace ScrubJay.Text.Rendering;
 [PublicAPI]
 public sealed class GuidRenderer : Renderer<Guid>
 {
-    public override void RenderValue(TextBuilder builder, Guid guid)
+    public override TextBuilder RenderValue(TextBuilder builder, Guid guid)
     {
         var buffer = builder.Allocate(36);
 #if NETFRAMEWORK || NETSTANDARD2_0
@@ -29,6 +29,6 @@ public sealed class GuidRenderer : Renderer<Guid>
             else if (ch == 'f')
                 ch = 'F';
         });
-        builder.Write(buffer);
+        return builder.Append(buffer);
     }
 }

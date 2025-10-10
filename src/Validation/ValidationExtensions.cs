@@ -70,20 +70,20 @@ public static class ValidationExtensions
     /// <returns>
     /// <c>obj as TOut</c>
     /// </returns>
-    /// <exception cref="ArgumentException">
+    /// <exception cref="ArgException">
     /// Thrown is <paramref name="obj"/> is not a valid <typeparamref name="T"/> value
     /// </exception>
     [return: NotNull]
     public static T ThrowIfNot<T>([NotNull] this object? obj,
         [CallerArgumentExpression(nameof(obj))]
         string? objName = null)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
-        return obj switch
-        {
-            null => throw new ArgumentNullException(objName),
-            T output => output,
-            _ => throw Ex.Arg(obj,$"(object){obj.GetType():@} `{obj:@}` is not a {typeof(T):@} instance", objName),
-        };
+        if (obj is T value)
+            return value;
+        throw Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance");
     }
 
     [return: NotNullIfNotNull(nameof(obj))]
@@ -97,7 +97,7 @@ public static class ValidationExtensions
         {
             if (obj is null)
                 return obj;
-            throw Ex.Arg(obj,$"(object){obj.GetType():@} `{obj:@}` was expected to be null", objName);
+            throw Ex.Arg(obj, $"(object){obj.GetType():@} `{obj:@}` was expected to be null", null, objName);
         }
 
         if (obj is null)
@@ -106,7 +106,7 @@ public static class ValidationExtensions
         if (obj.GetType().Implements(type))
             return obj;
 
-        throw Ex.Arg(obj,$"(object){obj.GetType():@} `{obj:@}` is not a {type:@} instance", objName);
+        throw Ex.Arg(obj, $"(object){obj.GetType():@} `{obj:@}` is not a {type:@} instance", null, objName);
     }
 
 
@@ -118,7 +118,8 @@ public static class ValidationExtensions
     {
         if (obj.As<T?>(out T? output))
             return output;
-        throw Ex.Arg(obj,$"The given {obj:@T} value is not a valid {typeof(T):@} instance",
+        throw Ex.Arg(obj, $"The given {obj:@T} value is not a valid {typeof(T):@} instance",
+            null,
             objName);
     }
 }

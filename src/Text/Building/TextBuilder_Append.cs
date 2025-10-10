@@ -55,7 +55,7 @@ public partial class TextBuilder
         if (value is null)
             return this;
 
-        Write(Any<T>.ToString(value));
+        Write(TextHelper.ToString(value));
         return this;
     }
 
@@ -103,7 +103,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                Write(Any<T>.ToString(value));
+                Write(TextHelper.ToString(value));
             }
         }
 

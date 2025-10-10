@@ -18,7 +18,7 @@ public sealed class ArrayAdapterND<T> :
     {
         if (obj.As<T>(out var value))
             return Ok(value);
-        return Ex.Arg(obj,$"Object `{obj:@}` is not a {typeof(T):@}", objName);
+        return Ex.Arg(obj,$"Object `{obj:@}` is not a {typeof(T):@}", null, objName);
     }
 
 

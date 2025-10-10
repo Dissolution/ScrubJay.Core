@@ -26,12 +26,12 @@ public sealed class ExceptionRenderer : Renderer<Exception>
         return builder;
     }
 
-    public override void RenderValue(TextBuilder builder, Exception exception)
+    public override TextBuilder RenderValue(TextBuilder builder, Exception exception)
     {
         HResult hresult = exception.HResult;
         string helpLink = exception.HelpLink ?? hresult.HelpLink.ToString();
 
-        builder
+        return builder
             .Append($"{exception:@T}:")
             .Indent()
             .NewLine()

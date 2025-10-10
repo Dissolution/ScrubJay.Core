@@ -9,9 +9,17 @@ public ref struct SpanWriter<T>
     private Span<T> _span;
     private int _position;
 
-    public ref T this[Index index] => ref AsSpan()[index];
+    public readonly ref T this[Index index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _span[.._position][index];
+    }
 
-    public Span<T> this[Range range] => AsSpan()[range];
+    public Span<T> this[Range range]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _span[.._position][range];
+    }
 
     private readonly int Capacity
     {
@@ -27,10 +35,23 @@ public ref struct SpanWriter<T>
         internal set => _position = value.Clamp(0, Capacity);
     }
 
-    internal Span<T> Written => _span.Slice(0, _position);
-    internal Span<T> Available => _span.Slice(_position);
+    public Span<T> Written
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _span.Slice(0, _position);
+    }
 
-    public int RemainingCount => Capacity - _position;
+    public Span<T> Available
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _span.Slice(_position);
+    }
+
+    public int RemainingCount
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _span.Length - _position;
+    }
 
     public SpanWriter(Span<T> span)
     {
@@ -40,19 +61,32 @@ public ref struct SpanWriter<T>
 
     public SpanWriter(Span<T> span, int position)
     {
-        if ((position < 0) || (position >= span.Length))
-            throw new ArgumentOutOfRangeException(nameof(position), position, "Position must be inside of span");
+        Throw.IfBadIndex(position, span.Length);
         _span = span;
         _position = position;
     }
 
-    public void UseAvailable(FnSpan<T,int> useAvailable)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void WriteUnsafe(T item)
+    {
+        _span[_position] = item;
+        _position++;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void WriteUnsafe(scoped ReadOnlySpan<T> items)
+    {
+        items.CopyTo(_span[_position..]);
+        _position += items.Length;
+    }
+
+    public void UseAvailable(FnSpan<T, int> useAvailable)
     {
         int used = useAvailable(_span.Slice(_position));
         _position += used;
     }
 
-    public Result<Unit> TryWrite(T item)
+    public void Write(T item)
     {
         int pos = _position;
         int newPos = pos + 1;
@@ -60,46 +94,59 @@ public ref struct SpanWriter<T>
         {
             _span[pos] = item;
             _position = newPos;
-            return Ok(Unit());
+            return;
+        }
+
+        throw Ex.Invalid($"Could not write item '{item}': No capacity remaining");
+    }
+
+    public Result<Unit> TryWrite(T item)
+    {
+        if (_position < Capacity)
+        {
+            _span[_position] = item;
+            _position++;
+            return Unit();
         }
 
         return new InvalidOperationException($"Could not write item '{item}': No capacity remaining");
     }
 
-    public Result<Unit> TryWriteMany(params ReadOnlySpan<T> items)
+    public void WriteMany(params ReadOnlySpan<T> items)
     {
-        int pos = _position;
-        int newPos = pos + items.Length;
-        if (newPos <= Capacity)
+        if (_position + items.Length <= Capacity)
         {
-            items.CopyTo(_span[pos..]);
-            _position = newPos;
-            return Ok(Unit());
+            items.CopyTo(Available);
+            _position += items.Length;
         }
-
-        return new InvalidOperationException($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
+        else
+        {
+            throw Ex.Arg(items, $"Could not write {items.Length} items: Only {RemainingCount} capacity remains");
+        }
     }
 
-    public Result<Unit> TryWriteMany(T[]? items)
+
+    public Result<int> TryWriteMany(params ReadOnlySpan<T> items)
     {
-        if (items is null)
-            return Ok(Unit());
-        int pos = _position;
-        int newPos = pos + items.Length;
-        if (newPos <= Capacity)
+        if (_position + items.Length <= Capacity)
         {
-            items.CopyTo(_span[pos..]);
-            _position = newPos;
-            return Ok(Unit());
+            items.CopyTo(Available);
+            _position += items.Length;
+            return Ok(items.Length);
         }
 
-        return new InvalidOperationException($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
+        return Ex.Invalid($"Could not write {items.Length} items: Only {RemainingCount} capacity remaining");
     }
 
-    public Result<Unit> TryWriteMany(IEnumerable<T>? items)
+    public void WriteMany(T[] items) => WriteMany(items.AsSpan());
+
+    public Result<int> TryWriteMany(T[]? items)
+        => TryWriteMany(items.AsSpan());
+
+    public Result<int> TryWriteMany(IEnumerable<T>? items)
     {
         if (items is null)
-            return Ok(Unit());
+            return Ok(0);
 
         int pos = _position;
 
@@ -113,12 +160,14 @@ public ref struct SpanWriter<T>
                 {
                     _span[pos++] = list[i];
                 }
+
                 Debug.Assert(pos == newPos);
                 _position = newPos;
-                return Ok(Unit());
+                return Ok(count);
             }
 
-            return new InvalidOperationException($"Could not write {list.Count} items: Only {RemainingCount} capacity remaining");
+            return new InvalidOperationException(
+                $"Could not write {list.Count} items: Only {RemainingCount} capacity remaining");
         }
         else if (items is ICollection<T> collection)
         {
@@ -130,12 +179,14 @@ public ref struct SpanWriter<T>
                 {
                     _span[pos++] = item;
                 }
+
                 Debug.Assert(pos == newPos);
                 _position = newPos;
-                return Ok(Unit());
+                return Ok(count);
             }
 
-            return new InvalidOperationException($"Could not write {collection.Count} items: Only {RemainingCount} capacity remaining");
+            return new InvalidOperationException(
+                $"Could not write {collection.Count} items: Only {RemainingCount} capacity remaining");
         }
         else
         {
@@ -145,13 +196,15 @@ public ref struct SpanWriter<T>
                 if (pos >= Capacity)
                 {
                     _span[start..].Clear();
-                    return new InvalidOperationException($"Could not write {pos} or more items: Only {RemainingCount} capacity remaining");
+                    return new InvalidOperationException(
+                        $"Could not write {pos} or more items: Only {RemainingCount} capacity remaining");
                 }
+
                 _span[pos++] = item;
             }
 
             _position = pos;
-            return Ok(Unit());
+            return Ok(pos - start);
         }
     }
 

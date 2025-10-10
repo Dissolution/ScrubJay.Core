@@ -37,7 +37,7 @@ static partial class Throw
         [CallerArgumentExpression(nameof(@enum))]
         string? enumName = null)
         where E : struct, Enum
-        => throw InvalidEnumException.New<E>(@enum, info, enumName);
+        => throw Ex.Enum(@enum, info, enumName);
 
     [DoesNotReturn]
     public static R InvalidEnum<E, R>(
@@ -104,7 +104,7 @@ static partial class Throw
             .Append($"Duplicate Key `{key}` was found")
             .IfNotNull(info, static (tb, nfo) => tb.Append($": {nfo}"))
             .ToStringAndDispose();
-        throw Ex.Arg(key, message, keyName);
+        throw Ex.Arg(key, message, null, keyName);
     }
 
     [DoesNotReturn]

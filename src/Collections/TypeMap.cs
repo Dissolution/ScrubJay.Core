@@ -43,7 +43,7 @@ public class TypeMap<V> : Dictionary<Type, V>
         return value;
     }
 
-    public V GetOrAdd<K>(Fn<V> addValue)
+    public V GetOrAdd<K>(Func<V> addValue)
 #if NET9_0_OR_GREATER
         where K : allows ref struct
 #endif
@@ -57,7 +57,7 @@ public class TypeMap<V> : Dictionary<Type, V>
         return value;
     }
 
-    public V GetOrAdd<K>(Fn<Type, V> addValue)
+    public V GetOrAdd<K>(Func<Type, V> addValue)
 #if NET9_0_OR_GREATER
         where K : allows ref struct
 #endif

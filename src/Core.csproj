@@ -48,7 +48,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>ScrubJay.Core</PackageId>
         <Title>ScrubJay - Core</Title>
-        <Version>0.61.5-alpha</Version>
+        <Version>0.62.0-alpha</Version>
         <Authors>Dissolution</Authors>
 
         <Description>
@@ -138,6 +138,11 @@
     <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
         <PackageReference Include="System.Memory" Version="4.6.3"/>
         <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
     </ItemGroup>

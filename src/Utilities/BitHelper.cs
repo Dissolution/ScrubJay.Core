@@ -1,18 +1,93 @@
-﻿using static InlineIL.IL;
+﻿using System.Text;
+using static InlineIL.IL;
 using bytes = System.ReadOnlySpan<byte>;
 
 namespace ScrubJay.Utilities;
 
+/// <summary>
+/// Helper utility for working with <see cref="byte">bytes</see> and <c>unmanaged</c> types
+/// </summary>
+[PublicAPI]
 public static class BitHelper
 {
-    public static bytes AsBytes<U>(in U value)
-        where U : unmanaged
+    static BitHelper()
     {
-        unsafe
+    }
+
+    extension(BitConverter)
+    {
+        public static byte[] GetBytes<U>(in U value)
+            where U : unmanaged
         {
-            return new bytes(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
+            return AsBytes<U>(in value).ToArray();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bytes AsBytes<U>(in U value)
+            where U : unmanaged
+#if NET9_0_OR_GREATER
+            , allows ref struct
+#endif
+        {
+            unsafe
+            {
+                return new bytes(Notsafe.InAsVoidPtr<U>(in value), sizeof(U));
+            }
+        }
+
+        public static bytes AsEnumBytes<E>(in E e)
+            where E : struct, Enum
+        {
+            unsafe
+            {
+                return new bytes(Notsafe.InAsVoidPtr<E>(in e), sizeof(E));
+            }
+        }
+
+        public static int TryWriteBytes<U>(Span<byte> destination, in U value)
+            where U : unmanaged
+        {
+            unsafe
+            {
+                int size = sizeof(U);
+                if (size > destination.Length)
+                    return 0;
+                Notsafe.Bytes.WriteTo(destination, in value);
+                return size;
+            }
+        }
+
+        public static U To<U>(bytes bytes)
+            where U : unmanaged
+        {
+            unsafe
+            {
+                if (bytes.Length < sizeof(U))
+                    throw Ex.Arg(bytes, $"Only {bytes.Length}/{sizeof(U)} bytes were supplied");
+                return Notsafe.Bytes.Read<U>(bytes);
+            }
+        }
+
+        public static string ToString(bytes bytes, Encoding? encoding = null)
+        {
+            return (encoding ?? Encoding.Default).GetString(bytes);
+        }
+
+        public static O Cast<I, O>(I input)
+#if NET9_0_OR_GREATER
+            where I : unmanaged, allows ref struct
+            where O : unmanaged, allows ref struct
+#endif
+        {
+            unsafe
+            {
+                if (sizeof(I) != sizeof(O))
+                    throw Ex.Arg<I>(TextHelper.ToString(input), $"{typeof(I):@} Input `{input}` was not the same size as a {typeof(O):@}");
+                return Notsafe.As<I, O>(input);
+            }
         }
     }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteTo<U>(Span<byte> destination, in U value)
@@ -25,7 +100,7 @@ public static class BitHelper
         }
     }
 
-    public static U Read<U>(bytes bytes)
+    public static U AsValue<U>(scoped bytes bytes)
         where U : unmanaged
     {
         unsafe
@@ -35,8 +110,8 @@ public static class BitHelper
         }
     }
 
-    public static U ReadUnsafe<U>(bytes bytes)
-        where U : unmanaged
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static U AsValueUnsafe<U>(scoped bytes bytes)
     {
         Emit.Ldarg(nameof(bytes));
         Emit.Unaligned(0x1);

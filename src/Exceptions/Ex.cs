@@ -15,45 +15,135 @@ public static class Ex
         return new InvalidOperationException(message);
     }
 
+    public static NotImplementedException NotImplemented(ref InterpolatedTextBuilder interpolatedMessage)
+    {
+        string? message = interpolatedMessage.ToStringAndDispose();
+        return new NotImplementedException(message);
+    }
 
-    public static ArgException Arg<T>(T? argument,
-        ref InterpolatedTextBuilder interpolatedMessage,
+    public static NotImplementedException NotImplemented(string? message = default)
+    {
+        return new NotImplementedException(message);
+    }
+
+    public static UnreachableException Unreachable(InterpolatedTextBuilder interpolatedMessage = default)
+    {
+        return new UnreachableException(interpolatedMessage.ToStringAndDispose());
+    }
+
+
+    public static ArgException Arg(object? argument,
+        string? info = null,
+        Exception? innerException = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+        return ArgException.New(argument, info, innerException, argumentName);
+    }
+
+    public static ArgException Arg(object? argument,
+        ref InterpolatedTextBuilder interpolatedInfo,
+        Exception? innerException = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+        return ArgException.New(argument, ref interpolatedInfo, innerException, argumentName);
+    }
+
+    public static ArgException Arg<T>(object? argument,
+        string? info = null,
+        Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
-        return new ArgException(Any<T>.Box(argument), ref interpolatedMessage, argumentName);
+        return ArgException.New<T>(argument, info, innerException, argumentName);
     }
 
-    public static ArgException Arg<T>(T? argument,
-        string? message = default,
+    public static ArgException Arg<T>(object? argument,
+        ref InterpolatedTextBuilder interpolatedInfo,
+        Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
-        return new ArgException(Any<T>.Box(argument), message, argumentName);
+        return ArgException.New<T>(argument, ref interpolatedInfo, innerException, argumentName);
     }
 
-    public static ArgException Arg<T>(scoped ReadOnlySpan<T> argument,
-        ref InterpolatedTextBuilder interpolatedMessage,
+    public static ArgException Arg<T>(T? argument,
+        string? info = null,
+        Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        return new ArgException(Any.ToString(argument), ref interpolatedMessage, argumentName);
+        return ArgException.New<T>(argument, info, innerException, argumentName);
     }
 
-    public static ArgException Arg<T>(scoped ReadOnlySpan<T> argument,
-        string? message = default,
+    public static ArgException Arg<T>(T? argument,
+        ref InterpolatedTextBuilder interpolatedInfo,
+        Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        return new ArgException(Any.ToString(argument), message, argumentName);
+        return ArgException.New<T>(argument, ref interpolatedInfo, innerException, argumentName);
     }
 
+    // special ability to deal with Span<T> and ReadOnlySpan<T>
+    public static ArgException Arg<T>(scoped Span<T> argument,
+        string? info = null,
+        Exception? innerException = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+#if NET9_0_OR_GREATER
+        return ArgException.New<Span<T>>(argument.ToArray(), info, innerException, argumentName);
+#else
+        return ArgException.New(argument.ToArray(), typeof(Span<T>), info, innerException, argumentName);
+#endif
+    }
+
+    public static ArgException Arg<T>(scoped Span<T> argument,
+        ref InterpolatedTextBuilder interpolatedInfo,
+        Exception? innerException = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+#if NET9_0_OR_GREATER
+        return ArgException.New<Span<T>>(argument.ToArray(), ref interpolatedInfo, innerException, argumentName);
+#else
+        return ArgException.New(argument.ToArray(), typeof(Span<T>), ref interpolatedInfo, innerException, argumentName);
+#endif
+    }
+
+    public static ArgException Arg<T>(scoped ReadOnlySpan<T> argument,
+        string? info = null,
+        Exception? innerException = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+#if NET9_0_OR_GREATER
+        return ArgException.New<ReadOnlySpan<T>>(argument.ToArray(), info, innerException, argumentName);
+#else
+        return ArgException.New(argument.ToArray(), typeof(ReadOnlySpan<T>), info, innerException, argumentName);
+#endif
+    }
+
+    public static ArgException Arg<T>(scoped ReadOnlySpan<T> argument,
+        ref InterpolatedTextBuilder interpolatedInfo,
+        Exception? innerException = null,
+        [CallerArgumentExpression(nameof(argument))]
+        string? argumentName = null)
+    {
+#if NET9_0_OR_GREATER
+        return ArgException.New<ReadOnlySpan<T>>(argument.ToArray(), ref interpolatedInfo, innerException, argumentName);
+#else
+        return ArgException.New(argument.ToArray(), typeof(ReadOnlySpan<T>), ref interpolatedInfo, innerException, argumentName);
+#endif
+    }
 
 
     public static ArgumentNullException ArgNull<T>(T? argument,
@@ -89,5 +179,25 @@ public static class Ex
         string? argumentName = null)
     {
         return new ArgumentOutOfRangeException(argumentName, argument, message);
+    }
+
+    // enum
+
+    public static ArgException Enum<E>(E @enum,
+        ref InterpolatedTextBuilder interpolatedMessage,
+        [CallerArgumentExpression(nameof(@enum))]
+        string? enumName = null)
+        where E : struct, Enum
+    {
+        return ArgException.New<E>(@enum, ref interpolatedMessage, null, enumName);
+    }
+
+    public static ArgException Enum<E>(E @enum,
+        string? message = null,
+        [CallerArgumentExpression(nameof(@enum))]
+        string? enumName = null)
+        where E : struct, Enum
+    {
+        return ArgException.New<E>(@enum, message, null, enumName);
     }
 }

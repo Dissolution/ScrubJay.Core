@@ -5,83 +5,87 @@
 namespace ScrubJay.Extensions;
 
 /// <summary>
-/// Extensions on <see cref="object"/>
+/// Extensions on <see cref="object"/> and <c>T</c>
 /// </summary>
 [PublicAPI]
 public static class ObjectExtensions
 {
-    /// <summary>
-    /// If the <paramref name="input"/> <see cref="object"/> <c>is</c><sup>1</sup> a <typeparamref name="T"/> value,<br/>
-    /// stores that value in <paramref name="output"/> and returns <c>true</c><br/>
-    /// otherwise sets <paramref name="output"/> to <c>default(T)</c> and returns <c>false</c>
-    /// </summary>
-    /// <param name="input"></param>
-    /// <param name="output"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    /// <remarks>
-    /// <sup>1</sup> - <c>Unbox</c> or <c>Cast class</c>
-    /// </remarks>
-    public static bool Is<T>(this object? input, [NotNullWhen(true)] out T? output)
+    extension<T>(T? value)
     {
-        if (input is T)
+        public Option<T> NotNull()
         {
-            output = (T)input;
-            return true;
-        }
-        output = default;
-        return false;
-    }
-
-    public static Option<T> Is<T>(this object? input)
-    {
-        if (input is T)
-        {
-            return Some((T)input);
-        }
-        return None;
-    }
-
-    public static bool As<T>(this object? input, [NotNullIfNotNull(nameof(input))] out T? output)
-    {
-        if (input is T)
-        {
-            output = (T)input;
-            return true;
+            if (value is not null)
+                return Some<T>(value);
+            return None;
         }
 
-        output = default;
-        return typeof(T).CanContainNull();
     }
 
-    public static Option<T?> As<T>(this object? input)
+    extension(object? obj)
     {
-        if (input is T)
+        public bool Is<T>([NotNullWhen(true)] out T? value)
         {
-            return Some<T?>((T)input);
+            if (obj is T)
+            {
+                value = (T)obj;
+                return true;
+            }
+
+            value = default;
+            return false;
         }
 
-        if (input is null && typeof(T).CanContainNull())
+        public Result<T> Is<T>()
         {
-            return Some<T?>(default(T));
+            if (obj is T)
+            {
+                return Ok<T>((T)obj);
+            }
+
+            if (obj is null)
+            {
+                return new ArgumentNullException(nameof(obj));
+            }
+
+            return Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance");
         }
 
-        return None;
-    }
+        public bool As<T>([NotNullIfNotNull(nameof(obj))] out T? value)
+        {
+            if (obj is T)
+            {
+                value = (T)obj;
+                return true;
+            }
 
-    public static Option<object?> As(this object? input, Type? type)
-    {
-        if (input is null)
-            return type.CanContainNull() ? Some<object?>(null) : None;
-        if (input.GetType().Implements(type))
-            return Some<object?>(input);
-        return None;
-    }
+            if (obj is null && typeof(T).CanBeNull)
+            {
+                value = default!;
+                return true;
+            }
 
-    public static Option<T> NotNull<T>(this T? input)
-    {
-        if (input is not null)
-            return Some<T>(input);
-        return None;
+            value = default;
+            return false;
+        }
+
+        public Result<T?> As<T>()
+        {
+            if (obj is T)
+            {
+                return Ok((T?)obj);
+            }
+
+            if (obj is null)
+            {
+                if (typeof(T).CanBeNull)
+                {
+                    return Ok(default(T));
+                }
+
+                return new ArgumentNullException(nameof(obj));
+            }
+
+            return Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance");
+        }
     }
 }

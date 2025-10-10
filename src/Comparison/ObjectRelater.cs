@@ -3,12 +3,12 @@
 namespace ScrubJay.Comparison;
 
 [PublicAPI]
-public sealed class ObjectComparer :
+public sealed class ObjectRelater :
     IEqualityComparer<object>, IEqualityComparer,
     IComparer<object>, IComparer,
-    IHasDefault<ObjectComparer>
+    IHasDefault<ObjectRelater>
 {
-    public static ObjectComparer Default { get; } = new();
+    public static ObjectRelater Default { get; } = new();
 
     bool IEqualityComparer<object>.Equals(object? x, object? y) => Equate(x, y);
 
@@ -43,11 +43,11 @@ public sealed class ObjectComparer :
 
     public int GetHashCode(object? obj) => Hasher.Hash(obj);
 
-    int IComparer<object>.Compare(object? x, object? y) => Relate(x, y);
+    int IComparer<object>.Compare(object? x, object? y) => Compare(x, y);
 
-    int IComparer.Compare(object? x, object? y) => Relate(x, y);
+    int IComparer.Compare(object? x, object? y) => Compare(x, y);
 
-    public int Relate(object? left, object? right)
+    public int Compare(object? left, object? right)
     {
         if (ReferenceEquals(left, right))
             return 0;
@@ -70,6 +70,6 @@ public sealed class ObjectComparer :
             return 1;
         }
 
-        return Comparison.Relate.GetComparer(leftType).Compare(left, right);
+        return Comparison.Compare.GetComparer(leftType).Compare(left, right);
     }
 }

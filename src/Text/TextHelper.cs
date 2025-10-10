@@ -5,6 +5,10 @@
 // ReSharper disable ArrangeMethodOrOperatorBody
 // ReSharper disable InvokeAsExtensionMethod
 
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
+using ScrubJay.Expressions;
 using static ScrubJay.Utilities.Notsafe.Text;
 
 namespace ScrubJay.Text;
@@ -16,6 +20,7 @@ namespace ScrubJay.Text;
 public static class TextHelper
 {
 #region TryCopyTo
+
     /* All *Copy methods validate inputs before calling Notsafe.Text.CopyBlock
      * Source Types: char, string?, ReadOnlySpan<char>, Span<char>, char[]?
      * Dest.  Types: Span<char>, char[]?
@@ -47,6 +52,7 @@ public static class TextHelper
             CopyBlock(source, destination, count);
             return true;
         }
+
         return false;
     }
 
@@ -62,6 +68,7 @@ public static class TextHelper
             CopyBlock(source, destination, count);
             return true;
         }
+
         return false;
     }
 
@@ -73,6 +80,7 @@ public static class TextHelper
             CopyBlock(source, destination, count);
             return true;
         }
+
         return false;
     }
 
@@ -86,6 +94,7 @@ public static class TextHelper
             CopyBlock(source, destination, count);
             return true;
         }
+
         return false;
     }
 
@@ -97,6 +106,7 @@ public static class TextHelper
             CopyBlock(source, destination, count);
             return true;
         }
+
         return false;
     }
 
@@ -110,6 +120,7 @@ public static class TextHelper
             CopyBlock(source, destination, count);
             return true;
         }
+
         return false;
     }
 
@@ -123,6 +134,7 @@ public static class TextHelper
             CopyBlock(source, destination, count);
             return true;
         }
+
         return false;
     }
 
@@ -138,230 +150,15 @@ public static class TextHelper
             CopyBlock(source, destination, count);
             return true;
         }
+
         return false;
     }
+
 #endregion
 
-    /* Compare + Equate get the same rotation of types:
-     * char, string?, char[]?, text
-     */
-
-#region Compare
-#region Ordinal
-    public static int Compare(char left, char right)
-        => left.CompareTo(right);
-
-    public static int Compare(char left, string? right)
-        => Compare(left.AsSpan(), right.AsSpan());
-
-    public static int Compare(char left, char[]? right)
-        => Compare(left.AsSpan(), right.AsSpan());
-
-    public static int Compare(char left, scoped text right)
-        => Compare(left.AsSpan(), right);
-
-    public static int Compare(string? left, char right)
-        => Compare(left.AsSpan(), right.AsSpan());
-
-    public static int Compare(string? left, string? right)
-        => string.CompareOrdinal(left, right);
-
-    public static int Compare(string? left, char[]? right)
-        => Compare(left.AsSpan(), right.AsSpan());
-
-    public static int Compare(string? left, scoped text right)
-        => Compare(left.AsSpan(), right);
-
-    public static int Compare(char[]? left, char right)
-        => Compare(left.AsSpan(), right.AsSpan());
-
-    public static int Compare(char[]? left, string? right)
-        => Compare(left.AsSpan(), right.AsSpan());
-
-    public static int Compare(char[]? left, char[]? right)
-        => Compare(left.AsSpan(), right.AsSpan());
-
-    public static int Compare(char[]? left, scoped text right)
-        => Compare(left.AsSpan(), right);
-
-    public static int Compare(scoped text left, char right)
-        => Compare(left, right.AsSpan());
-
-    public static int Compare(scoped text left, string? right)
-        => Compare(left, right.AsSpan());
-
-    public static int Compare(scoped text left, char[]? right)
-        => Compare(left, right.AsSpan());
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare(scoped text left, scoped text right)
-        => MemoryExtensions.SequenceCompareTo<char>(left, right);
-#endregion
-
-#region with StringComparison
-    public static int Compare(char left, char right, StringComparison comparison)
-        => Compare(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static int Compare(char left, string? right, StringComparison comparison)
-        => Compare(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static int Compare(char left, char[]? right, StringComparison comparison)
-        => Compare(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static int Compare(char left, scoped text right, StringComparison comparison)
-        => Compare(left.AsSpan(), right, comparison);
-
-    public static int Compare(string? left, char right, StringComparison comparison)
-        => Compare(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static int Compare(string? left, string? right, StringComparison comparison)
-        => Compare(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static int Compare(string? left, char[]? right, StringComparison comparison)
-        => Compare(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static int Compare(string? left, scoped text right, StringComparison comparison)
-        => Compare(left.AsSpan(), right, comparison);
-
-    public static int Compare(char[]? left, char right, StringComparison comparison)
-        => Compare(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static int Compare(char[]? left, string? right, StringComparison comparison)
-        => Compare(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static int Compare(char[]? left, char[]? right, StringComparison comparison)
-        => Compare(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static int Compare(char[]? left, scoped text right, StringComparison comparison)
-        => Compare(left.AsSpan(), right, comparison);
-
-    public static int Compare(scoped text left, char right, StringComparison comparison)
-        => Compare(left, right.AsSpan(), comparison);
-
-    public static int Compare(scoped text left, string? right, StringComparison comparison)
-        => Compare(left, right.AsSpan(), comparison);
-
-    public static int Compare(scoped text left, char[]? right, StringComparison comparison)
-        => Compare(left, right.AsSpan(), comparison);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare(scoped text left, scoped text right, StringComparison comparison)
-        => MemoryExtensions.CompareTo(left, right, comparison);
-#endregion
-#endregion
-
-#region Equate
-#region Ordinal
-    public static bool Equate(this char left, char right)
-        => left.Equals(right);
-
-    public static bool Equate(this char left, string? right)
-        => Equate(left.AsSpan(), right.AsSpan());
-
-    public static bool Equate(this char left, char[]? right)
-        => Equate(left.AsSpan(), right.AsSpan());
-
-    public static bool Equate(this char left, scoped text right)
-        => Equate(left.AsSpan(), right);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equate(this string? left, char right)
-    {
-        return left is not null &&
-               left.Length == 1 &&
-               left[0] == right;
-    }
-
-    public static bool Equate(this string? left, string? right)
-        => string.Equals(left, right, StringComparison.Ordinal);
-
-    public static bool Equate(this string? left, char[]? right)
-        => Equate(left.AsSpan(), right.AsSpan());
-
-    public static bool Equate(this string? left, scoped text right)
-        => Equate(left.AsSpan(), right);
-
-    public static bool Equate(this char[]? left, char right)
-        => Equate(left.AsSpan(), right.AsSpan());
-
-    public static bool Equate(this char[]? left, string? right)
-        => Equate(left.AsSpan(), right.AsSpan());
-
-    public static bool Equate(this char[]? left, char[]? right)
-        => Equate(left.AsSpan(), right.AsSpan());
-
-    public static bool Equate(this char[]? left, scoped text right)
-        => Equate(left.AsSpan(), right);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equate(this scoped text left, char right)
-        => left.Length == 1 && left[0] == right;
-
-    public static bool Equate(this scoped text left, string? right)
-        => Equate(left, right.AsSpan());
-
-    public static bool Equate(this scoped text left, char[]? right)
-        => Equate(left, right.AsSpan());
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equate(this scoped text left, scoped text right)
-        => MemoryExtensions.SequenceEqual<char>(left, right);
-#endregion
-
-#region with StringComparison
-    public static bool Equate(this char left, char right, StringComparison comparison)
-        => Equate(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static bool Equate(this char left, string? right, StringComparison comparison)
-        => Equate(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static bool Equate(this char left, char[]? right, StringComparison comparison)
-        => Equate(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static bool Equate(this char left, scoped text right, StringComparison comparison)
-        => Equate(left.AsSpan(), right, comparison);
-
-    public static bool Equate(this string? left, char right, StringComparison comparison)
-        => Equate(left.AsSpan(), right.AsSpan(), comparison);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equate(this string? left, string? right, StringComparison comparison)
-        => string.Equals(left, right, comparison);
-
-    public static bool Equate(this string? left, char[]? right, StringComparison comparison)
-        => Equate(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static bool Equate(this string? left, scoped text right, StringComparison comparison)
-        => Equate(left.AsSpan(), right, comparison);
-
-    public static bool Equate(this char[]? left, char right, StringComparison comparison)
-        => Equate(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static bool Equate(this char[]? left, string? right, StringComparison comparison)
-        => Equate(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static bool Equate(this char[]? left, char[]? right, StringComparison comparison)
-        => Equate(left.AsSpan(), right.AsSpan(), comparison);
-
-    public static bool Equate(this char[]? left, text right, StringComparison comparison)
-        => Equate(left.AsSpan(), right, comparison);
-
-    public static bool Equate(this scoped text left, char right, StringComparison comparison)
-        => Equate(left, right.AsSpan(), comparison);
-
-    public static bool Equate(this scoped text left, string? right, StringComparison comparison)
-        => Equate(left, right.AsSpan(), comparison);
-
-    public static bool Equate(this scoped text left, char[]? right, StringComparison comparison)
-        => Equate(left, right.AsSpan(), comparison);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Equate(this scoped text left, scoped text right, StringComparison comparison)
-        => MemoryExtensions.Equals(left, right, comparison);
-#endregion
-#endregion
 
 #region Contains
+
     public static bool Contains(string? str, char match, StringComparison comparison = StringComparison.Ordinal)
     {
         if (str is null)
@@ -399,9 +196,11 @@ public static class TextHelper
     {
         return MemoryExtensions.Contains(text, match, comparison);
     }
+
 #endregion
 
 #region StartsWith
+
     public static bool StartsWith(string? str, string? match, StringComparison comparison = StringComparison.Ordinal)
     {
         if (str is null || match is null)
@@ -427,9 +226,11 @@ public static class TextHelper
     {
         return MemoryExtensions.StartsWith(text, match, comparison);
     }
+
 #endregion
 
 #region EndsWith
+
     public static bool EndsWith(string? str, string? match, StringComparison comparison = StringComparison.Ordinal)
     {
         if (str is null || match is null)
@@ -455,10 +256,12 @@ public static class TextHelper
     {
         return MemoryExtensions.EndsWith(text, match, comparison);
     }
+
 #endregion
 
 
 #region Misc.
+
     public static string Repeat(int count, char ch)
     {
         if (count < 0)
@@ -479,6 +282,7 @@ public static class TextHelper
             CopyBlock(text, buffer[i..], textLength);
             i += textLength;
         } while (i < totalLength);
+
         return buffer.AsString();
     }
 
@@ -490,11 +294,13 @@ public static class TextHelper
             text = ch.AsSpan();
             return true;
         }
+
         if (obj is string)
         {
             text = ((string)obj).AsSpan();
             return true;
         }
+
         if (obj is char[])
         {
             text = ((char[])obj).AsSpan();
@@ -575,6 +381,7 @@ public static class TextHelper
                     localCost = Math.Min(deletionCost, localCost);
                     localCost++;
                 }
+
                 previousColumn = localCost;
                 previousRow[j] = localCost;
                 previousDiagonal = deletionCost;
@@ -583,4 +390,118 @@ public static class TextHelper
 
         return previousRow[target.Length];
     }
+
+#region ToString Anything
+
+    internal static class Stringify<T>
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        internal static readonly Func<T?, string> _toString = CreateToString();
+
+        private static Func<T?, string> CreateToString()
+        {
+            Type instanceType = typeof(T);
+
+            // Look for an instance method with this signature:
+            // `string ToString()`
+            var toStringMethod = instanceType
+                .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(static method => method.Name == nameof(ToString) &&
+                                        method.ReturnType == typeof(string) &&
+                                        method.GetParameters().Length == 0)
+                .FirstOrDefault();
+
+            if (toStringMethod is null)
+            {
+                // if we didn't find one, we might be able to use object.ToString()
+                Debugger.Break();
+                throw Ex.NotImplemented();
+            }
+
+            // We have to emit a dynamic method,
+            // as Expressions cannot handle ref structs
+            var dyn = new DynamicMethod(
+                name: Build($"{typeof(T):@}_ToString"),
+                attributes: MethodAttributes.Public | MethodAttributes.Static,
+                callingConvention: CallingConventions.Standard,
+                returnType: typeof(string),
+                parameterTypes: [instanceType],
+                m: typeof(TextHelper).Module,
+                skipVisibility: true);
+            var gen = dyn.GetILGenerator();
+
+            // first, load the instance
+
+            // stack types
+            if (instanceType.IsEnum ||
+                instanceType.IsByRef ||
+                instanceType.IsByRefLike ||
+                instanceType.IsValueType)
+            {
+                // load a ref to this value
+                gen.Emit(OpCodes.Ldarga_S, 0);
+            }
+            // heap types
+            else if (instanceType.IsClass || instanceType.IsInterface)
+            {
+                // load this class
+                gen.Emit(OpCodes.Ldarg_0);
+            }
+            else
+            {
+                Debugger.Break();
+                throw Ex.Unreachable();
+            }
+
+            // second, call the ToString Method
+
+            // enums + byref likes we can use Constrained
+            if (instanceType.IsByRef ||
+                instanceType.IsEnum ||
+                instanceType.IsByRefLike)
+            {
+                gen.Emit(OpCodes.Constrained, instanceType);
+                gen.Emit(OpCodes.Callvirt, toStringMethod);
+            }
+            // value types we can just call
+            else if (instanceType.IsValueType)
+            {
+                gen.Emit(OpCodes.Call, toStringMethod);
+            }
+            // class types we callvir to account for overloads
+            else
+            {
+                gen.Emit(OpCodes.Callvirt, toStringMethod);
+            }
+
+            // return
+            gen.Emit(OpCodes.Ret);
+
+            // create the function
+            var func = dyn.CreateDelegate<Func<T?, string>>();
+            return func;
+        }
+    }
+
+
+#if NET9_0_OR_GREATER
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string ToString<T>(T? value)
+        where T : allows ref struct
+    {
+        return Stringify<T>._toString(value);
+    }
+#else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string ToString<T>([AllowNull] T value)
+    {
+        return value?.ToString() ?? string.Empty;
+    }
+
+
+#endif
+
+#endregion
 }

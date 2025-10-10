@@ -178,7 +178,7 @@ public partial class TextBuilder
                 {
                     // do not add a newline, instead remove the indent
                     Debug.Assert(Written.EndsWith(indent));
-                    this.Length -= (indent?.Length ?? 0);
+                    Length -= (indent?.Length ?? 0);
                 }
                 else if (!_whitespace.IsStartLine(this))
                 {

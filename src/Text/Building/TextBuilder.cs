@@ -1,10 +1,15 @@
 #pragma warning disable CA1710
 
 using System.Buffers;
+using System.Text;
 using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Text;
 
+/// <summary>
+/// TextBuilder is a fluent string builder (much like <see cref="System.Text.StringBuilder"/>) that rents and returns and underlying
+/// <see cref="char"/><see cref="Array">[]</see> from <see cref="ArrayPool{T}.Shared"/> by implementing <see cref="IDisposable"/>.
+/// </summary>
 [PublicAPI]
 [MustDisposeResource(true)]
 public sealed partial class TextBuilder :
@@ -188,8 +193,8 @@ public sealed partial class TextBuilder :
         return obj switch
         {
             null => false,
-            string str => TextHelper.Equate(Written, str),
-            char[] chars => TextHelper.Equate(Written, chars),
+            string str => Written.Equate(str),
+            char[] chars => Written.Equate(chars),
             _ => false,
         };
     }
@@ -213,9 +218,9 @@ public sealed partial class TextBuilder :
         GC.SuppressFinalize(this);
     }
 
-    public void RenderTo(TextBuilder builder)
+    public TextBuilder RenderTo(TextBuilder builder)
     {
-        builder.Write(Written);
+        return builder.Append(Written);
     }
 
     public bool TryFormat(

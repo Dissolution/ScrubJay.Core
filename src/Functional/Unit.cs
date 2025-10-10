@@ -27,6 +27,9 @@ public readonly struct Unit :
     public static implicit operator Unit(ValueTuple _) => default;
     public static implicit operator ValueTuple(Unit _) => default;
 
+    public static implicit operator Option<Unit>(Unit _) => Option<Unit>.Some(Default);
+    public static implicit operator Result<Unit>(Unit _) => Result<Unit>.Ok(Default);
+
     // All units are exactly the same
 
     public static bool operator ==(Unit _, Unit __) => true;

@@ -1,7 +1,4 @@
-﻿using System.Reflection;
-using ScrubJay.Expressions;
-
-#pragma warning disable CA1031, MA0048, CA1045
+﻿#pragma warning disable CA1031, MA0048, CA1045
 
 namespace ScrubJay.Utilities;
 
@@ -45,90 +42,16 @@ public static class Disposable
     }
 #endif
 
-    public static void Dispose(
-        [HandlesResourceDisposal]
-        this IEnumerator enumerator)
+    public static void Dispose<T>([HandlesResourceDisposal] T? value)
     {
-        if (enumerator is IDisposable)
+        if (value is IDisposable)
         {
-            ((IDisposable)enumerator).Dispose();
+            ((IDisposable)value).Dispose();
         }
     }
-
-
-    public static void DisposeVal<T>([HandlesResourceDisposal] T? value)
-        => Disposable<T>.Dispose(value);
 
     public static void Dispose([HandlesResourceDisposal] IDisposable? disposable)
         => disposable?.Dispose();
-
-    public static bool TryDisposeAndDefaultRef<D>(
-        [HandlesResourceDisposal]
-        ref D? disposable)
-        where D : class, IDisposable
-    {
-        // Acquire and immediately set to null
-        var localDisposable = Interlocked.Exchange<D?>(ref disposable, null);
-        if (localDisposable is not null)
-        {
-            try
-            {
-                localDisposable.Dispose();
-                return true;
-            }
-            catch (Exception)
-            {
-                // Suppress any errors
-                return false;
-            }
-            finally
-            {
-                // always set to default
-                disposable = null;
-            }
-        }
-
-        return true;
-    }
-}
-
-public static class Disposable<T>
-{
-    private static readonly Action<T> _dispose;
-
-    static Disposable()
-    {
-        var type = typeof(T);
-
-        var disposeMethod = type
-            .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Where(static method => (method.Name == "Dispose") && (method.ReturnType == typeof(void)) && (method.GetParameters().Length == 0))
-            .OneOrDefault();
-
-        if (disposeMethod is null)
-        {
-            _dispose = DoNothing;
-        }
-        else
-        {
-            _dispose = new LambdaBuilder<Action<T>>()
-                .ParamName(0, "this")
-                .Body(b => b.Call(0, disposeMethod))
-                .TryCompile()
-                .OkOrThrow();
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void DoNothing(T _) { }
-
-    public static void Dispose([HandlesResourceDisposal] T? disposable)
-    {
-        if (disposable is not null)
-        {
-            _dispose(disposable);
-        }
-    }
 }
 
 internal sealed class ActionDisposable : IDisposable

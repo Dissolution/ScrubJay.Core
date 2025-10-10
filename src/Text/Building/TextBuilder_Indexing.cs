@@ -95,7 +95,7 @@ public partial class TextBuilder
         {
             for (; offset <= end; offset++)
             {
-                if (TextHelper.Equate(span.Slice(offset, 1), charSpan, comparison))
+                if (span.Slice(offset, 1).Equate(charSpan, comparison))
                     return Some(offset);
             }
         }
@@ -103,7 +103,7 @@ public partial class TextBuilder
         {
             for (; offset >= 0; offset--)
             {
-                if (TextHelper.Equate(span.Slice(offset, 1), charSpan, comparison))
+                if (span.Slice(offset, 1).Equate(charSpan, comparison))
                     return Some(offset);
             }
         }
@@ -153,7 +153,7 @@ public partial class TextBuilder
         {
             for (; offset <= end; offset++)
             {
-                if (TextHelper.Equate(span.Slice(offset, len), text, comparison))
+                if (span.Slice(offset, len).Equate(text, comparison))
                     return Some(offset);
             }
         }
@@ -161,7 +161,7 @@ public partial class TextBuilder
         {
             for (; offset >= 0; offset--)
             {
-                if (TextHelper.Equate(span.Slice(offset, len), text, comparison))
+                if (span.Slice(offset, len).Equate(text, comparison))
                     return Some(offset);
             }
         }

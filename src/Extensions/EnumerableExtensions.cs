@@ -1,11 +1,25 @@
 namespace ScrubJay.Extensions;
 
 /// <summary>
-/// Extensions on <see cref="IEnumerable{T}"/> and <see cref="IEnumerable"/>
+/// Extensions on <see cref="IEnumerable{T}"/>, <see cref="IEnumerable"/>, <see cref="IEnumerator{T}"/>, and <see cref="IEnumerator"/>
 /// </summary>
 [PublicAPI]
 public static class EnumerableExtensions
 {
+#region IEnumerable
+
+    public static void Dispose(
+        [HandlesResourceDisposal] this IEnumerator enumerator)
+    {
+        if (enumerator is IDisposable)
+        {
+            ((IDisposable)enumerator).Dispose();
+        }
+    }
+
+#endregion
+
+
     /// <summary>
     /// A Predicate against <paramref name="input"/> that also produces <paramref name="output"/>
     /// </summary>

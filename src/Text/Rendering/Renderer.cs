@@ -2,11 +2,23 @@ using System.Reflection;
 
 namespace ScrubJay.Text.Rendering;
 
+internal sealed class RendererCacheComparer : Comparer<(int Priority, IRenderer Renderer)>
+{
+    public override int Compare((int Priority, IRenderer Renderer) x, (int Priority, IRenderer Renderer) y)
+    {
+        // High to Low, so compare y with x (opposite order)
+        return y.Priority.CompareTo(x.Priority);
+    }
+}
+
 [PublicAPI]
 public static class Renderer
 {
+
+
+
     private static readonly Lock _lock = new();
-    private static readonly OrderedList<(int, IRenderer)> _renderers = new(IdTupleComparer<IRenderer>.Default);
+    private static readonly OrderedList<(int, IRenderer)> _renderers = new(new RendererCacheComparer(), newestFirst: true);
     private static readonly ConcurrentTypeMap<IRenderer?> _rendererMap = [];
 
     static Renderer()
@@ -53,7 +65,7 @@ public static class Renderer
                 if (obj is not IRenderer renderer)
                     return new InvalidOperationException();
 
-                int priority = int.MinValue;
+                int priority = 0;
                 var priorityAttribute = type.GetCustomAttribute<RendererPriorityAttribute>();
                 if (priorityAttribute is not null)
                 {
@@ -139,16 +151,15 @@ public static class Renderer
 
 
 
-    public static void RenderValue<T>(TextBuilder builder, T? value)
+    public static TextBuilder RenderValue<T>(TextBuilder builder, T? value)
     {
         if (value is null)
-            return;
+            return builder;
 
         // If the value is Renderable, use its func
         if (value is IRenderable)
         {
-            ((IRenderable)value).RenderTo(builder);
-            return;
+            return ((IRenderable)value).RenderTo(builder);
         }
 
         // We're looking for something that can render T
@@ -158,23 +169,21 @@ public static class Renderer
         IRenderer<T>? typedRenderer = GetRenderer<T>();
         if (typedRenderer is not null)
         {
-            typedRenderer.RenderValue(builder, value);
-            return;
+            return typedRenderer.RenderValue(builder, value);
         }
 
         // see if we have something that can render this value
         IRenderer? renderer = GetRenderer(valueType);
         if (renderer is not null)
         {
-            renderer.RenderObject(builder, (object)value);
-            return;
+            return renderer.RenderObject(builder, (object)value);
         }
 
         // fallback to default
-        DefaultRenderValue(builder, value);
+        return DefaultRenderValue(builder, value);
     }
 
     public static bool CanRender<T>() => GetRenderer<T>() is not null;
 
-    public static bool CanRender(Type type) => _renderers.Any(r => r.Item2.CanRender(type));
+    public static bool CanRender(Type type) => GetRenderer(type) is not null;
 }

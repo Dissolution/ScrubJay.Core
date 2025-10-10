@@ -8,11 +8,11 @@ public sealed class RendererPriorityAttribute : Attribute
 
     public RendererPriorityAttribute()
     {
-        Priority = int.MinValue;
+
     }
 
     public RendererPriorityAttribute(int priority)
     {
-        this.Priority = priority;
+        Priority = priority;
     }
 }

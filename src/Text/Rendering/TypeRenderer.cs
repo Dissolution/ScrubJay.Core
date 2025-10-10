@@ -5,6 +5,7 @@ namespace ScrubJay.Text.Rendering;
 /// <summary>
 /// A helper for rendering <see cref="Type"/> names
 /// </summary>
+[RendererPriority(-10)]
 [PublicAPI]
 public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
 {
@@ -115,6 +116,6 @@ public sealed class TypeRenderer : Renderer<Type>, IHasDefault<TypeRenderer>
                 .Append('>'));
     }
 
-    public override void RenderValue(TextBuilder builder, Type? type)
+    public override TextBuilder RenderValue(TextBuilder builder, Type? type)
         => RenderType(builder, type);
 }

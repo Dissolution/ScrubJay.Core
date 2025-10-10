@@ -4,7 +4,7 @@ namespace ScrubJay.Text.Rendering;
 [PublicAPI]
 public sealed class TupleRenderer : Renderer<ITuple>
 {
-    public override void RenderValue(TextBuilder builder, ITuple tuple)
+    public override TextBuilder RenderValue(TextBuilder builder, ITuple tuple)
     {
         int len = tuple.Length;
         builder.Append('(');
@@ -21,7 +21,7 @@ public sealed class TupleRenderer : Renderer<ITuple>
             i += 1;
         }
 
-        builder.Append(')');
+        return builder.Append(')');
     }
 }
 #endif

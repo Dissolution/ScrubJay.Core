@@ -16,6 +16,6 @@ public sealed class RandomPrng : IPrng
     {
         Span<byte> buffer = stackalloc byte[sizeof(ulong)];
         _random.NextBytes(buffer);
-        return BitHelper.Read<ulong>(buffer);
+        return BitHelper.AsValue<ulong>(buffer);
     }
 }

@@ -148,7 +148,7 @@ public abstract class PrngBase : IPrng
         {
             Span<byte> buffer = stackalloc byte[sizeof(U)];
             Fill(buffer);
-            return BitHelper.Read<U>(buffer);
+            return BitHelper.AsValue<U>(buffer);
         }
     }
 

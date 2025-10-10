@@ -4,7 +4,7 @@
 /// Helper utility for generating <see cref="IEnumerator{T}"/> instances
 /// </summary>
 [PublicAPI]
-public static class Enumerator
+public static class Iterator
 {
     /// <summary>
     /// Gets an <see cref="ArrayEnumerator{T}"/> for the given <paramref name="array"/>
@@ -19,11 +19,11 @@ public static class Enumerator
     /// Gets an empty <see cref="IEnumerator{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerator<T> Empty<T>() => new EmptyEnumerable<T>();
+    public static IEnumerator<T> Empty<T>() => new EmptyIterator<T>();
 
     /// <summary>
     /// Gets an <see cref="IEnumerator{T}"/> that enumerates over a single <paramref name="value"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerator<T> One<T>(T value) => new SingleEnumerable<T>(value);
+    public static IEnumerator<T> One<T>(T value) => new SingleIterator<T>(value);
 }

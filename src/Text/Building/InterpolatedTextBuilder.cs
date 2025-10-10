@@ -13,14 +13,33 @@ namespace ScrubJay.Text;
 [MustDisposeResource(false)]
 public ref struct InterpolatedTextBuilder
 {
-    private readonly TextBuilder _builder;
-    private readonly bool _disposeBuilder;
+    public static implicit operator InterpolatedTextBuilder(string? str)
+    {
+        if (str is not null)
+        {
+            TextBuilder builder = new TextBuilder().Append(str);
+            return new InterpolatedTextBuilder(builder, true);
+        }
+        else
+        {
+            return default;
+        }
+    }
 
-    [MustDisposeResource(true)]
+    private TextBuilder? _builder;
+    private bool _disposeBuilder;
+
+    private InterpolatedTextBuilder(TextBuilder? builder, bool disposeBuilder)
+    {
+        _builder = builder;
+        _disposeBuilder = disposeBuilder;
+    }
+
+    [MustDisposeResource(false)]
     public InterpolatedTextBuilder()
     {
-        _builder = new TextBuilder();
-        _disposeBuilder = true;
+        _builder = null;
+        _disposeBuilder = false;
     }
 
     [MustDisposeResource(true)]
@@ -44,52 +63,114 @@ public ref struct InterpolatedTextBuilder
         _disposeBuilder = false;
     }
 
+    public void AppendLiteral(string str)
+    {
+        Debug.Assert(str is not null);
+        _builder ??= new(str!.Length);
+        _builder.Write(str);
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendLiteral(string str) => _builder.Append(str);
+    public void AppendFormatted(char ch)
+    {
+        _builder ??= new(1);
+        _builder.Write(ch);
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted(char ch) => _builder.Append(ch);
+    public void AppendFormatted(char ch, int alignment)
+    {
+        _builder ??= new(alignment);
+        _builder.Align(ch, width: alignment);
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted(char ch, int alignment) => _builder.Align(ch, width: alignment);
+    public void AppendFormatted(scoped text text)
+    {
+        _builder ??= new(text.Length);
+        _builder.Write(text);
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted(scoped text txt) => _builder.Append(txt);
+    public void AppendFormatted(scoped text text, int alignment)
+    {
+        _builder ??= new(alignment);
+        _builder.Align(text, width: alignment);
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted(scoped text txt, int alignment) => _builder.Align(txt, width: alignment);
+    public void AppendFormatted(string? str)
+    {
+        if (str is not null)
+        {
+            _builder ??= new(str.Length);
+            _builder.Write(str);
+        }
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted(string? str) => _builder.Append(str);
+    public void AppendFormatted(string? str, int alignment)
+    {
+        if (str is not null)
+        {
+            _builder ??= new(str.Length);
+            _builder.Align(str, width: alignment);
+        }
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted(string? str, int alignment) => _builder.Align(str.AsSpan(), width: alignment);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted<T>(T value)
+    public void AppendFormatted<T>(T? value)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
-        => _builder.Append<T>(value);
+    {
+        if (value is not null)
+        {
+            _builder ??= new();
+            string str = TextHelper.ToString(value);
+            _builder.Write(str);
+        }
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted<T>(T value, string? format) => _builder.Format(value, format);
+    public void AppendFormatted<T>(T? value, string? format)
+    {
+        if (value is not null)
+        {
+            _builder ??= new();
+            _builder.Format<T>(value, format);
+        }
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted<T>(T value, scoped text format) => _builder.Format(value, format);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted<T>(T value, int alignment) => _builder.AlignFormat<T>(value, width: alignment);
+    public void AppendFormatted<T>(T? value, scoped text format)
+    {
+        if (value is not null)
+        {
+            _builder ??= new();
+            _builder.Format<T>(value, format);
+        }
+    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AppendFormatted<T>(T value, int alignment, string? format) => _builder.AlignFormat<T>(value, alignment, format);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AppendFormatted<T>(T? value, int alignment)
+    {
+        if (value is not null)
+        {
+            _builder ??= new();
+            _builder.AlignFormat<T>(value, width: alignment);
+        }
+    }
+
+
+    public void AppendFormatted<T>(T? value, int alignment, string? format)
+    {
+        if (value is not null)
+        {
+            _builder ??= new();
+            _builder.AlignFormat<T>(value, alignment, format);
+        }
+    }
+
     public void AppendFormatted(Action<TextBuilder>? build)
     {
-        // pass-through to builder for execution
-        _builder.Invoke(build);
+        if (build is not null)
+        {
+            _builder ??= new();
+            _builder.Invoke(build);
+        }
     }
 
     public void Dispose()
@@ -102,17 +183,9 @@ public ref struct InterpolatedTextBuilder
 
     public string ToStringAndDispose()
     {
-        if (_builder is not null)
-        {
-            string str = _builder.ToString();
-            if (_disposeBuilder)
-            {
-                _builder.Dispose();
-            }
-            return str;
-        }
-
-        return string.Empty;
+        string str = ToString();
+        Dispose();
+        return str;
     }
 
     public override string ToString()

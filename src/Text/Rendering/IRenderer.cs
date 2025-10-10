@@ -18,5 +18,5 @@ public interface IRenderer
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="obj"></param>
-    void RenderObject(TextBuilder builder, object obj);
+    TextBuilder RenderObject(TextBuilder builder, object obj);
 }
