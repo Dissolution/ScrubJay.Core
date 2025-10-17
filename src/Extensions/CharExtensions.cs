@@ -1,15 +1,58 @@
-﻿namespace ScrubJay.Extensions;
+﻿#pragma warning disable CA1822 // Mark members as static
 
+namespace ScrubJay.Extensions;
+
+/// <summary>
+/// Extensions on <see cref="char"/>
+/// </summary>
 [PublicAPI]
 public static class CharExtensions
 {
-    /// <summary>
-    /// Returns <see langword="true"/> if <paramref name="ch"/> is an ASCII
-    /// character ([ U+0000..U+007F ]).
-    /// </summary>
-    /// <remarks>
-    /// Per http://www.unicode.org/glossary/#ASCII, ASCII is only U+0000..U+007F.
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsAscii(this char ch) => (uint)ch <= '\x007F';
+    extension(char)
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsAsciiHexDigitLower(char ch)
+        {
+#if NET7_0_OR_GREATER
+            return char.IsAsciiHexDigitLower(ch);
+#else
+            return (uint)(ch - '0') <= 9 || (uint)(ch - 'a') <= ('f' - 'a');
+#endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsAsciiHexDigitUpper(char ch)
+        {
+#if NET7_0_OR_GREATER
+            return char.IsAsciiHexDigitUpper(ch);
+#else
+            return (uint)(ch - '0') <= 9 || (uint)(ch - 'A') <= ('F' - 'A');
+#endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsAsciiHexDigit(char ch)
+        {
+#if NET7_0_OR_GREATER
+            return char.IsAsciiHexDigit(ch);
+#else
+            return (uint)(ch - '0') <= 9 || (uint)(ch - 'A') <= ('F' - 'A') || (uint)(ch - 'a') <= ('f' - 'a');
+#endif
+        }
+    }
+
+    extension(char ch)
+    {
+        /// <summary>
+        /// Is this <see cref="char"/> valid <c>ASCII</c>?<br/>
+        /// </summary>
+        /// <remarks>
+        /// Per <see href="http://www.unicode.org/glossary/#ASCII"/>, ASCII is the range U+0000..=U+007F
+        /// </remarks>
+        public bool IsAscii
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (uint)ch <= '\x007F';
+        }
+    }
 }

@@ -8,8 +8,26 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class TypeExtensions
 {
+    extension(Type)
+    {
+#if NET9_0_OR_GREATER
+        public static Type GetType<T>(T? instance = default)
+            where T : allows ref struct
+        {
+            return typeof(T);
+        }
+#else
+        public static Type GetType<T>(T? instance = default)
+        {
+            return instance?.GetType() ?? typeof(T);
+        }
+#endif
+    }
+
     extension(Type? type)
     {
+        public bool IsRef => type is not null && (type.IsByRef || type.IsByRefLike);
+
 #if NETFRAMEWORK || NETSTANDARD2_0
         public bool IsByRefLike => false;
 #endif

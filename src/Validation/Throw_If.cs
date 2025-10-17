@@ -553,6 +553,15 @@ public static partial class Throw
 
 #region Bad Index/Range
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="available"></param>
+    /// <param name="info"></param>
+    /// <param name="indexName"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public static int IfBadIndex(
         int index,
         int available,

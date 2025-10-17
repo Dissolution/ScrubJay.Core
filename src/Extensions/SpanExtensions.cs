@@ -8,6 +8,16 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class SpanExtensions
 {
+    extension<T>(scoped Span<T> span)
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyFrom(scoped ReadOnlySpan<T> other) => other.CopyTo(span);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyFrom(scoped Span<T> other) => other.CopyTo(span);
+    }
+
+
     /// <summary>
     /// Performs the given <paramref name="perItem"/> action on each item in the <see cref="Span{T}"/>
     /// </summary>

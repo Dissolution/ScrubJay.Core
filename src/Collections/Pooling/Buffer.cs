@@ -7,6 +7,7 @@
 
 using System.Buffers;
 using System.Text;
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 
 namespace ScrubJay.Collections.Pooling;
 
@@ -24,14 +25,11 @@ namespace ScrubJay.Collections.Pooling;
 /// </remarks>
 [PublicAPI]
 [MustDisposeResource(true)]
-public ref struct Buffer<T> :
-    // IList<T>,
-    // IReadOnlyList<T>,
-    // ICollection<T>,
-    // IReadOnlyCollection<T>,
-    // IEnumerable<T>,
-    IDisposable
+[SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations")]
+public ref struct Buffer<T> : IDisposable
 {
+#region Static
+
     /// <summary>
     /// Implicitly wrap a <see cref="Span{T}"/> with a <see cref="Buffer{T}"/><br/>
     /// This is useful with <c>stackalloc</c>:<br/>
@@ -48,12 +46,7 @@ public ref struct Buffer<T> :
     /// A <see cref="Buffer{T}"/> wrapping the <paramref name="span"/>
     /// </returns>
     [MustDisposeResource(false)]
-    public static implicit operator Buffer<T>(Span<T> span) => new(span, 0);
-
-    /// <summary>
-    /// The minimum capacity a buffer can start with
-    /// </summary>
-    private static readonly int _minCapacity = typeof(T).IsValueType ? 1024 : 64;
+    public static implicit operator Buffer<T>(Span<T> span) => new(span);
 
     public static Buffer<T> Empty
     {
@@ -67,19 +60,24 @@ public ref struct Buffer<T> :
     [MustDisposeResource]
     public static Buffer<T> New(int minCapacity) => new(minCapacity);
 
+#endregion
 
-    // The writable span, usually pointing to _array, but possibly from an initial Span<T>
-    internal Span<T> _span;
+#region Fields + Properties
 
-    // The writeable array, usually rented from an ArrayPool
-    // may be null if started with a span
+    // A writable array, usually rented from ArrayPool,
+    // may be null if started with a Span buffer or as default(Buffer<T>)
     internal T[]? _array;
 
+    // The writeable span, usually pointing to _array
+    // may be an initial unrented buffer or empty as default
+    internal Span<T> _span;
+
     // the position in _span that we're writing to
-    private int _position;
+    internal int _position;
+
 
     /// <summary>
-    /// Gets a <see cref="Span{T}"/> over the written items in this Buffer
+    /// Gets a <see cref="Span{T}"/> over the added items in this <see cref="Buffer{T}"/>
     /// </summary>
     public Span<T> Written
     {
@@ -88,7 +86,8 @@ public ref struct Buffer<T> :
     }
 
     /// <summary>
-    /// Gets a <see cref="Span{T}"/> over the unwritten|available portion of this Buffer
+    /// Gets a <see cref="Span{T}"/> over the unwritten|available portion of this <see cref="Buffer{T}"/><br/>
+    /// ⚠️ If you write to <see cref="Available"/> manually, you must also increment <see cref="Count"/> manually.
     /// </summary>
     public Span<T> Available
     {
@@ -100,7 +99,7 @@ public ref struct Buffer<T> :
     /// Returns a reference to the item in this <see cref="Buffer{T}"/> at the given <paramref name="index"/>
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown if <paramref name="index"/> is not in [0..Count)
+    /// Thrown if <paramref name="index"/> is not in [0..<see cref="Count"/>)
     /// </exception>
     public ref T this[int index]
     {
@@ -115,7 +114,7 @@ public ref struct Buffer<T> :
     /// Returns a reference to the item in this <see cref="Buffer{T}"/> at the given <see cref="Index"/>
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown if <paramref name="index"/> is not in [0..Count)
+    /// Thrown if <paramref name="index"/> is not in [0..<see cref="Count"/>)
     /// </exception>
     public ref T this[Index index]
     {
@@ -127,10 +126,10 @@ public ref struct Buffer<T> :
     }
 
     /// <summary>
-    /// Gets a <see cref="Span{T}"/> over the given <see cref="Range"/> of written items in this <see cref="Buffer{T}"/>
+    /// Gets a <see cref="Span{T}"/> over the given <see cref="Range"/> of added items in this <see cref="Buffer{T}"/>
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="range"/> is invalid
+    /// Thrown if <paramref name="range"/> is invalid or not in [0..<see cref="Count"/>)
     /// </exception>
     public Span<T> this[Range range]
     {
@@ -142,8 +141,12 @@ public ref struct Buffer<T> :
     }
 
     /// <summary>
-    /// Gets the number of items in this <see cref="Buffer{T}"/>
+    /// Gets or Sets the number of items in this <see cref="Buffer{T}"/><br/>
+    /// ⚠️ If you change this value manually without adding to <see cref="Available"/> manually, this <see cref="Buffer{T}"/> will contain unknown data.
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown if setting Count less than 0 or greater than <see cref="Capacity"/>
+    /// </exception>
     public int Count
     {
         readonly get => _position;
@@ -155,7 +158,7 @@ public ref struct Buffer<T> :
     }
 
     /// <summary>
-    /// Gets the current capacity for this <see cref="Buffer{T}"/>, which will be increased as required
+    /// Gets the current capacity for this <see cref="Buffer{T}"/>
     /// </summary>
     public int Capacity
     {
@@ -164,7 +167,7 @@ public ref struct Buffer<T> :
         {
             if (value < _position)
             {
-                throw Ex.ArgRange(value, $"Capacity cannot be less that Count of {Count}");
+                throw Ex.ArgRange(value, $"cannot be less that Count of {Count}");
             }
             else if (value > _span.Length)
             {
@@ -173,54 +176,35 @@ public ref struct Buffer<T> :
         }
     }
 
+#endregion
+
 #region constructors
 
-    internal Buffer(T[] initialArray, int initialPosition)
-    {
-        Debug.Assert(initialArray is not null);
-        _span = _array = initialArray;
-        Debug.Assert((initialPosition >= 0) && (initialPosition <= Capacity));
-        _position = initialPosition;
-    }
-
-    internal Buffer(Span<T> initialSpan, int initialPosition)
-    {
-        _span = initialSpan;
-        _array = null;
-        Debug.Assert((initialPosition >= 0) && (initialPosition <= Capacity));
-        _position = initialPosition;
-    }
-
-    /// <summary>
-    /// Create an empty <see cref="Buffer{T}"/> that has not allocated anything
-    /// </summary>
     public Buffer()
     {
         _span = _array = null;
         _position = 0;
     }
 
-    /// <summary>
-    /// Create an empty <see cref="Buffer{T}"/> with at least a starting <see cref="Capacity"/> of <paramref name="minCapacity"/>
-    /// </summary>
-    /// <param name="minCapacity">
-    /// The minimum starting <see cref="Capacity"/> the <see cref="Buffer{T}"/> will have
-    /// </param>
-    /// <remarks>
-    /// If <paramref name="minCapacity"/> is greater than 0, an underlying array will be rented
-    /// </remarks>
+    [MustDisposeResource(true)]
     public Buffer(int minCapacity)
     {
-        if (minCapacity <= 0)
-        {
-            _span = _array = null;
-        }
-        else
-        {
-            _span = _array = ArrayPool<T>.Shared.Rent(Math.Max(_minCapacity, minCapacity));
-        }
-
+        _span = _array = ArrayNest.Rent<T>(minCapacity);
         _position = 0;
+    }
+
+    public Buffer(Span<T> initialBuffer)
+    {
+        _array = null;
+        _span = initialBuffer;
+        _position = 0;
+    }
+
+    public Buffer(Span<T> initialBuffer, int startPosition)
+    {
+        _array = null;
+        _span = initialBuffer;
+        _position = Throw.IfNotBetween(startPosition, 0, initialBuffer.Length, upperBoundIsInclusive: true);
     }
 
 #endregion
@@ -228,26 +212,24 @@ public ref struct Buffer<T> :
 #region Grow
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void GrowBy(int adding)
+    internal void GrowBy(int adding)
     {
         Debug.Assert(adding > 0);
-        GrowTo(Capacity + (adding * 16));
+        GrowTo((Capacity + adding) * 2);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void GrowTo(int minCapacity)
+    internal void GrowTo(int minCapacity)
     {
-        Debug.Assert(minCapacity >= Capacity);
-        T[] array = ArrayPool<T>.Shared.Rent(Math.Max(minCapacity * 2, _minCapacity));
-        if (_span.Length > 0)
+        Debug.Assert(minCapacity > Capacity);
+        T[] array = ArrayNest.Rent<T>(minCapacity);
+
+        if (_position > 0)
         {
             Written.CopyTo(array);
         }
 
-        if (_array is not null)
-        {
-            ArrayPool<T>.Shared.Return(_array, true);
-        }
+        ArrayNest.Return(_array);
 
         _span = _array = array;
     }
@@ -256,9 +238,11 @@ public ref struct Buffer<T> :
     /// Grows the <see cref="Capacity"/> of this <see cref="Buffer{T}"/> to at least twice its current value
     /// </summary>
     /// <remarks>
-    /// This method causes a <see cref="Array">T[]</see> rental
-    /// from <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/>
+    /// This method will always cause a new <see cref="Array">T[]</see> rental from <see cref="ArrayNest"/>
     /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if <see cref="CanGrow"/> is <c>false</c>
+    /// </exception>
     public void Grow() => GrowTo(Capacity * 2);
 
 #endregion
@@ -286,7 +270,7 @@ public ref struct Buffer<T> :
         using var buffer = new Buffer<T>();
         foreach (var item in items)
         {
-            buffer.Add(item);
+            buffer.Write(item);
         }
 
         InsertMany(index, buffer.Written);
@@ -308,9 +292,9 @@ public ref struct Buffer<T> :
     /// Add a new <paramref name="item"/> to this <see cref="Buffer{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(T item)
+    public void Write(T item)
     {
-        if (_position < _span.Length)
+        if (_position < Capacity)
         {
             _span[_position] = item;
             _position++;
@@ -329,16 +313,16 @@ public ref struct Buffer<T> :
     private void GrowAndAddMany(scoped ReadOnlySpan<T> items)
     {
         GrowBy(items.Length);
-        Sequence.CopyTo(items, _span[_position..]);
+        Sequence.CopyTo(items, Available);
         _position += items.Length;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(params ReadOnlySpan<T> items)
+    public void WriteMany(params ReadOnlySpan<T> items)
     {
         if (_position + items.Length <= _span.Length)
         {
-            Sequence.CopyTo(items, _span[_position..]);
+            Sequence.CopyTo(items, Available);
             _position += items.Length;
         }
         else
@@ -351,49 +335,79 @@ public ref struct Buffer<T> :
     /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddMany(T[]? items)
-    {
-        if (items is not null)
-        {
-            AddMany(new ReadOnlySpan<T>(items));
-        }
-    }
+    public void WriteMany(T[]? items) => WriteMany(items.AsSpan());
 
     /// <summary>
     /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
     /// </summary>
-    public void AddMany(IEnumerable<T>? items)
+    public void WriteMany(IEnumerable<T>? items)
     {
         if (items is null)
         {
-            return;
+            //return;
         }
-
-        if (items is ICollection<T> collection)
+#if !NETFRAMEWORK && !NETSTANDARD
+        else if (items is List<T> list)
+        {
+            var listSpan = CollectionsMarshal.AsSpan(list);
+            WriteMany(listSpan);
+        }
+#endif
+        else if (items is ICollection<T> collection)
         {
             int len = collection.Count;
-            if (len == 0)
-            {
-                return;
-            }
 
-            if ((_position + len > Capacity) || _array is null)
+            if (_position + len > Capacity)
             {
                 GrowBy(len);
             }
 
-            collection.CopyTo(_array!, _position);
+            if (_array is not null)
+            {
+                // we can use ICollection<T>.CopyTo(T[] array, int arrayIndex)
+                collection.CopyTo(_array!, _position);
+            }
+            else
+            {
+                int i = _position;
+                foreach (var item in collection)
+                {
+                    _span[i] = item;
+                }
+
+                Debug.Assert(i == (_position + len));
+            }
+
             _position += len;
+        }
+        // ReSharper disable once PossibleMultipleEnumeration
+        else if (items.TryGetNonEnumeratedCount(out var count))
+        {
+            if (_position + count > Capacity)
+            {
+                GrowBy(count);
+            }
+
+            int i = _position;
+            foreach (var item in items)
+            {
+                _span[i] = item;
+            }
+
+            Debug.Assert(i == (_position + count));
+            _position += count;
         }
         else
         {
-            // slow path
-            foreach (T item in items)
+            // slowest path
+            foreach (var item in items)
             {
-                Add(item);
+                Write(item);
             }
         }
     }
+
+    public void WriteMany(Buffer<T> buffer) => WriteMany(buffer.Written);
 
 #endregion
 
@@ -404,7 +418,7 @@ public ref struct Buffer<T> :
         int offset = Throw.IfBadInsertIndex(index, _position);
         if (offset == _position)
         {
-            Add(item);
+            Write(item);
             return;
         }
 
@@ -420,14 +434,14 @@ public ref struct Buffer<T> :
 
 #endregion
 
-    #region InsertMany
+#region InsertMany
 
     public void InsertMany(Index index, params ReadOnlySpan<T> items)
     {
         int offset = Throw.IfBadInsertIndex(index, _position);
         if (offset == _position)
         {
-            AddMany(items);
+            WriteMany(items);
             return;
         }
 
@@ -459,7 +473,7 @@ public ref struct Buffer<T> :
         int offset = Throw.IfBadInsertIndex(index, _position);
         if (offset == _position)
         {
-            AddMany(items);
+            WriteMany(items);
             return;
         }
 
@@ -488,7 +502,9 @@ public ref struct Buffer<T> :
         InsertManyEnumerable(offset, items);
     }
 
-    #endregion
+#endregion
+
+#region Sort
 
     /// <summary>
     /// Sorts the items in this <see cref="Buffer{T}"/> using an optional <see cref="IComparer{T}"/>
@@ -533,6 +549,10 @@ public ref struct Buffer<T> :
 
         Array.Sort(_array!, 0, _position, Compare.CreateComparer<T>(itemComparison));
     }
+
+#endregion
+
+#region Contains + Indexing
 
     /// <summary>
     /// Does this <see cref="Buffer{T}"/> contain any instances of the <paramref name="item"/>?
@@ -840,6 +860,10 @@ public ref struct Buffer<T> :
         return None;
     }
 
+#endregion
+
+#region Removal
+
     /// <summary>
     /// Try to remove the item at the given <see cref="Index"/>
     /// </summary>
@@ -988,44 +1012,58 @@ public ref struct Buffer<T> :
     /// </remarks>
     public void Clear() => _position = 0;
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private Span<T> AllocateGrow(int length)
-    {
-        int pos = _position;
-        GrowBy(length);
-        _position = pos + length;
-        return _span.Slice(pos, length);
-    }
+#endregion
 
-    /// <summary>
-    /// Allocates a <see cref="Span{T}"/> of the given <paramref name="length"/>
-    /// </summary>
-    /// <param name="length">
-    /// The total number of items to allocate a <see cref="Span{T}"/> for
-    /// </param>
-    /// <returns>
-    /// A <see cref="Span{T}"/> over the allocated items
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#region Allocate
+
     public Span<T> Allocate(int length)
     {
-        if (length <= 0)
-        {
-            return [];
-        }
+        Throw.IfLessThan(length, 0);
 
         int pos = _position;
-        Span<T> span = _span;
-        if ((pos + length) <= span.Length)
+        int newPos = pos + length;
+        if (newPos > Capacity)
         {
-            _position = pos + length;
-            return span.Slice(pos, length);
+            GrowBy(length);
         }
-        else
-        {
-            return AllocateGrow(length);
-        }
+
+        Span<T> slice = _span.Slice(pos, length);
+        slice.Clear();
+        _position = newPos;
+        return slice;
     }
+
+    public Span<T> AllocateAt(Index index, int length)
+    {
+        int i = Throw.IfBadInsertIndex(index, _position);
+        Throw.IfLessThan(length, 0);
+        if (i == _position)
+            return Allocate(length);
+
+        int pos = _position;
+        int newPos = pos + length;
+        if (newPos > Capacity)
+        {
+            GrowBy(length);
+        }
+
+        // right side
+        var right = _span[new Range(i, pos)];
+        // where it will be written
+        var target = _span.Slice(i + length);
+        // slide
+        right.CopyTo(target);
+
+        // the hole we created
+        Span<T> slice = _span.Slice(i, length);
+        // clear it (we only copied, not moved)
+        slice.Clear();
+
+        _position = newPos;
+        return slice;
+    }
+
+#endregion
 
     /// <summary>
     /// Try to use the available capacity of this <see cref="Buffer{T}"/> using a <see cref="FnSpan{T1,R}"/> delegate
@@ -1069,6 +1107,9 @@ public ref struct Buffer<T> :
             perItem(ref span[i]);
         }
     }
+
+
+#region Copying, to other Collections, and Slicing
 
     /// <summary>
     /// Try to copy the items in this <see cref="Buffer{T}"/> to a <see cref="Span{T}"/>
@@ -1152,6 +1193,8 @@ public ref struct Buffer<T> :
     }
 #pragma warning restore CA1002
 
+#endregion
+
     /// <summary>
     /// Clears this <see cref="Buffer{T}"/> and returns any rented array back to <see cref="ArrayPool{T}"/>
     /// </summary>
@@ -1161,23 +1204,31 @@ public ref struct Buffer<T> :
     {
         T[]? toReturn = _array;
         // defensive clear
-        _position = 0;
-        _span = _array = null;
-        if (toReturn is not null)
-        {
-            ArrayPool<T>.Shared.Return(toReturn, true);
-        }
+        this = default;
+        ArrayNest.Return(toReturn, true);
     }
 
-    /// <summary>
-    /// <see cref="Buffer{T}"/> is a <c>ref struct</c> and should not be used for comparison
-    /// </summary>
-    public override bool Equals(object? obj) => false;
 
     /// <summary>
-    /// <see cref="Buffer{T}"/> is a <c>ref struct</c> and should not be used for comparison
+    /// This method is not supported as ref structs cannot be boxed<br/>
+    /// To compare two <see cref="Buffer{T}">Buffers</see>, use the <c>==</c> operator
     /// </summary>
-    public override int GetHashCode() => 0;
+    /// <exception cref="NotSupportedException">
+    /// Always thrown by this method
+    /// </exception>
+    [Obsolete("Equals() on a ref struct will always throw a NotSupportedException")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public override bool Equals(object? obj) => throw Ex.NotSupported(typeof(Buffer<T>));
+
+    /// <summary>
+    /// This method is not supported as ref structs cannot be boxed
+    /// </summary>
+    /// <exception cref="NotSupportedException">
+    /// Always thrown by this method
+    /// </exception>
+    [Obsolete("GetHashCode() on a ref struct will always throw a NotSupportedException")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public override int GetHashCode() => throw Ex.NotSupported(typeof(Buffer<T>));
 
     /// <summary>
     /// Gets a <see cref="string"/> representation of the <see cref="Written"/> items
@@ -1190,6 +1241,8 @@ public ref struct Buffer<T> :
         {
             return written.ToString(); // will convert directly to a string
         }
+
+        // cannot use textbuilder as that may use values that depend on Buffer themselves
 
         StringBuilder text = new(Count * 2, Count);
         text.Append('[');
@@ -1209,5 +1262,47 @@ public ref struct Buffer<T> :
     /// <summary>
     /// Gets an enumerator over the items in this <see cref="Buffer{T}"/>
     /// </summary>
-    public Span<T>.Enumerator GetEnumerator() => Written.GetEnumerator();
+    public BufferEnumerator GetEnumerator() => new(this);
+
+    /// <summary>
+    /// Enumerates over the items in a <see cref="Buffer{T}"/>.
+    /// </summary>
+    public ref struct BufferEnumerator : IEnumerator<T>, IEnumerator
+    {
+        private readonly Buffer<T> _buffer;
+        private int _index;
+
+        T IEnumerator<T>.Current => Current;
+        object IEnumerator.Current => Current!;
+
+        public ref T Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref _buffer[_index];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal BufferEnumerator(Buffer<T> buffer)
+        {
+            _buffer = buffer;
+            _index = -1;
+        }
+
+        void IEnumerator.Reset() => _index = -1;
+
+        readonly void IDisposable.Dispose() { }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool MoveNext()
+        {
+            int index = _index + 1;
+            if (index < _buffer.Count)
+            {
+                _index = index;
+                return true;
+            }
+
+            return false;
+        }
+    }
 }

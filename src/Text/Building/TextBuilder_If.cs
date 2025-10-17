@@ -276,6 +276,8 @@ partial class TextBuilder
 
 #if !NET9_0_OR_GREATER
     public delegate void BuildWithSpan<T>(TextBuilder builder, ReadOnlySpan<T> span);
+
+    public delegate void BuildWithInterpolatedText(TextBuilder builder, InterpolatedText interpolatedText);
 #endif
 
     public TextBuilder IfNotEmpty<T>(scoped ReadOnlySpan<T> span,
@@ -349,6 +351,47 @@ partial class TextBuilder
             }
         }
 
+        return this;
+    }
+
+    public TextBuilder IfNotEmpty(InterpolatedText interpolatedText,
+#if NET9_0_OR_GREATER
+        Action<TextBuilder, InterpolatedText>? onNotEmpty = default,
+#else
+        BuildWithInterpolatedText? onNotEmpty = default,
+#endif
+        Action<TextBuilder>? onEmpty = default)
+    {
+        if (interpolatedText.Length > 0)
+        {
+            onNotEmpty?.Invoke(this, interpolatedText);
+        }
+        else
+        {
+            onEmpty?.Invoke(this);
+        }
+
+        return this;
+    }
+
+    public TextBuilder IfNotEmpty(InterpolatedText interpolatedText)
+    {
+        if (interpolatedText.Length > 0)
+        {
+            return Append(interpolatedText);
+        }
+
+        return this;
+    }
+
+    public TextBuilder IfNotEmpty(InterpolatedText interpolatedText, Action<TextBuilder>? onEmpty)
+    {
+        if (interpolatedText.Length > 0)
+        {
+            return Append(interpolatedText);
+        }
+
+        onEmpty?.Invoke(this);
         return this;
     }
 

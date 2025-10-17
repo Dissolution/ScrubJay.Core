@@ -6,6 +6,28 @@
 [PublicAPI]
 public static class RangeExtensions
 {
+    extension(Range range)
+    {
+        public void Deconstruct(out Index start, out Index end)
+        {
+            start = range.Start;
+            end = range.End;
+        }
+
+        public string Render()
+        {
+            return TextBuilder.New
+                .If(range.Start,
+                    static start => !start.IsUnbounded,
+                    static (tb, start) => tb.If(start.IsFromEnd, '-').Format(start.Value))
+                .Append("..")
+                .If(range.End,
+                    static end => !end.IsUnbounded,
+                    static (tb, end) => tb.If(end.IsFromEnd, '-').Format(end.Value))
+                .ToStringAndDispose();
+        }
+    }
+
     /// <summary>
     /// Gets the total length this <see cref="Range"/> spans (if it can be calculated)
     /// </summary>

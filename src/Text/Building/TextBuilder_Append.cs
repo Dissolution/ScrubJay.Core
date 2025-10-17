@@ -35,13 +35,13 @@ public partial class TextBuilder
 #pragma warning disable IDE0060, CA2000
     public TextBuilder Append(
         [HandlesResourceDisposal] [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
-        ref InterpolatedTextBuilder interpolatedTextBuilder)
+        InterpolatedText interpolatedText)
     {
         // as this TextBuilder instance was passed into the InterpolatedTextBuilder's constructor,
         // all the writing has already occurred
 
         // not needed!
-        interpolatedTextBuilder.Dispose();
+        interpolatedText.Dispose();
 
         return this;
     }
@@ -125,7 +125,7 @@ public partial class TextBuilder
 #pragma warning disable IDE0060, CA2000
     public TextBuilder AppendLine(
         [InterpolatedStringHandlerArgument("")] [HandlesResourceDisposal]
-        ref InterpolatedTextBuilder interpolatedText) => Append(ref interpolatedText).NewLine();
+        ref InterpolatedText interpolatedText) => Append( interpolatedText).NewLine();
 #pragma warning restore IDE0060, CA2000
 
     public TextBuilder AppendLine<T>(T? value)

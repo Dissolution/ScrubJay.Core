@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XUnit", "tests\Tests.XUnit.csproj", "{D6CDBB16-B3BD-4335-AF46-F439933DCA18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scratch", "scratch\Scratch.csproj", "{B78A22B7-BFAA-41CB-AC24-52564E08AB23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "scratch\ConsoleApp.csproj", "{B78A22B7-BFAA-41CB-AC24-52564E08AB23}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "benchmarks\Benchmarks.csproj", "{947790F3-DE84-458E-BB78-867AD4F31EAA}"
 EndProject

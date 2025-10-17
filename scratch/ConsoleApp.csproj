@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>ScrubJay.Scratch</AssemblyName>
-        <RootNamespace>ScrubJay.Scratch</RootNamespace>
+        <AssemblyName>ScrubJay.ConsoleApp</AssemblyName>
+        <RootNamespace>ScrubJay.ConsoleApp</RootNamespace>
 
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
@@ -44,6 +44,9 @@
         <PackageReference Include="InlineIL.Fody" Version="1.10.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.9"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9"/>
     </ItemGroup>
 
 </Project>

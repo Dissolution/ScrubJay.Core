@@ -1,32 +1,56 @@
+#region Setup
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
 // ReSharper disable RedundantUsingDirective
 // ReSharper disable UnusedVariable
 
 using text = System.ReadOnlySpan<char>;
+using TextBuffer = ScrubJay.Collections.Pooling.Buffer<char>;
 using System.Diagnostics;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using ScrubJay.Collections.Pooling;
 using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 using ScrubJay.Text.Scratch;
 
-using var builder = new TextBuilder();
+Console.OutputEncoding = Encoding.UTF8;
+var hostBuilder = Host.CreateApplicationBuilder(args);
+hostBuilder.Logging.AddConsole();
+using var host = hostBuilder.Build();
 
-var super = new TestSuperClass1(147, "TRJ");
+#endregion End Setup
 
-ScratchRenderer.AddRenderer<TestBaseClass>(static (builder, test) => builder.Append($"TestBaseClass({test.Id}, {test.Name})"));
-ScratchRenderer.RenderTo(builder, super);
+string str = TextBuilder.Build("ABC-123: {DateTime.Now:u}");
 
-var str = builder.ToString();
+try
+{
+    throw new ArgumentException("Invalid Thing Occured with Param", (string?)null);
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine(ex);
+    Debugger.Break();
+}
+
+
+// interpolatedText.AppendLiteral("ABC-123: ");
+// interpolatedText.AppendFormatted(DateTime.Now, "u");
+//
+// string str = interpolatedText.ToStringAndDispose();
 Console.WriteLine(str);
 
 
-//Console.WriteLine(Build($"Type: {output:@T}  Value: {output:@}"));
-Console.WriteLine("-------");
+
+Console.WriteLine("〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️");
+Console.WriteLine("Press Enter to quit...");
 Debugger.Break();
+Console.ReadLine();
 return 0;
 
 

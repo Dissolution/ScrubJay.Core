@@ -44,7 +44,7 @@ public partial class TextBuilder
         return builder.ToString();
     }
 
-    public static string Build(ref InterpolatedTextBuilder interpolatedText)
+    public static string Build(InterpolatedText interpolatedText)
     {
         return interpolatedText.ToStringAndDispose();
     }

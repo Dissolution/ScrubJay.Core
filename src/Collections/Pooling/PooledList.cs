@@ -162,7 +162,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     {
         // Slow path, fill another buffer and then insert known
         using var buffer = new Buffer<T>();
-        buffer.AddMany(items);
+        buffer.WriteMany(items);
         TryInsertMany(index, buffer.Written).ThrowIfError();
     }
 

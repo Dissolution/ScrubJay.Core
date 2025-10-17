@@ -52,7 +52,7 @@ public static class Prelude
     public static Unit Unit() => default(Unit);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string Build(ref InterpolatedTextBuilder interpolatedText)
+    public static string Build(ref InterpolatedText interpolatedText)
     {
         return interpolatedText.ToStringAndDispose();
     }

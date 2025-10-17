@@ -92,11 +92,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Write<T>(values[0], format, provider);
+            Format<T>(values[0], format, provider);
             for (var i = 1; i < values.Length; i++)
             {
                 Write(delimiter);
-                Write<T>(values[i], format, provider);
+                Format<T>(values[i], format, provider);
             }
         }
 
@@ -108,11 +108,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Write<T>(values[0], format, provider);
+            Format<T>(values[0], format, provider);
             for (var i = 1; i < values.Length; i++)
             {
                 Write(delimiter);
-                Write<T>(values[i], format, provider);
+                Format<T>(values[i], format, provider);
             }
         }
 
@@ -130,11 +130,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Write<T>(values[0], format, provider);
+            Format<T>(values[0], format, provider);
             for (var i = 1; i < values.Length; i++)
             {
                 Invoke(delimit);
-                Write<T>(values[i], format, provider);
+                Format<T>(values[i], format, provider);
             }
         }
 
@@ -390,11 +390,11 @@ partial class TextBuilder
             if (!e.MoveNext())
                 return this;
 
-            Write<T>(e.Current, format, provider);
+            Format<T>(e.Current, format, provider);
             while (e.MoveNext())
             {
                 Write(delimiter);
-                Write<T>(e.Current, format, provider);
+                Format<T>(e.Current, format, provider);
             }
         }
 
@@ -410,11 +410,11 @@ partial class TextBuilder
             if (!e.MoveNext())
                 return this;
 
-            Write<T>(e.Current, format, provider);
+            Format<T>(e.Current, format, provider);
             while (e.MoveNext())
             {
                 Write(delimiter);
-                Write<T>(e.Current, format, provider);
+                Format<T>(e.Current, format, provider);
             }
         }
 
@@ -436,11 +436,11 @@ partial class TextBuilder
             if (!e.MoveNext())
                 return this;
 
-            Write<T>(e.Current, format, provider);
+            Format<T>(e.Current, format, provider);
             while (e.MoveNext())
             {
                 Invoke(delimit);
-                Write<T>(e.Current, format, provider);
+                Format<T>(e.Current, format, provider);
             }
         }
 
@@ -552,11 +552,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            Write<T>(value);
+            Format<T>(value);
             while (iterate().IsSome(out value))
             {
                 Write(delimiter);
-                Write<T>(value);
+                Format<T>(value);
             }
         }
 
@@ -567,11 +567,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            Write<T>(value);
+            Format<T>(value);
             while (iterate().IsSome(out value))
             {
                 Write(delimiter);
-                Write<T>(value);
+                Format<T>(value);
             }
         }
 
@@ -587,11 +587,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            Write<T>(value);
+            Format<T>(value);
             while (iterate().IsSome(out value))
             {
                 Invoke(delimit);
-                Write<T>(value);
+                Format<T>(value);
             }
         }
 
@@ -620,11 +620,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            Write<T>(value, format, provider);
+            Format<T>(value, format, provider);
             while (iterate().IsSome(out value))
             {
                 Write(delimiter);
-                Write<T>(value, format, provider);
+                Format<T>(value, format, provider);
             }
         }
 
@@ -636,11 +636,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            Write<T>(value, format, provider);
+            Format<T>(value, format, provider);
             while (iterate().IsSome(out value))
             {
                 Write(delimiter);
-                Write<T>(value, format, provider);
+                Format<T>(value, format, provider);
             }
         }
 
@@ -658,11 +658,11 @@ partial class TextBuilder
     {
         if (iterate is not null && iterate().IsSome(out var value))
         {
-            Write<T>(value, format, provider);
+            Format<T>(value, format, provider);
             while (iterate().IsSome(out value))
             {
                 Invoke(delimit);
-                Write<T>(value, format, provider);
+                Format<T>(value, format, provider);
             }
         }
 

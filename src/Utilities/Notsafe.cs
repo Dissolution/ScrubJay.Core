@@ -756,6 +756,20 @@ public static unsafe class Notsafe
         }
 
 #endregion
+
+        // REALLY BAD
+        public static Span<char> AsWritableSpan(text text)
+        {
+            return new Span<char>(InAsVoidPtr(in text.GetPinnableReference()), text.Length);
+        }
+
+        public static Span<char> AsWritableSpan(string? str)
+        {
+            if (str!.IsEmpty)
+                return default;
+
+            return new Span<char>(InAsVoidPtr(in str.GetPinnableReference()), str.Length);
+        }
     }
 
 
@@ -1175,6 +1189,11 @@ public static unsafe class Notsafe
         throw Unreachable();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsWritable<T>(ReadOnlySpan<T> readOnlySpan)
+    {
+        return new Span<T>(InAsVoidPtr(in readOnlySpan.GetPinnableReference()), readOnlySpan.Length);
+    }
 
 #region Reference Offsetting
 
