@@ -26,23 +26,27 @@ using var host = hostBuilder.Build();
 
 #endregion End Setup
 
-string str = TextBuilder.Build("ABC-123: {DateTime.Now:u}");
+using var builder = new TextBuilder();
 
-try
-{
-    throw new ArgumentException("Invalid Thing Occured with Param", (string?)null);
-}
-catch (ArgumentException ex)
-{
-    Console.WriteLine(ex);
-    Debugger.Break();
-}
+#if NET9_0_OR_GREATER
+ScratchRenderer.AddRenderer<text>((tb, text) => tb.Append('"').Append(text).Append('"'));
 
+ScratchRenderer.RenderTo(builder, "TRJ".AsSpan());
+builder.Write(" - ");
+ScratchRenderer.RenderTo(builder, new int[] { 1, 2, 3 }.AsSpan());
+builder.Write(" - ");
+#endif
+ScratchRenderer.RenderTo(builder, "AHAB");
+builder.Write(" - ");
+ScratchRenderer.RenderTo(builder, 'x');
+builder.Write(" - ");
+ScratchRenderer.RenderTo(builder, 147.13m);
+builder.Write(" - ");
+ScratchRenderer.RenderTo<object>(builder, Guid.NewGuid());
+builder.Write(" - ");
+ScratchRenderer.RenderTo<object>(builder, DateTime.Now);
 
-// interpolatedText.AppendLiteral("ABC-123: ");
-// interpolatedText.AppendFormatted(DateTime.Now, "u");
-//
-// string str = interpolatedText.ToStringAndDispose();
+string str = builder.ToString();
 Console.WriteLine(str);
 
 
@@ -109,20 +113,4 @@ namespace ScrubJay.Scratch
         public object? ObjectQ { get; set; }
     }
 
-    public static partial class Util
-    {
-        public static void Accept<T>(T value)
-            where T : allows ref struct
-        {
-            // var a = value.Equals(default);
-            // var b = value.GetHashCode();
-            // var c = value.GetType();
-            // var d = value.ToString();
-            //
-            // var f = Any<T>.Equals(value, default);
-            // var g = Any<T>.GetHashCode(value);
-            // var h = Any<T>.GetType(value);
-            // var i = Any<T>.ToString(value);
-        }
-    }
 }
