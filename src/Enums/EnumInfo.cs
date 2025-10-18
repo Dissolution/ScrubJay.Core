@@ -121,6 +121,13 @@ public abstract class EnumInfo :
             .FirstOrDefault(m => m.I64Value == value);
     }
 
+    internal static TextBuilder RenderTo(TextBuilder builder, Enum e)
+    {
+        var flags = e.EnumerateFlags();
+        builder.Delimit(" | ", flags);
+        return builder;
+    }
+
     public bool Equals(EnumInfo? enumInfo)
     {
         return enumInfo is not null && enumInfo.EnumType == EnumType;

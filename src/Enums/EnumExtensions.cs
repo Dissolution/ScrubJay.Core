@@ -1,4 +1,5 @@
 ﻿// We're using these parameters
+
 #pragma warning disable IDE0060
 
 // ReSharper disable EntityNameCapturedOnly.Global
@@ -13,12 +14,111 @@ namespace ScrubJay.Enums;
 [PublicAPI]
 public static class EnumExtensions
 {
+    extension(Enum)
+    {
+        public static bool TryParse(Type enumType, object value, [NotNullWhen(true)] out Enum? @enum)
+        {
+            if (value is string str)
+            {
+#if NETSTANDARD2_0
+                if (Enum.TryParse(enumType, str, out var obj))
+#else
+                if (Enum.TryParse(enumType, str, true, out var obj))
+#endif
+                {
+                    return obj.Is(out @enum);
+                }
+                else
+                {
+                    @enum = null;
+                    return false;
+                }
+            }
+
+            ulong u64;
+
+            if (value is ulong)
+            {
+                u64 = (ulong)value;
+            }
+            else if (value is long i64)
+            {
+                u64 = (ulong)i64;
+            }
+            else if (value is uint u32)
+            {
+                u64 = u32;
+            }
+            else if (value is int i32)
+            {
+                u64 = (ulong)i32;
+            }
+            else if (value is ushort u16)
+            {
+                u64 = u16;
+            }
+            else if (value is short i16)
+            {
+                u64 = (ulong)i16;
+            }
+            else if (value is byte u8)
+            {
+                u64 = u8;
+            }
+            else if (value is sbyte i8)
+            {
+                u64 = (ulong)i8;
+            }
+            else
+            {
+                throw Ex.NotImplemented();
+            }
+
+            var underType = Enum.GetUnderlyingType(enumType).ThrowIfNull();
+
+            if (underType == typeof(int))
+            {
+                if (u64 > int.MaxValue)
+                    throw Ex.Invalid();
+                if (Enum.IsDefined(enumType, (int)u64))
+                {
+                    @enum = Enum.ToObject(enumType, (int)u64).ThrowIfNot<Enum>();
+                    return true;
+                }
+                else
+                {
+                    @enum = null;
+                    return false;
+                }
+            }
+            else
+            {
+                throw Ex.NotImplemented();
+            }
+        }
+    }
+
+    extension(Enum @enum)
+    {
+        public ulong ToUInt64()
+        {
+            return ((IConvertible)@enum).ToUInt64(null);
+        }
+
+        public long ToInt64()
+        {
+            return ((IConvertible)@enum).ToInt64(null);
+        }
+    }
+
+
+
     /// <summary>
     /// Returns the underlying <see cref="Type"/> for the generic enumeration type <typeparamref name="E"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Type UnderlyingType<E>()
-        where E : struct, Enum
+        where E : Enum
         => typeof(E).GetEnumUnderlyingType();
 
     /// <summary>
@@ -36,7 +136,7 @@ public static class EnumExtensions
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsDefault<E>(this E @enum)
-        where E : struct, Enum
+        where E : Enum
     {
         Emit.Ldarg(nameof(@enum));
         Emit.Ldc_I4_0();
@@ -61,8 +161,8 @@ public static class EnumExtensions
     /// <c>false</c> if they do not
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsEqual<E>(this E @enum, E other)
-        where E : struct, Enum
+    public static bool IsEqual<E>([AllowNull] this E @enum, [AllowNull] E other)
+        where E : Enum
     {
         Emit.Ldarg(nameof(@enum));
         Emit.Ldarg(nameof(other));
@@ -71,35 +171,35 @@ public static class EnumExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool NotEqual<E>(this E @enum, E other)
-        where E : struct, Enum => !IsEqual<E>(@enum, other);
+    public static bool NotEqual<E>([AllowNull] this E @enum, [AllowNull] E other)
+        where E : Enum => !IsEqual<E>(@enum, other);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool LessThan<E>(this E @enum, E other)
-        where E : struct, Enum
+        where E : Enum
         => Comparer<E>.Default.Compare(@enum, other) < 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool LessThanOrEqual<E>(this E @enum, E other)
-        where E : struct, Enum
+        where E : Enum
         => Comparer<E>.Default.Compare(@enum, other) <= 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool GreaterThan<E>(this E @enum, E other)
-        where E : struct, Enum
+        where E : Enum
         => Comparer<E>.Default.Compare(@enum, other) > 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool GreaterThanOrEqual<E>(this E @enum, E other)
-        where E : struct, Enum
+        where E : Enum
         => Comparer<E>.Default.Compare(@enum, other) >= 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int CompareTo<E>(this E @enum, E other)
-        where E : struct, Enum
+        where E : Enum
         => Comparer<E>.Default.Compare(@enum, other);
 
     public static string AsString<E>(this E @enum)
-        where E : struct, Enum
+        where E : Enum
         => @enum.ToString();
 }

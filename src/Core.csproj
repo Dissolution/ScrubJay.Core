@@ -82,7 +82,7 @@
 
     <!-- Expose our internals to Benchmarks, Test, and downstream ScrubJay libraries -->
     <ItemGroup>
-        <InternalsVisibleTo Include="ScrubJay.Scratch"/>
+        <InternalsVisibleTo Include="ScrubJay.ConsoleApp"/>
         <InternalsVisibleTo Include="ScrubJay.Benchmarks"/>
         <InternalsVisibleTo Include="ScrubJay.Tests"/>
 

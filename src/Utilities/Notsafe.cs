@@ -21,7 +21,7 @@ public static unsafe class Notsafe
     /// </summary>
     public static class Unmanaged
     {
-#region CopyTo
+        #region CopyTo
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyUnmanagedBlock<U>(in U source, ref U destination, int count)
@@ -136,9 +136,9 @@ public static unsafe class Notsafe
                 count);
         }
 
-#endregion
+        #endregion
 
-#region Arrays
+        #region Arrays
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* ArrayAlloc<T>(int size)
@@ -164,7 +164,7 @@ public static unsafe class Notsafe
             CopyBlock(in PtrAsIn(src), ref PtrAsRef(dst), size * sizeof(T));
         }
 
-#endregion
+        #endregion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZero<U>(U value)
@@ -182,7 +182,7 @@ public static unsafe class Notsafe
     /// </summary>
     public static class Bytes
     {
-#region Copy
+        #region Copy
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyByteBlock(in byte source, ref byte destination, int count)
@@ -258,9 +258,9 @@ public static unsafe class Notsafe
                 ref MemoryMarshal.GetReference(destination),
                 count);
 
-#endregion
+        #endregion
 
-#region Read
+        #region Read
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static U ReadImpl<U>(ref readonly byte source)
@@ -309,9 +309,9 @@ public static unsafe class Notsafe
             return ReadImpl<E>(in bytes.GetPinnableReference());
         }
 
-#endregion
+        #endregion
 
-#region Write
+        #region Write
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void WriteToImpl<U>(ref byte dest, in U source)
@@ -336,7 +336,7 @@ public static unsafe class Notsafe
             WriteToImpl<U>(ref destination.GetPinnableReference(), in source);
         }
 
-#endregion
+        #endregion
     }
 
 
@@ -348,7 +348,7 @@ public static unsafe class Notsafe
     /// </remarks>
     public static class Text
     {
-#region Copy
+        #region Copy
 
         /// <summary>
         /// Copies a specified <paramref name="count"/> of <see cref="char">chars</see>
@@ -722,9 +722,9 @@ public static unsafe class Notsafe
         }
 #endif
 
-#endregion
+        #endregion
 
-#region Init
+        #region Init
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InitCharBlock(ref char source, int count)
@@ -755,7 +755,7 @@ public static unsafe class Notsafe
             }
         }
 
-#endregion
+        #endregion
 
         // REALLY BAD
         public static Span<char> AsWritableSpan(text text)
@@ -823,7 +823,7 @@ public static unsafe class Notsafe
     }
 
 
-#region Referencing
+    #region Referencing
 
     /************************************
      * Roughly:
@@ -1015,11 +1015,21 @@ public static unsafe class Notsafe
         throw Unreachable();
     }
 
-#endregion
+    #endregion
 
-#region Casting
+    #region Casting
 
     // object -> ?
+
+    public static object Box<T>(T value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(value));
+        Emit.Box<T>();
+        return Return<object>();
+    }
 
     /// <summary>
     /// Unbox an <see cref="object"/> to a <typeparamref name="T"/>
@@ -1156,7 +1166,7 @@ public static unsafe class Notsafe
             length: input.Length);
     }
 
-#endregion
+    #endregion
 
     // crazy stuff below
 
@@ -1195,7 +1205,7 @@ public static unsafe class Notsafe
         return new Span<T>(InAsVoidPtr(in readOnlySpan.GetPinnableReference()), readOnlySpan.Length);
     }
 
-#region Reference Offsetting
+    #region Reference Offsetting
 
     /// <summary>
     /// Adds an element offset to the given reference.
@@ -1264,9 +1274,9 @@ public static unsafe class Notsafe
         return ref ReturnRef<T>();
     }
 
-#endregion
+    #endregion
 
-#region Comparison
+    #region Comparison
 
     /// <summary>
     /// Determines whether the specified references point to the same location.
@@ -1283,5 +1293,5 @@ public static unsafe class Notsafe
         return Return<bool>();
     }
 
-#endregion
+    #endregion
 }

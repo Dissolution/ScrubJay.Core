@@ -19,6 +19,50 @@ namespace ScrubJay.Enums;
 [PublicAPI]
 public static class FlagsEnumExtensions
 {
+    extension(Enum @enum)
+    {
+        private ulong MaxMask()
+        {
+            var t = Enum.GetUnderlyingType(@enum.GetType());
+            if (t == typeof(int))
+                return int.MaxValue;
+            if (t == typeof(long))
+                return long.MaxValue;
+            if (t == typeof(short))
+                return (ulong)short.MaxValue;
+            if (t == typeof(sbyte))
+                return (ulong)sbyte.MaxValue;
+            if (t == typeof(uint))
+                return uint.MaxValue;
+            if (t == typeof(ulong))
+                return ulong.MaxValue;
+            if (t == typeof(ushort))
+                return ushort.MaxValue;
+            if (t == typeof(byte))
+                return byte.MaxValue;
+            throw Ex.Arg(t);
+        }
+
+        public IEnumerable<Enum> EnumerateFlags()
+        {
+            ulong value = EnumExtensions.ToUInt64(@enum);
+            ulong max = MaxMask(@enum);
+            for (ulong mask = 1UL; mask <= max; mask <<= 1)
+            {
+                if ((value & mask) == mask)
+                {
+                    if (Enum.TryParse(@enum.GetType(), mask, out var flag))
+                    {
+                        yield return flag;
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
     /// <summary>
     /// Returns the <see cref="ulong"/> representation of <c>this</c> <see cref="FlagsAttribute">flagged</see> <see cref="Enum">enum</see>
     /// </summary>
@@ -196,6 +240,8 @@ public static class FlagsEnumExtensions
         return flags;
     }
 
+
+
     /// <summary>
     /// Adds the <paramref name="flag"/> to this <paramref name="enum"/>
     /// </summary>
@@ -231,7 +277,7 @@ public static class FlagsEnumExtensions
         where E : struct, Enum
     {
         return @enum.And(flag)
-            .NotEqual(default);
+            .NotEqual<E>(default);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -239,7 +285,7 @@ public static class FlagsEnumExtensions
         where E : struct, Enum
     {
         return @enum.And(flag)
-            .NotEqual(default);
+            .NotEqual<E>(default);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -247,7 +293,7 @@ public static class FlagsEnumExtensions
         where E : struct, Enum
     {
         return @enum.And(flag)
-            .NotEqual(default);
+            .NotEqual<E>(default);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -255,13 +301,13 @@ public static class FlagsEnumExtensions
         where E : struct, Enum
     {
         return @enum.And(flag1.Or(flag2))
-            .NotEqual(default);
+            .NotEqual<E>(default);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool HasAnyFlags<E>(this E @enum, E flag1, E flag2, E flag3)
         where E : struct, Enum
-        => @enum.And(flag1.Or(flag2).Or(flag3)).NotEqual(default);
+        => @enum.And(flag1.Or(flag2).Or(flag3)).NotEqual<E>(default);
 
     public static bool HasAnyFlags<E>(this E @enum, params E[] flags)
         where E : struct, Enum

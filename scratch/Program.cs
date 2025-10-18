@@ -28,27 +28,29 @@ using var host = hostBuilder.Build();
 
 using var builder = new TextBuilder();
 
-#if NET9_0_OR_GREATER
-ScratchRenderer.AddRenderer<text>((tb, text) => tb.Append('"').Append(text).Append('"'));
+Enum e_temp = BindingFlags.Public | BindingFlags.Static;
+var fields = e_temp.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+var fields_2 = typeof(Enum).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-ScratchRenderer.RenderTo(builder, "TRJ".AsSpan());
-builder.Write(" - ");
-ScratchRenderer.RenderTo(builder, new int[] { 1, 2, 3 }.AsSpan());
-builder.Write(" - ");
-#endif
-ScratchRenderer.RenderTo(builder, "AHAB");
-builder.Write(" - ");
-ScratchRenderer.RenderTo(builder, 'x');
-builder.Write(" - ");
-ScratchRenderer.RenderTo(builder, 147.13m);
-builder.Write(" - ");
-ScratchRenderer.RenderTo<object>(builder, Guid.NewGuid());
-builder.Write(" - ");
-ScratchRenderer.RenderTo<object>(builder, DateTime.Now);
+var size = ((IConvertible)e_temp).ToUInt64(null);
+Debugger.Break();
+
+ScratchRenderer.AddRenderer(static (tb, obj) =>
+{
+    if (obj is Enum e)
+    {
+        var ei = EnumInfo.RenderTo(tb, e);
+        return true;
+    }
+
+    return false;
+});
+
+ScratchRenderer.RenderTo(builder, BindingFlags.Public | BindingFlags.Static);
+
 
 string str = builder.ToString();
 Console.WriteLine(str);
-
 
 
 Console.WriteLine("〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️");

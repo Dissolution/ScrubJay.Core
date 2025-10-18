@@ -148,6 +148,17 @@ public static class Renderer
         }
     }
 
+    internal static void AddRenderer<T>(IRenderer<T> renderer)
+    {
+        int priority = 0;
+        var priorityAttribute = renderer.GetType().GetCustomAttribute<RendererPriorityAttribute>();
+        if (priorityAttribute is not null)
+        {
+            priority = priorityAttribute.Priority;
+        }
+
+        _renderers.Add((priority, renderer));
+    }
 
 
 

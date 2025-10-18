@@ -4,11 +4,13 @@ using InlineIL;
 
 namespace ScrubJay.Text.Scratch;
 
-public delegate void RenderTo<in T>(TextBuilder builder, T? value)
+public delegate void RenderTo<in T>(TextBuilder builder, T value)
 #if NET9_0_OR_GREATER
     where T : allows ref struct
 #endif
 ;
+
+public delegate bool TryRenderObjectTo(TextBuilder builder, object value);
 
 public static class ScratchRenderer
 {
@@ -46,6 +48,11 @@ public static class ScratchRenderer
 
             tb.Write(buffer);
         });
+        AddRenderer<Enum>(static (tb, e) =>
+        {
+            EnumInfo.For(e).GetMemberInfo(e)!.RenderTo(tb);
+            tb.Append("_TESTING");
+        });
     }
 
     private static TextBuilder ObjectRenderTo(TextBuilder builder, object? obj)
@@ -81,11 +88,22 @@ public static class ScratchRenderer
         _renderers.Add(renderer);
     }
 
+    public static void AddRenderer(TryRenderObjectTo renderer)
+    {
+        _renderers.Add(renderer);
+    }
+
+
     public static TextBuilder RenderTo<T>(TextBuilder builder, T? value)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
+        if (value is null)
+        {
+            return builder.Append("null");
+        }
+
         if (typeof(T) == typeof(object))
         {
             return ObjectRenderTo(builder, Notsafe.As<T?, object?>(value));
@@ -97,6 +115,18 @@ public static class ScratchRenderer
             {
                 renderTo(builder, value);
                 return builder;
+            }
+        }
+
+        if (!typeof(T).IsRef)
+        {
+            foreach (var renderer in _renderers)
+            {
+                if (renderer.Is<TryRenderObjectTo>(out var renderTo))
+                {
+                    if (renderTo(builder, Notsafe.Box(value)))
+                        return builder;
+                }
             }
         }
 

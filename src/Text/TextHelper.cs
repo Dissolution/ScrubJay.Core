@@ -19,7 +19,7 @@ namespace ScrubJay.Text;
 [PublicAPI]
 public static class TextHelper
 {
-#region TryCopyTo
+    #region TryCopyTo
 
     /* All *Copy methods validate inputs before calling Notsafe.Text.CopyBlock
      * Source Types: char, string?, ReadOnlySpan<char>, Span<char>, char[]?
@@ -154,10 +154,10 @@ public static class TextHelper
         return false;
     }
 
-#endregion
+    #endregion
 
 
-#region Contains
+    #region Contains
 
     public static bool Contains(string? str, char match, StringComparison comparison = StringComparison.Ordinal)
     {
@@ -197,9 +197,9 @@ public static class TextHelper
         return MemoryExtensions.Contains(text, match, comparison);
     }
 
-#endregion
+    #endregion
 
-#region StartsWith
+    #region StartsWith
 
     public static bool StartsWith(string? str, string? match, StringComparison comparison = StringComparison.Ordinal)
     {
@@ -227,9 +227,9 @@ public static class TextHelper
         return MemoryExtensions.StartsWith(text, match, comparison);
     }
 
-#endregion
+    #endregion
 
-#region EndsWith
+    #region EndsWith
 
     public static bool EndsWith(string? str, string? match, StringComparison comparison = StringComparison.Ordinal)
     {
@@ -257,10 +257,10 @@ public static class TextHelper
         return MemoryExtensions.EndsWith(text, match, comparison);
     }
 
-#endregion
+    #endregion
 
 
-#region Misc.
+    #region Misc.
 
     public static string Repeat(int count, char ch)
     {
@@ -311,7 +311,7 @@ public static class TextHelper
         return false;
     }
 
-#endregion
+    #endregion
 
     public static int LevenshteinDistance(text source, text target)
     {
@@ -391,7 +391,7 @@ public static class TextHelper
         return previousRow[target.Length];
     }
 
-#region ToString Anything
+    #region ToString Anything
 
     internal static class Stringify<T>
 #if NET9_0_OR_GREATER
@@ -403,19 +403,33 @@ public static class TextHelper
         private static Func<T?, string> CreateToString()
         {
             Type instanceType = typeof(T);
+            MethodInfo? toStringMethod;
 
-            // Look for an instance method with this signature:
-            // `string ToString()`
-            var toStringMethod = instanceType
-                .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Where(static method => method.Name == nameof(ToString) &&
-                                        method.ReturnType == typeof(string) &&
-                                        method.GetParameters().Length == 0)
-                .FirstOrDefault();
+
+            if (instanceType.IsEnum)
+            {
+                toStringMethod = typeof(Enum)
+                    .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Where(static method => method.Name == nameof(ToString) &&
+                                            method.ReturnType == typeof(string) &&
+                                            method.GetParameters().Length == 0)
+                    .FirstOrDefault();
+            }
+            else
+            {
+                // Look for an instance method with this signature:
+                // `string ToString()`
+                toStringMethod = instanceType
+                    .GetMethods(
+                        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    .Where(static method => method.Name == nameof(ToString) &&
+                                            method.ReturnType == typeof(string) &&
+                                            method.GetParameters().Length == 0)
+                    .FirstOrDefault();
+            }
 
             if (toStringMethod is null)
             {
-                // if we didn't find one, we might be able to use object.ToString()
                 Debugger.Break();
                 throw Ex.NotImplemented();
             }
@@ -503,5 +517,5 @@ public static class TextHelper
 
 #endif
 
-#endregion
+    #endregion
 }
