@@ -275,7 +275,7 @@ public ref struct InterpolatedText
     {
         if (_builder is not null)
         {
-            _builder.Append<T>(value);
+            _builder.Render<T>(value);
         }
         else
         {

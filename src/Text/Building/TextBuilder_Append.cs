@@ -47,18 +47,6 @@ public partial class TextBuilder
     }
 #pragma warning restore IDE0060, CA2000
 
-    public TextBuilder Append<T>(T? value)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
-    {
-        if (value is null)
-            return this;
-
-        Write(TextHelper.ToString(value));
-        return this;
-    }
-
 #endregion
 
 #region AppendMany
@@ -127,12 +115,6 @@ public partial class TextBuilder
         [InterpolatedStringHandlerArgument("")] [HandlesResourceDisposal]
         ref InterpolatedText interpolatedText) => Append( interpolatedText).NewLine();
 #pragma warning restore IDE0060, CA2000
-
-    public TextBuilder AppendLine<T>(T? value)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
-        => Append(value).NewLine();
 
 #endregion
 }

@@ -30,8 +30,16 @@ partial class Ex
 #endif
     {
         Type argumentType = Type.GetType(argument);
-        string message = GetArgumentExceptionMessage(argumentType, argumentName,
-            tb => tb.Append(" - `").Append(argument).Append('`'),
-            info);
+        var message = TextBuilder.New
+            .Append("Invalid ")
+            .IfNotNull(argumentType, static (tb, type) => tb.Render(type), static tb => tb.Write("unknown"))
+            .Append(" argument \"")
+            .Append(argumentName)
+            .Append("\" - `")
+            .Render(argument)
+            .Append('`')
+            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .ToStringAndDispose();
+        return new ArgumentException(message, innerException);
     }
 }

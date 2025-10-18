@@ -1,19 +1,22 @@
-﻿namespace ScrubJay.Text;
+﻿using ScrubJay.Text.Scratch;
+
+namespace ScrubJay.Text;
 
 public partial class TextBuilder
 {
-#region Render
+    #region Render
 
     public TextBuilder Render(scoped text text)
     {
         return Append('"').Append(text).Append('"');
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder Render<T>(T? value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
-        Rendering.Renderer.RenderValue<T>(this, value);
-        return this;
+        return ScratchRenderer.RenderTo(this, value);
     }
 
     public TextBuilder Render<T>(scoped ReadOnlySpan<T> span)
@@ -70,9 +73,9 @@ public partial class TextBuilder
         }
     }
 
-#endregion
+    #endregion
 
-#region RenderMany
+    #region RenderMany
 
     public TextBuilder RenderMany<T>(params ReadOnlySpan<T> values)
     {
@@ -140,11 +143,11 @@ public partial class TextBuilder
         return this;
     }
 
-#endregion
+    #endregion
 
-#region RenderLine
+    #region RenderLine
 
     public TextBuilder RenderLine<T>(T? value) => Render<T>(value).NewLine();
 
-#endregion
+    #endregion
 }

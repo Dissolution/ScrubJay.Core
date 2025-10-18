@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Reflection;
+using InlineIL;
 
 namespace ScrubJay.Text.Scratch;
 
@@ -7,7 +9,6 @@ public delegate void RenderTo<in T>(TextBuilder builder, T? value)
     where T : allows ref struct
 #endif
 ;
-
 
 public static class ScratchRenderer
 {
@@ -56,7 +57,20 @@ public static class ScratchRenderer
 
         var type = obj.GetType();
         var rendererType = typeof(RenderTo<>).MakeGenericType(type);
+        var renderer = _renderers.FirstOrDefault(renderer => renderer.GetType() == rendererType);
+        if (renderer is null)
+        {
+            // fallback
+#if NET9_0_OR_GREATER
+            return builder.Append(TextHelper.ToString(obj));
+#else
+            return builder.Append(obj.ToString());
+#endif
+        }
 
+        var output = renderer.DynamicInvoke(builder, obj);
+        Debug.Assert(output is null);
+        return builder;
     }
 
     public static void AddRenderer<T>(RenderTo<T> renderer)
@@ -94,6 +108,11 @@ public static class ScratchRenderer
 #endif
     }
 
+    public static TextBuilder RenderTo(TextBuilder builder, scoped text text)
+    {
+        return builder.Append(text);
+    }
+
     public static TextBuilder RenderTo<T>(TextBuilder builder, scoped ReadOnlySpan<T> span)
     {
         return builder
@@ -108,5 +127,50 @@ public static class ScratchRenderer
             .Append('[')
             .Delimit(", ", span)
             .Append(']');
+    }
+
+    public static TextBuilder RenderTo<T>(TextBuilder builder, T[]? array)
+    {
+        return builder
+            .Append('[')
+            .Delimit(", ", array)
+            .Append(']');
+    }
+
+    public static TextBuilder RenderTo<T>(TextBuilder builder, IEnumerable<T>? values)
+    {
+        if (values is null)
+        {
+            return builder;
+        }
+        else if (values is IList<T> list)
+        {
+            return builder
+                .Append('[')
+                .Delimit(", ", list)
+                .Append(']');
+        }
+        else if (values is ICollection<T> collection)
+        {
+            return builder
+                .Append('(')
+                .Delimit(", ", collection)
+                .Append(')');
+        }
+        else
+        {
+            return builder
+                .Append('{')
+                .Delimit(", ", values)
+                .Append('}');
+        }
+    }
+
+    public static TextBuilder RenderTo<K,V>(TextBuilder builder, IReadOnlyDictionary<K,V>? dictionary)
+    {
+        return builder
+            .Append('{')
+            .Delimit(", ", dictionary, static (tb, kvp) => tb.Append($"({kvp.Key:@}: {kvp.Value:@})"))
+            .Append('}');
     }
 }

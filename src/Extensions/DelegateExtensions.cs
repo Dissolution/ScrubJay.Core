@@ -1,5 +1,7 @@
 
 
+using System.Reflection;
+
 #pragma warning disable S2436
 
 namespace ScrubJay.Extensions;
@@ -10,6 +12,21 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class DelegateExtensions
 {
+    extension(Delegate? @delegate)
+    {
+        [NotNullIfNotNull(nameof(@delegate))]
+        public MethodInfo? InvokeMethod
+        {
+            get
+            {
+                if (@delegate is null)
+                    return null;
+                return @delegate.GetType().GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
+            }
+        }
+    }
+
+
     public static Func<Unit> ToUnitFunc(this Action action)
         => () =>
         {
