@@ -1,12 +1,13 @@
 ﻿// ReSharper disable MergeCastWithTypeCheck
 
+using ScrubJay.Text.Scratch;
 #if NET9_0_OR_GREATER
 #endif
 namespace ScrubJay.Text;
 
 public partial class TextBuilder
 {
-#region Format
+#region Format T
 
     public TextBuilder Format<T>(T? value)
     {
@@ -16,7 +17,7 @@ public partial class TextBuilder
             if (value is ISpanFormattable)
             {
                 int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, default, default))
+                while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, default, null))
                 {
                     GrowBy(16);
                 }
@@ -26,7 +27,7 @@ public partial class TextBuilder
             }
 #endif
 
-            return Append(((IFormattable)value).ToString(default, default));
+            return Append(((IFormattable)value).ToString(null, null));
         }
 
         if (value is not null)
@@ -120,6 +121,125 @@ public partial class TextBuilder
         if (value is not null)
         {
             return Append(value.ToString());
+        }
+
+        return this;
+    }
+
+#endregion
+
+#region Format Object
+
+    public TextBuilder Format(object? obj)
+    {
+        if (obj is IFormattable formattable)
+        {
+#if NET6_0_OR_GREATER
+            if (obj is ISpanFormattable spanFormattable)
+            {
+                int charsWritten;
+                while (!spanFormattable.TryFormat(Available, out charsWritten, default, null))
+                {
+                    GrowBy(16);
+                }
+
+                _position += charsWritten;
+                return this;
+            }
+#endif
+
+            return Append(formattable.ToString(null, null));
+        }
+
+        if (obj is not null)
+        {
+            return Append(obj.ToString());
+        }
+
+        return this;
+    }
+
+    public TextBuilder Format(object? obj, string? format, IFormatProvider? provider = null)
+    {
+        // special format codes for Rendering to support InterpolatedTextHandler
+
+        // render this value
+        if (format.Equate('@'))
+        {
+            return ScratchRenderer.RenderTo(this, obj);
+        }
+
+        // render this value's type
+        if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
+        {
+            return ScratchRenderer.RenderTo(this, obj?.GetType());
+        }
+
+        if (obj is IFormattable formattable)
+        {
+#if NET6_0_OR_GREATER
+            if (obj is ISpanFormattable spanFormattable)
+            {
+                int charsWritten;
+                while (!spanFormattable.TryFormat(Available, out charsWritten, format, provider))
+                {
+                    GrowBy(16);
+                }
+
+                _position += charsWritten;
+                return this;
+            }
+#endif
+
+            return Append(formattable.ToString(format, provider));
+        }
+
+        if (obj is not null)
+        {
+            return Append(obj.ToString());
+        }
+
+        return this;
+    }
+
+    public TextBuilder Format(object? obj, scoped text format, IFormatProvider? provider = null)
+    {
+        // special format codes for Rendering to support InterpolatedTextHandler
+
+        // render this value
+        if (format.Equate('@'))
+        {
+            return ScratchRenderer.RenderTo(this, obj);
+        }
+
+        // render this value's type
+        if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
+        {
+            return ScratchRenderer.RenderTo(this, obj?.GetType());
+        }
+
+        if (obj is IFormattable formattable)
+        {
+#if NET6_0_OR_GREATER
+            if (obj is ISpanFormattable spanFormattable)
+            {
+                int charsWritten;
+                while (!spanFormattable.TryFormat(Available, out charsWritten, format, provider))
+                {
+                    GrowBy(16);
+                }
+
+                _position += charsWritten;
+                return this;
+            }
+#endif
+
+            return Append(formattable.ToString(format.AsString(), provider));
+        }
+
+        if (obj is not null)
+        {
+            return Append(obj.ToString());
         }
 
         return this;

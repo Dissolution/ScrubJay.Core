@@ -1,16 +1,18 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
 using InlineIL;
+using ScrubJay.Debugging;
 
 namespace ScrubJay.Text.Scratch;
 
+[PublicAPI]
 public delegate void RenderTo<in T>(TextBuilder builder, T value)
 #if NET9_0_OR_GREATER
     where T : allows ref struct
 #endif
-;
+    ;
 
-public delegate bool TryRenderObjectTo(TextBuilder builder, object value);
+
 
 public static class ScratchRenderer
 {
@@ -53,6 +55,32 @@ public static class ScratchRenderer
             EnumInfo.For(e).GetMemberInfo(e)!.RenderTo(tb);
             tb.Append("_TESTING");
         });
+        AddRenderer<ITuple>(static (tb, tuple) =>
+        {
+            tb.Append('(');
+            if (tb.Length > 0)
+            {
+                tb.Format(tuple[0]);
+                for (var i = 1; i < tuple.Length; i++)
+                {
+                    tb.Append(", ").Format(tuple[i]);
+                }
+            }
+
+            tb.Append(')');
+        });
+
+    }
+
+    private static readonly MethodInfo _renderEnumToMethod = typeof(ScratchRenderer)
+        .GetMethod(nameof(RenderEnumTo), BindingFlags.NonPublic | BindingFlags.Static)
+        .ThrowIfNull();
+
+    private static void RenderEnumTo<E>(TextBuilder builder, E e)
+        where E : struct, Enum
+    {
+        EnumInfo.RenderTo(builder, e);
+        builder.Append("_TESTING");
     }
 
     private static TextBuilder ObjectRenderTo(TextBuilder builder, object? obj)
@@ -88,9 +116,47 @@ public static class ScratchRenderer
         _renderers.Add(renderer);
     }
 
-    public static void AddRenderer(TryRenderObjectTo renderer)
+    public static RenderTo<T>? FindRenderer<T>()
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
-        _renderers.Add(renderer);
+        var type = typeof(T);
+
+        if (type == typeof(object))
+        {
+            return static (tb, value) => ObjectRenderTo(tb, Notsafe.Box(value));
+        }
+
+        if (type.IsEnum)
+        {
+            return Delegate.CreateDelegate<RenderTo<T>>(_renderEnumToMethod.MakeGenericMethod(type));
+        }
+
+        foreach (var renderer in _renderers)
+        {
+            if (renderer is RenderTo<T> renderTo)
+            {
+                return renderTo;
+            }
+
+            var genericTypes = renderer.Method.GetGenericArguments();
+            var secondParmType = renderer.Method.GetParameters()[1].ParameterType;
+
+            if (genericTypes.Length > 0)
+                Debugger.Break();
+
+            if (type.Implements(secondParmType))
+            {
+                var del = Delegate.CreateDelegate(typeof(RenderTo<T>), renderer.Method);
+                renderTo = (del as RenderTo<T>)!;
+                Debugger.Break();
+                return renderTo;
+            }
+        }
+
+        // no renderer has been associated with this type
+        return null;
     }
 
 
@@ -104,30 +170,11 @@ public static class ScratchRenderer
             return builder.Append("null");
         }
 
-        if (typeof(T) == typeof(object))
+        var renderTo = FindRenderer<T>();
+        if (renderTo is not null)
         {
-            return ObjectRenderTo(builder, Notsafe.As<T?, object?>(value));
-        }
-
-        foreach (var renderer in _renderers)
-        {
-            if (renderer.Is<RenderTo<T>>(out var renderTo))
-            {
-                renderTo(builder, value);
-                return builder;
-            }
-        }
-
-        if (!typeof(T).IsRef)
-        {
-            foreach (var renderer in _renderers)
-            {
-                if (renderer.Is<TryRenderObjectTo>(out var renderTo))
-                {
-                    if (renderTo(builder, Notsafe.Box(value)))
-                        return builder;
-                }
-            }
+            renderTo(builder, value);
+            return builder;
         }
 
         // no registered renderers can handle this value
@@ -196,7 +243,7 @@ public static class ScratchRenderer
         }
     }
 
-    public static TextBuilder RenderTo<K,V>(TextBuilder builder, IReadOnlyDictionary<K,V>? dictionary)
+    public static TextBuilder RenderTo<K, V>(TextBuilder builder, IReadOnlyDictionary<K, V>? dictionary)
     {
         return builder
             .Append('{')

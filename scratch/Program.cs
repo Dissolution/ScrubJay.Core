@@ -26,28 +26,13 @@ using var host = hostBuilder.Build();
 
 #endregion End Setup
 
-using var builder = new TextBuilder();
-
-Enum e_temp = BindingFlags.Public | BindingFlags.Static;
-var fields = e_temp.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-var fields_2 = typeof(Enum).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-var size = ((IConvertible)e_temp).ToUInt64(null);
+var a = BindingFlags.Public.IsDefault();
+var b = BindingFlags.Default.IsDefault();
 Debugger.Break();
 
-ScratchRenderer.AddRenderer(static (tb, obj) =>
-{
-    if (obj is Enum e)
-    {
-        var ei = EnumInfo.RenderTo(tb, e);
-        return true;
-    }
-
-    return false;
-});
+using var builder = new TextBuilder();
 
 ScratchRenderer.RenderTo(builder, BindingFlags.Public | BindingFlags.Static);
-
 
 string str = builder.ToString();
 Console.WriteLine(str);

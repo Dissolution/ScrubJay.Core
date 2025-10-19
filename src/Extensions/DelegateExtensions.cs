@@ -1,5 +1,3 @@
-
-
 using System.Reflection;
 
 #pragma warning disable S2436
@@ -12,6 +10,15 @@ namespace ScrubJay.Extensions;
 [PublicAPI]
 public static class DelegateExtensions
 {
+    extension(Delegate)
+    {
+        public static D CreateDelegate<D>(MethodInfo method)
+            where D : Delegate
+        {
+            return Delegate.CreateDelegate(typeof(D), method).ThrowIfNot<D>();
+        }
+    }
+
     extension(Delegate? @delegate)
     {
         [NotNullIfNotNull(nameof(@delegate))]
@@ -69,21 +76,24 @@ public static class DelegateExtensions
             return Unit();
         };
 
-    public static Func<T1, T2, T3, T4, T5, T6, Unit> ToUnitFunc<T1, T2, T3, T4, T5, T6>(this Action<T1, T2, T3, T4, T5, T6> action)
+    public static Func<T1, T2, T3, T4, T5, T6, Unit> ToUnitFunc<T1, T2, T3, T4, T5, T6>(
+        this Action<T1, T2, T3, T4, T5, T6> action)
         => (arg1, arg2, arg3, arg4, arg5, arg6) =>
         {
             action(arg1, arg2, arg3, arg4, arg5, arg6);
             return Unit();
         };
 
-    public static Func<T1, T2, T3, T4, T5, T6, T7, Unit> ToUnitFunc<T1, T2, T3, T4, T5, T6, T7>(this Action<T1, T2, T3, T4, T5, T6, T7> action)
+    public static Func<T1, T2, T3, T4, T5, T6, T7, Unit> ToUnitFunc<T1, T2, T3, T4, T5, T6, T7>(
+        this Action<T1, T2, T3, T4, T5, T6, T7> action)
         => (arg1, arg2, arg3, arg4, arg5, arg6, arg7) =>
         {
             action(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             return Unit();
         };
 
-    public static Func<T1, T2, T3, T4, T5, T6, T7, T8, Unit> ToUnitFunc<T1, T2, T3, T4, T5, T6, T7, T8>(this Action<T1, T2, T3, T4, T5, T6, T7, T8> action)
+    public static Func<T1, T2, T3, T4, T5, T6, T7, T8, Unit> ToUnitFunc<T1, T2, T3, T4, T5, T6, T7, T8>(
+        this Action<T1, T2, T3, T4, T5, T6, T7, T8> action)
         => (arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) =>
         {
             action(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);

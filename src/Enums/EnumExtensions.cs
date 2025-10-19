@@ -96,6 +96,13 @@ public static class EnumExtensions
                 throw Ex.NotImplemented();
             }
         }
+
+        /// <summary>
+        /// Returns the underlying <see cref="Type"/> for the generic <see cref="Enum"/> type <typeparamref name="E"/>
+        /// </summary>
+        public static Type UnderlyingType<E>()
+            where E : Enum
+            => typeof(E).GetEnumUnderlyingType();
     }
 
     extension(Enum @enum)
@@ -111,38 +118,31 @@ public static class EnumExtensions
         }
     }
 
-
-
-    /// <summary>
-    /// Returns the underlying <see cref="Type"/> for the generic enumeration type <typeparamref name="E"/>
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Type UnderlyingType<E>()
-        where E : Enum
-        => typeof(E).GetEnumUnderlyingType();
-
-    /// <summary>
-    /// Is <c>this</c> <paramref name="enum"/> the <c>default</c> value for its <see cref="Type"/>?
-    /// </summary>
-    /// <param name="enum">
-    /// <c>this</c> <see cref="Enum"/> to check
-    /// </param>
-    /// <typeparam name="E">
-    /// The <see cref="Type"/> of the <see cref="Enum"/>
-    /// </typeparam>
-    /// <returns>
-    /// <c>true</c> if <paramref name="enum"/> is <c>== default(E)</c><br/>
-    /// <c>false</c> if it is not
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsDefault<E>(this E @enum)
-        where E : Enum
+    extension<E>(E @enum)
+        where E : struct, Enum
     {
-        Emit.Ldarg(nameof(@enum));
-        Emit.Ldc_I4_0();
-        Emit.Ceq();
-        return Return<bool>();
+        /// <summary>
+        /// Is <c>this</c> <paramref name="enum"/> the <c>default</c> value for its <see cref="Type"/>?
+        /// </summary>
+        /// <param name="enum">
+        /// <c>this</c> <see cref="Enum"/> to check
+        /// </param>
+        /// <typeparam name="E">
+        /// The <see cref="Type"/> of the <see cref="Enum"/>
+        /// </typeparam>
+        /// <returns>
+        /// <c>true</c> if <paramref name="enum"/> is <c>== default(E)</c><br/>
+        /// <c>false</c> if it is not
+        /// </returns>
+        public bool IsDefault()
+        {
+            Emit.Ldarg_0();
+            Emit.Ldc_I4_0();
+            Emit.Ceq();
+            return Return<bool>();
+        }
     }
+
 
     /// <summary>
     /// Does <c>this</c> <paramref name="enum"/> equal the <paramref name="other"/>?
