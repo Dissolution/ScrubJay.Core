@@ -25,7 +25,7 @@ partial class Ex
 
     public static ArgumentException Arg(
         object? argument,
-        //[HandlesResourceDisposal]
+        [HandlesResourceDisposal]
         InterpolatedText info = default,
         Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
@@ -36,7 +36,7 @@ partial class Ex
             .Append($"Invalid {argumentType:@} argument \"{argumentName}\" `")
             .Render(argument)
             .Append('`')
-            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(nfo))
             .ToStringAndDispose();
         return new ArgumentException(message, innerException);
     }

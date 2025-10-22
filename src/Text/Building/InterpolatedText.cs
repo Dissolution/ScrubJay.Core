@@ -10,12 +10,16 @@ namespace ScrubJay.Text;
 /// <summary>
 /// An InterpolatedStringHandler that writes to a <see cref="TextBuilder"/>
 /// </summary>
+/// <remarks>
+/// Inspired by
+/// </remarks>
 [PublicAPI]
 [InterpolatedStringHandler]
-//[MustDisposeResource(false)]
 public ref struct InterpolatedText
 {
-    //[MustDisposeResource(false)]
+    /// <summary>
+    /// Implicitly convert <see cref="text"/> to an <see cref="InterpolatedText"/> containing it
+    /// </summary>
     public static implicit operator InterpolatedText(text text)
     {
         if (text.Length == 0)
@@ -29,7 +33,6 @@ public ref struct InterpolatedText
         return new InterpolatedText(null, new(buffer, buffer.Length), true);
     }
 
-    //[MustDisposeResource(false)]
     public static implicit operator InterpolatedText(string? str)
     {
         if (string.IsNullOrEmpty(str))
@@ -60,49 +63,41 @@ public ref struct InterpolatedText
         _disposeBuffer = disposeBuffer;
     }
 
-    //[MustDisposeResource(true)]
     public InterpolatedText()
         : this(null, default, true)
     {
     }
 
-    //[MustDisposeResource(false)]
     public InterpolatedText(TextBuilder builder)
         : this(builder, default, false)
     {
     }
 
-    //[MustDisposeResource(true)]
     public InterpolatedText(Span<char> buffer)
         : this(null, buffer, true)
     {
     }
 
-    //[MustDisposeResource(false)]
     public InterpolatedText(Buffer<char> buffer)
         : this(null, buffer, false)
     {
     }
 
-    //[MustDisposeResource(true)]
     public InterpolatedText(int literalLength, int formattedCount)
         : this(null, new(literalLength + (formattedCount * 16)), true)
     {
     }
 
-    //[MustDisposeResource(false)]
     public InterpolatedText(int literalLength, int formattedCount, TextBuilder builder)
         : this(builder, default, false)
     {
     }
 
-    //[MustDisposeResource(true)]
     public InterpolatedText(int literalLength, int formattedCount, Span<char> buffer)
         : this(null, buffer, true)
     {
     }
 
-    //[MustDisposeResource(false)]
     public InterpolatedText(int literalLength, int formattedCount, Buffer<char> buffer)
         : this(null, buffer, false)
     {

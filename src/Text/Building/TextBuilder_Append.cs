@@ -41,7 +41,7 @@ public partial class TextBuilder
         // all the writing has already occurred
 
         // not needed!
-        interpolatedText.Dispose();
+        //interpolatedText.Dispose();
 
         return this;
     }

@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Utilities;
+﻿#pragma warning disable CA1065
+
+namespace ScrubJay.Utilities;
 
 [PublicAPI]
 public enum Endianness

@@ -27,6 +27,11 @@ using var host = hostBuilder.Build();
 #endregion End Setup
 
 
+string str_two = TextBuilder.Build($"Eat at {4}:{20}");
+
+Debug.AssertInterpolatedStringHandler
+
+
 using var builder = new TextBuilder();
 
 TypeInfo ti = typeof(Guid).GetTypeInfo();

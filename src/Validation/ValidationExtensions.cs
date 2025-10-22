@@ -70,7 +70,7 @@ public static class ValidationExtensions
     /// <returns>
     /// <c>obj as TOut</c>
     /// </returns>
-    /// <exception cref="ArgException">
+    /// <exception cref="ArgumentException">
     /// Thrown is <paramref name="obj"/> is not a valid <typeparamref name="T"/> value
     /// </exception>
     [return: NotNull]
