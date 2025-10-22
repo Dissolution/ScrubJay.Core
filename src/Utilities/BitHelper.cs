@@ -40,7 +40,7 @@ public static class BitHelper
         {
             unsafe
             {
-                return new bytes(Notsafe.InAsVoidPtr<E>(in e), sizeof(E));
+                return new bytes(Notsafe.InAsVoidPtr<E>(in e), Notsafe.SizeOf<E>());
             }
         }
 
@@ -81,7 +81,7 @@ public static class BitHelper
         {
             unsafe
             {
-                if (sizeof(I) != sizeof(O))
+                if (Notsafe.SizeOf<I>() != Notsafe.SizeOf<O>())
                     throw Ex.Arg<I>(TextHelper.ToString(input), $"{typeof(I):@} Input `{input}` was not the same size as a {typeof(O):@}");
                 return Notsafe.As<I, O>(input);
             }

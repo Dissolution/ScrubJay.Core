@@ -121,19 +121,6 @@ public static class EnumExtensions
     extension<E>(E @enum)
         where E : struct, Enum
     {
-        /// <summary>
-        /// Is <c>this</c> <paramref name="enum"/> the <c>default</c> value for its <see cref="Type"/>?
-        /// </summary>
-        /// <param name="enum">
-        /// <c>this</c> <see cref="Enum"/> to check
-        /// </param>
-        /// <typeparam name="E">
-        /// The <see cref="Type"/> of the <see cref="Enum"/>
-        /// </typeparam>
-        /// <returns>
-        /// <c>true</c> if <paramref name="enum"/> is <c>== default(E)</c><br/>
-        /// <c>false</c> if it is not
-        /// </returns>
         public bool IsDefault()
         {
             Emit.Ldarg_0();

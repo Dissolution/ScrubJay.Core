@@ -10,6 +10,12 @@ public static class TypeExtensions
 {
     extension(Type)
     {
+        public static Type GetType(object? obj)
+        {
+            if (obj is null) return typeof(object);
+            return obj.GetType();
+        }
+
 #if NET9_0_OR_GREATER
         public static Type GetType<T>(T? instance = default)
             where T : allows ref struct
@@ -72,7 +78,7 @@ public static class TypeExtensions
         /// Enumerate over all base types for this <see cref="Type"/>
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Type> GetBaseTypes()
+        public IEnumerable<Type> BaseTypes()
         {
             if (type is null)
                 yield break;
@@ -165,22 +171,13 @@ public static class TypeExtensions
             return false;
         }
 
-        /// <summary>
-        /// Does <c>this</c> <paramref name="type"/> implement <typeparamref name="T"/>?
-        /// </summary>
-        /// <typeparam name="T">The generic <see cref="Type"/> that this <paramref name="type"/> must implement</typeparam>
-        /// <returns>
-        /// <c>true</c> if <paramref name="type"/> implements <typeparamref name="T"/>; otherwise, <c>false</c>
-        /// </returns>
         public bool Implements<T>()
 #if NET9_0_OR_GREATER
             where T : allows ref struct
 #endif
+#pragma warning disable CA2263
             => Implements(type, typeof(T));
 
-        /// <summary>
-        /// Is this <paramref name="type"/> a <c>static</c> <see cref="Type"/>?
-        /// </summary>
         public bool IsStatic
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

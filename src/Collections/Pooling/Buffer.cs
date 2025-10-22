@@ -240,9 +240,6 @@ public ref struct Buffer<T> : IDisposable
     /// <remarks>
     /// This method will always cause a new <see cref="Array">T[]</see> rental from <see cref="ArrayNest"/>
     /// </remarks>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if <see cref="CanGrow"/> is <c>false</c>
-    /// </exception>
     public void Grow() => GrowTo(Capacity * 2);
 
 #endregion

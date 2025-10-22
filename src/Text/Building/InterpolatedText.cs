@@ -12,10 +12,10 @@ namespace ScrubJay.Text;
 /// </summary>
 [PublicAPI]
 [InterpolatedStringHandler]
-[MustDisposeResource(false)]
+//[MustDisposeResource(false)]
 public ref struct InterpolatedText
 {
-    [MustDisposeResource(true)]
+    //[MustDisposeResource(false)]
     public static implicit operator InterpolatedText(text text)
     {
         if (text.Length == 0)
@@ -29,7 +29,7 @@ public ref struct InterpolatedText
         return new InterpolatedText(null, new(buffer, buffer.Length), true);
     }
 
-    [MustDisposeResource(true)]
+    //[MustDisposeResource(false)]
     public static implicit operator InterpolatedText(string? str)
     {
         if (string.IsNullOrEmpty(str))
@@ -60,49 +60,49 @@ public ref struct InterpolatedText
         _disposeBuffer = disposeBuffer;
     }
 
-    [MustDisposeResource(true)]
+    //[MustDisposeResource(true)]
     public InterpolatedText()
         : this(null, default, true)
     {
     }
 
-    [MustDisposeResource(false)]
+    //[MustDisposeResource(false)]
     public InterpolatedText(TextBuilder builder)
         : this(builder, default, false)
     {
     }
 
-    [MustDisposeResource(true)]
+    //[MustDisposeResource(true)]
     public InterpolatedText(Span<char> buffer)
         : this(null, buffer, true)
     {
     }
 
-    [MustDisposeResource(false)]
+    //[MustDisposeResource(false)]
     public InterpolatedText(Buffer<char> buffer)
         : this(null, buffer, false)
     {
     }
 
-    [MustDisposeResource(true)]
+    //[MustDisposeResource(true)]
     public InterpolatedText(int literalLength, int formattedCount)
         : this(null, new(literalLength + (formattedCount * 16)), true)
     {
     }
 
-    [MustDisposeResource(false)]
+    //[MustDisposeResource(false)]
     public InterpolatedText(int literalLength, int formattedCount, TextBuilder builder)
         : this(builder, default, false)
     {
     }
 
-    [MustDisposeResource(true)]
+    //[MustDisposeResource(true)]
     public InterpolatedText(int literalLength, int formattedCount, Span<char> buffer)
         : this(null, buffer, true)
     {
     }
 
-    [MustDisposeResource(false)]
+    //[MustDisposeResource(false)]
     public InterpolatedText(int literalLength, int formattedCount, Buffer<char> buffer)
         : this(null, buffer, false)
     {
@@ -384,6 +384,7 @@ public ref struct InterpolatedText
     //     }
     // }
 
+    //[HandlesResourceDisposal]
     public void Dispose()
     {
         // never dispose Builder, it was only ever passed in, never created
@@ -393,6 +394,7 @@ public ref struct InterpolatedText
         }
     }
 
+    //[HandlesResourceDisposal]
     public string ToStringAndDispose()
     {
         string str = ToString();

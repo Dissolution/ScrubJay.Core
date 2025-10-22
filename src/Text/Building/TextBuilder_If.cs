@@ -168,8 +168,8 @@ partial class TextBuilder
 
 #endregion
 
-    public TextBuilder If<T>(Option<T> option, Action<TextBuilder, T>? onSome = default,
-        Action<TextBuilder>? onNone = default)
+    public TextBuilder If<T>(Option<T> option, Action<TextBuilder, T>? onSome = null,
+        Action<TextBuilder>? onNone = null)
     {
         if (option.IsSome(out var some))
         {
@@ -183,8 +183,8 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder If<T>(Result<T> result, Action<TextBuilder, T>? onOk = default,
-        Action<TextBuilder, Exception>? onError = default)
+    public TextBuilder If<T>(Result<T> result, Action<TextBuilder, T>? onOk = null,
+        Action<TextBuilder, Exception>? onError = null)
     {
         if (result.IsOk(out var ok, out var error))
         {
@@ -200,8 +200,8 @@ partial class TextBuilder
 
     public TextBuilder If<T>(T value,
         Func<T, bool> predicate,
-        Action<TextBuilder, T>? onTrue = default,
-        Action<TextBuilder, T>? onFalse = default)
+        Action<TextBuilder, T>? onTrue = null,
+        Action<TextBuilder, T>? onFalse = null)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
@@ -221,8 +221,8 @@ partial class TextBuilder
 
 #region IfNotNull
 
-    public TextBuilder IfNotNull<T>(T? value, Action<TextBuilder, T>? onNotNull = default,
-        Action<TextBuilder>? onNull = default)
+    public TextBuilder IfNotNull<T>(T? value, Action<TextBuilder, T>? onNotNull = null,
+        Action<TextBuilder>? onNull = null)
     {
         if (value is not null)
         {
@@ -238,8 +238,8 @@ partial class TextBuilder
 
     // ReSharper disable once ConvertNullableToShortForm
     public TextBuilder IfNotNull<T>(Nullable<T> nullable,
-        Action<TextBuilder, T>? onNotNull = default,
-        Action<TextBuilder>? onNull = default)
+        Action<TextBuilder, T>? onNotNull = null,
+        Action<TextBuilder>? onNull = null)
         where T : struct
     {
         if (nullable.TryGetValue(out var value))
@@ -259,8 +259,8 @@ partial class TextBuilder
 #region IfNotEmpty
 
     public TextBuilder IfNotEmpty(string? str,
-        Action<TextBuilder, string>? onNotEmpty = default,
-        Action<TextBuilder>? onEmpty = default)
+        Action<TextBuilder, string>? onNotEmpty = null,
+        Action<TextBuilder>? onEmpty = null)
     {
         if (!string.IsNullOrEmpty(str))
         {
@@ -282,11 +282,11 @@ partial class TextBuilder
 
     public TextBuilder IfNotEmpty<T>(scoped ReadOnlySpan<T> span,
 #if NET9_0_OR_GREATER
-        Action<TextBuilder, ReadOnlySpan<T>>? onNotEmpty = default,
+        Action<TextBuilder, ReadOnlySpan<T>>? onNotEmpty = null,
 #else
-        BuildWithSpan<T>? onNotEmpty = default,
+        BuildWithSpan<T>? onNotEmpty = null,
 #endif
-        Action<TextBuilder>? onEmpty = default)
+        Action<TextBuilder>? onEmpty = null)
     {
         if (!span.IsEmpty)
         {
@@ -301,8 +301,8 @@ partial class TextBuilder
     }
 
     public TextBuilder IfNotEmpty<T>(T[]? array,
-        Action<TextBuilder, T[]>? onNotEmpty = default,
-        Action<TextBuilder>? onEmpty = default)
+        Action<TextBuilder, T[]>? onNotEmpty = null,
+        Action<TextBuilder>? onEmpty = null)
     {
         if (array is not null && array.Length > 0)
         {
@@ -317,8 +317,8 @@ partial class TextBuilder
     }
 
     public TextBuilder IfNotEmpty<T>(ICollection<T>? collection,
-        Action<TextBuilder, ICollection<T>>? onNotEmpty = default,
-        Action<TextBuilder>? onEmpty = default)
+        Action<TextBuilder, ICollection<T>>? onNotEmpty = null,
+        Action<TextBuilder>? onEmpty = null)
     {
         if (collection is not null && collection.Count > 0)
         {
@@ -333,8 +333,8 @@ partial class TextBuilder
     }
 
     public TextBuilder IfNotEmpty<T>(IEnumerable<T>? enumerable,
-        Action<TextBuilder, IEnumerable<T>>? onNotEmpty = default,
-        Action<TextBuilder>? onEmpty = default)
+        Action<TextBuilder, IEnumerable<T>>? onNotEmpty = null,
+        Action<TextBuilder>? onEmpty = null)
     {
         if (enumerable is not null)
         {
@@ -354,13 +354,15 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder IfNotEmpty(InterpolatedText interpolatedText,
+    public TextBuilder IfNotEmpty(
+        [HandlesResourceDisposal]
+        InterpolatedText interpolatedText,
 #if NET9_0_OR_GREATER
-        Action<TextBuilder, InterpolatedText>? onNotEmpty = default,
+        Action<TextBuilder, InterpolatedText>? onNotEmpty,
 #else
-        BuildWithInterpolatedText? onNotEmpty = default,
+        BuildWithInterpolatedText? onNotEmpty,
 #endif
-        Action<TextBuilder>? onEmpty = default)
+        Action<TextBuilder>? onEmpty = null)
     {
         if (interpolatedText.Length > 0)
         {
@@ -374,7 +376,9 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder IfNotEmpty(InterpolatedText interpolatedText)
+    public TextBuilder IfNotEmpty(
+        [HandlesResourceDisposal]
+        InterpolatedText interpolatedText)
     {
         if (interpolatedText.Length > 0)
         {
@@ -384,7 +388,9 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder IfNotEmpty(InterpolatedText interpolatedText, Action<TextBuilder>? onEmpty)
+    public TextBuilder IfNotEmpty(
+        [HandlesResourceDisposal]
+        InterpolatedText interpolatedText, Action<TextBuilder>? onEmpty)
     {
         if (interpolatedText.Length > 0)
         {

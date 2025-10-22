@@ -26,13 +26,12 @@ using var host = hostBuilder.Build();
 
 #endregion End Setup
 
-var a = BindingFlags.Public.IsDefault();
-var b = BindingFlags.Default.IsDefault();
-Debugger.Break();
 
 using var builder = new TextBuilder();
 
-ScratchRenderer.RenderTo(builder, BindingFlags.Public | BindingFlags.Static);
+TypeInfo ti = typeof(Guid).GetTypeInfo();
+
+ScratchRenderer.RenderTo<TypeInfo>(builder, ti);
 
 string str = builder.ToString();
 Console.WriteLine(str);

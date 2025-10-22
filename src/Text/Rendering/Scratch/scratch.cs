@@ -10,13 +10,20 @@ public delegate void RenderTo<in T>(TextBuilder builder, T value)
 #if NET9_0_OR_GREATER
     where T : allows ref struct
 #endif
-    ;
+;
 
+public interface IRenderer<in T>
+#if NET9_0_OR_GREATER
+    where T : allows ref struct
+#endif
+{
+    void RenderTo(TextBuilder builder, T value);
+}
 
 
 public static class ScratchRenderer
 {
-    private static readonly ConcurrentBag<Delegate> _renderers = [];
+    private static readonly ConcurrentBag<object> _renderers = [];
 
     static ScratchRenderer()
     {
@@ -69,7 +76,7 @@ public static class ScratchRenderer
 
             tb.Append(')');
         });
-
+        AddRenderer<Type>(static (tb, type) => { tb.Append("TYPE"); });
     }
 
     private static readonly MethodInfo _renderEnumToMethod = typeof(ScratchRenderer)
@@ -92,7 +99,9 @@ public static class ScratchRenderer
 
         var type = obj.GetType();
         var rendererType = typeof(RenderTo<>).MakeGenericType(type);
-        var renderer = _renderers.FirstOrDefault(renderer => renderer.GetType() == rendererType);
+        var renderer = _renderers
+            .OfType<Delegate>()
+            .FirstOrDefault(renderer => renderer.GetType() == rendererType);
         if (renderer is null)
         {
             // fallback
@@ -109,6 +118,14 @@ public static class ScratchRenderer
     }
 
     public static void AddRenderer<T>(RenderTo<T> renderer)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        _renderers.Add(renderer);
+    }
+
+    public static void AddRenderer<T>(IRenderer<T> renderer)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
@@ -140,18 +157,25 @@ public static class ScratchRenderer
                 return renderTo;
             }
 
-            var genericTypes = renderer.Method.GetGenericArguments();
-            var secondParmType = renderer.Method.GetParameters()[1].ParameterType;
-
-            if (genericTypes.Length > 0)
-                Debugger.Break();
-
-            if (type.Implements(secondParmType))
+            if (renderer is IRenderer<T> irenderer)
             {
-                var del = Delegate.CreateDelegate(typeof(RenderTo<T>), renderer.Method);
-                renderTo = (del as RenderTo<T>)!;
-                Debugger.Break();
-                return renderTo;
+                return irenderer.RenderTo;
+            }
+
+            if (renderer is Delegate del)
+            {
+                var genericTypes = del.Method.GetGenericArguments();
+                var secondParmType = del.Method.GetParameters()[1].ParameterType;
+
+                if (genericTypes.Length > 0)
+                    Debugger.Break();
+
+                if (type.Implements(secondParmType))
+                {
+                    renderTo = Delegate.CreateDelegate<RenderTo<T>>(del.Method);
+                    Debugger.Break();
+                    return renderTo;
+                }
             }
         }
 
