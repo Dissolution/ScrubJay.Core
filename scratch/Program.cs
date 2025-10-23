@@ -29,7 +29,9 @@ using var host = hostBuilder.Build();
 
 string str_two = TextBuilder.Build($"Eat at {4}:{20}");
 
-Debug.AssertInterpolatedStringHandler
+
+StringBuilder sb = default!;
+sb.Append($"Happy Birthday, {str_two} + {147}");
 
 
 using var builder = new TextBuilder();

@@ -1,6 +1,7 @@
 ﻿// Members can be made readonly
 // ReSharper disable NotDisposedResource
 
+using System.Text;
 using ScrubJay.Text.Rendering;
 
 #pragma warning disable IDE0250, IDE0251, CA1001

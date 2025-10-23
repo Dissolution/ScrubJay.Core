@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Text;
+﻿using ScrubJay.Text.Scratch;
+
+namespace ScrubJay.Text;
 
 public partial class TextBuilder
 {
@@ -46,6 +48,15 @@ public partial class TextBuilder
         return this;
     }
 #pragma warning restore IDE0060, CA2000
+
+    public TextBuilder Append<T>(T value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        string? str = TextHelper.ToString<T>(value);
+        return Append(str);
+    }
 
 #endregion
 
