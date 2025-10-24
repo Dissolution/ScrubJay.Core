@@ -3,6 +3,15 @@
 [PublicAPI]
 public static class NumberExtensions
 {
+#if !NET7_0_OR_GREATER
+    extension(sbyte)
+    {
+        public static sbyte Min(sbyte left, sbyte right) => Math.Min(left, right);
+        public static sbyte Max(sbyte left, sbyte right) => Math.Max(left, right);
+
+    }
+#endif
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Clamp(this int number, int inclusiveMin)
     {

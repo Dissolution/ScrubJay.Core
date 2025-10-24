@@ -4,6 +4,39 @@ using ScrubJay.Text;
 
 namespace ScrubJay.Tests.Helpers;
 
+public class DemandException : Exception
+{
+    public static DemandException New<T>(
+        CapturedValue<T> captured,
+        InterpolatedText info = default,
+        Exception? innerException = null)
+    {
+        var message = TextBuilder.New
+            .Append($"Invalid {captured.ValueType:@} variable \"{captured.ValueName}\" `")
+            .Render(captured.Value)
+            .Append('`')
+            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .ToStringAndDispose();
+        return new(message, innerException);
+    }
+
+    public static DemandException New(
+        InterpolatedText info = default,
+        Exception? innerException = null)
+    {
+        var message = TextBuilder.New
+            .Append("Failure was demanded")
+            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .ToStringAndDispose();
+        return new(message, innerException);
+    }
+
+    protected DemandException(string? message, Exception? innerException)
+        : base(message, innerException)
+    {
+    }
+}
+
 [StackTraceHidden]
 public static class Demand
 {
@@ -17,7 +50,15 @@ public static class Demand
         return new CapturedValue<T>(value, valueName);
     }
 
-    internal static ArgException GetEx<T>(
+    [DoesNotReturn]
+    public static void Fail(
+        InterpolatedText info = default,
+        Exception? innerException = null)
+    {
+        throw DemandException.New(info, innerException);
+    }
+
+    internal static ArgumentException GetEx<T>(
         CapturedValue<T> captured,
         ref InterpolatedText interpolatedInfo)
     {
@@ -29,7 +70,7 @@ public static class Demand
         [AssertionMethod]
         public void IsEqualTo(T? other)
         {
-            if (!EqualityComparer<T>.Default.Equals(other!, default!))
+            if (!EqualityComparer<T>.Default.Equals(captured.Value!, other!))
             {
                 throw GetEx(captured, $"was not equal to {other}");
             }
@@ -74,8 +115,6 @@ public ref struct CapturedValue<T>
     where T : allows ref struct
 #endif
 {
-
-
     public readonly T? Value;
 
     public readonly string? ValueName;
@@ -92,7 +131,7 @@ public ref struct CapturedValue<T>
     public string ValueString
     {
 #if NET9_0_OR_GREATER
-        get => TextHelper.ToString<T>(Value);
+        get => Value.Stringify();
 #else
         get => Value?.ToString() ?? string.Empty;
 #endif

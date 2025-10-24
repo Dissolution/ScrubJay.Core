@@ -52,7 +52,7 @@ public class TypeExtensionsTests
     [MemberData(nameof(MemberDataTypes))]
     public void GetBaseTypesWorks(Type? type)
     {
-        var baseTypesList = TypeExtensions.GetBaseTypes(type).ToList();
+        var baseTypesList = TypeExtensions.BaseTypes(type).ToList();
         Assert.NotNull(baseTypesList);
     }
 
@@ -115,7 +115,7 @@ public class TypeExtensionsTests
     [MemberData(nameof(MemberDataTypes))]
     public void ImplementsBaseClassesAllShould(Type? type)
     {
-        foreach (Type baseType in type.GetBaseTypes())
+        foreach (Type baseType in type.BaseTypes())
         {
             Assert.True(TypeExtensions.Implements(type, baseType));
             if (baseType.IsGenericType)
@@ -198,7 +198,7 @@ public class TypeExtensionsTests
             if (right.IsGenericTypeDefinition)
             {
                 assignable = left.HasGenericTypeDefinition(right) ||
-                    (left.GetBaseTypes().Any(t => t.HasGenericTypeDefinition(right)) |
+                    (left.BaseTypes().Any(t => t.HasGenericTypeDefinition(right)) |
                         left.GetInterfaces().Any(i => i.HasGenericTypeDefinition(right)));
             }
 #if NETFRAMEWORK

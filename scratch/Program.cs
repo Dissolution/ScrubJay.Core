@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ScrubJay.Collections.Pooling;
 using ScrubJay.Maths;
+using ScrubJay.Maths.Ternary;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 using ScrubJay.Text.Scratch;
@@ -30,14 +31,12 @@ using var host = hostBuilder.Build();
 #endregion End Setup
 
 
+Trit t = Trit.True;
+var k = !t;
+var j = !k;
+var l = !j;
 
-RS rs = new();
-
-text text = "ABC";
-
-string s_2 = Util.Dump(text);
-
-Util.Accept(new(), $"Hey: {rs:@}");
+Debugger.Break();
 
 
 using var builder = new TextBuilder();
@@ -66,14 +65,6 @@ namespace ScrubJay.Scratch
 
         }
 
-        public static string Dump<T>(T value)
-            where T : allows ref struct
-        {
-            Emit.Ldarg(nameof(value));
-            Emit.Call(MethodRef.Method(TypeRef.Type<T>(), "ToString", typeof(string), 0, []));
-            Emit.Ret();
-            throw Unreachable();
-        }
     }
 
     public class TestBaseClass
