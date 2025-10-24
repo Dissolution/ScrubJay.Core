@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using InlineIL;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ScrubJay.Collections.Pooling;
@@ -18,6 +19,8 @@ using ScrubJay.Maths;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 using ScrubJay.Text.Scratch;
+
+using static InlineIL.IL;
 
 Console.OutputEncoding = Encoding.UTF8;
 var hostBuilder = Host.CreateApplicationBuilder(args);
@@ -27,11 +30,14 @@ using var host = hostBuilder.Build();
 #endregion End Setup
 
 
-string str_two = TextBuilder.Build($"Eat at {4}:{20}");
 
+RS rs = new();
 
-StringBuilder sb = default!;
-sb.Append($"Happy Birthday, {str_two} + {147}");
+text text = "ABC";
+
+string s_2 = Util.Dump(text);
+
+Util.Accept(new(), $"Hey: {rs:@}");
 
 
 using var builder = new TextBuilder();
@@ -53,6 +59,23 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
+    public static partial class Util
+    {
+        public static void Accept(TextBuilder builder, [InterpolatedStringHandlerArgument(nameof(builder))] ref InterpolatedTextBuilder interpolated)
+        {
+
+        }
+
+        public static string Dump<T>(T value)
+            where T : allows ref struct
+        {
+            Emit.Ldarg(nameof(value));
+            Emit.Call(MethodRef.Method(TypeRef.Type<T>(), "ToString", typeof(string), 0, []));
+            Emit.Ret();
+            throw Unreachable();
+        }
+    }
+
     public class TestBaseClass
     {
         public int Id { get; init; }

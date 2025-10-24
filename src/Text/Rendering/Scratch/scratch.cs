@@ -106,7 +106,7 @@ public static class ScratchRenderer
         {
             // fallback
 #if NET9_0_OR_GREATER
-            return builder.Append(TextHelper.ToString(obj));
+            return builder.Append(obj.Stringify());
 #else
             return builder.Append(obj.ToString());
 #endif
@@ -203,7 +203,7 @@ public static class ScratchRenderer
 
         // no registered renderers can handle this value
 #if NET9_0_OR_GREATER
-        return builder.Append(TextHelper.ToString(value));
+        return builder.Append(value.Stringify());
 #else
         return builder.Format<T>(value);
 #endif

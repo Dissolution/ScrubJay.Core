@@ -275,7 +275,7 @@ public ref struct InterpolatedText
         }
         else
         {
-            _buffer.WriteMany(TextHelper.ToString<T>(value));
+            _buffer.WriteMany(value.Stringify());
         }
     }
 

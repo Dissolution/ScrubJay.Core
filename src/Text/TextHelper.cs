@@ -17,7 +17,7 @@ namespace ScrubJay.Text;
 /// Methods for efficiently working on textual types (<see cref="char"/>, <see cref="string"/>, <see cref="text">ReadOnlySpan&lt;char&gt;</see>
 /// </summary>
 [PublicAPI]
-public static class TextHelper
+public static partial class TextHelper
 {
     #region TryCopyTo
 

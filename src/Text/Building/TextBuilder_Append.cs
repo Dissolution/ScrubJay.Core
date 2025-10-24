@@ -54,7 +54,7 @@ public partial class TextBuilder
         where T : allows ref struct
 #endif
     {
-        string? str = TextHelper.ToString<T>(value);
+        string? str = value.Stringify();
         return Append(str);
     }
 
@@ -94,15 +94,12 @@ public partial class TextBuilder
     }
 
     public TextBuilder AppendMany<T>(IEnumerable<T>? values)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
     {
         if (values is not null)
         {
             foreach (var value in values)
             {
-                Write(TextHelper.ToString(value));
+                Format(value);
             }
         }
 

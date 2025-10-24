@@ -82,7 +82,7 @@ public static class BitHelper
             unsafe
             {
                 if (Notsafe.SizeOf<I>() != Notsafe.SizeOf<O>())
-                    throw Ex.Arg<I>(TextHelper.ToString(input), $"{typeof(I):@} Input `{input}` was not the same size as a {typeof(O):@}");
+                    throw Ex.Arg<I>(input.Stringify(), $"{typeof(I):@} Input `{input}` was not the same size as a {typeof(O):@}");
                 return Notsafe.As<I, O>(input);
             }
         }
