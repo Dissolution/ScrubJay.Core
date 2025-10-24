@@ -23,7 +23,7 @@ public readonly struct Trit :
 // IEquatable<Trit>,
 // IComparable<Trit>
 {
-    //public static implicit operator Trit(bool boolean) => boolean ? True : False;
+    public static explicit operator Trit(bool boolean) => boolean ? True : False;
 
     public static bool operator true(Trit trit)
     {
@@ -36,59 +36,22 @@ public readonly struct Trit :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Trit operator !(Trit trit)
-    {
-        Emit.Ldarg(nameof(trit));
-        Emit.Neg();
-        Emit.Conv_I1();
-        return Return<Trit>();
-    }
+    public static Trit operator !(Trit trit) => trit.Not();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Trit operator &(Trit left, Trit right)
-    {
-        Emit.Ldarg(nameof(left));
-        Emit.Ldarg(nameof(right));
-        Emit.Ble_S("left_le_right");
-        Emit.Ldarg(nameof(right));
-        Emit.Ret();
-        MarkLabel("left_le_right");
-        Emit.Ldarg(nameof(left));
-        Emit.Ret();
-        throw Unreachable();
-    }
+    public static Trit operator &(Trit left, Trit right) => left.And(right);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Trit operator |(Trit left, Trit right)
-    {
-        Emit.Ldarg(nameof(left));
-        Emit.Ldarg(nameof(right));
-        Emit.Bge_S("left_ge_right");
-        Emit.Ldarg(nameof(right));
-        Emit.Ret();
-        MarkLabel("left_ge_right");
-        Emit.Ldarg(nameof(left));
-        Emit.Ret();
-        throw Unreachable();
-    }
+    public static Trit operator |(Trit left, Trit right) => left.Or(right);
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(Trit left, Trit right)
-    {
-        return left._value == right._value;
-    }
+    public static bool operator ==(Trit left, Trit right) => left.Equals(right);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(Trit left, Trit right)
-    {
-        return left._value != right._value;
-    }
+    public static bool operator !=(Trit left, Trit right) => !left.Equals(right);
 
-    public static Trit operator ^(Trit left, Trit right)
-    {
-        return (left & !right) | (!left & right);
-    }
+    public static Trit operator ^(Trit left, Trit right) => left.Xor(right);
 
     public static Trit operator ~(Trit value)
     {
@@ -111,25 +74,95 @@ public readonly struct Trit :
         _value = value;
     }
 
-    public Trit And(Trit other)
-    {
-        return this & other;
-    }
+    #region Logical operators
 
-    public Trit Or(Trit other)
-    {
-        return this | other;
-    }
+    #region Unary
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Trit Not()
     {
-        return !this;
+        Emit.Ldarg_0(); // this
+        Emit.Neg(); // !this
+        Emit.Conv_I1(); // (sbyte)!this
+        return Return<Trit>(); // (Trit)(sbyte)!this
     }
 
+    #endregion Unary
+
+    #region Binary
+
+    /// <summary>
+    /// Logical OR (∨)
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    /// <remarks>
+    /// In balanced ternary, an OR operation is just the maximum value
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Trit Or(Trit other)
+    {
+        Emit.Ldarg_0();
+        Emit.Ldarg(nameof(other));
+        Emit.Bge_S("this_ge_other");
+        Emit.Ldarg(nameof(other));
+        Emit.Ret();
+        MarkLabel("this_ge_other");
+        Emit.Ldarg_0();
+        Emit.Ret();
+        throw Unreachable();
+    }
+
+    /// <summary>
+    /// Logical AND (∧)
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// In balanced ternary, an AND operation is just the minimum value
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Trit And(Trit other)
+    {
+        Emit.Ldarg_0();
+        Emit.Ldarg(nameof(other));
+        Emit.Ble_S("this_le_other");
+        Emit.Ldarg(nameof(other));
+        Emit.Ret();
+        MarkLabel("this_le_other");
+        Emit.Ldarg_0();
+        Emit.Ret();
+        throw Unreachable();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Trit Nor(Trit other)
+    {
+        return this.Or(other).Not();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Trit Xor(Trit other)
     {
-        return this ^ other;
+        return (this & !other) | (!this & other);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Trit Xnor(Trit other)
+    {
+        return (Trit)Equals(other);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Trit Nand(Trit other)
+    {
+        return this.And(other).Not();
+    }
+
+    #endregion Binary
+
+    #endregion Logical operators
 
 
     public void Match(
@@ -162,7 +195,10 @@ public readonly struct Trit :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Equals(Trit trit)
     {
-        return _value.Equals(trit._value);
+        Emit.Ldarg_0();
+        Emit.Ldarg(nameof(trit));
+        Emit.Ceq();
+        return Return<bool>();
     }
 
     public bool Equals(bool boolean)
@@ -181,6 +217,7 @@ public readonly struct Trit :
         return false;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override int GetHashCode()
     {
         return _value;
