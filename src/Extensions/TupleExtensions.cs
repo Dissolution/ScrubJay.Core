@@ -4,7 +4,9 @@ namespace ScrubJay.Extensions;
 public static class TupleExtensions
 {
     [PublicAPI]
-    public ref struct TupleEnumerator<T> : IEnumerator<object?>, IEnumerator
+    public ref struct TupleEnumerator<T> :
+        //IEnumerable<object?>, IEnumerable,
+        IEnumerator<object?>, IEnumerator
         where T : ITuple
     {
         private readonly T _tuple;
@@ -45,6 +47,11 @@ public static class TupleExtensions
         public void Dispose()
         {
             // do nothing
+        }
+
+        public TupleEnumerator<T> GetEnumerator()
+        {
+            return this;
         }
     }
 

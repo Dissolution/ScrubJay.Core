@@ -35,7 +35,7 @@ public static class Pair
             return getEx(text);
 
         if (!K.TryParse(keySpan, provider, out var key))
-            return getEx(text, ParseException.Create<K>(keySpan));
+            return getEx(text, Ex.Parse<K>(keySpan));
 
         reader.Take();
 
@@ -44,7 +44,7 @@ public static class Pair
             return getEx(text);
 
         if (!V.TryParse(valueSpan, provider, out var value))
-            return getEx(text, ParseException.Create<V>(valueSpan));
+            return getEx(text, Ex.Parse<V>(valueSpan));
 
         reader.Take();
 
@@ -58,7 +58,7 @@ public static class Pair
 
         static ParseException getEx(text text, Exception? innerEx = null)
         {
-            return ParseException.Create<Pair<K, V>>(
+            return Ex.Parse<Pair<K, V>>(
                 text,
                 $"Expected `({typeof(K).Render()}, {typeof(V).Render()})`",
                 innerEx);

@@ -12,16 +12,8 @@ public readonly struct Trit :
 #if NET7_0_OR_GREATER
     IBitwiseOperators<Trit, Trit, Trit>,
 #endif
+    ITrySpanParsable<Trit>,
     IEquatable<Trit>
-
-//ITrySpanParsable<Trit>,
-// IEqualityOperators<Trit, Trit, bool>,
-// IEqualityOperators<Trit, bool, bool>,
-// IComparisonOperators<Trit, Trit, Trit>,
-// IComparisonOperators<Trit, bool, Trit>,
-
-// IEquatable<Trit>,
-// IComparable<Trit>
 {
     public static explicit operator Trit(bool boolean) => boolean ? True : False;
 
@@ -58,9 +50,25 @@ public readonly struct Trit :
         throw Ex.NotSupported();
     }
 
+    public static Result<Trit> TryParse(text text, IFormatProvider? provider = null)
+    {
+        if (text.Equate(TRUE_STRING))
+            return Ok(True);
+        if (text.Equate(FALSE_STRING))
+            return Ok(False);
+        if (text.Equate(UNKNOWN_STRING))
+            return Ok(Unknown);
+        return Ex.Parse<Trit>(text);
+    }
+
+
     internal const sbyte TRUE_VALUE = +1;
     internal const sbyte UNKNOWN_VALUE = 0;
     internal const sbyte FALSE_VALUE = -1;
+
+    internal const string TRUE_STRING = "True";
+    internal const string UNKNOWN_STRING = "Unknown";
+    internal const string FALSE_STRING = "False";
 
     public static readonly Trit True = new(TRUE_VALUE);
     public static readonly Trit Unknown = new(UNKNOWN_VALUE);
@@ -226,8 +234,8 @@ public readonly struct Trit :
     public override string ToString()
         => _value switch
         {
-            TRUE_VALUE => "True",
-            FALSE_VALUE => "False",
-            _ => "Unknown"
+            TRUE_VALUE => TRUE_STRING,
+            FALSE_VALUE => FALSE_STRING,
+            _ => UNKNOWN_STRING,
         };
 }

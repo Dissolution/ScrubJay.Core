@@ -443,7 +443,7 @@ public readonly struct Rational :
             if (_fastUnicodeRationals.TryGetValue(ch, out var rational))
                 return Ok(rational);
             // will not parse
-            return ParseException.Create<Rational>(text);
+            return Ex.Parse<Rational>(text);
         }
 
         // expect {numerator}/{denominator}
@@ -452,35 +452,35 @@ public readonly struct Rational :
         // skip all leading whitespace
         reader.SkipWhile(char.IsWhiteSpace);
         if (reader.IsCompleted)
-            return ParseException.Create<Rational>(text);
+            return Ex.Parse<Rational>(text);
 
         // everything until / or whitespace is the numerator
         var numText = reader.TakeUntil(ch => char.IsWhiteSpace(ch) || ch == '/');
         if (reader.IsCompleted)
-            return ParseException.Create<Rational>(text);
+            return Ex.Parse<Rational>(text);
 
         // must be able to convert
 #if NET7_0_OR_GREATER
         if (!BigInteger.TryParse(numText, numberStyle, provider, out var numerator))
-            return ParseException.Create<Rational>(text, "Invalid numerator");
+            return Ex.Parse<Rational>(text, "Invalid numerator");
 #else
         if (!BigInteger.TryParse(numText.AsString(), numberStyle, provider, out var numerator))
-            return ParseException.Create<Rational>(text, "Invalid numerator");
+            return Ex.Parse<Rational>(text, "Invalid numerator");
 #endif
 
         // skip whitespace
         reader.SkipWhile(char.IsWhiteSpace);
         if (reader.IsCompleted)
-            return ParseException.Create<Rational>(text);
+            return Ex.Parse<Rational>(text);
 
         // must be a slash
         if (reader.Take() != '/')
-            return ParseException.Create<Rational>(text);
+            return Ex.Parse<Rational>(text);
 
         // skip whitespace
         reader.SkipWhile(char.IsWhiteSpace);
         if (reader.IsCompleted)
-            return ParseException.Create<Rational>(text);
+            return Ex.Parse<Rational>(text);
 
         // everything until whitespace or end is the denominator
         var denomText = reader.TakeUntil(char.IsWhiteSpace);
@@ -489,16 +489,16 @@ public readonly struct Rational :
             // skip whitespace
             reader.SkipWhile(char.IsWhiteSpace);
             if (!reader.IsCompleted)
-                return ParseException.Create<Rational>(text);
+                return Ex.Parse<Rational>(text);
         }
 
         // must be able to convert
 #if NET7_0_OR_GREATER
         if (!BigInteger.TryParse(denomText, numberStyle, provider, out var denominator))
-            return ParseException.Create<Rational>(text, "Invalid denominator");
+            return Ex.Parse<Rational>(text, "Invalid denominator");
 #else
         if (!BigInteger.TryParse(denomText.AsString(), numberStyle, provider, out var denominator))
-            return ParseException.Create<Rational>(text, "Invalid denominator");
+            return Ex.Parse<Rational>(text, "Invalid denominator");
 #endif
         return Ok<Rational>(new(numerator, denominator));
     }

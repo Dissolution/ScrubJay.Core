@@ -5,7 +5,7 @@
         <RootNamespace>ScrubJay.ConsoleApp</RootNamespace>
 
         <OutputType>Exe</OutputType>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFrameworks>net10.0;net8.0;net6.0;</TargetFrameworks>
         <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>

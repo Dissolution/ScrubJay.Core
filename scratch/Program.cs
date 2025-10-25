@@ -30,14 +30,14 @@ using var host = hostBuilder.Build();
 
 #endregion End Setup
 
+#if NET9_0_OR_GREATER
 
-Trit t = Trit.True;
-var k = !t;
-var j = !k;
-var l = !j;
+RS rs = new RS();
+
+Util.Accept(new(), $"Eat at {rs:D}");
 
 Debugger.Break();
-
+#endif
 
 using var builder = new TextBuilder();
 

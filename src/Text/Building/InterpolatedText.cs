@@ -1,37 +1,38 @@
-﻿// Members can be made readonly
-// ReSharper disable NotDisposedResource
+﻿#pragma warning disable CA1815, IDE0250
 
 using System.Text;
 using ScrubJay.Text.Rendering;
+using ScrubJay.Text.Scratch;
 
-#pragma warning disable IDE0250, IDE0251, CA1001
 
 namespace ScrubJay.Text;
 
 /// <summary>
-/// An InterpolatedStringHandler that writes to a <see cref="TextBuilder"/>
+/// A custom <c>InterpolatedStringHandler</c> that supports everything in <see cref="DefaultInterpolatedStringHandler"/> as well as:<br/>
+/// - Custom format codes
+/// - Ability to append `ref struct` values
+/// - Implicit conversion from <see cref="string"/> and <see cref="ReadOnlySpan{T}">ReadOnlySpan&lt;char&gt;</see>
 /// </summary>
-/// <remarks>
-/// Inspired by
-/// </remarks>
 [PublicAPI]
 [InterpolatedStringHandler]
 public ref struct InterpolatedText
 {
-    /// <summary>
-    /// Implicitly convert <see cref="text"/> to an <see cref="InterpolatedText"/> containing it
-    /// </summary>
+    /* The below implicit conversions from strings and ReadOnlySpan<char>s
+     * use dangerous code to convert those initial values into a writable Span<char>
+     * that can belong to InterpolatedText.
+     * This is fine because InterpolatedStringHandlers are write-only:
+     * - Text will be used exactly as-is
+     * or
+     * - As capacity is filled, further appends will grow by renting a new array and discarding this span
+     */
+
     public static implicit operator InterpolatedText(text text)
     {
         if (text.Length == 0)
             return default;
 
-        // yes, this is dangerous
-        // but InterpolatedStringHandlers are write-only
-        // so either this value is used as-is
-        // or a new array is acquired upon a new Append and this Span goes out of scope
-        var buffer = Notsafe.Text.AsWritableSpan(text);
-        return new InterpolatedText(null, new(buffer, buffer.Length), true);
+        var span = Notsafe.Text.AsWritableSpan(text);
+        return new InterpolatedText(span);
     }
 
     public static implicit operator InterpolatedText(string? str)
@@ -39,372 +40,182 @@ public ref struct InterpolatedText
         if (string.IsNullOrEmpty(str))
             return default;
 
-        var buffer = Notsafe.Text.AsWritableSpan(str);
-        return new InterpolatedText(null, new(buffer, buffer.Length), true);
+        var span = Notsafe.Text.AsWritableSpan(str);
+        return new InterpolatedText(span);
     }
 
-    private readonly TextBuilder? _builder;
+
     private Buffer<char> _buffer;
-    private bool _disposeBuffer;
 
-    public int Length
-    {
-        get
-        {
-            if (_builder is not null)
-                return _builder.Length;
-            return _buffer.Count;
-        }
-    }
+    public Span<char> Written => _buffer.Written;
 
-    private InterpolatedText(TextBuilder? builder, Buffer<char> buffer, bool disposeBuffer)
+    public int Length => _buffer.Count;
+
+    private InterpolatedText(Span<char> span)
     {
-        _builder = builder;
-        _buffer = buffer;
-        _disposeBuffer = disposeBuffer;
+        _buffer = new Buffer<char>(span, span.Length);
     }
 
     public InterpolatedText()
-        : this(null, default, true)
     {
-    }
-
-    public InterpolatedText(TextBuilder builder)
-        : this(builder, default, false)
-    {
-    }
-
-    public InterpolatedText(Span<char> buffer)
-        : this(null, buffer, true)
-    {
-    }
-
-    public InterpolatedText(Buffer<char> buffer)
-        : this(null, buffer, false)
-    {
+        _buffer = default;
     }
 
     public InterpolatedText(int literalLength, int formattedCount)
-        : this(null, new(literalLength + (formattedCount * 16)), true)
     {
+        _buffer = new Buffer<char>(literalLength + (formattedCount * 16));
     }
 
-    public InterpolatedText(int literalLength, int formattedCount, TextBuilder builder)
-        : this(builder, default, false)
-    {
-    }
+    public void AppendLiteral(string str) => _buffer.WriteMany(str.AsSpan());
 
-    public InterpolatedText(int literalLength, int formattedCount, Span<char> buffer)
-        : this(null, buffer, true)
-    {
-    }
-
-    public InterpolatedText(int literalLength, int formattedCount, Buffer<char> buffer)
-        : this(null, buffer, false)
-    {
-    }
-
-    public void AppendLiteral(string str)
-    {
-        Debug.Assert(str is not null);
-        if (_builder is not null)
-        {
-            _builder.Write(str);
-        }
-        else
-        {
-            _buffer.WriteMany(str.AsSpan());
-        }
-    }
-
-    public void AppendFormatted(char ch)
-    {
-        if (_builder is not null)
-        {
-            _builder.Write(ch);
-        }
-        else
-        {
-            _buffer.Write(ch);
-        }
-    }
+    public void AppendFormatted(char ch) => _buffer.Write(ch);
 
     public void AppendFormatted(char ch, int alignment)
     {
-        if (alignment == 0) return;
+        if (alignment == 0)
+            return;
 
-        if (_builder is not null)
+        if (alignment < 0)
         {
-            _builder.Align(ch, width: alignment);
+            // left align
+            var span = _buffer.Allocate(-alignment);
+            span[0] = ch;
+            span[1..].Fill(' ');
         }
         else
         {
-            if (alignment < 0)
-            {
-                // left align
-                var span = _buffer.Allocate(-alignment);
-                span[0] = ch;
-                span[1..].Fill(' ');
-            }
-            else
-            {
-                // right align
-                var span = _buffer.Allocate(alignment);
-                span[..^1].Fill(' ');
-                span[^1] = ch;
-            }
-        }
-    }
-
-
-    public void AppendFormatted(scoped text text)
-    {
-        if (_builder is not null)
-        {
-            _builder.Write(text);
-        }
-        else
-        {
-            _buffer.WriteMany(text);
-        }
-    }
-
-    public void AppendFormatted(scoped text text, int alignment)
-    {
-        if (alignment == 0) return;
-
-        if (_builder is not null)
-        {
-            _builder.Align(text, width: alignment);
-        }
-        else
-        {
-            if (alignment < 0)
-            {
-                // left align
-                var span = _buffer.Allocate(-alignment);
-                if (text.Length > span.Length)
-                {
-                    text[..span.Length].CopyTo(span);
-                    return;
-                }
-
-                span[..text.Length].CopyFrom(text);
-                span[text.Length..].Fill(' ');
-            }
-            else
-            {
-                // right align
-                var span = _buffer.Allocate(alignment);
-                if (text.Length > span.Length)
-                {
-                    text[^span.Length..].CopyTo(span);
-                    return;
-                }
-
-                span[..text.Length].Fill(' ');
-                span[text.Length..].CopyFrom(text);
-            }
+            // right align
+            var span = _buffer.Allocate(alignment);
+            span[..^1].Fill(' ');
+            span[^1] = ch;
         }
     }
 
     public void AppendFormatted(string? str)
     {
-        if (_builder is not null)
-        {
-            _builder.Write(str);
-        }
-        else
+        if (str is not null)
         {
             _buffer.WriteMany(str.AsSpan());
         }
     }
 
     public void AppendFormatted(string? str, int alignment)
+    => AppendFormatted(str.AsSpan(), alignment);
+
+    public void AppendFormatted(scoped text text)
     {
-        if (alignment == 0) return;
+        _buffer.WriteMany(text);
+    }
 
-        if (_builder is not null)
-        {
-            _builder.Align(str, width: alignment);
+    public void AppendFormatted(scoped text text, int alignment)
+    {
+        if (alignment == 0)
             return;
-        }
 
-        if (string.IsNullOrEmpty(str))
-        {
-            _buffer.Allocate(Math.Abs(alignment)).Fill(' ');
-            return;
-        }
 
         if (alignment < 0)
         {
             // left align
             var span = _buffer.Allocate(-alignment);
-            if (str!.Length > span.Length)
+            if (text.Length > span.Length)
             {
-                str[..span.Length].CopyTo(span);
+                text[..span.Length].CopyTo(span);
                 return;
             }
 
-            span[..str.Length].CopyFrom(str);
-            span[str.Length..].Fill(' ');
+            span[..text.Length].CopyFrom(text);
+            span[text.Length..].Fill(' ');
         }
         else
         {
             // right align
             var span = _buffer.Allocate(alignment);
-            if (str!.Length > span.Length)
+            if (text.Length > span.Length)
             {
-                str[^span.Length..].CopyTo(span);
+                text[^span.Length..].CopyTo(span);
                 return;
             }
 
-            span[..str.Length].Fill(' ');
-            span[str.Length..].CopyFrom(str);
+            span[..text.Length].Fill(' ');
+            span[text.Length..].CopyFrom(text);
         }
     }
+
+
 
     public void AppendFormatted<T>(T? value)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
-        if (_builder is not null)
+        _buffer.WriteMany(value.Stringify().AsSpan());
+    }
+
+    public void AppendFormatted<T>(T value, scoped text format)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        if (format.Length == 0)
         {
-            _builder.Render<T>(value);
+            AppendFormatted<T>(value);
+        }
+        else if (format.Equate('@'))
+        {
+            // render
+            _buffer.WriteMany(value.Render());
         }
         else
         {
-            _buffer.WriteMany(value.Stringify());
+            // no other valid formats?
+            Debugger.Break();
+            throw Ex.NotImplemented();
         }
     }
 
-    public void AppendFormatted<T>(T? value, string? format)
+    public void AppendFormatted<T>(T value, string? format)
     {
-        if (_builder is not null)
+        if (format.Equate('@'))
         {
-            _builder.Format<T>(value, format);
-        }
-        // render this value
-        else if (format.Equate('@'))
-        {
-            _buffer.WriteMany(value.Render());
-        }
-        // render this value's type
-        else if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
-        {
-            _buffer.WriteMany((value?.GetType() ?? typeof(T)).Render());
+            // render this value
+            AppendLiteral(value.Render());
         }
         else if (value is IFormattable)
         {
-#if NET6_0_OR_GREATER
             if (value is ISpanFormattable)
             {
                 int charsWritten;
                 while (!((ISpanFormattable)value).TryFormat(_buffer.Available, out charsWritten, format, null))
                 {
-                    _buffer.GrowBy(16);
+                    _buffer.Grow();
                 }
 
                 _buffer.Count += charsWritten;
                 return;
             }
-#endif
 
-            _buffer.WriteMany(((IFormattable)value).ToString(format, null));
+            AppendLiteral(((IFormattable)value).ToString(format, null));
         }
         else if (value is not null)
         {
-            _buffer.WriteMany(value.ToString());
+            AppendFormatted(value.ToString());
         }
     }
 
-
-    public void AppendFormatted<T>(T? value, scoped text format)
+    public void Clear()
     {
-        if (_builder is not null)
-        {
-            _builder.Format<T>(value, format);
-        }
-        // render this value
-        else if (format.Equate('@'))
-        {
-            _buffer.WriteMany(value.Render());
-        }
-        // render this value's type
-        else if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
-        {
-            _buffer.WriteMany((value?.GetType() ?? typeof(T)).Render());
-        }
-        else if (value is IFormattable)
-        {
-#if NET6_0_OR_GREATER
-            if (value is ISpanFormattable)
-            {
-                int charsWritten;
-                while (!((ISpanFormattable)value).TryFormat(_buffer.Available, out charsWritten, format, null))
-                {
-                    _buffer.GrowBy(16);
-                }
-
-                _buffer.Count += charsWritten;
-                return;
-            }
-#endif
-
-            _buffer.WriteMany(((IFormattable)value).ToString(format.AsString(), null));
-        }
-        else if (value is not null)
-        {
-            _buffer.WriteMany(value.ToString());
-        }
-    }
-    //
-    //
-    // public void AppendFormatted<T>(T? value, int alignment)
-    // {
-    //     if (value is not null)
-    //     {
-    //         _builder ??= new();
-    //         _builder.AlignFormat<T>(value, width: alignment);
-    //     }
-    // }
-    //
-    //
-    // public void AppendFormatted<T>(T? value, int alignment, string? format)
-    // {
-    //     if (value is not null)
-    //     {
-    //         _builder ??= new();
-    //         _builder.AlignFormat<T>(value, alignment, format);
-    //     }
-    // }
-
-    //[HandlesResourceDisposal]
-    public void Dispose()
-    {
-        // never dispose Builder, it was only ever passed in, never created
-        if (_disposeBuffer)
-        {
-            _buffer.Dispose();
-        }
+        _buffer.Dispose();
     }
 
-    //[HandlesResourceDisposal]
-    public string ToStringAndDispose()
+    public string ToStringAndClear()
     {
         string str = ToString();
-        Dispose();
+        Clear();
         return str;
     }
 
     public override string ToString()
     {
-        if (_builder is not null)
-        {
-            return _builder.ToString();
-        }
-
         return _buffer.ToString();
     }
 }

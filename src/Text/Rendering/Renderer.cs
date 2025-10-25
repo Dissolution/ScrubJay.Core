@@ -1,200 +1,297 @@
+using System.Collections.Concurrent;
 using System.Reflection;
+using ScrubJay.Text.Rendering;
 
-namespace ScrubJay.Text.Rendering;
-
-internal sealed class RendererCacheComparer : Comparer<(int Priority, IRenderer Renderer)>
-{
-    public override int Compare((int Priority, IRenderer Renderer) x, (int Priority, IRenderer Renderer) y)
-    {
-        // High to Low, so compare y with x (opposite order)
-        return y.Priority.CompareTo(x.Priority);
-    }
-}
+namespace ScrubJay.Text.Scratch;
 
 [PublicAPI]
 public static class Renderer
 {
-
-
-
-    private static readonly Lock _lock = new();
-    private static readonly OrderedList<(int, IRenderer)> _renderers = new(new RendererCacheComparer(), newestFirst: true);
-    private static readonly ConcurrentTypeMap<IRenderer?> _rendererMap = [];
+    private static readonly ConcurrentDictionary<string, MethodInfo> _renderMethods = [];
+    private static readonly TypeMap<Delegate> _renderers = [];
 
     static Renderer()
     {
-        var domain = AppDomain.CurrentDomain;
-        domain.AssemblyLoad += DomainOnAssemblyLoad;
+        Add<bool>(static (tb, boolean) => tb.If(boolean, "true", "false"));
 
-        domain.GetAssemblies()
-            .Consume(LoadRenderers);
+        Add<uint>(static (tb, u32) => tb.Format(u32).Write('U'));
+        Add<long>(static (tb, i64) => tb.Format(i64).Write('L'));
+        Add<ulong>(static (tb, u64) => tb.Format(u64).Write("UL"));
+        Add<float>(static (tb, f32) =>
+        {
+            //tb.Format(f32, "N");
+            //tb.Write('…');
+
+            tb.Format(f32, "G9");
+
+            tb.Append('f');
+        });
+        Add<double>(static (tb, f64) =>
+        {
+            //tb.Format(f64, "N");
+            //tb.Write('…');
+
+            tb.Format(f64, "G17");
+
+            tb.Append('d');
+        });
+        Add<decimal>(static (tb, dec) => tb.Format(dec, "G").Append('m'));
+
+        Add<TimeSpan>(static (tb, ts) => tb.Format(ts, "g"));
+        Add<DateTime>(static (tb, dt) => tb.Format(dt, "yyyy-MM-dd HH:mm:ss"));
+        Add<DateTimeOffset>(static (tb, dto) => tb.Format(dto, "yyyy-MM-dd HH:mm:ss"));
+
+        Add<DBNull>(static (tb, _) => tb.Write(nameof(DBNull)));
+        Add<Guid>(static (tb, guid) =>
+        {
+            var buffer = tb.Allocate(36);
+#if NETFRAMEWORK || NETSTANDARD2_0
+            string str = guid.ToString("N");
+            Notsafe.Text.CopyBlock(str, buffer, 36);
+#else
+            guid.TryFormat(buffer, out _, format: "D");
+#endif
+            buffer.ForEach((ref char ch) =>
+            {
+                if (ch == 'a')
+                    ch = 'A';
+                else if (ch == 'b')
+                    ch = 'B';
+                else if (ch == 'c')
+                    ch = 'C';
+                else if (ch == 'd')
+                    ch = 'D';
+                else if (ch == 'e')
+                    ch = 'E';
+                else if (ch == 'f')
+                    ch = 'F';
+            });
+        });
+
+        Add<object>(RenderObjectTo);
+        Add<ITuple>(RenderTupleTo);
+        Add<Type>(TypeRenderer.RenderTypeTo);
     }
 
-    private static void LoadRenderers(Assembly assembly)
+    public static void Add<T>(RenderTo<T> renderTo)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
-        Type[] types;
-        try
+        _renderers.AddOrUpdate<T>(renderTo);
+    }
+
+    public static void Add<T>(IRenderer<T> renderer)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Throw.IfNull(renderer);
+        _renderers.AddOrUpdate<T>(renderer.RenderTo);
+    }
+
+    private static MethodInfo GetRenderMethod(string name, Type genericType)
+    {
+        return _renderMethods.GetOrAdd(name, findMethod);
+
+        MethodInfo findMethod(string n) => typeof(Renderer)
+            .GetMethod(n, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+            .ThrowIfNull($"Cannot find Renderer.{n} method");
+    }
+
+    private static RenderTo<T> RenderKnown<T>(
+        string renderToMethodName,
+        params Type[]? genericTypes)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        genericTypes ??= [typeof(T)];
+
+        var renderMethod = GetRenderMethod(renderToMethodName, typeof(T));
+        if (renderMethod.GetGenericArguments().Length != genericTypes.Length)
+            throw Ex.Invalid();
+
+        var exactMethod = renderMethod.MakeGenericMethod(genericTypes);
+        return Delegate.CreateDelegate<RenderTo<T>>(exactMethod);
+    }
+
+    private static void RenderEnumTo<E>(TextBuilder builder, E e)
+        where E : struct, Enum
+    {
+        EnumInfo.RenderTo(builder, e);
+    }
+
+    private static void RenderReadOnlySpanTo<T>(TextBuilder builder, scoped ReadOnlySpan<T> span)
+    {
+        builder.Append('[')
+            .Delimit(", ", span, static (tb, value) => tb.Render(value))
+            .Append(']');
+    }
+
+    private static void RenderSpanTo<T>(TextBuilder builder, scoped Span<T> span)
+    {
+        builder.Append('[')
+            .Delimit(", ", span, static (tb, value) => tb.Render(value))
+            .Append(']');
+    }
+
+    private static void RenderTupleTo(TextBuilder builder, ITuple tuple)
+    {
+        builder.Write('(');
+        if (tuple.Length > 0)
         {
-            types = assembly.GetTypes();
+            builder.Render(tuple[0]);
+            for (var i = 1; i < tuple.Length; i++)
+            {
+                builder.Append(", ").Render(tuple[i]);
+            }
         }
-        catch (Exception)
+
+        builder.Write(')');
+    }
+
+    private static void RenderArrayTo<T>(TextBuilder builder, T[] array)
+    {
+        builder.Append('[')
+            .Delimit(", ", array, static (tb, value) => tb.Render(value))
+            .Append(']');
+    }
+
+    private static void RenderEnumerableTo<T>(TextBuilder builder, IEnumerable<T> enumerable)
+    {
+        if (enumerable is IList<T> list)
         {
-            // assemblies can be finicky, ignore all exceptions
+            builder
+                .Append('[')
+                .Delimit(", ", list, static (tb, value) => tb.Render(value))
+                .Append(']');
+        }
+        else if (enumerable is ICollection<T> collection)
+        {
+            builder
+                .Append('(')
+                .Delimit(", ", collection, static (tb, value) => tb.Render(value))
+                .Append(')');
+        }
+        else
+        {
+            builder
+                .Append('{')
+                .Delimit(", ", enumerable, static (tb, value) => tb.Render(value))
+                .Append('}');
+        }
+    }
+
+    private static void RenderDictionaryTo<K, V>(TextBuilder builder, IDictionary<K, V> dictionary)
+    {
+        builder.Append('{')
+            .Delimit(", ", dictionary,
+                static (tb, pair) => tb.Render(pair.Key).Append(": ").Render(pair.Value))
+            .Append('}');
+    }
+
+
+    private static void RenderObjectTo(TextBuilder builder, object obj)
+    {
+        var type = obj.GetType();
+        if (type == typeof(object))
+        {
+            builder.Append("(object)");
             return;
         }
 
-        var renderers = types
-            .Where(static type =>
-            {
-                if (!type.Implements<IRenderer>())
-                    return false;
-                if (type.IsInterface || type.IsAbstract)
-                    return false;
-                if (type.IsGenericType)
-                {
-                    return false;
-                }
+        Debugger.Break();
+        typeof(Renderer)
+            .GetMethod(nameof(WriteTo), BindingFlags.NonPublic | BindingFlags.Static)
+            .ThrowIfNull()
+            .MakeGenericMethod(type)
+            .Invoke(null, [builder, obj]);
+        Debugger.Break();
+    }
 
-                return true;
-            })
-            .SelectWhere<Type, (IRenderer, int)>(type =>
-            {
-                if (Result.Try(type, Activator.CreateInstance).IsError(out var error, out var obj))
-                    return error;
-
-                if (obj is not IRenderer renderer)
-                    return new InvalidOperationException();
-
-                int priority = 0;
-                var priorityAttribute = type.GetCustomAttribute<RendererPriorityAttribute>();
-                if (priorityAttribute is not null)
-                {
-                    priority = priorityAttribute.Priority;
-                }
-
-                return Ok((renderer, priority));
-            })
-            .ToList();
-
-        if (renderers.Count > 0)
+    private static RenderTo<T>? FindRenderTo<T>()
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        if (_renderers.TryGetValue<T>(out var del))
         {
-            lock (_lock)
+            if (del.Is<RenderTo<T>>(out var renderTo))
             {
-                foreach (var (renderer, priority) in renderers)
-                {
-                    _renderers.Add((priority, renderer));
-                }
-                _rendererMap.Clear();
+                return renderTo;
+            }
+            else
+            {
+                return null;
             }
         }
-    }
 
-    private static void DomainOnAssemblyLoad(object? sender, AssemblyLoadEventArgs args)
-    {
-        LoadRenderers(args.LoadedAssembly);
-    }
+        var type = typeof(T);
 
-    internal static TextBuilder DefaultRenderValue<T>(TextBuilder builder, T value)
-    {
-        Debug.Assert(value is not null);
-        return value switch
+        if (type.IsEnum)
         {
-            DBNull => builder.Append(nameof(DBNull)),
-            bool b => builder.If(b, bool.TrueString, bool.FalseString),
-            byte u8 => builder.Append("(byte)").Format(u8),
-            sbyte i8 => builder.Append("(sbyte)").Format(i8),
-            short i16 => builder.Append("(short)").Format(i16),
-            ushort u16 => builder.Append("(ushort)").Format(u16),
-            int i32 => builder.Format(i32),
-            uint u32 => builder.Format(u32).Append('U'),
-            long i64 => builder.Format(i64).Append('L'),
-            ulong u64 => builder.Format(u64).Append("UL"),
-            float f32 => builder.Format(f32, "G9").Append('f'),
-            double f64 => builder.Format(f64, "G17").Append('d'),
-            decimal dec => builder.Format(dec, "G").Append('m'),
-            TimeSpan ts => builder.Format(ts, "g"),
-            DateTime dt => builder.Format(dt, "yyyy-MM-dd HH:mm:ss"),
-            DateTimeOffset dto => builder.Format(dto, "yyyy-MM-dd HH:mm:ss"),
-            char ch => builder.Append('\'').Append(ch).Append('\''),
-            string str => builder.Append('"').Append(str).Append('"'),
-            _ => builder.Format<T>(value),
-        };
-    }
+            return RenderKnown<T>(nameof(RenderEnumTo));
+        }
 
-    internal static IRenderer? GetRenderer(Type type)
-    {
-        foreach (var (_, renderer) in _renderers)
+        if (type.IsArray)
         {
-            if (renderer.CanRender(type))
-                return renderer;
+            var genericTypes = type.GetGenericArguments();
+            if (genericTypes.Length == 1)
+            {
+                return RenderKnown<T>(nameof(RenderArrayTo), genericTypes);
+            }
+            else
+            {
+                throw Ex.NotImplemented();
+            }
+        }
+
+        if (type.Implements(typeof(ReadOnlySpan<>)))
+        {
+
+            return RenderKnown<T>(nameof(RenderReadOnlySpanTo),  type.GenericTypeArguments);
+        }
+
+        if (type.Implements(typeof(Span<>)))
+        {
+
+            return RenderKnown<T>(nameof(RenderReadOnlySpanTo),  type.GenericTypeArguments);
+        }
+
+        if (type.Implements(typeof(IEnumerable<>)))
+        {
+
+            return RenderKnown<T>(nameof(RenderReadOnlySpanTo),  type.GenericTypeArguments);
+        }
+
+        if (type.Implements(typeof(IDictionary<,>)))
+        {
+            return RenderKnown<T>(nameof(RenderDictionaryTo), type.GenericTypeArguments);
         }
 
         return null;
     }
 
-    internal static IRenderer<T>? GetRenderer<T>()
-    {
-        return _rendererMap.GetOrAdd<T>(findRenderer) as IRenderer<T>;
-
-        static IRenderer<T>? findRenderer(Type type)
-        {
-            foreach (var (_, renderer) in _renderers)
-            {
-                if (renderer is IRenderer<T> r && renderer.CanRender(type))
-                    return r;
-            }
-
-            return null;
-        }
-    }
-
-    internal static void AddRenderer<T>(IRenderer<T> renderer)
-    {
-        int priority = 0;
-        var priorityAttribute = renderer.GetType().GetCustomAttribute<RendererPriorityAttribute>();
-        if (priorityAttribute is not null)
-        {
-            priority = priorityAttribute.Priority;
-        }
-
-        _renderers.Add((priority, renderer));
-    }
-
-
-
-    public static TextBuilder RenderValue<T>(TextBuilder builder, T? value)
+    internal static void WriteTo<T>(TextBuilder builder, T? value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         if (value is null)
-            return builder;
-
-        // If the value is Renderable, use its func
-        if (value is IRenderable)
         {
-            return ((IRenderable)value).RenderTo(builder);
+            builder.Append("`null");
+            return;
         }
 
-        // We're looking for something that can render T
-        Type valueType = typeof(T);
-
-        // see if we have a direct IRenderer<T>
-        IRenderer<T>? typedRenderer = GetRenderer<T>();
-        if (typedRenderer is not null)
+        var renderTo = FindRenderTo<T>();
+        if (renderTo is not null)
         {
-            return typedRenderer.RenderValue(builder, value);
+            renderTo(builder, value);
+            return;
         }
 
-        // see if we have something that can render this value
-        IRenderer? renderer = GetRenderer(valueType);
-        if (renderer is not null)
-        {
-            return renderer.RenderObject(builder, (object)value);
-        }
-
-        // fallback to default
-        return DefaultRenderValue(builder, value);
+        // fallback to Append
+        builder.Append<T>(value);
     }
-
-    public static bool CanRender<T>() => GetRenderer<T>() is not null;
-
-    public static bool CanRender(Type type) => GetRenderer(type) is not null;
 }

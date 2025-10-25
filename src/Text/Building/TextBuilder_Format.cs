@@ -38,7 +38,8 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder Format<T>(T? value, string? format, IFormatProvider? provider = null)
+    public TextBuilder Format<T>(T? value,
+        string? format, IFormatProvider? provider = null)
     {
         // special format codes for Rendering to support InterpolatedTextHandler
 

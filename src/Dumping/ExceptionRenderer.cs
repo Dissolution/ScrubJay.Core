@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿/*using System.Reflection;
 using ScrubJay.Debugging;
 
 namespace ScrubJay.Text.Rendering;
@@ -70,4 +70,4 @@ public sealed class ExceptionRenderer : Renderer<Exception>
             .Dedent()
             .NewLine();
     }
-}
+}*/

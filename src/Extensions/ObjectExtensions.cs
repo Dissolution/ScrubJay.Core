@@ -12,11 +12,25 @@ public static class ObjectExtensions
 {
     extension<T>(T? value)
     {
-        public Option<T> NotNull()
+        public Option<T> IsNotNull()
         {
             if (value is not null)
                 return Some<T>(value);
             return None;
+        }
+
+        public bool IsNotNull([NotNullWhen(true)] out T? notNull)
+        {
+            if (value is not null)
+            {
+                notNull = value;
+                return true;
+            }
+            else
+            {
+                notNull = default;
+                return false;
+            }
         }
 
     }

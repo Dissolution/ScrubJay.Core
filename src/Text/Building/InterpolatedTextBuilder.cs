@@ -1,17 +1,18 @@
+#pragma warning disable CA1815, IDE0250
+
 namespace ScrubJay.Text;
 
 /// <summary>
 /// Provides a handler used to append interpolated strings into <see cref="TextBuilder"/> instances.
 /// </summary>
 /// <remarks>
-/// Heavily inspired by <see cref="DefaultInterpolatedStringHandler"/> and <see cref="System.Text.TextBuilder.AppendInterpolatedStringHandler"/>
+/// Heavily inspired by <see cref="DefaultInterpolatedStringHandler"/> and <see cref="System.Text.StringBuilder.AppendInterpolatedStringHandler"/>
 /// </remarks>
 [PublicAPI]
 [InterpolatedStringHandler]
 public struct InterpolatedTextBuilder
 {
-    internal TextBuilder _builder;
-
+    private readonly TextBuilder _builder;
 
     public InterpolatedTextBuilder(int literalLength, int formattedCount, TextBuilder builder)
     {
@@ -20,6 +21,7 @@ public struct InterpolatedTextBuilder
     }
 
     public void AppendLiteral(string str) => _builder.Write(str);
+
 
     public void AppendFormatted(char ch) => _builder.Write(ch);
 
@@ -53,8 +55,16 @@ public struct InterpolatedTextBuilder
         }
         else
         {
-            // no other valid formats?
-            throw Ex.NotImplemented();
+            if (format.Length == 0)
+            {
+                _builder.Append<T>(value);
+            }
+            else
+            {
+                // no other valid formats?
+                Debugger.Break();
+                throw Ex.NotImplemented();
+            }
         }
     }
 
@@ -67,30 +77,12 @@ public struct InterpolatedTextBuilder
         }
         else
         {
-            // no other valid formats?
-            throw Ex.NotImplemented();
-        }
-    }
-
-    /*
-    public void AppendFormatted<T>(T value, string? format)
-    {
-        _builder.Format<T>(value, format);
-    }
-
-    public void AppendFormatted<T>(T value, int alignment) =>
-        AppendFormatted(value, alignment, format: null);
-
-    public void AppendFormatted<T>(T value, int alignment, string? format)
-    {
-        if (alignment == 0)
-        {
             _builder.Format<T>(value, format);
         }
-        else
-        {
-            _builder.AlignFormat<T>(value, alignment, format);
-        }
     }
-    */
+
+    public override string ToString()
+    {
+        return _builder.ToString();
+    }
 }

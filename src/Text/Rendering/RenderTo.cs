@@ -1,10 +1,8 @@
 namespace ScrubJay.Text.Scratch;
 
 [PublicAPI]
-public interface IRenderer<in T>
+public delegate void RenderTo<in T>(TextBuilder builder, T value)
 #if NET9_0_OR_GREATER
     where T : allows ref struct
 #endif
-{
-    public void RenderTo(TextBuilder builder, T value);
-}
+;

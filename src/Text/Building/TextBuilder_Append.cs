@@ -1,6 +1,9 @@
-﻿using ScrubJay.Text.Scratch;
+﻿namespace ScrubJay.Text;
 
-namespace ScrubJay.Text;
+/* APPEND
+ * All Append operations act like StringBuilder.Append:
+ * They append text-like values directly, and then other values by calling `.ToString()` on that value
+ */
 
 public partial class TextBuilder
 {
@@ -28,34 +31,31 @@ public partial class TextBuilder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TextBuilder Append(char[]? chars)
+    public TextBuilder Append(
+        [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
+        ref InterpolatedTextBuilder interpolatedText)
     {
-        Write(chars);
+        // the writing has already occured by this point
         return this;
     }
 
-#pragma warning disable IDE0060, CA2000
     public TextBuilder Append(
-        [HandlesResourceDisposal] [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
+        [HandlesResourceDisposal]
         InterpolatedText interpolatedText)
     {
-        // as this TextBuilder instance was passed into the InterpolatedTextBuilder's constructor,
-        // all the writing has already occurred
-
-        // not needed!
-        //interpolatedText.Dispose();
-
+        // we're going to use + dispose of interpolatedText
+        Write(interpolatedText.Written);
+        interpolatedText.Dispose();
         return this;
     }
-#pragma warning restore IDE0060, CA2000
 
     public TextBuilder Append<T>(T value)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
-        string? str = value.Stringify();
-        return Append(str);
+        // stringify can be called on any value, including ref structs
+        return Append(value.Stringify());
     }
 
 #endregion
@@ -65,11 +65,28 @@ public partial class TextBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder AppendMany(params text characters) => Append(characters);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TextBuilder AppendMany(char[]? characters) => Append(new text(characters));
 
     public TextBuilder AppendMany(IEnumerable<char>? characters)
     {
-        if (characters is not null)
+        if (characters is ICollection<char> collection)
+        {
+#if !NETFRAMEWORK && !NETSTANDARD
+            if (characters is List<char> list)
+            {
+                var listSpan = CollectionsMarshal.AsSpan(list);
+                return Append(listSpan);
+            }
+#endif
+
+            int count = collection.Count;
+            if (count + _position > Capacity)
+                GrowBy(count);
+            collection.CopyTo(_chars, _position);
+            _position += count;
+        }
+        else if (characters is not null)
         {
             foreach (char ch in characters)
             {
@@ -99,7 +116,7 @@ public partial class TextBuilder
         {
             foreach (var value in values)
             {
-                Format(value);
+                Write(value.Stringify());
             }
         }
 
@@ -112,17 +129,17 @@ public partial class TextBuilder
 
     public TextBuilder AppendLine(char ch) => Append(ch).NewLine();
 
-    public TextBuilder AppendLine(params text text) => Append(text).NewLine();
+    public TextBuilder AppendLine(scoped text text) => Append(text).NewLine();
 
     public TextBuilder AppendLine(string? str) => Append(str).NewLine();
 
-    public TextBuilder AppendLine(char[]? chars) => Append(chars).NewLine();
-
-#pragma warning disable IDE0060, CA2000
     public TextBuilder AppendLine(
-        [InterpolatedStringHandlerArgument("")] [HandlesResourceDisposal]
-        ref InterpolatedText interpolatedText) => Append( interpolatedText).NewLine();
-#pragma warning restore IDE0060, CA2000
+        [InterpolatedStringHandlerArgument("")]
+        ref InterpolatedTextBuilder interpolatedText)
+    {
+        // writing has occurred
+        return NewLine();
+    }
 
 #endregion
 }
