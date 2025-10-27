@@ -87,7 +87,7 @@ public abstract class EnumMemberInfo :
 
         if (Attributes.TryGet<RenderAsAttribute>(out var renderAsAttr))
         {
-            AddAlias(renderAsAttr.Name, _aliases, ref _render);
+            AddAlias(renderAsAttr.Rendered, _aliases, ref _render);
         }
 
         // shrink aliases to save memory
@@ -132,9 +132,9 @@ public abstract class EnumMemberInfo :
         return Hasher.HashMany(EnumInfo, Name);
     }
 
-    public TextBuilder RenderTo(TextBuilder builder)
+    public void RenderTo(TextBuilder builder)
     {
-        return builder.Append(_render);
+        builder.Write(_render);
     }
 
     public override string ToString() => Name;

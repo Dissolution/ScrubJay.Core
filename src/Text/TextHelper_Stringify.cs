@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using ScrubJay.Text.Rendering;
-using ScrubJay.Text.Scratch;
 using BF = System.Reflection.BindingFlags;
 #endif
 

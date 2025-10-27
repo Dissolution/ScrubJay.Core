@@ -5,7 +5,7 @@
 public static partial class Ex
 {
     public static InvalidOperationException Invalid(
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
         string message = info.ToStringAndDispose();
@@ -13,7 +13,7 @@ public static partial class Ex
     }
 
     public static NotImplementedException NotImplemented(
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
         string message = info.ToStringAndDispose();
@@ -21,7 +21,7 @@ public static partial class Ex
     }
 
     public static UnreachableException Unreachable(
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
         string message = info.ToStringAndDispose();
@@ -30,7 +30,7 @@ public static partial class Ex
 
     public static NotSupportedException NotSupported(
         Type? instanceType = null,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null,
         [CallerMemberName] string? methodName = null)
     {
@@ -48,7 +48,7 @@ public static partial class Ex
 
     public static NotSupportedException NotSupported<T>(
         T? instance = default,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null,
         [CallerMemberName] string? methodName = null)
 #if NET9_0_OR_GREATER
@@ -64,7 +64,7 @@ public static partial class Ex
 
 
     public static ArgumentNullException ArgNull<T>(T? argument,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
@@ -75,7 +75,7 @@ public static partial class Ex
 
     public static ArgumentOutOfRangeException ArgRange<T>(T? argument,
         [HandlesResourceDisposal]
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {

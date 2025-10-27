@@ -105,10 +105,10 @@ public static class EquateExtensions
             => EquateExtensions.Equate(str.AsSpan(), other.AsSpan());
 
         public bool Equate(scoped text other)
-            => EquateExtensions.Equate(str.AsSpan(), other);
+            => MemoryExtensions.SequenceEqual(str.AsSpan(), other);
 
         public bool Equate(string? other)
-            => EquateExtensions.Equate(str.AsSpan(), other.AsSpan());
+            => string.Equals(str, other);
 
         public bool Equate(in char other, StringComparison comparison)
             => EquateExtensions.Equate(str.AsSpan(), other.AsSpan(), comparison);

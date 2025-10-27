@@ -4,7 +4,7 @@ namespace ScrubJay.Exceptions;
 
 partial class Ex
 {
-    private static string GetMessage(scoped text input, Type? destType, InterpolatedText info)
+    private static string GetMessage(scoped text input, Type? destType, InterpolatedTextBuilder info)
     {
         return TextBuilder.New
             .Append($"Could not parse \"{input}\" into a {destType:@}")
@@ -12,7 +12,7 @@ partial class Ex
             .ToStringAndDispose();
     }
 
-    private static string GetMessage(string? input, Type? destType, InterpolatedText info)
+    private static string GetMessage(string? input, Type? destType, InterpolatedTextBuilder info)
     {
         return TextBuilder.New
             .Append("Could not parse ")
@@ -29,7 +29,7 @@ partial class Ex
     public static ParseException Parse(
         scoped text input,
         Type? destType,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
         var message = GetMessage(input, destType, info);
@@ -43,7 +43,7 @@ partial class Ex
     public static ParseException Parse(
         string? input,
         Type? destType,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
         var message = GetMessage(input, destType, info);
@@ -56,7 +56,7 @@ partial class Ex
 
     public static ParseException Parse<T>(
         scoped text input,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
@@ -72,7 +72,7 @@ partial class Ex
 
     public static ParseException Parse<T>(
         string? input,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
 #if NET9_0_OR_GREATER
         where T : allows ref struct

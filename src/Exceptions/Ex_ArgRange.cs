@@ -4,7 +4,7 @@ partial class Ex
 {
     public static ArgumentOutOfRangeException Enum<E>(
         E @enum,
-        [HandlesResourceDisposal] InterpolatedText info = default,
+        [HandlesResourceDisposal] InterpolatedTextBuilder info = default,
         Exception? innerException = null,
         [CallerArgumentExpression(nameof(@enum))]
         string? enumName = null)

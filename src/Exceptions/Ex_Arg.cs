@@ -5,7 +5,7 @@ partial class Ex
     public static ArgumentException Arg<T>(
         T? argument,
         //[HandlesResourceDisposal]
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -26,7 +26,7 @@ partial class Ex
     public static ArgumentException Arg(
         object? argument,
         [HandlesResourceDisposal]
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -45,7 +45,7 @@ partial class Ex
         object? argument,
         Type argumentType,
         //[HandlesResourceDisposal]
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -62,7 +62,7 @@ partial class Ex
     public static ArgumentException Arg<T>(
         object? argument,
         //[HandlesResourceDisposal]
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -80,7 +80,7 @@ partial class Ex
     }
 
     public static ArgumentException Arg<T>(scoped Span<T> argument,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
@@ -93,7 +93,7 @@ partial class Ex
     }
 
     public static ArgumentException Arg<T>(scoped ReadOnlySpan<T> argument,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)

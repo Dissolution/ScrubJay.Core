@@ -1,6 +1,4 @@
-using System.Globalization;
-
-namespace ScrubJay.Text.Scratch;
+namespace ScrubJay.Text.Rendering;
 
 [PublicAPI]
 public static class RenderingExtensions

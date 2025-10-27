@@ -1147,7 +1147,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     public IEnumerator<T> GetEnumerator()
     {
         if (_position == 0)
-            return Iterator.Empty<T>();
+            return Enumerators.Empty<T>();
         return new ArrayEnumerator<T>(
             _array,
             0, _position - 1,

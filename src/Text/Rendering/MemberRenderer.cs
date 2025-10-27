@@ -96,7 +96,7 @@ public static class TypeRenderer
             RenderTypeTo(builder, underType);
             builder
                 .Append('[')
-                .RepeatAppend(type.GetArrayRank() - 1, ',')
+                .Repeat(type.GetArrayRank() - 1, ',')
                 .Append(']');
         }
         else if (type.IsPointer)

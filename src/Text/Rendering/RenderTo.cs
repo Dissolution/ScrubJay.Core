@@ -1,4 +1,4 @@
-namespace ScrubJay.Text.Scratch;
+namespace ScrubJay.Text.Rendering;
 
 [PublicAPI]
 public delegate void RenderTo<in T>(TextBuilder builder, T value)

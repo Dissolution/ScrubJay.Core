@@ -157,7 +157,7 @@ public class Validations<E> : IReadOnlyCollection<E>
             .Format(_errors.Count)
             .Append(" validations failed:")
             .NewLine()
-            .Delimit(Delimiter.NewLine, _errors)
+            .Delimit(TBA.NewLine, _errors)
             .ToStringAndDispose();
         throw Ex.Invalid(message);
     }

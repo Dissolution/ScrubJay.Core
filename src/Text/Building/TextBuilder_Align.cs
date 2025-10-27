@@ -40,7 +40,7 @@ public partial class TextBuilder
         // no text: fill with padding
         if (len == 0)
         {
-            return RepeatAppend(width, paddingChar);
+            return Repeat(width, paddingChar);
         }
 
         // if there is not enough space, we show a truncated version of the text
@@ -95,12 +95,12 @@ public partial class TextBuilder
         // Use alignment
         if (alignment == Alignment.Left)
         {
-            return Append(text).RepeatAppend(padding, paddingChar);
+            return Append(text).Repeat(padding, paddingChar);
         }
 
         if (alignment == Alignment.Right)
         {
-            return RepeatAppend(padding, paddingChar).Append(text);
+            return Repeat(padding, paddingChar).Append(text);
         }
 
         Debug.Assert(alignment.HasFlags(Alignment.Center));
@@ -109,9 +109,9 @@ public partial class TextBuilder
         if (padding.IsEven())
         {
             int pad = padding / 2;
-            return RepeatAppend(pad, paddingChar)
+            return Repeat(pad, paddingChar)
                 .Append(text)
-                .RepeatAppend(pad, paddingChar);
+                .Repeat(pad, paddingChar);
         }
 
         // padding is odd, we need to use bias
@@ -133,9 +133,9 @@ public partial class TextBuilder
             post = (int)Math.Floor(half);
         }
 
-        return RepeatAppend(pre, paddingChar)
+        return Repeat(pre, paddingChar)
             .Append(text)
-            .RepeatAppend(post, paddingChar);
+            .Repeat(post, paddingChar);
     }
 
     public TextBuilder AlignFormat<T>(
@@ -169,7 +169,7 @@ public partial class TextBuilder
         // no text; fill with padding
         if (len == 0)
         {
-            return RepeatAppend(width, paddingChar);
+            return Repeat(width, paddingChar);
         }
 
         // not enough space?

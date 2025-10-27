@@ -27,7 +27,7 @@ public sealed class LapTimer
             return "LapTimer: Empty";
 
         return TextBuilder.New
-            .Delimit(Delimiter.NewLine, _laps)
+            .Delimit(TBA.NewLine, _laps)
             .ToStringAndDispose();
     }
 }

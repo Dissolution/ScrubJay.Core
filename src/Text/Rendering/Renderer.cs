@@ -1,8 +1,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-using ScrubJay.Text.Rendering;
 
-namespace ScrubJay.Text.Scratch;
+namespace ScrubJay.Text.Rendering;
 
 [PublicAPI]
 public static class Renderer
@@ -116,27 +115,27 @@ public static class Renderer
         return Delegate.CreateDelegate<RenderTo<T>>(exactMethod);
     }
 
-    private static void RenderEnumTo<E>(TextBuilder builder, E e)
+    internal static void RenderEnumTo<E>(TextBuilder builder, E e)
         where E : struct, Enum
     {
         EnumInfo.RenderTo(builder, e);
     }
 
-    private static void RenderReadOnlySpanTo<T>(TextBuilder builder, scoped ReadOnlySpan<T> span)
+    internal static void RenderReadOnlySpanTo<T>(TextBuilder builder, scoped ReadOnlySpan<T> span)
     {
         builder.Append('[')
             .Delimit(", ", span, static (tb, value) => tb.Render(value))
             .Append(']');
     }
 
-    private static void RenderSpanTo<T>(TextBuilder builder, scoped Span<T> span)
+    internal static void RenderSpanTo<T>(TextBuilder builder, scoped Span<T> span)
     {
         builder.Append('[')
             .Delimit(", ", span, static (tb, value) => tb.Render(value))
             .Append(']');
     }
 
-    private static void RenderTupleTo(TextBuilder builder, ITuple tuple)
+    internal static void RenderTupleTo(TextBuilder builder, ITuple tuple)
     {
         builder.Write('(');
         if (tuple.Length > 0)
@@ -151,14 +150,14 @@ public static class Renderer
         builder.Write(')');
     }
 
-    private static void RenderArrayTo<T>(TextBuilder builder, T[] array)
+    internal static void RenderArrayTo<T>(TextBuilder builder, T[] array)
     {
         builder.Append('[')
             .Delimit(", ", array, static (tb, value) => tb.Render(value))
             .Append(']');
     }
 
-    private static void RenderEnumerableTo<T>(TextBuilder builder, IEnumerable<T> enumerable)
+    internal static void RenderEnumerableTo<T>(TextBuilder builder, IEnumerable<T> enumerable)
     {
         if (enumerable is IList<T> list)
         {
@@ -183,7 +182,7 @@ public static class Renderer
         }
     }
 
-    private static void RenderDictionaryTo<K, V>(TextBuilder builder, IDictionary<K, V> dictionary)
+    internal static void RenderDictionaryTo<K, V>(TextBuilder builder, IDictionary<K, V> dictionary)
     {
         builder.Append('{')
             .Delimit(", ", dictionary,
@@ -191,8 +190,13 @@ public static class Renderer
             .Append('}');
     }
 
+    internal static void RenderRenderableTo<R>(TextBuilder builder, R renderable)
+        where R : IRenderable
+    {
+        renderable.RenderTo(builder);
+    }
 
-    private static void RenderObjectTo(TextBuilder builder, object obj)
+    internal static void RenderObjectTo(TextBuilder builder, object obj)
     {
         var type = obj.GetType();
         if (type == typeof(object))
@@ -236,33 +240,28 @@ public static class Renderer
 
         if (type.IsArray)
         {
-            var genericTypes = type.GetGenericArguments();
-            if (genericTypes.Length == 1)
-            {
-                return RenderKnown<T>(nameof(RenderArrayTo), genericTypes);
-            }
-            else
-            {
-                throw Ex.NotImplemented();
-            }
+            var elementType = type.GetElementType().ThrowIfNull();
+            return RenderKnown<T>(nameof(RenderArrayTo), elementType);
+        }
+
+        if (type.Implements<IRenderable>())
+        {
+            return RenderKnown<T>(nameof(RenderRenderableTo), type);
         }
 
         if (type.Implements(typeof(ReadOnlySpan<>)))
         {
-
-            return RenderKnown<T>(nameof(RenderReadOnlySpanTo),  type.GenericTypeArguments);
+            return RenderKnown<T>(nameof(RenderReadOnlySpanTo), type.GenericTypeArguments);
         }
 
         if (type.Implements(typeof(Span<>)))
         {
-
-            return RenderKnown<T>(nameof(RenderReadOnlySpanTo),  type.GenericTypeArguments);
+            return RenderKnown<T>(nameof(RenderReadOnlySpanTo), type.GenericTypeArguments);
         }
 
         if (type.Implements(typeof(IEnumerable<>)))
         {
-
-            return RenderKnown<T>(nameof(RenderReadOnlySpanTo),  type.GenericTypeArguments);
+            return RenderKnown<T>(nameof(RenderReadOnlySpanTo), type.GenericTypeArguments);
         }
 
         if (type.Implements(typeof(IDictionary<,>)))

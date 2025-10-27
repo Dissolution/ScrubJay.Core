@@ -30,26 +30,26 @@ public partial class TextBuilder
         return this;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TextBuilder Append(
-        [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
-        ref InterpolatedTextBuilder interpolatedText)
-    {
-        // the writing has already occured by this point
-        return this;
-    }
-
     public TextBuilder Append(
         [HandlesResourceDisposal]
-        InterpolatedText interpolatedText)
+        [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
+        InterpolatedTextBuilder interpolatedTextBuilder)
     {
-        // we're going to use + dispose of interpolatedText
-        Write(interpolatedText.Written);
-        interpolatedText.Dispose();
-        return this;
+        if (ReferenceEquals(interpolatedTextBuilder._builder, this))
+        {
+            // the writing has already occured by this point
+            return this;
+        }
+        else
+        {
+            Write(interpolatedTextBuilder.AsSpan());
+            interpolatedTextBuilder.Dispose();
+            return this;
+        }
     }
 
-    public TextBuilder Append<T>(T value)
+
+    public TextBuilder Append<T>(T? value)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
@@ -135,7 +135,7 @@ public partial class TextBuilder
 
     public TextBuilder AppendLine(
         [InterpolatedStringHandlerArgument("")]
-        ref InterpolatedTextBuilder interpolatedText)
+        ref InterpolatedTextBuilder interpolatedTextBuilder)
     {
         // writing has occurred
         return NewLine();

@@ -1,34 +1,21 @@
-﻿namespace ScrubJay.Text;
-
-[PublicAPI]
-public enum Delimiter
-{
-    None = 0,
-    Comma,
-    Space,
-    CommaSpace,
-    NewLine,
-}
+namespace ScrubJay.Text;
 
 partial class TextBuilder
 {
-    private const char COMMA = ',';
-    private const char SPACE = ' ';
-    private const string COMMA_SPACE = ", ";
+#region Delimit
 
-#region ReadOnlySpan<T>
+#region Values: Append
 
-#region Delimit - Render
+#region Values: ReadOnlySpan<T>
 
     public TextBuilder Delimit<T>(char delimiter, scoped ReadOnlySpan<T> values)
     {
         if (!values.IsEmpty)
         {
-            Rendering.Renderer.RenderValue<T>(this, values[0]);
-            for (var i = 1; i < values.Length; i++)
+            Append<T>(values[0]);
+            for (int i = 1; i < values.Length; i++)
             {
-                Write(delimiter);
-                Rendering.Renderer.RenderValue<T>(this, values[i]);
+                Append(delimiter).Append<T>(values[i]);
             }
         }
 
@@ -39,11 +26,10 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Rendering.Renderer.RenderValue<T>(this, values[0]);
-            for (var i = 1; i < values.Length; i++)
+            Append<T>(values[0]);
+            for (int i = 1; i < values.Length; i++)
             {
-                Write(delimiter);
-                Rendering.Renderer.RenderValue<T>(this, values[i]);
+                Append(delimiter).Append<T>(values[i]);
             }
         }
 
@@ -52,269 +38,58 @@ partial class TextBuilder
 
 #if NETFRAMEWORK || NETSTANDARD2_0
     public TextBuilder Delimit<T>(string? delimiter, scoped ReadOnlySpan<T> values)
-        => Delimit(delimiter.AsSpan(), values);
+        => Delimit<T>(delimiter.AsSpan(), values);
 #endif
 
     public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, scoped ReadOnlySpan<T> values)
     {
         if (!values.IsEmpty)
         {
-            Rendering.Renderer.RenderValue<T>(this, values[0]);
-            for (var i = 1; i < values.Length; i++)
+            Append<T>(values[0]);
+            for (int i = 1; i < values.Length; i++)
             {
-                Invoke(delimit);
-                Rendering.Renderer.RenderValue<T>(this, values[i]);
+                Invoke(delimit).Append<T>(values[i]);
             }
         }
 
         return this;
     }
 
-    public TextBuilder Delimit<T>(Delimiter delimiter, scoped ReadOnlySpan<T> values)
-    {
-        return delimiter switch
-        {
-            Delimiter.None => RenderMany<T>(values),
-            Delimiter.Comma => Delimit<T>(COMMA, values),
-            Delimiter.Space => Delimit<T>(SPACE, values),
-            Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values),
-            Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values),
-            _ => throw Ex.Enum(delimiter),
-        };
-    }
+#endregion Values: ReadOnlySpan<T>
 
-#endregion
-
-#region Delimit - Format
-
-    public TextBuilder Delimit<T>(char delimiter, scoped ReadOnlySpan<T> values, string? format,
-        IFormatProvider? provider = null)
-    {
-        if (!values.IsEmpty)
-        {
-            Format<T>(values[0], format, provider);
-            for (var i = 1; i < values.Length; i++)
-            {
-                Write(delimiter);
-                Format<T>(values[i], format, provider);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder Delimit<T>(scoped text delimiter, scoped ReadOnlySpan<T> values, string? format,
-        IFormatProvider? provider = null)
-    {
-        if (!values.IsEmpty)
-        {
-            Format<T>(values[0], format, provider);
-            for (var i = 1; i < values.Length; i++)
-            {
-                Write(delimiter);
-                Format<T>(values[i], format, provider);
-            }
-        }
-
-        return this;
-    }
-
-#if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, scoped ReadOnlySpan<T> values, string? format, IFormatProvider? provider =
-        null)
-        => Delimit(delimiter.AsSpan(), values);
-#endif
-
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, scoped ReadOnlySpan<T> values, string? format,
-        IFormatProvider? provider = null)
-    {
-        if (!values.IsEmpty)
-        {
-            Format<T>(values[0], format, provider);
-            for (var i = 1; i < values.Length; i++)
-            {
-                Invoke(delimit);
-                Format<T>(values[i], format, provider);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder Delimit<T>(Delimiter delimiter, scoped ReadOnlySpan<T> values, string? format,
-        IFormatProvider? provider = null)
-    {
-        return delimiter switch
-        {
-            Delimiter.None => FormatMany<T>(values, format, provider),
-            Delimiter.Comma => Delimit<T>(COMMA, values, format, provider),
-            Delimiter.Space => Delimit<T>(SPACE, values, format, provider),
-            Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values, format, provider),
-            Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values, format, provider),
-            _ => throw Ex.Enum(delimiter),
-        };
-    }
-
-#endregion
-
-#region Delimit - Build
-
-    public TextBuilder Delimit<T>(char delimiter, scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
-    {
-        if (!values.IsEmpty)
-        {
-            build?.Invoke(this, values[0]);
-            for (var i = 1; i < values.Length; i++)
-            {
-                Write(delimiter);
-                build?.Invoke(this, values[i]);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder Delimit<T>(scoped text delimiter, scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
-    {
-        if (!values.IsEmpty)
-        {
-            build?.Invoke(this, values[0]);
-            for (var i = 1; i < values.Length; i++)
-            {
-                Write(delimiter);
-                build?.Invoke(this, values[i]);
-            }
-        }
-
-        return this;
-    }
-
-#if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
-        => Delimit(delimiter.AsSpan(), values);
-#endif
-
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
-    {
-        if (!values.IsEmpty)
-        {
-            build?.Invoke(this, values[0]);
-            for (var i = 1; i < values.Length; i++)
-            {
-                Invoke(delimit);
-                build?.Invoke(this, values[i]);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder Delimit<T>(Delimiter delimiter, scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
-    {
-        return delimiter switch
-        {
-            Delimiter.None => Enumerate<T>(values, build),
-            Delimiter.Comma => Delimit<T>(COMMA, values, build),
-            Delimiter.Space => Delimit<T>(SPACE, values, build),
-            Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values, build),
-            Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values, build),
-            _ => throw Ex.Enum(delimiter),
-        };
-    }
-
-#endregion
-
-#endregion
-
-#region T[]
-
-#region Delimit - Render
+#region Values: T[]
 
     public TextBuilder Delimit<T>(char delimiter, T[]? values)
-        => Delimit<T>(delimiter, new ReadOnlySpan<T>(values));
+        => Delimit<T>(delimiter, values.AsSpan());
 
     public TextBuilder Delimit<T>(scoped text delimiter, T[]? values)
-        => Delimit<T>(delimiter, new ReadOnlySpan<T>(values));
+        => Delimit<T>(delimiter, values.AsSpan());
 
 #if NETFRAMEWORK || NETSTANDARD2_0
     public TextBuilder Delimit<T>(string? delimiter, T[]? values)
-        => Delimit(delimiter.AsSpan(), new ReadOnlySpan<T>(values));
+        => Delimit<T>(delimiter.AsSpan(), values.AsSpan());
 #endif
 
     public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, T[]? values)
-        => Delimit<T>(delimit, new ReadOnlySpan<T>(values));
+        => Delimit<T>(delimit, values.AsSpan());
 
-    public TextBuilder Delimit<T>(Delimiter delimiter, T[]? values)
-        => Delimit<T>(delimiter, new ReadOnlySpan<T>(values));
+#endregion Values: T[]
 
-#endregion
-
-#region Delimit - Format
-
-    public TextBuilder Delimit<T>(char delimiter, T[]? values, string? format,
-        IFormatProvider? provider = null)
-        => Delimit<T>(delimiter, new ReadOnlySpan<T>(values), format, provider);
-
-    public TextBuilder Delimit<T>(scoped text delimiter, T[]? values, string? format,
-        IFormatProvider? provider = null)
-        => Delimit<T>(delimiter, new ReadOnlySpan<T>(values), format, provider);
-
-#if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, T[]? values, string? format, IFormatProvider? provider =
-        null)
-        => Delimit<T>(delimiter.AsSpan(), new ReadOnlySpan<T>(values), format, provider);
-#endif
-
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, T[]? values, string? format,
-        IFormatProvider? provider = null)
-        => Delimit<T>(delimit, new ReadOnlySpan<T>(values), format, provider);
-
-    public TextBuilder Delimit<T>(Delimiter delimiter, T[]? values, string? format,
-        IFormatProvider? provider = null)
-        => Delimit<T>(delimiter, new ReadOnlySpan<T>(values), format, provider);
-
-#endregion
-
-#region Delimit - Build
-
-    public TextBuilder Delimit<T>(char delimiter, T[]? values, Action<TextBuilder, T>? build)
-        => Delimit<T>(delimiter, new ReadOnlySpan<T>(values), build);
-
-    public TextBuilder Delimit<T>(scoped text delimiter, T[]? values, Action<TextBuilder, T>? build)
-        => Delimit<T>(delimiter, new ReadOnlySpan<T>(values), build);
-
-#if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, T[]? values, Action<TextBuilder, T>? build)
-        => Delimit(delimiter.AsSpan(), values, build);
-#endif
-
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, T[]? values, Action<TextBuilder, T>? build)
-        => Delimit<T>(delimit, new ReadOnlySpan<T>(values), build);
-
-    public TextBuilder Delimit<T>(Delimiter delimiter, T[]? values, Action<TextBuilder, T>? build)
-        => Delimit<T>(delimiter, new ReadOnlySpan<T>(values), build);
-
-#endregion
-
-#endregion
-
-#region IEnumerable<T>
-
-#region Delimit - Render
+#region Values: IEnumerable<T>
 
     public TextBuilder Delimit<T>(char delimiter, IEnumerable<T>? values)
     {
         if (values is not null)
         {
             using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
+            if (e.MoveNext())
+            {
+                Append<T>(e.Current);
+            }
 
-            Rendering.Renderer.RenderValue<T>(this, e.Current);
             while (e.MoveNext())
             {
-                Write(delimiter);
-                Rendering.Renderer.RenderValue<T>(this, e.Current);
+                Append(delimiter).Append<T>(e.Current);
             }
         }
 
@@ -326,14 +101,14 @@ partial class TextBuilder
         if (values is not null)
         {
             using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
+            if (e.MoveNext())
+            {
+                Append<T>(e.Current);
+            }
 
-            Rendering.Renderer.RenderValue<T>(this, e.Current);
             while (e.MoveNext())
             {
-                Write(delimiter);
-                Rendering.Renderer.RenderValue<T>(this, e.Current);
+                Append(delimiter).Append<T>(e.Current);
             }
         }
 
@@ -342,7 +117,7 @@ partial class TextBuilder
 
 #if NETFRAMEWORK || NETSTANDARD2_0
     public TextBuilder Delimit<T>(string? delimiter, IEnumerable<T>? values)
-        => Delimit(delimiter.AsSpan(), values);
+        => Delimit<T>(delimiter.AsSpan(), values);
 #endif
 
     public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, IEnumerable<T>? values)
@@ -350,51 +125,182 @@ partial class TextBuilder
         if (values is not null)
         {
             using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
-
-            Rendering.Renderer.RenderValue<T>(this, e.Current);
-            while (e.MoveNext())
+            if (e.MoveNext())
             {
-                Invoke(delimit);
-                Rendering.Renderer.RenderValue<T>(this, e.Current);
+                Append<T>(e.Current);
+                while (e.MoveNext())
+                {
+                    Invoke(delimit).Append<T>(e.Current);
+                }
             }
         }
 
         return this;
     }
 
-    public TextBuilder Delimit<T>(Delimiter delimiter, IEnumerable<T>? values)
+#endregion Values: IEnumerable<T>
+
+#region Values: Iterable<T>
+
+    public TextBuilder Delimit<T>(char delimiter, Iterable<T>? values)
     {
-        return delimiter switch
+        T? value;
+
+        if (values is not null)
         {
-            Delimiter.None => RenderMany<T>(values),
-            Delimiter.Comma => Delimit<T>(COMMA, values),
-            Delimiter.Space => Delimit<T>(SPACE, values),
-            Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values),
-            Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values),
-            _ => throw Ex.Enum(delimiter),
-        };
+            if (values().IsSome(out value))
+            {
+                Append<T>(value);
+                while (values().IsSome(out value))
+                {
+                    Append(delimiter).Append<T>(value);
+                }
+            }
+        }
+
+        return this;
     }
 
-#endregion
+    public TextBuilder Delimit<T>(scoped text delimiter, Iterable<T>? values)
+    {
+        T? value;
 
-#region Delimit - Format
+        if (values is not null)
+        {
+            if (values().IsSome(out value))
+            {
+                Append<T>(value);
+                while (values().IsSome(out value))
+                {
+                    Append(delimiter).Append<T>(value);
+                }
+            }
+        }
 
-    public TextBuilder Delimit<T>(char delimiter, IEnumerable<T>? values, string? format,
-        IFormatProvider? provider = null)
+        return this;
+    }
+
+#if NETFRAMEWORK || NETSTANDARD2_0
+    public TextBuilder Delimit<T>(string? delimiter, Iterable<T>? values)
+        => Delimit<T>(delimiter.AsSpan(), values);
+#endif
+
+    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, Iterable<T>? values)
+    {
+        T? value;
+
+        if (values is not null)
+        {
+            if (values().IsSome(out value))
+            {
+                Append<T>(value);
+                while (values().IsSome(out value))
+                {
+                    Invoke(delimit).Append<T>(value);
+                }
+            }
+        }
+
+        return this;
+    }
+
+#endregion Values: Iterable<T>
+
+#endregion Values: Append
+
+#region Values: Format
+
+#region Values: ReadOnlySpan<T>
+
+    public TextBuilder Delimit<T>(char delimiter, scoped ReadOnlySpan<T> values,
+        string? format, IFormatProvider? provider = null)
+    {
+        if (!values.IsEmpty)
+        {
+            Format<T>(values[0], format, provider);
+            for (int i = 1; i < values.Length; i++)
+            {
+                Append(delimiter)
+                    .Format<T>(values[i], format, provider);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Delimit<T>(scoped text delimiter, scoped ReadOnlySpan<T> values,
+        string? format, IFormatProvider? provider = null)
+    {
+        if (!values.IsEmpty)
+        {
+            Format<T>(values[0], format, provider);
+            for (int i = 1; i < values.Length; i++)
+            {
+                Append(delimiter)
+                    .Format<T>(values[i], format, provider);
+            }
+        }
+
+        return this;
+    }
+
+#if NETFRAMEWORK || NETSTANDARD2_0
+    public TextBuilder Delimit<T>(string? delimiter, scoped ReadOnlySpan<T> values,
+        string? format, IFormatProvider? provider = null)
+        => Delimit<T>(delimiter.AsSpan(), values);
+#endif
+
+    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, scoped ReadOnlySpan<T> values,
+        string? format, IFormatProvider? provider = null)
+    {
+        if (!values.IsEmpty)
+        {
+            Format<T>(values[0], format, provider);
+            for (int i = 1; i < values.Length; i++)
+            {
+                Invoke(delimit)
+                    .Format<T>(values[i], format, provider);
+            }
+        }
+
+        return this;
+    }
+
+#endregion Values: ReadOnlySpan<T>
+
+#region Values: T[]
+
+    public TextBuilder Delimit<T>(char delimiter, T[]? values, string? format, IFormatProvider? provider = null)
+        => Delimit<T>(delimiter, values.AsSpan(), format, provider);
+
+    public TextBuilder Delimit<T>(scoped text delimiter, T[]? values, string? format, IFormatProvider? provider = null)
+        => Delimit<T>(delimiter, values.AsSpan(), format, provider);
+
+#if NETFRAMEWORK || NETSTANDARD2_0
+    public TextBuilder Delimit<T>(string? delimiter, T[]? values, string? format, IFormatProvider? provider = null)
+        => Delimit<T>(delimiter.AsSpan(), values.AsSpan(), format, provider);
+#endif
+
+    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, T[]? values, string? format, IFormatProvider? provider = null)
+        => Delimit<T>(delimit, values.AsSpan(), format, provider);
+
+#endregion Values: T[]
+
+#region Values: IEnumerable<T>
+
+    public TextBuilder Delimit<T>(char delimiter, IEnumerable<T>? values, string? format, IFormatProvider? provider = null)
     {
         if (values is not null)
         {
             using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
+            if (e.MoveNext())
+            {
+                Format<T>(e.Current, format, provider);
+            }
 
-            Format<T>(e.Current, format, provider);
             while (e.MoveNext())
             {
-                Write(delimiter);
-                Format<T>(e.Current, format, provider);
+                Append(delimiter).Format<T>(e.Current, format, provider);
             }
         }
 
@@ -407,14 +313,14 @@ partial class TextBuilder
         if (values is not null)
         {
             using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
+            if (e.MoveNext())
+            {
+                Format<T>(e.Current, format, provider);
+            }
 
-            Format<T>(e.Current, format, provider);
             while (e.MoveNext())
             {
-                Write(delimiter);
-                Format<T>(e.Current, format, provider);
+                Append(delimiter).Format<T>(e.Current, format, provider);
             }
         }
 
@@ -422,9 +328,8 @@ partial class TextBuilder
     }
 
 #if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, IEnumerable<T>? values, string? format, IFormatProvider? provider =
-        null)
-        => Delimit(delimiter.AsSpan(), values);
+    public TextBuilder Delimit<T>(string? delimiter, IEnumerable<T>? values, string? format, IFormatProvider? provider = null)
+        => Delimit<T>(delimiter.AsSpan(), values, format, provider);
 #endif
 
     public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, IEnumerable<T>? values, string? format,
@@ -433,51 +338,178 @@ partial class TextBuilder
         if (values is not null)
         {
             using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
+            if (e.MoveNext())
+            {
+                Format<T>(e.Current, format, provider);
+            }
 
-            Format<T>(e.Current, format, provider);
             while (e.MoveNext())
             {
-                Invoke(delimit);
-                Format<T>(e.Current, format, provider);
+                Invoke(delimit).Format<T>(e.Current, format, provider);
             }
         }
 
         return this;
     }
 
-    public TextBuilder Delimit<T>(Delimiter delimiter, IEnumerable<T>? values, string? format,
-        IFormatProvider? provider = null)
+#endregion Values: IEnumerable<T>
+
+#region Values: Iterable<T>
+
+    public TextBuilder Delimit<T>(char delimiter, Iterable<T>? values, string? format, IFormatProvider? provider = null)
     {
-        return delimiter switch
+        T? value;
+
+        if (values is not null)
         {
-            Delimiter.None => FormatMany<T>(values, format, provider),
-            Delimiter.Comma => Delimit<T>(COMMA, values, format, provider),
-            Delimiter.Space => Delimit<T>(SPACE, values, format, provider),
-            Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values, format, provider),
-            Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values, format, provider),
-            _ => throw Ex.Enum(delimiter),
-        };
+            if (values().IsSome(out value))
+            {
+                Format<T>(value, format, provider);
+                while (values().IsSome(out value))
+                {
+                    Append(delimiter)
+                        .Format<T>(value, format, provider);
+                }
+            }
+        }
+
+        return this;
     }
 
-#endregion
+    public TextBuilder Delimit<T>(scoped text delimiter, Iterable<T>? values, string? format, IFormatProvider? provider = null)
+    {
+        T? value;
 
-#region Delimit - Build
+        if (values is not null)
+        {
+            if (values().IsSome(out value))
+            {
+                Format<T>(value, format, provider);
+                while (values().IsSome(out value))
+                {
+                    Append(delimiter).Format<T>(value, format, provider);
+                }
+            }
+        }
+
+        return this;
+    }
+
+#if NETFRAMEWORK || NETSTANDARD2_0
+    public TextBuilder Delimit<T>(string? delimiter, Iterable<T>? values, string? format, IFormatProvider? provider = null)
+        => Delimit<T>(delimiter.AsSpan(), values, format, provider);
+#endif
+
+    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, Iterable<T>? values, string? format,
+        IFormatProvider? provider = null)
+    {
+        T? value;
+
+        if (values is not null)
+        {
+            if (values().IsSome(out value))
+            {
+                Format<T>(value, format, provider);
+                while (values().IsSome(out value))
+                {
+                    Invoke(delimit).Format<T>(value, format, provider);
+                }
+            }
+        }
+
+        return this;
+    }
+
+#endregion Values: Iterable<T>
+
+#endregion Values: Format
+
+#region Values: Build
+
+#region Values: ReadOnlySpan<T>
+
+    public TextBuilder Delimit<T>(char delimiter, scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
+    {
+        if (!values.IsEmpty && build is not null)
+        {
+            Invoke(values[0], build);
+            for (int i = 1; i < values.Length; i++)
+            {
+                Append(delimiter).Invoke(values[i], build);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder Delimit<T>(scoped text delimiter, scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
+    {
+        if (!values.IsEmpty && build is not null)
+        {
+            Invoke(values[0], build);
+            for (int i = 1; i < values.Length; i++)
+            {
+                Append(delimiter).Invoke(values[i], build);
+            }
+        }
+
+        return this;
+    }
+
+#if NETFRAMEWORK || NETSTANDARD2_0
+    public TextBuilder Delimit<T>(string? delimiter, scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
+        => Delimit<T>(delimiter.AsSpan(), values, build);
+#endif
+
+    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, scoped ReadOnlySpan<T> values, Action<TextBuilder, T>? build)
+    {
+        if (!values.IsEmpty && build is not null)
+        {
+            Invoke(values[0], build);
+            for (int i = 1; i < values.Length; i++)
+            {
+                Invoke(delimit).Invoke(values[i], build);
+            }
+        }
+
+        return this;
+    }
+
+#endregion Values: ReadOnlySpan<T>
+
+#region Values: T[]
+
+    public TextBuilder Delimit<T>(char delimiter, T[]? values, Action<TextBuilder, T>? build)
+        => Delimit<T>(delimiter, values.AsSpan(), build);
+
+    public TextBuilder Delimit<T>(scoped text delimiter, T[]? values, Action<TextBuilder, T>? build)
+        => Delimit<T>(delimiter, values.AsSpan(), build);
+
+#if NETFRAMEWORK || NETSTANDARD2_0
+    public TextBuilder Delimit<T>(string? delimiter, T[]? values, Action<TextBuilder, T>? build)
+        => Delimit<T>(delimiter.AsSpan(), values.AsSpan(), build);
+#endif
+
+    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, T[]? values, Action<TextBuilder, T>? build)
+        => Delimit<T>(delimit, values.AsSpan(), build);
+
+#endregion Values: T[]
+
+#region Values: IEnumerable<T>
 
     public TextBuilder Delimit<T>(char delimiter, IEnumerable<T>? values, Action<TextBuilder, T>? build)
     {
-        if (values is not null)
+        if (values is not null && build is not null)
         {
             using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
+            if (e.MoveNext())
+            {
+                Invoke(e.Current, build);
+            }
 
-            build?.Invoke(this, e.Current);
             while (e.MoveNext())
             {
-                Write(delimiter);
-                build?.Invoke(this, e.Current);
+                Append(delimiter).Invoke(e.Current, build);
             }
         }
 
@@ -489,14 +521,14 @@ partial class TextBuilder
         if (values is not null)
         {
             using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
+            if (e.MoveNext())
+            {
+                Invoke(e.Current, build);
+            }
 
-            build?.Invoke(this, e.Current);
             while (e.MoveNext())
             {
-                Write(delimiter);
-                build?.Invoke(this, e.Current);
+                Append(delimiter).Invoke(e.Current, build);
             }
         }
 
@@ -505,7 +537,7 @@ partial class TextBuilder
 
 #if NETFRAMEWORK || NETSTANDARD2_0
     public TextBuilder Delimit<T>(string? delimiter, IEnumerable<T>? values, Action<TextBuilder, T>? build)
-        => Delimit(delimiter.AsSpan(), values, build);
+        => Delimit<T>(delimiter.AsSpan(), values, build);
 #endif
 
     public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, IEnumerable<T>? values, Action<TextBuilder, T>? build)
@@ -513,65 +545,55 @@ partial class TextBuilder
         if (values is not null)
         {
             using var e = values.GetEnumerator();
-            if (!e.MoveNext())
-                return this;
-
-            build?.Invoke(this, e.Current);
-            while (e.MoveNext())
+            if (e.MoveNext())
             {
-                Invoke(delimit);
-                build?.Invoke(this, e.Current);
+                Invoke(e.Current, build);
+                while (e.MoveNext())
+                {
+                    Invoke(delimit).Invoke(e.Current, build);
+                }
             }
         }
 
         return this;
     }
 
-    public TextBuilder Delimit<T>(Delimiter delimiter, IEnumerable<T>? values, Action<TextBuilder, T>? build)
+#endregion Values: IEnumerable<T>
+
+#region Values: Iterable<T>
+
+    public TextBuilder Delimit<T>(char delimiter, Iterable<T>? values, Action<TextBuilder, T>? build)
     {
-        return delimiter switch
+        T? value;
+
+        if (values is not null)
         {
-            Delimiter.None => Enumerate<T>(values, build),
-            Delimiter.Comma => Delimit<T>(COMMA, values, build),
-            Delimiter.Space => Delimit<T>(SPACE, values, build),
-            Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), values, build),
-            Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), values, build),
-            _ => throw Ex.Enum(delimiter),
-        };
-    }
-
-#endregion
-
-#endregion
-
-#region Iterable
-
-#region Delimit - Render
-
-    public TextBuilder Delimit<T>(char delimiter, Func<Option<T>>? iterate)
-    {
-        if (iterate is not null && iterate().IsSome(out var value))
-        {
-            Format<T>(value);
-            while (iterate().IsSome(out value))
+            if (values().IsSome(out value))
             {
-                Write(delimiter);
-                Format<T>(value);
+                Invoke(value, build);
+                while (values().IsSome(out value))
+                {
+                    Append(delimiter).Invoke(value, build);
+                }
             }
         }
 
         return this;
     }
 
-    public TextBuilder Delimit<T>(scoped text delimiter, Func<Option<T>>? iterate)
+    public TextBuilder Delimit<T>(scoped text delimiter, Iterable<T>? values, Action<TextBuilder, T>? build)
     {
-        if (iterate is not null && iterate().IsSome(out var value))
+        T? value;
+
+        if (values is not null)
         {
-            Format<T>(value);
-            while (iterate().IsSome(out value))
+            if (values().IsSome(out value))
             {
-                Write(delimiter);
-                Format<T>(value);
+                Invoke(value, build);
+                while (values().IsSome(out value))
+                {
+                    Append(delimiter).Invoke(value, build);
+                }
             }
         }
 
@@ -579,184 +601,32 @@ partial class TextBuilder
     }
 
 #if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, Func<Option<T>>? iterate)
-        => Delimit(delimiter.AsSpan(), iterate);
+    public TextBuilder Delimit<T>(string? delimiter, Iterable<T>? values, Action<TextBuilder, T>? build)
+        => Delimit<T>(delimiter.AsSpan(), values, build);
 #endif
 
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, Func<Option<T>>? iterate)
+    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, Iterable<T>? values, Action<TextBuilder, T>? build)
     {
-        if (iterate is not null && iterate().IsSome(out var value))
+        T? value;
+
+        if (values is not null)
         {
-            Format<T>(value);
-            while (iterate().IsSome(out value))
+            if (values().IsSome(out value))
             {
-                Invoke(delimit);
-                Format<T>(value);
+                Invoke(value, build);
+                while (values().IsSome(out value))
+                {
+                    Invoke(delimit).Invoke(value, build);
+                }
             }
         }
 
         return this;
     }
 
-    public TextBuilder Delimit<T>(Delimiter delimiter, Func<Option<T>>? iterate)
-    {
-        return delimiter switch
-        {
-            Delimiter.None => RenderMany<T>(iterate),
-            Delimiter.Comma => Delimit<T>(COMMA, iterate),
-            Delimiter.Space => Delimit<T>(SPACE, iterate),
-            Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), iterate),
-            Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), iterate),
-            _ => throw Ex.Enum(delimiter),
-        };
-    }
+#endregion Values: Iterable<T>
 
-#endregion
+#endregion Values: Build
 
-#region Delimit - Format
-
-    public TextBuilder Delimit<T>(char delimiter, Func<Option<T>>? iterate, string? format,
-        IFormatProvider? provider = null)
-    {
-        if (iterate is not null && iterate().IsSome(out var value))
-        {
-            Format<T>(value, format, provider);
-            while (iterate().IsSome(out value))
-            {
-                Write(delimiter);
-                Format<T>(value, format, provider);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder Delimit<T>(scoped text delimiter, Func<Option<T>>? iterate, string? format,
-        IFormatProvider? provider = null)
-    {
-        if (iterate is not null && iterate().IsSome(out var value))
-        {
-            Format<T>(value, format, provider);
-            while (iterate().IsSome(out value))
-            {
-                Write(delimiter);
-                Format<T>(value, format, provider);
-            }
-        }
-
-        return this;
-    }
-
-#if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, Func<Option<T>>? iterate, string? format, IFormatProvider? provider =
-        null)
-        => Delimit(delimiter.AsSpan(), iterate, format, provider);
-#endif
-
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, Func<Option<T>>? iterate, string? format,
-        IFormatProvider? provider = null)
-    {
-        if (iterate is not null && iterate().IsSome(out var value))
-        {
-            Format<T>(value, format, provider);
-            while (iterate().IsSome(out value))
-            {
-                Invoke(delimit);
-                Format<T>(value, format, provider);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder Delimit<T>(Delimiter delimiter, Func<Option<T>>? iterate, string? format,
-        IFormatProvider? provider = null)
-    {
-        return delimiter switch
-        {
-            Delimiter.None => FormatMany<T>(iterate, format, provider),
-            Delimiter.Comma => Delimit<T>(COMMA, iterate, format, provider),
-            Delimiter.Space => Delimit<T>(SPACE, iterate, format, provider),
-            Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), iterate, format, provider),
-            Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), iterate, format, provider),
-            _ => throw Ex.Enum(delimiter),
-        };
-    }
-
-#endregion
-
-#region Delimit - Build
-
-    public TextBuilder Delimit<T>(char delimiter, Func<Option<T>>? iterate, Action<TextBuilder, T>? build)
-    {
-        if (iterate is not null &&
-            build is not null &&
-            iterate().IsSome(out var value))
-        {
-            build(this, value);
-            while (iterate().IsSome(out value))
-            {
-                Write(delimiter);
-                build(this, value);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder Delimit<T>(scoped text delimiter, Func<Option<T>>? iterate, Action<TextBuilder, T>? build)
-    {
-        if (iterate is not null &&
-            build is not null &&
-            iterate().IsSome(out var value))
-        {
-            build(this, value);
-            while (iterate().IsSome(out value))
-            {
-                Write(delimiter);
-                build(this, value);
-            }
-        }
-
-        return this;
-    }
-
-#if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, Func<Option<T>>? iterate, Action<TextBuilder, T>? build)
-        => Delimit(delimiter.AsSpan(), iterate, build);
-#endif
-
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, Func<Option<T>>? iterate, Action<TextBuilder, T>? build)
-    {
-        if (iterate is not null &&
-            build is not null &&
-            iterate().IsSome(out var value))
-        {
-            build(this, value);
-            while (iterate().IsSome(out value))
-            {
-                Invoke(delimit);
-                build(this, value);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder Delimit<T>(Delimiter delimiter, Func<Option<T>>? iterate, Action<TextBuilder, T>? build)
-    {
-        return delimiter switch
-        {
-            Delimiter.None => Enumerate<T>(iterate, build),
-            Delimiter.Comma => Delimit<T>(COMMA, iterate, build),
-            Delimiter.Space => Delimit<T>(SPACE, iterate, build),
-            Delimiter.CommaSpace => Delimit<T>(COMMA_SPACE.AsSpan(), iterate, build),
-            Delimiter.NewLine => Delimit<T>(static tb => tb.NewLine(), iterate, build),
-            _ => throw Ex.Enum(delimiter),
-        };
-    }
-
-#endregion
-
-#endregion
+#endregion Delimit
 }

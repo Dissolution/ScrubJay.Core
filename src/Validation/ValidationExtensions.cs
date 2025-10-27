@@ -43,7 +43,7 @@ public static class ValidationExtensions
     [return: NotNull]
     public static T ThrowIfNull<T>(
         [AllowNull, NotNull] this T value,
-        ref InterpolatedText interpolatedMessage,
+        ref InterpolatedTextBuilder interpolatedMessage,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
         where T : class?

@@ -1,9 +1,14 @@
 ﻿// ReSharper disable MergeCastWithTypeCheck
 
-using ScrubJay.Text.Scratch;
 #if NET9_0_OR_GREATER
 #endif
 namespace ScrubJay.Text;
+
+/* Format operations use IFormattable and ISpanFormattable functionality
+ * There are some special format codes:
+ * @    - Renders this value (rather than Append)
+ * @T   - Renders this value's Type
+ */
 
 public partial class TextBuilder
 {
@@ -39,21 +44,13 @@ public partial class TextBuilder
     }
 
     public TextBuilder Format<T>(T? value,
-        string? format, IFormatProvider? provider = null)
+        string? format,
+        IFormatProvider? provider = null)
     {
-        // special format codes for Rendering to support InterpolatedTextHandler
-
-        // render this value
         if (format.Equate('@'))
-        {
-            return Rendering.Renderer.RenderValue<T>(this, value);
-        }
-
-        // render this value's type
-        if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
-        {
-            return Rendering.Renderer.RenderValue<Type>(this, value?.GetType() ?? typeof(T));
-        }
+            return Render<T>(value);
+        if (format.Equate("@T"))
+            return Render<Type>(Type.GetType<T>(value));
 
         if (value is IFormattable)
         {
@@ -84,21 +81,10 @@ public partial class TextBuilder
 
     public TextBuilder Format<T>(T? value, scoped text format, IFormatProvider? provider = null)
     {
-        // special format codes for Rendering
-        // this is to support interpolated text
-
-        // render this value
         if (format.Equate('@'))
-        {
-            return Rendering.Renderer.RenderValue<T>(this, value);
-
-        }
-
-        // render this value's type
-        if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
-        {
-            return  Rendering.Renderer.RenderValue<Type>(this, value?.GetType() ?? typeof(T));
-        }
+            return Render<T>(value);
+        if (format.Equate("@T"))
+            return Render<Type>(Type.GetType<T>(value));
 
         if (value is IFormattable)
         {
@@ -162,19 +148,10 @@ public partial class TextBuilder
 
     public TextBuilder Format(object? obj, string? format, IFormatProvider? provider = null)
     {
-        // special format codes for Rendering to support InterpolatedTextHandler
-
-        // render this value
         if (format.Equate('@'))
-        {
-            return ScratchRenderer.RenderTo(this, obj);
-        }
-
-        // render this value's type
-        if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
-        {
-            return ScratchRenderer.RenderTo(this, obj?.GetType());
-        }
+            return Render<object>(obj);
+        if (format.Equate("@T"))
+            return Render<Type>(obj?.GetType() ?? typeof(object));
 
         if (obj is IFormattable formattable)
         {
@@ -205,19 +182,10 @@ public partial class TextBuilder
 
     public TextBuilder Format(object? obj, scoped text format, IFormatProvider? provider = null)
     {
-        // special format codes for Rendering to support InterpolatedTextHandler
-
-        // render this value
         if (format.Equate('@'))
-        {
-            return ScratchRenderer.RenderTo(this, obj);
-        }
-
-        // render this value's type
-        if (format.Equate("@T", StringComparison.OrdinalIgnoreCase))
-        {
-            return ScratchRenderer.RenderTo(this, obj?.GetType());
-        }
+            return Render<object>(obj);
+        if (format.Equate("@T"))
+            return Render<Type>(obj?.GetType() ?? typeof(object));
 
         if (obj is IFormattable formattable)
         {
@@ -241,114 +209,6 @@ public partial class TextBuilder
         if (obj is not null)
         {
             return Append(obj.ToString());
-        }
-
-        return this;
-    }
-
-#endregion
-
-#region FormatMany
-
-    public TextBuilder FormatMany<T>(params ReadOnlySpan<T> values)
-    {
-        if (!values.IsEmpty)
-        {
-            foreach (var value in values)
-            {
-                Format<T>(value);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder FormatMany<T>(scoped ReadOnlySpan<T> values, string? format, IFormatProvider? provider = null)
-    {
-        if (!values.IsEmpty)
-        {
-            foreach (var value in values)
-            {
-                Format<T>(value, format, provider);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder FormatMany<T>(scoped ReadOnlySpan<T> values, scoped text format, IFormatProvider? provider = null)
-    {
-        if (!values.IsEmpty)
-        {
-            foreach (var value in values)
-            {
-                Format<T>(value, format, provider);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder FormatMany<T>(IEnumerable<T>? values)
-    {
-        if (values is not null)
-        {
-            foreach (var value in values)
-            {
-                Format<T>(value);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder FormatMany<T>(IEnumerable<T>? values, string? format, IFormatProvider? provider = null)
-    {
-        if (values is not null)
-        {
-            foreach (var value in values)
-            {
-                Format<T>(value, format, provider);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder FormatMany<T>(IEnumerable<T>? values, scoped text format, IFormatProvider? provider = null)
-    {
-        if (values is not null)
-        {
-            foreach (var value in values)
-            {
-                Format<T>(value, format, provider);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder FormatMany<T>(Func<Option<T>>? iterator, string? format, IFormatProvider? provider = null)
-    {
-        if (iterator is not null)
-        {
-            while (iterator().IsSome(out var value))
-            {
-                Format<T>(value, format, provider);
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder FormatMany<T>(Func<Option<T>>? iterator, scoped text format, IFormatProvider? provider = null)
-    {
-        if (iterator is not null)
-        {
-            while (iterator().IsSome(out var value))
-            {
-                Format<T>(value, format, provider);
-            }
         }
 
         return this;

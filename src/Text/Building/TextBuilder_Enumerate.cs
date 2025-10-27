@@ -43,11 +43,11 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder Enumerate<T>(Func<Option<T>>? iterate, Action<TextBuilder, T>? build)
+    public TextBuilder Enumerate<T>(Iterable<T>? iterable, Action<TextBuilder, T>? build)
     {
-        if (iterate is not null && build is not null)
+        if (iterable is not null && build is not null)
         {
-            while (iterate().IsSome(out var value))
+            while (iterable().IsSome(out var value))
             {
                 build(this, value);
             }
@@ -111,12 +111,12 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder Enumerate<T>(Func<Option<T>>? iterate, Action<TextBuilder, T, int>? build)
+    public TextBuilder Enumerate<T>(Iterable<T>? iterable, Action<TextBuilder, T, int>? build)
     {
-        if (iterate is not null && build is not null)
+        if (iterable is not null && build is not null)
         {
             int i = 0;
-            while (iterate().IsSome(out var value))
+            while (iterable().IsSome(out var value))
             {
                 build(this, value, i);
                 i++;

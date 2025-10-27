@@ -23,7 +23,7 @@ public partial class TextBuilder
     {
         if (_whitespace is null)
         {
-            return RepeatAppend(count, Environment.NewLine);
+            return Repeat(count, Environment.NewLine);
         }
 
         for (int i = 0; i < count; i++)
@@ -70,7 +70,6 @@ public partial class TextBuilder
     }
 
 #endregion
-
 
 #region Blocks
 

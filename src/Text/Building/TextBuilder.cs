@@ -1,7 +1,6 @@
 #pragma warning disable CA1710
 
 using System.Buffers;
-using System.Text;
 using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Text;
@@ -218,9 +217,9 @@ public sealed partial class TextBuilder :
         GC.SuppressFinalize(this);
     }
 
-    public TextBuilder RenderTo(TextBuilder builder)
+    public void RenderTo(TextBuilder builder)
     {
-        return builder.Append(Written);
+        builder.Write(Written);
     }
 
     public bool TryFormat(

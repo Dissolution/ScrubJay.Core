@@ -8,7 +8,7 @@ public class DemandException : Exception
 {
     public static DemandException New<T>(
         CapturedValue<T> captured,
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
         var message = TextBuilder.New
@@ -21,7 +21,7 @@ public class DemandException : Exception
     }
 
     public static DemandException New(
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
         var message = TextBuilder.New
@@ -52,7 +52,7 @@ public static class Demand
 
     [DoesNotReturn]
     public static void Fail(
-        InterpolatedText info = default,
+        InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
         throw DemandException.New(info, innerException);
@@ -60,9 +60,9 @@ public static class Demand
 
     internal static ArgumentException GetEx<T>(
         CapturedValue<T> captured,
-        ref InterpolatedText interpolatedInfo)
+        InterpolatedTextBuilder info)
     {
-        return Ex.Arg<T>(captured.Value, interpolatedInfo.ToStringAndDispose(), null, captured.ValueName);
+        return Ex.Arg<T>(captured.Value, info, null, captured.ValueName);
     }
 
     extension<T>(CapturedValue<T> captured)

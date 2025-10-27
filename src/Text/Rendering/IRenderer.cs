@@ -1,4 +1,4 @@
-namespace ScrubJay.Text.Scratch;
+namespace ScrubJay.Text.Rendering;
 
 [PublicAPI]
 public interface IRenderer<in T>
@@ -6,5 +6,11 @@ public interface IRenderer<in T>
     where T : allows ref struct
 #endif
 {
-    public void RenderTo(TextBuilder builder, T value);
+    void RenderTo(TextBuilder builder, T value);
+}
+
+[PublicAPI]
+public interface IRenderable
+{
+    void RenderTo(TextBuilder builder);
 }

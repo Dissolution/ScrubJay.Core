@@ -4,7 +4,7 @@
 /// Helper utility for generating <see cref="IEnumerator{T}"/> instances
 /// </summary>
 [PublicAPI]
-public static class Iterator
+public static class Enumerators
 {
     /// <summary>
     /// Gets an <see cref="ArrayEnumerator{T}"/> for the given <paramref name="array"/>

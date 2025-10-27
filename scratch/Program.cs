@@ -19,8 +19,6 @@ using ScrubJay.Maths;
 using ScrubJay.Maths.Ternary;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
-using ScrubJay.Text.Scratch;
-
 using static InlineIL.IL;
 
 Console.OutputEncoding = Encoding.UTF8;
@@ -30,24 +28,33 @@ using var host = hostBuilder.Build();
 
 #endregion End Setup
 
-#if NET9_0_OR_GREATER
 
-RS rs = new RS();
-
-Util.Accept(new(), $"Eat at {rs:D}");
-
-Debugger.Break();
-#endif
 
 using var builder = new TextBuilder();
 
-TypeInfo ti = typeof(Guid).GetTypeInfo();
+var opt1 = Util.Accept($"Option 1: {args:@}");
+var opt2 = Util.Accept(builder, $"Option 2: {args:@}");
+builder.Clear();
+builder.Append($"Option 3: {args:@}");
+var opt3 = builder.ToString();
 
-ScratchRenderer.RenderTo<TypeInfo>(builder, ti);
+var k = new InterpolatedTextBuilder();
+k.AppendLiteral("HEY!");
+k.AppendFormatted(' ');
+k.AppendFormatted($"l{1}st{3}n");
 
-string str = builder.ToString();
-Console.WriteLine(str);
+var opt4 = k.ToStringAndDispose();
 
+InterpolatedTextBuilder l = "Five alive";
+var opt5 = l.ToStringAndDispose();
+
+Console.WriteLine($"""
+    Option 1: {opt1}
+    Option 2: {opt2}
+    Option 3: {opt3}
+    Option 4: {opt4}
+    Option 5: {opt5}
+    """);
 
 Console.WriteLine("〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️");
 Console.WriteLine("Press Enter to quit...");
@@ -60,9 +67,17 @@ namespace ScrubJay.Scratch
 {
     public static partial class Util
     {
-        public static void Accept(TextBuilder builder, [InterpolatedStringHandlerArgument(nameof(builder))] ref InterpolatedTextBuilder interpolated)
+        public static string Accept(ref InterpolatedTextBuilder interpolatedTextBuilder)
         {
+            using var builder = new TextBuilder();
+            builder.Append(interpolatedTextBuilder);
+            return builder.ToString();
+        }
 
+
+        public static string Accept(TextBuilder builder, [InterpolatedStringHandlerArgument(nameof(builder))] ref InterpolatedTextBuilder interpolated)
+        {
+            return interpolated.ToStringAndDispose();
         }
 
     }

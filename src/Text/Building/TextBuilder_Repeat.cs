@@ -2,39 +2,34 @@
 
 public partial class TextBuilder
 {
-#region Repeat
-
-    public TextBuilder Repeat(int count, Action<TextBuilder>? buildText)
+    public TextBuilder Repeat(int count, Action<TextBuilder>? build)
     {
-        if (buildText is not null)
+        if (build is not null)
         {
             for (int i = 0; i < count; i++)
             {
-                buildText(this);
+                build(this);
             }
         }
 
         return this;
     }
 
-    public TextBuilder Repeat<S>(int count, S state, Action<TextBuilder, S>? buildStatefulText)
+    public TextBuilder Repeat<S>(int count, S state, Action<TextBuilder, S>? build)
     {
-        if (buildStatefulText is not null)
+        if (build is not null)
         {
             for (int i = 0; i < count; i++)
             {
-                buildStatefulText(this, state);
+                build(this, state);
             }
         }
 
         return this;
     }
 
-#endregion
 
-#region RepeatAppend
-
-    public TextBuilder RepeatAppend(int count, char ch)
+    public TextBuilder Repeat(int count, char ch)
     {
         if (count > 0)
         {
@@ -52,7 +47,7 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder RepeatAppend(int count, scoped text text)
+    public TextBuilder Repeat(int count, scoped text text)
     {
         int len = text.Length;
         if (count > 0 && len > 0)
@@ -75,33 +70,8 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder RepeatAppend(int count, char[]? chars)
-    {
-        if (chars is not null)
-        {
-            int len = chars.Length;
-            if (count > 0 && len > 0)
-            {
-                int pos = _position;
-                int newPos = pos + (len * count);
-                if (newPos > Capacity)
-                    GrowTo(newPos);
 
-                var span = _chars.AsSpan();
-                for (int i = 0; i < count; i++, pos += len)
-                {
-                    Notsafe.Text.CopyBlock(chars, span[pos..], len);
-                }
-
-                Debug.Assert(pos == newPos);
-                _position = newPos;
-            }
-        }
-
-        return this;
-    }
-
-    public TextBuilder RepeatAppend(int count, string? str)
+    public TextBuilder Repeat(int count, string? str)
     {
         if (str is not null)
         {
@@ -127,39 +97,24 @@ public partial class TextBuilder
         return this;
     }
 
-#endregion
-
-#region RepeatFormat
-
-    public TextBuilder RepeatFormat<T>(int count, T? value)
+    public TextBuilder Repeat<T>(int count, T? value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
-        if (count > 0)
+        if (count > 0 && value is not null)
         {
             int start = _position;
-            Format<T>(value);
+            Append<T>(value);
             int pos = _position;
             Span<char> written = _chars.AsSpan(start, pos - start);
-            return RepeatAppend(count - 1, written);
+            return Repeat(count - 1, written);
         }
 
         return this;
     }
 
-    public TextBuilder RepeatFormat<T>(int count, T? value, string? format, IFormatProvider? provider = null)
-    {
-        if (count > 0)
-        {
-            int start = _position;
-            Format<T>(value, format, provider);
-            int pos = _position;
-            Span<char> written = _chars.AsSpan(start, pos - start);
-            return RepeatAppend(count - 1, written);
-        }
-
-        return this;
-    }
-
-    public TextBuilder RepeatFormat<T>(int count, T? value, scoped text format, IFormatProvider? provider = null)
+    public TextBuilder Repeat<T>(int count, T? value, string? format, IFormatProvider? provider = null)
     {
         if (count > 0)
         {
@@ -167,29 +122,23 @@ public partial class TextBuilder
             Format<T>(value, format, provider);
             int pos = _position;
             Span<char> written = _chars.AsSpan(start, pos - start);
-            return RepeatAppend(count - 1, written);
+            return Repeat(count - 1, written);
         }
 
         return this;
     }
 
-#endregion
-
-#region RepeatRender
-
-    public TextBuilder RepeatRender<T>(int count, T? value)
+    public TextBuilder Repeat<T>(int count, T? value, scoped text format, IFormatProvider? provider = null)
     {
         if (count > 0)
         {
             int start = _position;
-            Rendering.Renderer.RenderValue<T>(this, value);
+            Format<T>(value, format, provider);
             int pos = _position;
             Span<char> written = _chars.AsSpan(start, pos - start);
-            return RepeatAppend(count - 1, written);
+            return Repeat(count - 1, written);
         }
 
         return this;
     }
-
-#endregion
 }
