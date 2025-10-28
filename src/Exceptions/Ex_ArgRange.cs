@@ -14,7 +14,7 @@ partial class Ex
             .Append($"Invalid {typeof(E):@} Enum \"{enumName}\" `")
             .Render(@enum)
             .Append('`')
-            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(ref info))
             .ToStringAndDispose();
         if (innerException is not null)
             return new ArgumentOutOfRangeException(message, innerException);

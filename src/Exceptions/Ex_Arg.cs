@@ -18,7 +18,7 @@ partial class Ex
             .Append($"Invalid {argumentType:@} argument \"{argumentName}\" `")
             .Render(argument)
             .Append('`')
-            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(ref info))
             .ToStringAndDispose();
         return new ArgumentException(message, innerException);
     }
@@ -36,7 +36,7 @@ partial class Ex
             .Append($"Invalid {argumentType:@} argument \"{argumentName}\" `")
             .Render(argument)
             .Append('`')
-            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(nfo))
+            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(ref nfo))
             .ToStringAndDispose();
         return new ArgumentException(message, innerException);
     }
@@ -54,7 +54,7 @@ partial class Ex
             .Append($"Invalid {argumentType:@} argument \"{argumentName}\" `")
             .Render(argument)
             .Append('`')
-            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(ref info))
             .ToStringAndDispose();
         return new ArgumentException(message, innerException);
     }
@@ -74,7 +74,7 @@ partial class Ex
             .Append($"Invalid {typeof(T):@} argument \"{argumentName}\" `")
             .Render(argument)
             .Append('`')
-            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(ref info))
             .ToStringAndDispose();
         return new ArgumentException(message, innerException);
     }

@@ -379,7 +379,7 @@ partial class TextBuilder
     {
         if (interpolatedTextBuilder.Length > 0)
         {
-            return Append(interpolatedTextBuilder);
+            return Append(ref interpolatedTextBuilder);
         }
 
         return this;
@@ -390,7 +390,7 @@ partial class TextBuilder
     {
         if (interpolatedTextBuilder.Length > 0)
         {
-            return Append(interpolatedTextBuilder);
+            return Append(ref interpolatedTextBuilder);
         }
 
         onEmpty?.Invoke(this);

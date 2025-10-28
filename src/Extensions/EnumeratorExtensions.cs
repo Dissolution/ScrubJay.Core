@@ -15,6 +15,14 @@ public static class EnumeratorExtensions
 
             return None;
         }
+
+        public void Dispose()
+        {
+            if (enumerator is IDisposable)
+            {
+                ((IDisposable)enumerator).Dispose();
+            }
+        }
     }
 }
 

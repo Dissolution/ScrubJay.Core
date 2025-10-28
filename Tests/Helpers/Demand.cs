@@ -15,7 +15,7 @@ public class DemandException : Exception
             .Append($"Invalid {captured.ValueType:@} variable \"{captured.ValueName}\" `")
             .Render(captured.Value)
             .Append('`')
-            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(ref info))
             .ToStringAndDispose();
         return new(message, innerException);
     }
@@ -26,7 +26,7 @@ public class DemandException : Exception
     {
         var message = TextBuilder.New
             .Append("Failure was demanded")
-            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(info))
+            .IfNotEmpty(info, static (tb, info) => tb.Append(": ").Append(ref info))
             .ToStringAndDispose();
         return new(message, innerException);
     }

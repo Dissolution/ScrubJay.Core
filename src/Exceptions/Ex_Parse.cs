@@ -8,7 +8,7 @@ partial class Ex
     {
         return TextBuilder.New
             .Append($"Could not parse \"{input}\" into a {destType:@}")
-            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(nfo))
+            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(ref nfo))
             .ToStringAndDispose();
     }
 
@@ -21,7 +21,7 @@ partial class Ex
             .Append(" into a ")
             .Render(destType)
             .IfNotEmpty(info,
-                static (tb, nfo) => tb.Append(": ").Append(nfo))
+                static (tb, nfo) => tb.Append(": ").Append(ref nfo))
             .ToStringAndDispose();
     }
 

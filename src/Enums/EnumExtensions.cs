@@ -91,6 +91,21 @@ public static class EnumExtensions
                     return false;
                 }
             }
+            else if (underType == typeof(uint))
+            {
+                if (u64 > uint.MaxValue)
+                    throw Ex.Invalid();
+                if (Enum.IsDefined(enumType, (uint)u64))
+                {
+                    @enum = Enum.ToObject(enumType, (uint)u64).ThrowIfNot<Enum>();
+                    return true;
+                }
+                else
+                {
+                    @enum = null;
+                    return false;
+                }
+            }
             else
             {
                 throw Ex.NotImplemented();

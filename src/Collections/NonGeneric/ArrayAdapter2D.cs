@@ -22,24 +22,13 @@ public sealed class ArrayAdapter2D<T> :
     IEnumerable<T>,
     IEnumerable
 {
-    [return: NotNullIfNotNull(nameof(objValue))]
-    private static T? ObjectToValue(
-        object? objValue,
-        [CallerArgumentExpression(nameof(objValue))]
-        string? valueName = null)
-    {
-        if (objValue.As<T>(out var value))
-            return value;
-        throw Ex.Arg(objValue, $"Value '{objValue:@}' is not a '{typeof(T):@}'", null, valueName);
-    }
-
     private readonly Array _array;
     private readonly int _lowerBounds;
     private readonly int _upperBound;
 
     public T this[int index]
     {
-        get => ObjectToValue(_array.GetValue(index))!;
+        get => _array.GetValue(index).As<T>().OkOrThrow()!;
         set => _array.SetValue((object?)value, index);
     }
 

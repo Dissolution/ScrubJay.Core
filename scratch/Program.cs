@@ -1,4 +1,5 @@
 #region Setup
+
 #pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
 // ReSharper disable RedundantUsingDirective
 // ReSharper disable UnusedVariable
@@ -12,9 +13,12 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using InlineIL;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ScrubJay.Collections.Pooling;
+using ScrubJay.Debugging;
+using ScrubJay.Dumping;
 using ScrubJay.Maths;
 using ScrubJay.Maths.Ternary;
 using ScrubJay.Scratch;
@@ -25,36 +29,52 @@ Console.OutputEncoding = Encoding.UTF8;
 var hostBuilder = Host.CreateApplicationBuilder(args);
 hostBuilder.Logging.AddConsole();
 using var host = hostBuilder.Build();
-
+using var watcher = new UnhandledEventWatcher();
+watcher.UnhandledException += (sender, args) =>
+{
+    var logger = host.Services.GetService<ILogger<UnhandledEventWatcher>>();
+    logger.LogError("Unhandled Exception - sender: {@sender} args: {@args}", sender, args);
+};
 #endregion End Setup
 
+//
+// // Example 1: Simple object
+// var person = new Person
+// {
+//     Name = "John Doe",
+//     Age = 30,
+//     Email = "john@example.com",
+//     IsActive = true
+// };
+//
+// Console.WriteLine(Dumper.Dump(person, "Person"));
+// Console.WriteLine();
+//
+// // Example 2: Nested object
+// var order = new Order
+// {
+//     OrderId = 12345,
+//     Customer = new Person { Name = "Jane Smith", Age = 28 },
+//     Items = new List<string> { "Widget", "Gadget", "Doohickey" },
+//     Total = 299.99m
+// };
+//
+// Console.WriteLine(Dumper.Dump(order, "Order"));
+// Console.WriteLine();
 
+// Example 3: Exception
+try
+{
+    throw new InvalidOperationException("Something went wrong");
+}
+catch (InvalidOperationException ex)
+{
+    var exdump = Dumper.Dump(ex);
 
-using var builder = new TextBuilder();
+    Console.WriteLine(exdump);
+    Console.WriteLine();
+}
 
-var opt1 = Util.Accept($"Option 1: {args:@}");
-var opt2 = Util.Accept(builder, $"Option 2: {args:@}");
-builder.Clear();
-builder.Append($"Option 3: {args:@}");
-var opt3 = builder.ToString();
-
-var k = new InterpolatedTextBuilder();
-k.AppendLiteral("HEY!");
-k.AppendFormatted(' ');
-k.AppendFormatted($"l{1}st{3}n");
-
-var opt4 = k.ToStringAndDispose();
-
-InterpolatedTextBuilder l = "Five alive";
-var opt5 = l.ToStringAndDispose();
-
-Console.WriteLine($"""
-    Option 1: {opt1}
-    Option 2: {opt2}
-    Option 3: {opt3}
-    Option 4: {opt4}
-    Option 5: {opt5}
-    """);
 
 Console.WriteLine("〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️");
 Console.WriteLine("Press Enter to quit...");
@@ -70,16 +90,16 @@ namespace ScrubJay.Scratch
         public static string Accept(ref InterpolatedTextBuilder interpolatedTextBuilder)
         {
             using var builder = new TextBuilder();
-            builder.Append(interpolatedTextBuilder);
+            builder.Append(ref interpolatedTextBuilder);
             return builder.ToString();
         }
 
 
-        public static string Accept(TextBuilder builder, [InterpolatedStringHandlerArgument(nameof(builder))] ref InterpolatedTextBuilder interpolated)
+        public static string Accept(TextBuilder builder,
+            [InterpolatedStringHandlerArgument(nameof(builder))] ref InterpolatedTextBuilder interpolated)
         {
             return interpolated.ToStringAndDispose();
         }
-
     }
 
     public class TestBaseClass
@@ -99,7 +119,6 @@ namespace ScrubJay.Scratch
         public TestSuperClass1(int id, string name)
             : base(id * 2, name)
         {
-
         }
     }
 
@@ -135,4 +154,19 @@ namespace ScrubJay.Scratch
         public object? ObjectQ { get; set; }
     }
 
+    public class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public string Email { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class Order
+    {
+        public int OrderId { get; set; }
+        public Person Customer { get; set; }
+        public List<string> Items { get; set; }
+        public decimal Total { get; set; }
+    }
 }

@@ -38,7 +38,7 @@ public static partial class Ex
             .New
             .Append($"Cannot call {methodName} on {instanceType:@}")
             .IfNotEmpty(info,
-                static (builder, n) => builder.Append(": ").Append(n),
+                static (builder, n) => builder.Append(": ").Append(ref n),
                 builder => builder.If(instanceType!.IsRef,
                     tb => tb.Append($": {instanceType:@} is a ref struct and cannot be boxed")))
             .ToStringAndDispose();

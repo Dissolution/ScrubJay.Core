@@ -11,18 +11,6 @@ public sealed class ArrayAdapterND<T> :
     IReadOnlyCollection<T?>,
     IEnumerable<T?>
 {
-    private static Result<T?> ParseObject(
-        object? obj,
-        [CallerArgumentExpression(nameof(obj))]
-        string? objName = null)
-    {
-        if (obj.As<T>(out var value))
-            return Ok(value);
-        return Ex.Arg(obj,$"Object `{obj:@}` is not a {typeof(T):@}", null, objName);
-    }
-
-
-
     private readonly Array _array;
     private readonly int[] _lowerBounds;
     private readonly int[] _upperBounds;
@@ -78,7 +66,7 @@ public sealed class ArrayAdapterND<T> :
     public Result<T?> TryGetValue(int[] indices)
     {
         return ValidateIndices(indices)
-            .Select(idx => ParseObject(_array.GetValue(idx)));
+            .Select(idx => _array.GetValue(idx).As<T>());
     }
 
     public Result<T?> TrySetValue(int[] indices, T? item)
@@ -99,7 +87,7 @@ public sealed class ArrayAdapterND<T> :
         var indices = new ArrayIndicesEnumerator(_lowerBounds, _upperBounds);
         foreach (int[] index in indices)
         {
-            var arrayElement = ParseObject(_array.GetValue(index)).OkOrThrow();
+            var arrayElement = _array.GetValue(index).As<T>().OkOrThrow();
             if (comparer.Equals(element!, arrayElement!))
                 return Some(index);
         }
@@ -117,7 +105,7 @@ public sealed class ArrayAdapterND<T> :
         var indices = new ArrayIndicesEnumerator(_lowerBounds, _upperBounds);
         foreach (int[] index in indices)
         {
-            var arrayElement = ParseObject(_array.GetValue(index)).OkOrThrow();
+            var arrayElement = _array.GetValue(index).As<T>().OkOrThrow();
             destination[d++] = arrayElement;
         }
         return true;
@@ -147,7 +135,7 @@ public sealed class ArrayAdapterND<T> :
             {
                 int[] indices = _arrayIndicesEnumerator.Current;
                 object? value = _array.GetValue(indices);
-                return ParseObject(value).OkOrThrow();
+                return value.As<T>().OkOrThrow();
             }
         }
 

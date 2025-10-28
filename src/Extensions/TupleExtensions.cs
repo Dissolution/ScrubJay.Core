@@ -62,5 +62,16 @@ public static class TupleExtensions
         {
             return new TupleEnumerator<T>(tuple);
         }
+
+        public object?[] ToArray()
+        {
+            object?[] array = new object?[tuple.Length];
+            for (var i = 0; i < tuple.Length; i++)
+            {
+                array[i] = tuple[i];
+            }
+
+            return array;
+        }
     }
 }

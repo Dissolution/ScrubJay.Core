@@ -33,7 +33,7 @@ public partial class TextBuilder
     public TextBuilder Append(
         [HandlesResourceDisposal]
         [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
-        InterpolatedTextBuilder interpolatedTextBuilder)
+        ref InterpolatedTextBuilder interpolatedTextBuilder)
     {
         if (ReferenceEquals(interpolatedTextBuilder._builder, this))
         {

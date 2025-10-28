@@ -82,24 +82,28 @@ public static class ObjectExtensions
             return false;
         }
 
-        public Result<T?> As<T>()
+
+    }
+
+    public static Result<T?> As<T>(
+        this object? obj,
+        [CallerArgumentExpression(nameof(obj))] string? objName = null)
+    {
+        if (obj is T)
         {
-            if (obj is T)
-            {
-                return Ok((T?)obj);
-            }
-
-            if (obj is null)
-            {
-                if (typeof(T).CanBeNull)
-                {
-                    return Ok(default(T));
-                }
-
-                return new ArgumentNullException(nameof(obj));
-            }
-
-            return Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance");
+            return Ok((T?)obj);
         }
+
+        if (obj is null)
+        {
+            if (typeof(T).CanBeNull)
+            {
+                return Ok(default(T));
+            }
+
+            return Ex.Arg(obj, $"Null object cannot be a {typeof(T):@} instance", null, objName);
+        }
+
+        return Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance", null, objName);
     }
 }
