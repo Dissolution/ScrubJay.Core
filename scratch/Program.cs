@@ -37,6 +37,10 @@ watcher.UnhandledException += (sender, args) =>
 };
 #endregion End Setup
 
+nint k = 147;
+int a = 13;
+nint j = a;
+
 //
 // // Example 1: Simple object
 // var person = new Person

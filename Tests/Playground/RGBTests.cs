@@ -86,7 +86,7 @@ public class RGBTests
     {
         uint argb = (uint)Color.FromArgb(0, rgb.Red, rgb.Green, rgb.Blue).ToArgb();
 
-        uint value = Notsafe.InAs<RGB, uint>(in rgb);
+        uint value = Notsafe.InAsReadonly<RGB, uint>(in rgb);
 
         Assert.Equal(argb, value);
     }

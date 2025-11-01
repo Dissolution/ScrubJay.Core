@@ -21,7 +21,7 @@ public static unsafe class Notsafe
     /// </summary>
     public static class Unmanaged
     {
-        #region CopyTo
+#region CopyTo
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyUnmanagedBlock<U>(in U source, ref U destination, int count)
@@ -136,9 +136,9 @@ public static unsafe class Notsafe
                 count);
         }
 
-        #endregion
+#endregion
 
-        #region Arrays
+#region Arrays
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* ArrayAlloc<T>(int size)
@@ -164,7 +164,7 @@ public static unsafe class Notsafe
             CopyBlock(in PtrAsIn(src), ref PtrAsRef(dst), size * sizeof(T));
         }
 
-        #endregion
+#endregion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZero<U>(U value)
@@ -182,7 +182,7 @@ public static unsafe class Notsafe
     /// </summary>
     public static class Bytes
     {
-        #region Copy
+#region Copy
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void CopyByteBlock(in byte source, ref byte destination, int count)
@@ -258,9 +258,9 @@ public static unsafe class Notsafe
                 ref MemoryMarshal.GetReference(destination),
                 count);
 
-        #endregion
+#endregion
 
-        #region Read
+#region Read
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static U ReadImpl<U>(ref readonly byte source)
@@ -309,9 +309,9 @@ public static unsafe class Notsafe
             return ReadImpl<E>(in bytes.GetPinnableReference());
         }
 
-        #endregion
+#endregion
 
-        #region Write
+#region Write
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void WriteToImpl<U>(ref byte dest, in U source)
@@ -336,7 +336,7 @@ public static unsafe class Notsafe
             WriteToImpl<U>(ref destination.GetPinnableReference(), in source);
         }
 
-        #endregion
+#endregion
     }
 
 
@@ -348,7 +348,7 @@ public static unsafe class Notsafe
     /// </remarks>
     public static class Text
     {
-        #region Copy
+#region Copy
 
         /// <summary>
         /// Copies a specified <paramref name="count"/> of <see cref="char">chars</see>
@@ -722,9 +722,9 @@ public static unsafe class Notsafe
         }
 #endif
 
-        #endregion
+#endregion
 
-        #region Init
+#region Init
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InitCharBlock(ref char source, int count)
@@ -755,7 +755,7 @@ public static unsafe class Notsafe
             }
         }
 
-        #endregion
+#endregion
 
         // REALLY BAD
         public static Span<char> AsWritableSpan(text text)
@@ -818,12 +818,11 @@ public static unsafe class Notsafe
         where T : allows ref struct
 #endif
     {
-        Emit.Sizeof<T>();
-        return Return<int>();
+        return sizeof(T);
     }
 
 
-    #region Referencing
+#region Referencing
 
     /************************************
      * Roughly:
@@ -1015,9 +1014,9 @@ public static unsafe class Notsafe
         throw Unreachable();
     }
 
-    #endregion
+#endregion
 
-    #region Casting
+#region Casting
 
     // object -> ?
 
@@ -1082,6 +1081,15 @@ public static unsafe class Notsafe
         return Return<TClass>();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [return: NotNullIfNotNull(nameof(o))]
+    public static T As<T>(object? o)
+        where T : class?
+    {
+        Emit.Ldarg(nameof(o));
+        return Return<T>();
+    }
+
     /// <summary>
     /// Returns the <typeparamref name="TIn"/> <paramref name="input"/> as a <typeparamref name="TOut"/> with no type checking
     /// </summary>
@@ -1108,7 +1116,7 @@ public static unsafe class Notsafe
     /// memory corruption, undefined behavior, and Exceptions may occur
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref readonly TOut InAs<TIn, TOut>(in TIn input)
+    public static ref readonly TOut InAsReadonly<TIn, TOut>(in TIn input)
 #if NET9_0_OR_GREATER
         where TIn : allows ref struct
         where TOut : allows ref struct
@@ -1126,7 +1134,7 @@ public static unsafe class Notsafe
     /// memory corruption, undefined behavior, and Exceptions may occur
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref TOut RefAs<TIn, TOut>(ref TIn input)
+    public static ref TOut RefAsRef<TIn, TOut>(ref TIn input)
 #if NET9_0_OR_GREATER
         where TIn : allows ref struct
         where TOut : allows ref struct
@@ -1166,7 +1174,7 @@ public static unsafe class Notsafe
             length: input.Length);
     }
 
-    #endregion
+#endregion
 
     // crazy stuff below
 
@@ -1205,21 +1213,40 @@ public static unsafe class Notsafe
         return new Span<T>(InAsVoidPtr(in readOnlySpan.GetPinnableReference()), readOnlySpan.Length);
     }
 
-    #region Reference Offsetting
+#region Pointer Offsetting
+
+#region Add
 
     /// <summary>
     /// Adds an element offset to the given reference.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref T Add<T>(ref T source, int elementOffset)
+    public static void* Add<T>(void* source, nuint elementOffset)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
         Emit.Ldarg(nameof(source));
         Emit.Ldarg(nameof(elementOffset));
-        Emit.Sizeof(typeof(T));
+        Emit.Sizeof<T>();
         Emit.Conv_I();
+        Emit.Mul();
+        Emit.Add();
+        return ReturnPointer();
+    }
+
+    /// <summary>
+    /// Adds an element offset to the given reference.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T Add<T>(ref T source, nint elementOffset)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(source));
+        Emit.Ldarg(nameof(elementOffset));
+        Emit.Sizeof<T>();
         Emit.Mul();
         Emit.Add();
         return ref ReturnRef<T>();
@@ -1253,7 +1280,7 @@ public static unsafe class Notsafe
     {
         Emit.Ldarg(nameof(source));
         Emit.Ldarg(nameof(elementOffset));
-        Emit.Sizeof(typeof(T));
+        Emit.Sizeof<T>();
         Emit.Mul();
         Emit.Add();
         return ref ReturnRef<T>();
@@ -1274,9 +1301,12 @@ public static unsafe class Notsafe
         return ref ReturnRef<T>();
     }
 
-    #endregion
+#endregion
 
-    #region Comparison
+#endregion
+
+
+#region Comparison
 
     /// <summary>
     /// Determines whether the specified references point to the same location.
@@ -1293,5 +1323,5 @@ public static unsafe class Notsafe
         return Return<bool>();
     }
 
-    #endregion
+#endregion
 }
