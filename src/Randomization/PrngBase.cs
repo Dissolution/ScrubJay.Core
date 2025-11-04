@@ -120,7 +120,7 @@ public abstract class PrngBase : IPrng
     {
         while (span.Length >= sizeof(ulong))
         {
-            BitHelper.WriteTo(span, NextU64());
+            BitHelper.Notsafe.WriteTo(ref span.GetPinnableReference(), NextU64());
             span = span[sizeof(ulong)..];
         }
 
@@ -148,7 +148,7 @@ public abstract class PrngBase : IPrng
         {
             Span<byte> buffer = stackalloc byte[sizeof(U)];
             Fill(buffer);
-            return BitHelper.AsValue<U>(buffer);
+            return BitHelper.Read<U>(buffer);
         }
     }
 

@@ -102,7 +102,7 @@ namespace ScrubJay.Scratch
         public static string Accept(TextBuilder builder,
             [InterpolatedStringHandlerArgument(nameof(builder))] ref InterpolatedTextBuilder interpolated)
         {
-            return interpolated.ToStringAndDispose();
+            return interpolated.ToStringAndClear();
         }
     }
 

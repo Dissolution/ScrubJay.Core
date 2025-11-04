@@ -50,6 +50,7 @@ public readonly struct Result<T> :
 #region Operators
 
     public static implicit operator bool(Result<T> result) => result._isOk;
+    public static implicit operator Result(Result<T> result) => result.IsError(out var error) ? Result.Error(error) : Result.Ok;
     public static implicit operator Result<T>(Exception ex) => Error(ex);
     public static implicit operator Result<T>(IMPL.Ok<T> ok) => Ok(ok.Value);
     public static implicit operator Result<T>(IMPL.Error<Exception> error) => Error(error.Value);

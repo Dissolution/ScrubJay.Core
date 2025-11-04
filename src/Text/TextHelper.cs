@@ -9,7 +9,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using ScrubJay.Expressions;
-using static ScrubJay.Utilities.Notsafe.Text;
 
 namespace ScrubJay.Text;
 
@@ -21,7 +20,7 @@ public static partial class TextHelper
 {
     #region TryCopyTo
 
-    /* All *Copy methods validate inputs before calling Notsafe.Text.CopyBlock
+    /* All *Copy methods validate inputs before calling TextHelper.Notsafe.CopyBlock
      * Source Types: char, string?, ReadOnlySpan<char>, Span<char>, char[]?
      * Dest.  Types: Span<char>, char[]?
      */
@@ -49,7 +48,7 @@ public static partial class TextHelper
         int count = source.Length;
         if (count <= destination.Length)
         {
-            CopyBlock(source, destination, count);
+            Notsafe.CopyBlock(source, destination, count);
             return true;
         }
 
@@ -65,7 +64,7 @@ public static partial class TextHelper
         int count = source.Length;
         if (count <= destination.Length)
         {
-            CopyBlock(source, destination, count);
+            Notsafe.CopyBlock(source, destination, count);
             return true;
         }
 
@@ -77,7 +76,7 @@ public static partial class TextHelper
         int count = source.Length;
         if (count <= destination.Length)
         {
-            CopyBlock(source, destination, count);
+            Notsafe.CopyBlock(source, destination, count);
             return true;
         }
 
@@ -91,7 +90,7 @@ public static partial class TextHelper
         int count = source.Length;
         if (count <= destination.Length)
         {
-            CopyBlock(source, destination, count);
+            Notsafe.CopyBlock(source, destination, count);
             return true;
         }
 
@@ -103,7 +102,7 @@ public static partial class TextHelper
         int count = source.Length;
         if (count <= destination.Length)
         {
-            CopyBlock(source, destination, count);
+            Notsafe.CopyBlock(source, destination, count);
             return true;
         }
 
@@ -117,7 +116,7 @@ public static partial class TextHelper
         int count = source.Length;
         if (count <= destination.Length)
         {
-            CopyBlock(source, destination, count);
+            Notsafe.CopyBlock(source, destination, count);
             return true;
         }
 
@@ -131,7 +130,7 @@ public static partial class TextHelper
         int count = source.Length;
         if (count <= destination.Length)
         {
-            CopyBlock(source, destination, count);
+            Notsafe.CopyBlock(source, destination, count);
             return true;
         }
 
@@ -147,7 +146,7 @@ public static partial class TextHelper
         int count = source.Length;
         if (count <= destination.Length)
         {
-            CopyBlock(source, destination, count);
+            Notsafe.CopyBlock(source, destination, count);
             return true;
         }
 
@@ -279,7 +278,7 @@ public static partial class TextHelper
         int i = 0;
         do
         {
-            CopyBlock(text, buffer[i..], textLength);
+            Notsafe.CopyBlock(text, buffer[i..], textLength);
             i += textLength;
         } while (i < totalLength);
 
@@ -290,7 +289,7 @@ public static partial class TextHelper
     {
         if (obj is char)
         {
-            ref char ch = ref Notsafe.UnboxRef<char>(obj);
+            ref char ch = ref Utilities.Notsafe.UnboxRef<char>(obj);
             text = ch.AsSpan();
             return true;
         }

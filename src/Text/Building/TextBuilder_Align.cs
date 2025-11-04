@@ -197,7 +197,7 @@ public partial class TextBuilder
                 // copy and trim
                 var chunk = _chars.AsSpan(start, len)[^(width - 1)..];
                 Debug.Assert(width - 1 == chunk.Length);
-                Notsafe.Text.CopyBlock(chunk, _chars.AsSpan(start + 1), width - 1);
+                TextHelper.Notsafe.CopyBlock(chunk, _chars.AsSpan(start + 1), width - 1);
 
                 _position = start + width;
                 return this;

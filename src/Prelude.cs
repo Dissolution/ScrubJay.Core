@@ -54,6 +54,6 @@ public static class Prelude
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string Build(ref InterpolatedTextBuilder interpolatedTextBuilder)
     {
-        return interpolatedTextBuilder.ToStringAndDispose();
+        return interpolatedTextBuilder.ToStringAndClear();
     }
 }

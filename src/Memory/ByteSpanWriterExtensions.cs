@@ -50,54 +50,54 @@ public static class ByteSpanWriterExtensions
 
         public void Write(short i16, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(i16), endianness);
+            writer.WriteMany(BitHelper.AsBytes(i16), endianness);
         }
 
         public void Write(ushort u16, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(u16), endianness);
+            writer.WriteMany(BitHelper.AsBytes(u16), endianness);
         }
 
         public void Write(int i32, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(i32), endianness);
+            writer.WriteMany(BitHelper.AsBytes(i32), endianness);
         }
 
         public void Write(uint u32, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(u32), endianness);
+            writer.WriteMany(BitHelper.AsBytes(u32), endianness);
         }
 
         public void Write(long i64, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(i64), endianness);
+            writer.WriteMany(BitHelper.AsBytes(i64), endianness);
         }
 
         public void Write(ulong u64, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(u64), endianness);
+            writer.WriteMany(BitHelper.AsBytes(u64), endianness);
         }
 
 #if NET6_0_OR_GREATER
         public void Write(Half f16, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(f16), endianness);
+            writer.WriteMany(BitHelper.AsBytes(f16), endianness);
         }
 #endif
 
         public void Write(float f32, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(f32), endianness);
+            writer.WriteMany(BitHelper.AsBytes(f32), endianness);
         }
 
         public void Write(double f64, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(f64), endianness);
+            writer.WriteMany(BitHelper.AsBytes(f64), endianness);
         }
 
         public void Write(decimal dec, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(dec), endianness);
+            writer.WriteMany(BitHelper.AsBytes(dec), endianness);
         }
 
 #endregion
@@ -141,14 +141,14 @@ public static class ByteSpanWriterExtensions
             , allows ref struct
 #endif
         {
-            var bytes = BitConverter.AsBytes<U>(in value);
+            var bytes = BitHelper.AsBytes<U>(in value);
             writer.WriteMany(bytes, endianness);
         }
 
         public void Write<E>(E e, Endianness endianness = Endianness.System)
             where E : struct, Enum
         {
-            var bytes = BitConverter.AsEnumBytes<E>(e);
+            var bytes = BitHelper.AsBytes<E>(e);
             writer.WriteMany(bytes, endianness);
         }
 
@@ -177,7 +177,7 @@ public static class ByteSpanWriterExtensions
 
         public void Write(char ch, Endianness endianness = Endianness.System)
         {
-            var bytes = BitConverter.AsBytes(in ch);
+            var bytes = BitHelper.AsBytes(in ch);
             writer.WriteMany(bytes, endianness);
         }
 

@@ -50,7 +50,7 @@ public static class ValidationExtensions
     {
         if (value is not null)
             return value;
-        string message = interpolatedMessage.ToStringAndDispose();
+        string message = interpolatedMessage.ToStringAndClear();
         throw new ArgumentNullException(valueName, message);
     }
 

@@ -26,6 +26,6 @@ public sealed class RandomNumberGeneratorPrng : IPrng
         Span<byte> buffer = stackalloc byte[sizeof(ulong)];
         _provider.GetBytes(buffer);
 #endif
-        return BitHelper.AsValue<ulong>(buffer);
+        return BitHelper.Read<ulong>(buffer);
     }
 }

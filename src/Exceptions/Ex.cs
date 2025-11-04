@@ -8,7 +8,7 @@ public static partial class Ex
         InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
-        string message = info.ToStringAndDispose();
+        string message = info.ToStringAndClear();
         return new InvalidOperationException(message, innerException);
     }
 
@@ -16,7 +16,7 @@ public static partial class Ex
         InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
-        string message = info.ToStringAndDispose();
+        string message = info.ToStringAndClear();
         return new NotImplementedException(message, innerException);
     }
 
@@ -24,7 +24,7 @@ public static partial class Ex
         InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
-        string message = info.ToStringAndDispose();
+        string message = info.ToStringAndClear();
         return new UnreachableException(message, innerException);
     }
 
@@ -68,7 +68,7 @@ public static partial class Ex
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        string message = info.ToStringAndDispose();
+        string message = info.ToStringAndClear();
         return new ArgumentNullException(argumentName, message);
     }
 
@@ -79,7 +79,7 @@ public static partial class Ex
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
     {
-        string message = info.ToStringAndDispose();
+        string message = info.ToStringAndClear();
         return new ArgumentOutOfRangeException(argumentName, argument, message);
     }
 

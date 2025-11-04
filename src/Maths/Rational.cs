@@ -1496,7 +1496,7 @@ public readonly struct Rational :
         }
 
         charsWritten = builder.Length;
-        Notsafe.Text.CopyBlock(builder.AsText(), destination, charsWritten);
+        TextHelper.Notsafe.CopyBlock(builder.AsText(), destination, charsWritten);
         return true;
     }
 

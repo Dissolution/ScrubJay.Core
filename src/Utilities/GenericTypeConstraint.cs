@@ -38,6 +38,13 @@ public static class GenericTypeConstraint
 
     public readonly struct IsUnmanaged<T> where T : unmanaged;
 
+    public readonly struct IsUnmanagedRefStruct<T>
+        where T : unmanaged
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+    ;
+
     public readonly struct IsEquatable<T> where T : IEquatable<T>;
 
     /// <summary>
@@ -60,8 +67,11 @@ public static class GenericTypeConstraint
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
-        ;
+    ;
 
     public readonly struct IsRenderable<T>
         where T : IRenderable;
+
+    public readonly struct IsEnum<E>
+        where E : struct, Enum;
 }

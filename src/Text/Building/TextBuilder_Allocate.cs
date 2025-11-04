@@ -14,7 +14,7 @@ partial class TextBuilder
         }
 
         Span<char> slice = _chars.Slice(pos, length);
-        Notsafe.Text.ClearBlock(slice);
+        TextHelper.Clear(slice);
         _position = newPos;
         return slice;
     }
@@ -38,12 +38,12 @@ partial class TextBuilder
         // where it will be written
         var target = _chars.AsSpan(i + length);
         // slide
-        Notsafe.Text.CopyBlock(right, target, right.Length);
+        TextHelper.Notsafe.CopyBlock(right, target, right.Length);
 
         // the hole we created
         Span<char> slice = _chars.Slice(i, length);
         // clear it (we only copied, not moved)
-        Notsafe.Text.ClearBlock(slice);
+        TextHelper.Clear(slice);
 
         _position = newPos;
         return slice;

@@ -43,7 +43,7 @@ public partial class TextBuilder
         else
         {
             Write(interpolatedTextBuilder.AsSpan());
-            interpolatedTextBuilder.Dispose();
+            interpolatedTextBuilder.Clear();
             return this;
         }
     }

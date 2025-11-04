@@ -1,81 +1,196 @@
-﻿namespace ScrubJay.Debugging;
+﻿using System.Text;
+
+namespace ScrubJay.Debugging;
 
 [PublicAPI]
-public sealed class LapTimer
+public sealed class Profiler : IDisposable
 {
-    private readonly List<Lap> _laps = [];
+    private readonly Stopwatch _masterWatch = Stopwatch.StartNew();
+    private readonly List<ProfileSection> _sections = [];
 
-    public string Name { get; init; }
+    public string? Name { get; }
 
-    public LapTimer() : this(null) { }
-    public LapTimer(string? name)
+    /// <summary>
+    /// Gets the total elapsed time since the ProfileTimer was created.
+    /// </summary>
+    public TimeSpan TotalElapsed
     {
-        Name = name ?? nameof(LapTimer);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _masterWatch.Elapsed;
     }
 
-    public Lap StartLap(string? name = null)
+    public long CurrentTicks
     {
-        var lap = new Lap(name ?? $"Lap #{_laps.Count}");
-        lap.Start();
-        _laps.Add(lap);
-        return lap;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _masterWatch.ElapsedTicks;
+    }
+
+    /// <summary>
+    /// Gets read-only access to all profiled sections.
+    /// </summary>
+    public IReadOnlyList<ProfileSection> Sections => _sections;
+
+    public Profiler(string? name = null)
+    {
+        this.Name = name;
+    }
+
+    public ProfileSection Profile(string? name)
+    {
+        var ticks = _masterWatch.ElapsedTicks;
+        var section = new ProfileSection(this, name, ticks);
+        _sections.Add(section);
+        return section;
+    }
+
+    /// <summary>
+    /// Stop all running Sections
+    /// </summary>
+    public void Dispose()
+    {
+        var ticks = _masterWatch.ElapsedTicks;
+        _masterWatch.Stop();
+
+        foreach (var section in _sections)
+        {
+            section.Dispose(ticks);
+        }
     }
 
     public override string ToString()
     {
-        if (_laps.Count == 0)
-            return "LapTimer: Empty";
+        using var builder = new TextBuilder();
 
-        return TextBuilder.New
-            .Delimit(TBA.NewLine, _laps)
-            .ToStringAndDispose();
+        builder.IfNotEmpty(Name, static (tb, name) => tb.Append(name).Write(' '))
+            .AppendLine("Profiler")
+            .Repeat(13, '-').NewLine();
+
+        if (_sections.Count == 0)
+        {
+            builder.Write("No Sections profiled");
+            return builder.ToString();
+        }
+
+        builder.AppendLine($"Total: {TotalElapsed:g}");
+
+        // ms checkpoint for determining nesting
+        var checkpoint = TotalElapsed.TotalMilliseconds;
+
+        for (int i = 0; i < _sections.Count; i++)
+        {
+            var section = _sections[i];
+            var elapsed = section.Elapsed;
+            var percentage = checkpoint > 0d ? (elapsed.TotalMilliseconds / checkpoint) * 100d : 0d;
+
+            // Calculate depth: if this section starts before the previous one ends, it's nested
+            int depth = 0;
+            for (int j = i - 1; j >= 0; j--)
+            {
+                var prev = _sections[j];
+                if (section.StartTicks < prev.EndTicks || prev.IsRunning)
+                {
+                    depth++;
+                }
+                else
+                {
+                    break; // Found a section that ended before this one started
+                }
+            }
+
+            builder.Repeat(depth * 2, ' ')
+                .IfNotEmpty(section.Name, static (tb, name) => tb.Append('-').Append(name).Write(": "),
+                    static tb => tb.Write("-- "))
+                .Append($"{elapsed:g} ({percentage:F2}%)")
+                .If(section.IsRunning, " [Running]")
+                .NewLine();
+        }
+
+        return builder.ToString();
     }
 }
 
+/// <summary>
+/// Represents a timed section that can be queried for elapsed time and status.
+/// Dispose to stop timing.
+/// </summary>
 [PublicAPI]
 [MustDisposeResource(false)]
-public sealed class Lap : IDisposable
+public sealed class ProfileSection : IDisposable
 {
-    private readonly Stopwatch _stopwatch = new();
+    private readonly Profiler _timer;
+    private readonly long _startTicks;
+    private long _endTicks;
 
     public string Name { get; }
 
-    public bool IsRunning => _stopwatch.IsRunning;
+    /// <summary>
+    /// Gets whether this section is currently running.
+    /// </summary>
+    public bool IsRunning => _endTicks < 0;
 
-    public TimeSpan Elapsed => _stopwatch.Elapsed;
+    /// <summary>
+    /// Gets whether this section has been stopped.
+    /// </summary>
+    public bool IsStopped => _endTicks >= 0;
 
-    public Lap() : this(null) { }
+    /// <summary>
+    /// Gets the start time in ticks (for calculating nesting depth).
+    /// </summary>
+    internal long StartTicks => _startTicks;
 
-    public Lap(string? name)
+    /// <summary>
+    /// Gets the end time in ticks (for calculating nesting depth).
+    /// Returns -1 if still running.
+    /// </summary>
+    internal long EndTicks => _endTicks;
+
+    /// <summary>
+    /// Gets the elapsed time for this section.
+    /// If still running, returns the time elapsed so far.
+    /// </summary>
+    public TimeSpan Elapsed
     {
-        if (string.IsNullOrWhiteSpace(name))
+        get
         {
-            Name = $"Lap {Guid.NewGuid():D}";
+            var endTicks = _endTicks < 0 ? _timer.GetCurrentTicks() : _endTicks;
+            var elapsedTicks = endTicks - _startTicks;
+            return TimeSpan.FromTicks((long)(elapsedTicks / (double)_timer.GetTickFrequency() * TimeSpan.TicksPerSecond));
         }
-        else
+    }
+
+    /// <summary>
+    /// Gets the elapsed time in milliseconds.
+    /// </summary>
+    public double ElapsedMilliseconds => Elapsed.TotalMilliseconds;
+
+    internal ProfileSection(Profiler timer, string name, long startTicks)
+    {
+        _timer = timer;
+        Name = name;
+        _startTicks = startTicks;
+        _endTicks = -1; // Negative indicates running
+    }
+
+    /// <summary>
+    /// Manually stops this section.
+    /// </summary>
+    public void Stop()
+    {
+        Dispose(_timer.CurrentTicks);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void Dispose(long ticks)
+    {
+        if (_endTicks < 0) // Only stop if still running
         {
-
-            Name = name!;
+            _endTicks = ticks;
         }
     }
 
-    public void Start() => _stopwatch.Start();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose() => Stop();
 
-    public TimeSpan Restart()
-    {
-        _stopwatch.Stop();
-        var elapsed = _stopwatch.Elapsed;
-        _stopwatch.Start();
-        return elapsed;
-    }
-
-    public TimeSpan Stop()
-    {
-        _stopwatch.Stop();
-        return _stopwatch.Elapsed;
-    }
-
-    public void Dispose() => _stopwatch.Stop();
-
-    public override string ToString() => $"{Name}: {(IsRunning ? "Running" : "Stopped")} - {Elapsed}";
+    public override string ToString() =>
+        $"{Name}: {Elapsed.TotalMilliseconds:F2}ms {(IsRunning ? "[RUNNING]" : "[STOPPED]")}";
 }

@@ -144,14 +144,14 @@ public static class TextCaseExtensions
             {
                 Span<char> buffer = stackalloc char[len];
                 buffer[0] = char.ToLower(str[0], _culture);
-                Notsafe.Text.CopyBlock(str.AsSpan(1), buffer.Slice(1), len - 1);
+                TextHelper.Notsafe.CopyBlock(str.AsSpan(1), buffer.Slice(1), len - 1);
                 return buffer.AsString();
             }
             case Casing.Pascal:
             {
                 Span<char> buffer = stackalloc char[len];
                 buffer[0] = char.ToUpper(str[0], _culture);
-                Notsafe.Text.CopyBlock(str.AsSpan(1), buffer.Slice(1), len - 1);
+                TextHelper.Notsafe.CopyBlock(str.AsSpan(1), buffer.Slice(1), len - 1);
                 return buffer.AsString();
             }
             case Casing.Title:

@@ -9,7 +9,7 @@ public partial class TextBuilder
 
         char removed = _chars[offset];
         var right = _chars.AsSpan(offset + 1);
-        Notsafe.Text.CopyBlock(right, _chars.AsSpan(offset), right.Length);
+        TextHelper.Notsafe.CopyBlock(right, _chars.AsSpan(offset), right.Length);
         _position--;
         return Ok(removed);
     }
@@ -23,7 +23,7 @@ public partial class TextBuilder
 
         char[] removed = _chars.AsSpan(offset, len).ToArray();
         var right = _chars.AsSpan(offset + len);
-        Notsafe.Text.CopyBlock(right, _chars.AsSpan(offset), right.Length);
+        TextHelper.Notsafe.CopyBlock(right, _chars.AsSpan(offset), right.Length);
         _position -= len;
         return Ok(removed);
     }

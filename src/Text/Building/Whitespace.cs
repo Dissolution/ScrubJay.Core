@@ -30,7 +30,7 @@ public sealed class Whitespace : IDisposable
             if (delta == 0)
             {
                 _defaultNewLine = value;
-                Notsafe.Text.CopyBlock(value, _whitespace.Written, value.Length);
+                TextHelper.Notsafe.CopyBlock(value, _whitespace.Written, value.Length);
             }
             else
             {

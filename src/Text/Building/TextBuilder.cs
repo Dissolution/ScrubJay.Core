@@ -183,7 +183,7 @@ public sealed partial class TextBuilder :
         int len = _position;
         if (Validate.CanCopyTo(destination, len).IsError(out var error))
             return error;
-        Notsafe.Text.CopyBlock(_chars, destination, len);
+        TextHelper.Notsafe.CopyBlock(_chars, destination, len);
         return Ok(len);
     }
 
@@ -231,7 +231,7 @@ public sealed partial class TextBuilder :
         int len = _position;
         if (len <= destination.Length)
         {
-            Notsafe.Text.CopyBlock(_chars, destination, len);
+            TextHelper.Notsafe.CopyBlock(_chars, destination, len);
             charsWritten = len;
             return true;
         }

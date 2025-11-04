@@ -46,7 +46,7 @@ public static class Renderer
             var buffer = tb.Allocate(36);
 #if NETFRAMEWORK || NETSTANDARD2_0
             string str = guid.ToString("N");
-            Notsafe.Text.CopyBlock(str, buffer, 36);
+            TextHelper.Notsafe.CopyBlock(str, buffer, 36);
 #else
             guid.TryFormat(buffer, out _, format: "D");
 #endif

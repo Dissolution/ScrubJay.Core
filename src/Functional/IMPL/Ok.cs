@@ -7,6 +7,8 @@ public readonly ref struct Ok<T>
     where T : allows ref struct
 #endif
 {
+    public static implicit operator Result(Ok<T> ok) => Result.Ok;
+
     public readonly T Value;
 
     public Ok(T value)

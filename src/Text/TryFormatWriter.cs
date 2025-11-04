@@ -111,7 +111,7 @@ public ref struct TryFormatWriter : IEnumerable
         int newPos = pos + len;
         if (newPos <= Capacity)
         {
-            Notsafe.Text.CopyBlock(text, _destination[pos..], len);
+            TextHelper.Notsafe.CopyBlock(text, _destination[pos..], len);
             _position = newPos;
             return true;
         }

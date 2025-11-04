@@ -26,7 +26,7 @@ public partial class TextBuilder
                 GrowBy(text.Length);
             }
 
-            Notsafe.Text.CopyBlock(text, _chars.AsSpan(_position), text.Length);
+            TextHelper.Notsafe.CopyBlock(text, _chars.AsSpan(_position), text.Length);
             _position += text.Length;
         }
     }
