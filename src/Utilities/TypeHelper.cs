@@ -43,133 +43,156 @@ public static class TypeHelper
         _displays.AddOrUpdate<T>(display);
     }
 
-    private static TextBuilder WriteTo(TextBuilder builder,
-        Type type,
-        ReadOnlySpan<Type> genericTypes,
-        int genericTypesIndex)
+    private sealed class TypeDisplayBuilder : IDisposable
     {
-        if (type.IsByRef)
+        private TextBuilder _builder;
+        private Type[] _genericTypes;
+        private int _genericTypesOffset;
+
+        public TypeDisplayBuilder(Type[] genericTypes)
         {
-            // T&
-            type = type.GetElementType()!;
-            return WriteTo(builder, type).Append('&');
+            _builder = new();
+            _genericTypes = genericTypes;
+            _genericTypesOffset = 0;
         }
 
-        if (type.IsPointer)
+        private Type NextGenericType()
         {
-            // T*
-            type = type.GetElementType()!;
-            return WriteTo(builder, type).Append('*');
-        }
-
-        if (type.IsArray)
-        {
-            // T[] .. T[,,,,]
-            int rank = type.GetArrayRank();
-            type = type.GetElementType()!;
-            return WriteTo(builder, type)
-                .Append('[')
-                .Repeat(rank - 1, ',')
-                .Append(']');
-        }
-
-        if (type.IsGenericType)
-        {
-            var genericTypeDef = type.GetGenericTypeDefinition();
-
-            // T?
-            if (genericTypeDef == typeof(Nullable<>))
-            {
-                var ga = type.GetGenericArguments();
-                var k = ga[0];
+            if (_genericTypesOffset >= _genericTypes.Length)
                 Debugger.Break();
-                return WriteTo(builder, k).Append('?');
+
+            Type type = _genericTypes[_genericTypesOffset];
+            _genericTypesOffset++;
+            return type;
+        }
+
+        private ReadOnlySpan<Type> NextGenericTypes(int count)
+        {
+            ReadOnlySpan<Type> types = _genericTypes.AsSpan(_genericTypesOffset, count);
+            _genericTypesOffset += count;
+            return types;
+        }
+
+        public TextBuilder Write(Type type)
+        {
+            if (_displays.TryGetValue(type, out var display))
+            {
+                return _builder.Append(display);
             }
 
-            // Tuples!
-            if (genericTypeDef == typeof(ValueTuple<>) ||
-                genericTypeDef == typeof(ValueTuple<,>) ||
-                genericTypeDef == typeof(ValueTuple<,,>) ||
-                genericTypeDef == typeof(ValueTuple<,,,>) ||
-                genericTypeDef == typeof(ValueTuple<,,,,>) ||
-                genericTypeDef == typeof(ValueTuple<,,,,,>) ||
-                genericTypeDef == typeof(ValueTuple<,,,,,,>) ||
-                genericTypeDef == typeof(ValueTuple<,,,,,,,>) ||
-                genericTypeDef == typeof(Tuple<>) ||
-                genericTypeDef == typeof(Tuple<,>) ||
-                genericTypeDef == typeof(Tuple<,,>) ||
-                genericTypeDef == typeof(Tuple<,,,>) ||
-                genericTypeDef == typeof(Tuple<,,,,>) ||
-                genericTypeDef == typeof(Tuple<,,,,,>) ||
-                genericTypeDef == typeof(Tuple<,,,,,,>) ||
-                genericTypeDef == typeof(Tuple<,,,,,,,>))
+            if (type.IsByRef)
             {
-                var ga = type.GetGenericArguments();
-                Debugger.Break();
+                // T&
+                type = type.GetElementType()!;
+                return Write(type).Append('&');
+            }
 
-                Throw.IfEmpty(ga);
-                if (ga[0].IsGenericParameter)
+            if (type.IsPointer)
+            {
+                // T*
+                type = type.GetElementType()!;
+                return Write(type).Append('*');
+            }
+
+            if (type.IsArray)
+            {
+                // T[] .. T[,,,,]
+                int rank = type.GetArrayRank();
+                type = NextGenericType();
+                return Write(type)
+                    .Append('[')
+                    .Repeat(rank - 1, ',')
+                    .Append(']');
+            }
+
+            // Use this to check for Nullable<> and Tuples
+            // but only as a shortcut
+            // we know how generic we are based on genericTypes
+            if (type.IsGenericType)
+            {
+                var genericTypeDefinition = type.GetGenericTypeDefinition();
+
+                // Nullable<T> -> "T?"
+                // note: Nullable.GetUnderlyingType() ultimately takes this path
+                if (genericTypeDefinition == typeof(Nullable<>))
                 {
-                    return builder.Append('(').Repeat(ga.Length - 1, ',').Append(')');
+                    type = NextGenericType();
+                    return Write(type).Append('?');
                 }
 
-                return builder.Append('(')
-                    .Delimit(", ", ga, static (tb, t) => WriteTo(tb, t))
-                    .Append(')');
+                // Tuples!
+                if (genericTypeDefinition == typeof(ValueTuple<>) ||
+                    genericTypeDefinition == typeof(ValueTuple<,>) ||
+                    genericTypeDefinition == typeof(ValueTuple<,,>) ||
+                    genericTypeDefinition == typeof(ValueTuple<,,,>) ||
+                    genericTypeDefinition == typeof(ValueTuple<,,,,>) ||
+                    genericTypeDefinition == typeof(ValueTuple<,,,,,>) ||
+                    genericTypeDefinition == typeof(ValueTuple<,,,,,,>) ||
+                    genericTypeDefinition == typeof(ValueTuple<,,,,,,,>) ||
+                    genericTypeDefinition == typeof(Tuple<>) ||
+                    genericTypeDefinition == typeof(Tuple<,>) ||
+                    genericTypeDefinition == typeof(Tuple<,,>) ||
+                    genericTypeDefinition == typeof(Tuple<,,,>) ||
+                    genericTypeDefinition == typeof(Tuple<,,,,>) ||
+                    genericTypeDefinition == typeof(Tuple<,,,,,>) ||
+                    genericTypeDefinition == typeof(Tuple<,,,,,,>) ||
+                    genericTypeDefinition == typeof(Tuple<,,,,,,,>))
+                {
+                    var tupleGenericTypes = type.GetGenericArguments();
+                    _genericTypesOffset += tupleGenericTypes.Length;
+                    return _builder.Append('(')
+                        .Delimit(", ", tupleGenericTypes, (_,t) => Write(t))
+                        .Append(')');
+                }
             }
 
-            // the name will be like List`2
+            // Nested Type?
+            if (type.IsNested && !type.IsGenericParameter)
+            {
+                Write(type.DeclaringType!)
+                    .Write('.');
+            }
+
+            // generics have a ` in their name
             int i = type.Name.IndexOf('`');
             if (i == -1)
             {
-                // weird type?
-                builder.Append(type.Name);
-            }
-            else
-            {
-                builder.Append(type.Name.AsSpan(0, i))
-                    .Write('<');
-                int gaCount = int.Parse(type.Name.AsSpan(i));
-                int offset = genericTypes.Length - genericTypesIndex - gaCount ;
-                var currentGenericTypes = genericTypes.Slice(offset, gaCount);
-
-                Throw.IfEmpty(currentGenericTypes);
-                if (currentGenericTypes[0].IsGenericParameter)
-                {
-                    builder.Repeat(currentGenericTypes.Length - 1, ',');
-                }
-                else
-                {
-                    builder.Delimit(", ", currentGenericTypes, static (tb, t) => WriteTo(tb, t));
-                }
-
-                builder.Write('>');
-
-                genericTypesIndex += gaCount;
+                // simple type
+                return _builder.Append(type.Name);
             }
 
-
-            // nested
-            if (type.IsNested && !type.IsGenericParameter)
-            {
-                WriteTo(builder, type.DeclaringType!, genericTypes, genericTypesIndex)
-                    .Write('.');
-            }
+            _builder.Append(type.Name.AsSpan(0, i))
+                .Write('<');
+#if NETSTANDARD2_0
+            int gaCount = int.Parse(type.Name.Substring(i + 1));
+#else
+            int gaCount = int.Parse(type.Name.AsSpan(i+1));
+#endif
+            var currentGenericTypes = NextGenericTypes(gaCount);
+            return _builder.Delimit(", ", currentGenericTypes, (_, t) => Write(t))
+                .Append('>');
         }
 
+        public void Dispose()
+        {
+            _builder.Dispose();
+        }
 
-    }
-
-    private static TextBuilder WriteTo(TextBuilder builder, Type type)
-    {
-        if (_displays.TryGetValue(type, out var display))
-            return builder.Append(display);
-        return WriteTo(builder, type, type.GetGenericArguments(), 0);
+        public override string ToString()
+        {
+            return _builder.ToString();
+        }
     }
 
     public static string Display(this Type type)
     {
-        return _displays.GetOrAdd(type, static t => TextBuilder.Build(t, WriteTo));
+        return _displays.GetOrAdd(type, static t =>
+        {
+            var genericTypes = t.GetGenericArguments();
+            using var builder = new TypeDisplayBuilder(genericTypes);
+            builder.Write(t);
+            return builder.ToString();
+        });
     }
 }
 
@@ -221,6 +244,7 @@ public static class TypeExtensions
         });
     }
 
+
     /// <summary>
     /// Formats a given <see cref="Type"/> instance to its <see cref="string"/> representation.
     /// </summary>
@@ -231,10 +255,10 @@ public static class TypeExtensions
     private static string FormatDisplayString(Type type, int genericTypeOffset, ReadOnlySpan<Type> typeArguments)
     {
         // Primitive types use the keyword name
-        if (BuiltInTypesMap.TryGetValue(type, out string? typeName))
-        {
-            return typeName!;
-        }
+        // if (BuiltInTypesMap.TryGetValue(type, out string? typeName))
+        // {
+        //     return typeName!;
+        // }
 
         // Array types are displayed as Foo[]
         if (type.IsArray)

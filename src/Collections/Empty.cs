@@ -11,15 +11,15 @@ namespace ScrubJay.Collections;
 /// </summary>
 [PublicAPI]
 [MustDisposeResource(false)]
-public sealed class EmptyIterator<T> :
-    IHasDefault<EmptyIterator<T>>,
+public sealed class Empty<T> :
+    IHasDefault<Empty<T>>,
     IEnumerable<T>,
     IEnumerable,
     IEnumerator<T>,
     IEnumerator,
     IDisposable
 {
-    public static EmptyIterator<T> Default { get; } = new();
+    public static Empty<T> Default { get; } = new();
 
     object IEnumerator.Current => throw Ex.Invalid("Empty");
 

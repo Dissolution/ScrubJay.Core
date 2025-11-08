@@ -42,34 +42,23 @@ var b = typeof(SimpleClass.NestedGenericClass<int>);
 var c = typeof(GenericClass<byte>.NestedSimpleClass);
 var d = typeof(GenericClass<byte>.NestedGenericClass<int>);
 
+var s = TypeHelper.Display(d);
+var s2 = TextBuilder.Build(tb => TypeRenderer.RenderTypeTo(tb, d));
+
+var s3 = TypeHelper.Display(typeof(int?));
+var s4 = TypeHelper.Display(typeof((int, string)));
+var s5 = TypeHelper.Display(typeof(IList<>).MakeGenericType(typeof(string)).MakeByRefType());
+var s6 = TypeHelper.Display(typeof(int****));
+var s7 = TypeHelper.Display(typeof(Dictionary<,>));
+
+AppDomain.CurrentDomain.GetAssemblies()
+    .SelectMany(static ass => ass.GetTypes())
+    .Select(static type => (type, type.Display()))
+    .Consume(static tuple => Console.WriteLine($"{tuple.type}: {tuple.Item2}"));
+
 Debugger.Break();
 
-//
-// // Example 1: Simple object
-// var person = new Person
-// {
-//     Name = "John Doe",
-//     Age = 30,
-//     Email = "john@example.com",
-//     IsActive = true
-// };
-//
-// Console.WriteLine(Dumper.Dump(person, "Person"));
-// Console.WriteLine();
-//
-// // Example 2: Nested object
-// var order = new Order
-// {
-//     OrderId = 12345,
-//     Customer = new Person { Name = "Jane Smith", Age = 28 },
-//     Items = new List<string> { "Widget", "Gadget", "Doohickey" },
-//     Total = 299.99m
-// };
-//
-// Console.WriteLine(Dumper.Dump(order, "Order"));
-// Console.WriteLine();
 
-// Example 3: Exception
 try
 {
     throw new InvalidOperationException("Something went wrong");

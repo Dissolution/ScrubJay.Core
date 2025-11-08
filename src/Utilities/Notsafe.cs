@@ -225,6 +225,16 @@ public static unsafe class Notsafe
         return sizeof(T);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SkipInit<T>(out T value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        Emit.Ret();
+        throw Unreachable();
+    }
+
 
 #region Referencing
 

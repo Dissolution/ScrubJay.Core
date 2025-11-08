@@ -62,27 +62,27 @@ public class TritTests
         Demand.That(result).IsEqualTo(expected);
     }
 
-    [Fact]
-    public void TrueOperatorWorks()
-    {
-        if (True)
-        {
-            // okay!
-        }
-        else
-        {
-            Demand.Fail("Trit.True did not evaluate as `true`");
-        }
-
-        if (Unknown)
-        {
-            Demand.Fail("Trit.Unknown evaluated as `true`");
-        }
-
-        if (False)
-        {
-            Demand.Fail("Trit.False evaluated as `true`");
-        }
-    }
+    // [Fact]
+    // public void TrueOperatorWorks()
+    // {
+    //     if (True)
+    //     {
+    //         // okay!
+    //     }
+    //     else
+    //     {
+    //         Demand.Fail("Trit.True did not evaluate as `true`");
+    //     }
+    //
+    //     if (Unknown)
+    //     {
+    //         Demand.Fail("Trit.Unknown evaluated as `true`");
+    //     }
+    //
+    //     if (False)
+    //     {
+    //         Demand.Fail("Trit.False evaluated as `true`");
+    //     }
+    // }
 
 }

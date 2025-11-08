@@ -43,11 +43,13 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder Enumerate<T>(Iterable<T>? iterable, Action<TextBuilder, T>? build)
+    public TextBuilder Enumerate<R,V>(Iterable<R,V> iterable, Action<TextBuilder, V>? build)
+        where R : struct, IIterator<V>
     {
-        if (iterable is not null && build is not null)
+        if (build is not null)
         {
-            while (iterable().IsSome(out var value))
+            var iterator = iterable.Iterator;
+            while (iterator.TryMoveNext(out var value))
             {
                 build(this, value);
             }
@@ -111,20 +113,23 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder Enumerate<T>(Iterable<T>? iterable, Action<TextBuilder, T, int>? build)
+    public TextBuilder Enumerate<R,V>(Iterable<R,V> iterable, Action<TextBuilder, V, int>? build)
+        where R : struct, IIterator<V>
     {
-        if (iterable is not null && build is not null)
+        if (build is not null)
         {
-            int i = 0;
-            while (iterable().IsSome(out var value))
+            var iterator = iterable.Iterator;
+            int index = 0;
+            while (iterator.TryMoveNext(out var value))
             {
-                build(this, value, i);
-                i++;
+                build(this, value, index);
+                index++;
             }
         }
 
         return this;
     }
+
 
 #endregion
 }
