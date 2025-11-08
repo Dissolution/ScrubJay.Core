@@ -37,9 +37,12 @@ watcher.UnhandledException += (sender, args) =>
 };
 #endregion End Setup
 
-nint k = 147;
-int a = 13;
-nint j = a;
+var a = typeof(SimpleClass.NestedSimpleClass);
+var b = typeof(SimpleClass.NestedGenericClass<int>);
+var c = typeof(GenericClass<byte>.NestedSimpleClass);
+var d = typeof(GenericClass<byte>.NestedGenericClass<int>);
+
+Debugger.Break();
 
 //
 // // Example 1: Simple object
@@ -89,6 +92,32 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
+    public class SimpleClass
+    {
+        public class NestedSimpleClass
+        {
+
+        }
+
+        public class NestedGenericClass<T>
+        {
+
+        }
+    }
+
+    public class GenericClass<T>
+    {
+        public class NestedSimpleClass
+        {
+
+        }
+
+        public class NestedGenericClass<U>
+        {
+
+        }
+    }
+
     public static partial class Util
     {
         public static string Accept(ref InterpolatedTextBuilder interpolatedTextBuilder)

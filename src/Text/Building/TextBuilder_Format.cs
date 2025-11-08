@@ -12,6 +12,7 @@ namespace ScrubJay.Text;
 
 public partial class TextBuilder
 {
+
 #region Format T
 
     public TextBuilder Format<T>(T? value)
@@ -69,6 +70,38 @@ public partial class TextBuilder
 #endif
 
             return Append(((IFormattable)value).ToString(format, provider));
+        }
+
+        if (value is not null)
+        {
+            return Append(value.ToString());
+        }
+
+        return this;
+    }
+
+    public TextBuilder Format<T>(T? value, char format, IFormatProvider? provider = null)
+    {
+        if (format == '@')
+            return Render<T>(value);
+
+        if (value is IFormattable)
+        {
+#if NET6_0_OR_GREATER
+            if (value is ISpanFormattable)
+            {
+                int charsWritten;
+                while (!((ISpanFormattable)value).TryFormat(Available, out charsWritten, format.AsSpan(), provider))
+                {
+                    GrowBy(16);
+                }
+
+                _position += charsWritten;
+                return this;
+            }
+#endif
+
+            return Append(((IFormattable)value).ToString(format.AsString(), provider));
         }
 
         if (value is not null)
