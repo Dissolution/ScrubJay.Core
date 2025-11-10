@@ -40,7 +40,7 @@ public static class FlagsEnumExtensions
                 return ushort.MaxValue;
             if (t == typeof(byte))
                 return byte.MaxValue;
-            throw Ex.Arg(t);
+            throw Ex.Argument(t);
         }
 
         public IEnumerable<Enum> EnumerateFlags()

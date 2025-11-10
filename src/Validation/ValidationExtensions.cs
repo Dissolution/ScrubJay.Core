@@ -83,7 +83,8 @@ public static class ValidationExtensions
     {
         if (obj is T value)
             return value;
-        throw Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance");
+        throw Ex.Argument(obj,
+            $"Object `{obj:@}` is not a {typeof(T):@} instance", null, objName);
     }
 
     [return: NotNullIfNotNull(nameof(obj))]
@@ -97,7 +98,8 @@ public static class ValidationExtensions
         {
             if (obj is null)
                 return obj;
-            throw Ex.Arg(obj, $"(object){obj.GetType():@} `{obj:@}` was expected to be null", null, objName);
+            throw Ex.Argument(obj,
+                $"(object){obj.GetType():@} `{obj:@}` was expected to be null", null, objName);
         }
 
         if (obj is null)
@@ -106,7 +108,9 @@ public static class ValidationExtensions
         if (obj.GetType().Implements(type))
             return obj;
 
-        throw Ex.Arg(obj, $"(object){obj.GetType():@} `{obj:@}` is not a {type:@} instance", null, objName);
+        throw Ex.Argument(obj,
+            $"(object){obj.GetType():@} `{obj:@}` is not a {type:@} instance",
+            null, objName);
     }
 
 
@@ -118,7 +122,8 @@ public static class ValidationExtensions
     {
         if (obj.As<T?>(out T? output))
             return output;
-        throw Ex.Arg(obj, $"The given {obj:@T} value is not a valid {typeof(T):@} instance",
+        throw Ex.Argument(obj,
+            $"The given {obj:@T} value is not a valid {typeof(T):@} instance",
             null,
             objName);
     }

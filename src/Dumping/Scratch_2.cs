@@ -412,7 +412,7 @@ internal sealed class DumpInst : IDisposable
             case PropertyInfo propertyInfo:
                 break;
             default:
-                throw Ex.Arg(member);
+                throw Ex.Argument(member);
         }
 
         throw Ex.NotImplemented();

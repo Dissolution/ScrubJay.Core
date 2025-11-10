@@ -214,7 +214,7 @@ public static class Renderer
         Debugger.Break();
     }
 
-    private static RenderTo<T>? FindRenderTo<T>()
+    internal static RenderTo<T>? FindRenderTo<T>()
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif

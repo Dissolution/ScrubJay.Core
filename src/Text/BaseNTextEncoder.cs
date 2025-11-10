@@ -15,7 +15,7 @@ public class BaseNTextEncoder
     public BaseNTextEncoder(string symbols)
     {
         if (symbols.Distinct().Count() != symbols.Length)
-            throw Ex.Arg(symbols);
+            throw Ex.Argument(symbols);
         _radix = symbols.Length;
         _symbols = symbols.ToCharArray();
     }
@@ -23,7 +23,7 @@ public class BaseNTextEncoder
     public BaseNTextEncoder(params char[] symbols)
     {
         if (symbols.Distinct().Count() != symbols.Length)
-            throw Ex.Arg(symbols);
+            throw Ex.Argument(symbols);
         _radix = symbols.Length;
         _symbols = symbols;
     }

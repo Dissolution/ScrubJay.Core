@@ -1,8 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using ScrubJay.Exceptions;
-using ScrubJay.Text;
-
-namespace ScrubJay.Tests.Helpers;
+﻿namespace ScrubJay.Validation;
 
 [PublicAPI]
 public class DemandException : Exception
@@ -28,13 +24,7 @@ public class DemandException : Exception
 [StackTraceHidden]
 public static class Demand
 {
-    /// <summary>
-    /// Captures a <paramref name="value"/> for validation
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="valueName"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ValidatingValue<T> That<T>(T? value,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)

@@ -35,11 +35,11 @@ public sealed class ArrayAdapterND<T> :
         {
             int lower = array.GetLowerBound(d);
             if (lower == int.MinValue)
-                throw Ex.Arg(array, $"Dimension {d} has an unsupported lower bound of int.MinValue ({int.MinValue})");
+                throw Ex.Argument(array, $"Dimension {d} has an unsupported lower bound of int.MinValue ({int.MinValue})");
             lowerBounds[d] = lower;
             int upper = array.GetUpperBound(d);
             if (upper < lower)
-                throw Ex.Arg(array, $"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}");
+                throw Ex.Argument(array, $"Dimension {d} has an upper bound {upper} lower than its lower bound {lower}");
             upperBounds[d] = upper;
         }
 

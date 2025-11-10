@@ -109,7 +109,6 @@
         <Using Include="ScrubJay.Collections.Pooling"/>
         <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.Enums"/>
-        <Using Include="ScrubJay.Exceptions"/>
         <Using Include="ScrubJay.Extensions"/>
         <Using Include="ScrubJay.Functional"/>
         <Using Include="ScrubJay.Memory"/>
@@ -146,6 +145,12 @@
         <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="Validation\Throw.IfNull.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Text\Displaying\" />
     </ItemGroup>
 
 </Project>

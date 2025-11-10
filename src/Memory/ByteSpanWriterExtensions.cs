@@ -210,7 +210,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.U8Prefix:
                 {
                     if (len > byte.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in U8Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in U8Prefix");
                     writer.Write((byte)len);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -218,7 +218,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.U16Prefix:
                 {
                     if (len > ushort.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in U16Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in U16Prefix");
                     writer.Write((ushort)len, endianness);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -238,7 +238,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.I8Prefix:
                 {
                     if (len > sbyte.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in I8Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in I8Prefix");
                     writer.Write((sbyte)len);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -246,7 +246,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.I16Prefix:
                 {
                     if (len > short.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in I16Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in I16Prefix");
                     writer.Write((short)len, endianness);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -270,7 +270,7 @@ public static class ByteSpanWriterExtensions
                     return;
                 }
                 default:
-                    throw Ex.Enum(fix);
+                    throw Ex.UndefinedEnum(fix);
             }
         }
 
@@ -301,7 +301,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.U8Prefix:
                 {
                     if (len > byte.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in U8Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in U8Prefix");
                     writer.Write((byte)len);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -309,7 +309,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.U16Prefix:
                 {
                     if (len > ushort.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in U16Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in U16Prefix");
                     writer.Write((ushort)len, endianness);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -329,7 +329,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.I8Prefix:
                 {
                     if (len > sbyte.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in I8Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in I8Prefix");
                     writer.Write((sbyte)len);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -337,7 +337,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.I16Prefix:
                 {
                     if (len > short.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in I16Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in I16Prefix");
                     writer.Write((short)len, endianness);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -361,7 +361,7 @@ public static class ByteSpanWriterExtensions
                     return;
                 }
                 default:
-                    throw Ex.Enum(fix);
+                    throw Ex.UndefinedEnum(fix);
             }
         }
 
@@ -394,7 +394,7 @@ public static class ByteSpanWriterExtensions
                     return;
                 }
                 default:
-                    throw Ex.Enum(fix);
+                    throw Ex.UndefinedEnum(fix);
             }
         }
 
@@ -426,7 +426,7 @@ public static class ByteSpanWriterExtensions
                     return;
                 }
                 default:
-                    throw Ex.Enum(fix);
+                    throw Ex.UndefinedEnum(fix);
             }
         }
 

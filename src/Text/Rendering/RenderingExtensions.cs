@@ -18,4 +18,34 @@ public static class RenderingExtensions
             return builder.ToString();
         }
     }
+
+    extension<T>(ReadOnlySpan<T> value)
+    {
+        /// <summary>
+        /// Render this value as a <see cref="string"/>
+        /// </summary>
+        public string Render()
+        {
+            using var builder = new TextBuilder();
+            builder.Append("[")
+                .Delimit(", ", value)
+                .Append("]");
+            return builder.ToString();
+        }
+    }
+
+    extension<T>(Span<T> value)
+    {
+        /// <summary>
+        /// Render this value as a <see cref="string"/>
+        /// </summary>
+        public string Render()
+        {
+            using var builder = new TextBuilder();
+            builder.Append("[")
+                .Delimit(", ", value)
+                .Append("]");
+            return builder.ToString();
+        }
+    }
 }

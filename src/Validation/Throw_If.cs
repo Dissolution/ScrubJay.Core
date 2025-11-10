@@ -21,94 +21,6 @@ namespace ScrubJay.Validation;
 [StackTraceHidden]
 public static partial class Throw
 {
-    private static string GetArgumentExceptionMessage<T>(
-        T? argument,
-        string? info,
-        string? argumentName,
-        Action<TextBuilder>? buildBaseMessage)
-    {
-        /* Examples:
-         * int "index" `-1` is out of range: must be zero or greater
-         * --
-         * typeof(T) = System.Int32
-         * buildArgument = tb => tb.Append(-1)
-         * info = "must be zero or greater"
-         * argumentName = "index"
-         * buildBaseMessage = tb => tb.Append("is out of range")
-         */
-
-        return TextBuilder.New
-            .Append("Argument `")
-            .Render(typeof(T))
-            .Append(' ')
-            .Append(argumentName)
-            .Append(" = ")
-            .Render(argument)
-            .Append('`')
-            .IfNotNull(buildBaseMessage, static (tb, act) => tb.Append(' ').Invoke(act))
-            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(nfo))
-            .ToStringAndDispose();
-    }
-
-    private static string GetArgumentExceptionMessage<T>(
-        [NoEnumeration] T? argument,
-        string? info,
-        string? argumentName,
-        string? baseMessage)
-        => GetArgumentExceptionMessage<T>(argument, info, argumentName, tb => tb.Append(baseMessage));
-
-    private static string GetArgumentExceptionMessage<T>(
-        Span<T> argument,
-        string? info,
-        string? argumentName,
-        Action<TextBuilder>? buildBaseMessage)
-    {
-        return TextBuilder.New
-            .Append("Argument `")
-            .Render(typeof(T))
-            .Append(' ')
-            .Append(argumentName)
-            .Append(" = ")
-            .Render(argument)
-            .Append('`')
-            .IfNotNull(buildBaseMessage, static (tb, act) => tb.Append(' ').Invoke(act))
-            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(nfo))
-            .ToStringAndDispose();
-    }
-
-    private static string GetArgumentExceptionMessage<T>(
-        Span<T> argument,
-        string? info,
-        string? argumentName,
-        string? baseMessage)
-        => GetArgumentExceptionMessage<T>(argument, info, argumentName, tb => tb.Append(baseMessage));
-
-    private static string GetArgumentExceptionMessage<T>(
-        ReadOnlySpan<T> argument,
-        string? info,
-        string? argumentName,
-        Action<TextBuilder>? buildBaseMessage)
-    {
-        return TextBuilder.New
-            .Append("Argument `")
-            .Render(typeof(T))
-            .Append(' ')
-            .Append(argumentName)
-            .Append(" = ")
-            .Render(argument)
-            .Append('`')
-            .IfNotNull(buildBaseMessage, static (tb, act) => tb.Append(' ').Invoke(act))
-            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(nfo))
-            .ToStringAndDispose();
-    }
-
-    private static string GetArgumentExceptionMessage<T>(
-        ReadOnlySpan<T> argument,
-        string? info,
-        string? argumentName,
-        string? baseMessage)
-        => GetArgumentExceptionMessage<T>(argument, info, argumentName, tb => tb.Append(baseMessage));
-
 #region IfNull
 
     /// <summary>
@@ -116,14 +28,13 @@ public static partial class Throw
     /// </summary>
     public static void IfNull<T>(
         [NotNull, NoEnumeration] T? argument,
-        string? info = null,
+        InterpolatedTextBuilder info = default,
         [CallerArgumentExpression(nameof(argument))]
         string? argumentName = null)
         where T : class?
     {
         if (argument is null)
-            throw new ArgumentNullException(argumentName,
-                GetArgumentExceptionMessage(argument, info, argumentName, "must not be null"));
+            throw Ex.ArgNull(argument, info, null, argumentName);
     }
 
     /// <summary>
@@ -138,8 +49,7 @@ public static partial class Throw
         where T : struct
     {
         if (!argument.HasValue)
-            throw new ArgumentNullException(argumentName,
-                GetArgumentExceptionMessage(argument, info, argumentName, "must not be null"));
+            throw Ex.ArgNull(argument, info, null, argumentName);
     }
 
 #endregion
@@ -156,8 +66,10 @@ public static partial class Throw
         if (!Equate.Values(argument, other, comparer))
             return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName,
-            tb => tb.Append($"must not be equal to `{other:@}`"));
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,
+            $"must not be equal to `{other:@}`");
+
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -171,8 +83,9 @@ public static partial class Throw
         if (Equate.Values(argument, other, comparer))
             return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName,
-            tb => tb.Append($"must be equal to `{other:@}`"));
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,
+            $"must be equal to `{other:@}`");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -190,8 +103,9 @@ public static partial class Throw
         if (Compare.Values(argument, other, comparer) >= 0)
             return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName,
-            tb => tb.Append($"must be >= {other:@}"));
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,
+            $"must be >= {other:@}");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -205,8 +119,9 @@ public static partial class Throw
         if (Compare.Values(argument, other, comparer) > 0)
             return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName,
-            tb => tb.Append($"must be <= {other:@}"));
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,
+            $"must be <= {other:@}");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -220,8 +135,9 @@ public static partial class Throw
         if (Compare.Values(argument, other, comparer) <= 0)
             return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName,
-            tb => tb.Append($"must be > {other:@}"));
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,
+            $"must be > {other:@}");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -235,8 +151,9 @@ public static partial class Throw
         if (Compare.Values(argument, other, comparer) < 0)
             return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName,
-            tb => tb.Append($"must be >= {other:@}"));
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,
+            $"must be >= {other:@}");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -254,7 +171,9 @@ public static partial class Throw
     {
         if (Notsafe.Unmanaged.IsZero(argument))
         {
-            string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be non-zero");
+            string message = Ex.GetArgExceptionMessage(
+                argument, argumentName, info,
+                "must be non-zero");
             throw new ArgumentOutOfRangeException(argumentName, argument, message);
         }
     }
@@ -269,7 +188,8 @@ public static partial class Throw
     {
         if (!N.IsZero(argument)) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be non-zero");
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,"must be non-zero");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -283,7 +203,8 @@ public static partial class Throw
     {
         if (!N.IsNegative(argument)) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be positive");
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,"must be positive");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -297,7 +218,8 @@ public static partial class Throw
     {
         if (!N.IsNegative(argument) && !N.IsZero(argument)) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be positive and non-zero");
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,"must be positive and non-zero");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -311,7 +233,8 @@ public static partial class Throw
     {
         if (!N.IsPositive(argument)) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be negative");
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,"must be negative");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -325,7 +248,8 @@ public static partial class Throw
     {
         if (!N.IsPositive(argument) && !N.IsZero(argument)) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be negative and non-zero");
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info, "must be negative and non-zero");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -346,7 +270,8 @@ public static partial class Throw
 
         if (argument.Length > 0) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info, "must not be empty");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -358,7 +283,14 @@ public static partial class Throw
     {
         if (argument.Length > 0) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
+#if NET9_0_OR_GREATER
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,"must not be empty");
+#else
+        string message = Ex.GetArgExceptionMessage(
+            typeof(ReadOnlySpan<T>), argument.Render(), argumentName, info,
+            "must not be empty");
+#endif
 
         throw new ArgumentOutOfRangeException(argumentName, typeof(ReadOnlySpan<T>).Render(), message);
     }
@@ -370,8 +302,14 @@ public static partial class Throw
     {
         if (argument.Length > 0) return;
 
-        string message = GetArgumentExceptionMessage((ReadOnlySpan<T>)argument, info, argumentName, "must not be empty");
-
+#if NET9_0_OR_GREATER
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info, "must not be empty");
+#else
+        string message = Ex.GetArgExceptionMessage(
+            typeof(Span<T>), argument.Render(), argumentName, info,
+            "must not be empty");
+#endif
         throw new ArgumentOutOfRangeException(argumentName, typeof(Span<T>).Render(), message);
     }
 
@@ -384,7 +322,8 @@ public static partial class Throw
 
         if (argument.Count > 0) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info, "must not be empty");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -405,8 +344,15 @@ public static partial class Throw
         {
             if (!set.Add(argument[i]))
             {
-                string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg(argument, message, null, argumentName);
+#if NET9_0_OR_GREATER
+                string message = Ex.GetArgExceptionMessage(
+                    argument, argumentName, info, "must be distinct");
+#else
+                string message = Ex.GetArgExceptionMessage(
+                    typeof(ReadOnlySpan<T>), argument.Render(), argumentName, info,
+                    "must be distinct");
+#endif
+                throw Ex.Argument(argument, message, null, argumentName);
             }
         }
 
@@ -425,8 +371,15 @@ public static partial class Throw
         {
             if (!set.Add(argument[i]))
             {
-                string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg(argument, message, null, argumentName);
+#if NET9_0_OR_GREATER
+                string message = Ex.GetArgExceptionMessage(
+                    argument, argumentName, info, "must be distinct");
+#else
+                string message = Ex.GetArgExceptionMessage(
+                    typeof(Span<T>), argument.Render(), argumentName, info,
+                    "must be distinct");
+#endif
+                throw Ex.Argument(argument, message, null, argumentName);
             }
         }
 
@@ -447,8 +400,9 @@ public static partial class Throw
         {
             if (!set.Add(argument[i]))
             {
-                string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg(argument, message, null, argumentName);
+                string message = Ex.GetArgExceptionMessage(
+                    argument, argumentName, info, "must be distinct");
+                throw Ex.Argument(argument, message, null, argumentName);
             }
         }
 
@@ -469,8 +423,9 @@ public static partial class Throw
         {
             if (!set.Add(value))
             {
-                string message = GetArgumentExceptionMessage(argument, info, argumentName, "must be distinct");
-                throw Ex.Arg(argument, message, null, argumentName);
+                string message = Ex.GetArgExceptionMessage(
+                    argument, argumentName, info, "must be distinct");
+                throw Ex.Argument(argument, message, null, argumentName);
             }
         }
 
@@ -492,7 +447,8 @@ public static partial class Throw
 
         if (argument.Length > 0) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info, "must not be empty");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }
@@ -504,7 +460,14 @@ public static partial class Throw
     {
         if (argument.Length != 0) return;
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, "must not be empty");
+#if NET9_0_OR_GREATER
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info, "must not be empty");
+#else
+        string message = Ex.GetArgExceptionMessage(
+            typeof(text), argument.AsString(), argumentName, info,
+            "must not be empty");
+#endif
 
         throw new ArgumentOutOfRangeException(argumentName, argument.AsString(), message);
     }
@@ -524,7 +487,8 @@ public static partial class Throw
                 return;
         }
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,
             "must contain at least one non-whitespace character");
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
@@ -543,9 +507,15 @@ public static partial class Throw
                 return;
         }
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName,
+#if NET9_0_OR_GREATER
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info,
             "must contain at least one non-whitespace character");
-
+#else
+        string message = Ex.GetArgExceptionMessage(
+            typeof(text), argument.AsString(), argumentName, info,
+            "must contain at least one non-whitespace character");
+#endif
         throw new ArgumentOutOfRangeException(argumentName, argument.AsString(), message);
     }
 
@@ -572,8 +542,9 @@ public static partial class Throw
         if ((uint)index < (uint)available)
             return index;
 
-        string message = GetArgumentExceptionMessage(index, info, indexName,
-            tb => tb.Append($"must be in [0..{available})"));
+        string message = Ex.GetArgExceptionMessage(
+            index, indexName, info,
+            $"must be in [0..{available})");
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
@@ -590,8 +561,9 @@ public static partial class Throw
         if ((uint)offset < (uint)available)
             return offset;
 
-        string message = GetArgumentExceptionMessage(index, info, indexName,
-            tb => tb.Append($"must be in [0..{available})"));
+        string message = Ex.GetArgExceptionMessage(
+            index, indexName, info,
+            $"must be in [0..{available})");
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
@@ -605,8 +577,9 @@ public static partial class Throw
         if ((uint)index <= (uint)available)
             return index;
 
-        string message = GetArgumentExceptionMessage(index, info, indexName,
-            tb => tb.Append($"must be in [0..{available}]"));
+        string message = Ex.GetArgExceptionMessage(
+            index, indexName, info,
+            $"must be in [0..{available}]");
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
@@ -622,8 +595,9 @@ public static partial class Throw
         if ((uint)offset <= (uint)available)
             return offset;
 
-        string message = GetArgumentExceptionMessage(index, info, indexName,
-            tb => tb.Append($"must be in [0..{available}]"));
+        string message = Ex.GetArgExceptionMessage(
+            index, indexName, info,
+            $"must be in [0..{available}]");
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
@@ -644,8 +618,9 @@ public static partial class Throw
         if ((index + length) <= available)
             return (index, length);
 
-        string message = GetArgumentExceptionMessage(index, info, indexName,
-            tb => tb.Append($"must be in [0..{available}]"));
+        string message = Ex.GetArgExceptionMessage(
+            index, indexName, info,
+            $"must be in [0..{available}]");
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
@@ -664,8 +639,9 @@ public static partial class Throw
         if ((offset + length) <= available)
             return (offset, length);
 
-        string message = GetArgumentExceptionMessage(length, info, lengthName,
-            tb => tb.Append($"must be in [0..{available}]"));
+        string message = Ex.GetArgExceptionMessage(
+            index, indexName, info,
+            $"must be in [0..{available}]");
 
         throw new ArgumentOutOfRangeException(indexName, index, message);
     }
@@ -683,8 +659,9 @@ public static partial class Throw
         if ((end >= s) && (end <= available))
             return (s, end - s);
 
-        string message = GetArgumentExceptionMessage(range, info, rangeName,
-            tb => tb.Append($"must be in [0..{available})"));
+        string message = Ex.GetArgExceptionMessage(
+            range, rangeName, info,
+            $"must be in [0..{available})");
 
         throw new ArgumentOutOfRangeException(rangeName, range, message);
     }
@@ -729,14 +706,16 @@ public static partial class Throw
 
         FAIL:
 
-        string message = GetArgumentExceptionMessage(argument, info, argumentName, tb =>
-        {
-            tb.Append("must be in ")
-                .If(lowerBoundIsInclusive, '[', '(')
-                .Format(upperBound)
-                .Append("..")
-                .If(upperBoundIsInclusive, ']', ')');
-        });
+        // string message = GetArgumentExceptionMessage(argument, info, argumentName, tb =>
+        // {
+        //     tb.Append("must be in ")
+        //         .If(lowerBoundIsInclusive, '[', '(')
+        //         .Format(upperBound)
+        //         .Append("..")
+        //         .If(upperBoundIsInclusive, ']', ')');
+        // });
+        string message = Ex.GetArgExceptionMessage(
+            argument, argumentName, info);
 
         throw new ArgumentOutOfRangeException(argumentName, argument, message);
     }

@@ -7,6 +7,7 @@
 using text = System.ReadOnlySpan<char>;
 using TextBuffer = ScrubJay.Collections.Pooling.Buffer<char>;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -37,39 +38,29 @@ watcher.UnhandledException += (sender, args) =>
 };
 #endregion End Setup
 
-var a = typeof(SimpleClass.NestedSimpleClass);
-var b = typeof(SimpleClass.NestedGenericClass<int>);
-var c = typeof(GenericClass<byte>.NestedSimpleClass);
-var d = typeof(GenericClass<byte>.NestedGenericClass<int>);
-
-var s = TypeHelper.Display(d);
-var s2 = TextBuilder.Build(tb => TypeRenderer.RenderTypeTo(tb, d));
-
-var s3 = TypeHelper.Display(typeof(int?));
-var s4 = TypeHelper.Display(typeof((int, string)));
-var s5 = TypeHelper.Display(typeof(IList<>).MakeGenericType(typeof(string)).MakeByRefType());
-var s6 = TypeHelper.Display(typeof(int****));
-var s7 = TypeHelper.Display(typeof(Dictionary<,>));
-
-AppDomain.CurrentDomain.GetAssemblies()
-    .SelectMany(static ass => ass.GetTypes())
-    .Select(static type => (type, type.Display()))
-    .Consume(static tuple => Console.WriteLine($"{tuple.type}: {tuple.Item2}"));
-
-Debugger.Break();
+try
+{
+    Util.Check1(null);
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex);
+    Console.WriteLine(ex.StackTrace);
+    Debugger.Break();
+}
 
 
 try
 {
-    throw new InvalidOperationException("Something went wrong");
+    Util.Check2(null);
 }
-catch (InvalidOperationException ex)
+catch (Exception ex)
 {
-    var exdump = Dumper.Dump(ex);
-
-    Console.WriteLine(exdump);
-    Console.WriteLine();
+    Console.WriteLine(ex);
+    Console.WriteLine(ex.StackTrace);
+    Debugger.Break();
 }
+
 
 
 Console.WriteLine("〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️");
@@ -81,6 +72,44 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
+    partial class Util
+    {
+        public static int Check1(object? obj)
+        {
+            switch (obj)
+            {
+                case null:
+                    ThrowNullException();
+                    return 0;
+                case string str:
+                    return int.Parse(str);
+                default:
+                    throw new Exception();
+            }
+        }
+
+        public static int Check2(object? obj)
+        {
+            return obj switch
+            {
+                null => throw GetNullReferenceException(),
+                string str => int.Parse(str),
+                _ => throw new Exception()
+            };
+        }
+
+        [DoesNotReturn]
+        public static void ThrowNullException()
+        {
+            throw new NullReferenceException();
+        }
+
+        public static NullReferenceException GetNullReferenceException()
+        {
+            return new NullReferenceException();
+        }
+    }
+
     public class SimpleClass
     {
         public class NestedSimpleClass

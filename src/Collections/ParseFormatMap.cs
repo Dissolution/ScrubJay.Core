@@ -81,7 +81,7 @@
 //     {
 //         var key = new Key(value, format);
 //         if (!_formats.TryAdd(key, text))
-//             throw Ex.Arg(key, "Duplicate Value/Formatting Key");
+//             throw Ex.Argument(key, "Duplicate Value/Formatting Key");
 //     }
 //
 //     public AddingToParseFormatMap<T, F> For(T value)

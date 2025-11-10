@@ -1,27 +1,27 @@
 using ScrubJay.Parsing;
 
-namespace ScrubJay.Exceptions;
+namespace ScrubJay.Validation;
 
 partial class Ex
 {
-    private static string GetMessage(scoped text input, Type? destType, InterpolatedTextBuilder info)
+    private static string GetParseExceptionMessage(scoped text input, Type? destType, InterpolatedTextBuilder info)
     {
         return TextBuilder.New
             .Append($"Could not parse \"{input}\" into a {destType:@}")
-            .IfNotEmpty(info, static (tb, nfo) => tb.Append(": ").Append(ref nfo))
+            .IfNotEmpty(info, static (tb, n) => tb.Append(": ").Append(ref n))
             .ToStringAndDispose();
     }
 
-    private static string GetMessage(string? input, Type? destType, InterpolatedTextBuilder info)
+    private static string GetParseExceptionMessage(string? input, Type? destType, InterpolatedTextBuilder info)
     {
         return TextBuilder.New
             .Append("Could not parse ")
             .IfNotNull(input, static (tb, n) => tb.Append('"').Append(n).Append('"'),
-                static tb => tb.Append("`null"))
+                static tb => tb.Append("<null>"))
             .Append(" into a ")
             .Render(destType)
             .IfNotEmpty(info,
-                static (tb, nfo) => tb.Append(": ").Append(ref nfo))
+                static (tb, n) => tb.Append(": ").Append(ref n))
             .ToStringAndDispose();
     }
 
@@ -32,7 +32,7 @@ partial class Ex
         InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
-        var message = GetMessage(input, destType, info);
+        var message = GetParseExceptionMessage(input, destType, info);
         return new ParseException(message, innerException)
         {
             InputText = input.AsString(),
@@ -46,7 +46,7 @@ partial class Ex
         InterpolatedTextBuilder info = default,
         Exception? innerException = null)
     {
-        var message = GetMessage(input, destType, info);
+        var message = GetParseExceptionMessage(input, destType, info);
         return new ParseException(message, innerException)
         {
             InputText = input.AsString(),
@@ -62,7 +62,7 @@ partial class Ex
         where T : allows ref struct
 #endif
     {
-        var message = GetMessage(input, typeof(T), info);
+        var message = GetParseExceptionMessage(input, typeof(T), info);
         return new ParseException(message, innerException)
         {
             InputText = input.AsString(),
@@ -78,7 +78,7 @@ partial class Ex
         where T : allows ref struct
 #endif
     {
-        var message = GetMessage(input, typeof(T), info);
+        var message = GetParseExceptionMessage(input, typeof(T), info);
         return new ParseException(message, innerException)
         {
             InputText = input.AsString(),

@@ -121,7 +121,7 @@ public ref struct SpanWriter<T>
         }
         else
         {
-            throw Ex.Arg(items, $"Could not write {items.Length} items: Only {RemainingCount} capacity remains");
+            throw Ex.Argument(items, $"Could not write {items.Length} items: Only {RemainingCount} capacity remains");
         }
     }
 

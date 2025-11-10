@@ -32,7 +32,7 @@ public static class EndiannessExtensions
                 case Endianness.NonSystem:
                     return BitConverter.IsLittleEndian ? Endianness.Big : Endianness.Little;
                 default:
-                    throw Ex.Enum(endianness);
+                    throw Ex.UndefinedEnum(endianness);
             }
         }
 
@@ -42,7 +42,7 @@ public static class EndiannessExtensions
             Endianness.NonSystem => true,
             Endianness.Little => !BitConverter.IsLittleEndian,
             Endianness.Big => BitConverter.IsLittleEndian,
-            _ => throw Ex.Enum(endianness),
+            _ => throw Ex.UndefinedEnum(endianness),
         };
 
 
@@ -52,7 +52,7 @@ public static class EndiannessExtensions
             Endianness.NonSystem => false,
             Endianness.Little => BitConverter.IsLittleEndian,
             Endianness.Big => !BitConverter.IsLittleEndian,
-            _ => throw Ex.Enum(endianness),
+            _ => throw Ex.UndefinedEnum(endianness),
         };
     }
 }

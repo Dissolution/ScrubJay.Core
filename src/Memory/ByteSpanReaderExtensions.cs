@@ -217,7 +217,7 @@ public static class ByteSpanReaderExtensions
 #endif
 
         {
-            throw Ex.Enum(@enum);
+            throw Ex.UndefinedEnum(@enum);
         }
 
         return @enum;
@@ -334,7 +334,7 @@ public static class ByteSpanReaderExtensions
                 return str;
             }
             default:
-                throw Ex.Enum(fix);
+                throw Ex.UndefinedEnum(fix);
         }
     }
 
@@ -424,7 +424,7 @@ public static class ByteSpanReaderExtensions
                 return TimeSpan.FromSeconds(seconds);
             }
             default:
-                throw Ex.Enum(fix);
+                throw Ex.UndefinedEnum(fix);
         }
     }
 
@@ -450,7 +450,7 @@ public static class ByteSpanReaderExtensions
                 return TimeFix.OriginDateTime.AddSeconds(seconds);
             }
             default:
-                throw Ex.Enum(fix);
+                throw Ex.UndefinedEnum(fix);
         }
     }
 

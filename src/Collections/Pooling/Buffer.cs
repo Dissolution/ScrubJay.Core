@@ -1215,7 +1215,7 @@ public ref struct Buffer<T> : IDisposable
     /// </exception>
     [Obsolete("Equals() on a ref struct will always throw a NotSupportedException")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object? obj) => throw Ex.NotSupported(typeof(Buffer<T>));
+    public override bool Equals(object? obj) => throw Ex.MethodNotSupported(typeof(Buffer<T>));
 
     /// <summary>
     /// This method is not supported as ref structs cannot be boxed
@@ -1225,7 +1225,7 @@ public ref struct Buffer<T> : IDisposable
     /// </exception>
     [Obsolete("GetHashCode() on a ref struct will always throw a NotSupportedException")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override int GetHashCode() => throw Ex.NotSupported(typeof(Buffer<T>));
+    public override int GetHashCode() => throw Ex.MethodNotSupported(typeof(Buffer<T>));
 
     /// <summary>
     /// Gets a <see cref="string"/> representation of the <see cref="Written"/> items

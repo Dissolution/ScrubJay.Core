@@ -49,8 +49,8 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
     }
 
 
-    void ICollection<T>.Add(T item) => Throw.NotSupported();
-    void IList<T>.Insert(int index, T item) => Throw.NotSupported();
+    void ICollection<T>.Add(T item) => throw Ex.MethodNotSupported();
+    void IList<T>.Insert(int index, T item) => throw Ex.MethodNotSupported();
 
     public bool Contains(T item) => IndexOf(item) >= 0;
 
@@ -75,10 +75,10 @@ public sealed class ListSlice<T> : ListSlice, IList<T>, IReadOnlyList<T>
     }
 
 
-    bool ICollection<T>.Remove(T item) => Throw.NotSupported<bool>();
+    bool ICollection<T>.Remove(T item) => throw Ex.MethodNotSupported();
 
 
-    void IList<T>.RemoveAt(int index) => Throw.NotSupported();
+    void IList<T>.RemoveAt(int index) => throw Ex.MethodNotSupported();
 
     public void Clear()
     {

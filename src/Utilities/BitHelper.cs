@@ -110,7 +110,7 @@ public static class BitHelper
     {
         int size = Utilities.Notsafe.SizeOf<U>();
         if (bytes.Length < size)
-            return Ex.Arg(bytes, $"Needed to read {size} bytes and only found {bytes.Length}");
+            return Ex.Argument(bytes, $"Needed to read {size} bytes and only found {bytes.Length}");
         return Ok(Notsafe.ReadFrom<U>(in bytes.GetPinnableReference()));
     }
 
@@ -241,7 +241,7 @@ public static class BitHelper
     {
         int size = Utilities.Notsafe.SizeOf<U>();
         if (size > destination.Length)
-            return Ex.Arg(source, $"Source has size {size} and destination can only contain {destination.Length} bytes");
+            return Ex.Argument(source, $"Source has size {size} and destination can only contain {destination.Length} bytes");
         Notsafe.WriteTo<U>(ref destination.GetPinnableReference(), in source);
         return Ok(size);
     }
