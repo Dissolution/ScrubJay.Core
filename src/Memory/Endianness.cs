@@ -1,6 +1,6 @@
 ﻿#pragma warning disable CA1065
 
-namespace ScrubJay.Utilities;
+namespace ScrubJay.Memory;
 
 [PublicAPI]
 public enum Endianness
@@ -36,7 +36,7 @@ public static class EndiannessExtensions
             }
         }
 
-        public bool IsSwap => endianness switch
+        public bool NeedsSwap => endianness switch
         {
             Endianness.System => false,
             Endianness.NonSystem => true,

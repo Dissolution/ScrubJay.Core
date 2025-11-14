@@ -1,4 +1,4 @@
-namespace ScrubJay.Collections;
+namespace ScrubJay.Iteration;
 
 [PublicAPI]
 public readonly ref struct Iterable<R, V>
@@ -119,7 +119,7 @@ public static class IteratorExtensions
     extension<R, V>(R iterator)
         where R : struct, IIterator<V>
     {
-        Option<V> MoveNext()
+        public Option<V> MoveNext()
         {
             return iterator.TryMoveNext(out var value) ? Some<V>(value) : None;
         }
@@ -127,7 +127,7 @@ public static class IteratorExtensions
 
     extension(Array? array)
     {
-        Iterable<ArrayIterator, object?> AsIterable()
+        public Iterable<ArrayIterator, object?> AsIterable()
         {
             return new(new(array));
         }
@@ -135,7 +135,7 @@ public static class IteratorExtensions
 
     extension<T>(T[]? array)
     {
-        Iterable<ArrayIterator<T>, T> AsIterable()
+        public Iterable<ArrayIterator<T>, T> AsIterable()
         {
             return new(new(array));
         }
@@ -144,7 +144,7 @@ public static class IteratorExtensions
     extension<T>(T tuple)
         where T : ITuple
     {
-        Iterable<TupleIterator<T>, object?> AsIterable()
+        public Iterable<TupleIterator<T>, object?> AsIterable()
         {
             return new(new(tuple));
         }

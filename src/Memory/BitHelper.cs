@@ -6,7 +6,7 @@ using bytes = System.Span<byte>;
 using robytes = System.ReadOnlySpan<byte>;
 
 
-namespace ScrubJay.Utilities;
+namespace ScrubJay.Memory;
 
 [PublicAPI]
 public static class BitHelper

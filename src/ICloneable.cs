@@ -3,31 +3,22 @@
 namespace ScrubJay;
 
 /// <summary>
-/// Supports shallow-cloning, which creates a new instance with the same value as an existing instance,
-/// preserving all references
+/// Indicates that instances of this type support shallow-cloning:<br/>
+/// creating a new instance with the same values as an existing instance
+/// <i>by</i> preserving <i>all</i> references
 /// </summary>
 /// <typeparam name="S">
-/// The <see cref="Type"/> of this instance (self)
+/// <c>typeof(self)</c>
 /// </typeparam>
 [PublicAPI]
-public interface ICloneable<S> : ICloneable
+public interface ICloneable<S>
     where S : ICloneable<S>
+#if NET9_0_OR_GREATER
+    , allows ref struct
+#endif
 {
-#if NET6_0_OR_GREATER
     /// <summary>
-    /// Get a shallow clone of a <typeparamref name="S"/> <paramref name="instance"/>
+    /// Creates a shallow clone of this instance
     /// </summary>
-    [return: NotNullIfNotNull(nameof(instance))]
-    public static virtual S? CloneInstance(S? instance)
-        => instance is null ? default : instance.Clone();
-#endif
-
-#if !NETFRAMEWORK && !NETSTANDARD2_0
-    object ICloneable.Clone() => Clone();
-#endif
-
-    /// <summary>
-    /// Gets a shallow clone of this instance
-    /// </summary>
-    new S Clone();
+    S Clone();
 }

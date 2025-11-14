@@ -1,19 +1,12 @@
-﻿#pragma warning disable CA1715
-
-
-// alias `ReadOnlySpan<char>` to `text`
+﻿// alias `ReadOnlySpan<char>` as `text`
 global using text = System.ReadOnlySpan<char>;
 // prevent attribute name conflict with `JetBrains.Annotations.NotNullAttribute`
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 using ScrubJay.Functional.IMPL;
 
-
 namespace ScrubJay;
 
-/// <summary>
-/// Global helper methods
-/// </summary>
 /// <remarks>
 /// To include these methods in a single <c>.cs</c> file, add to its <c>usings</c> section:<br/>
 /// <code>
@@ -29,7 +22,7 @@ namespace ScrubJay;
 [PublicAPI]
 public static class Prelude
 {
-    public static None None { get; }
+    public static None None { get; } = None.Default;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);

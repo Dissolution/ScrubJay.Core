@@ -51,7 +51,7 @@ namespace ScrubJay.Utilities;
 [StructLayout(LayoutKind.Auto)]
 public ref struct Hasher
 {
-    #region Static
+#region Static
 
     private const uint PRIME1 = 0x9E3779B1U;
     private const uint PRIME2 = 0x85EBCA77U;
@@ -88,7 +88,7 @@ public ref struct Hasher
 #else
         Span<byte> bytes = stackalloc byte[sizeof(uint)];
         RandomNumberGenerator.Fill(bytes);
-        return Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(bytes));
+        return BitHelper.Read<uint>(bytes);
 #endif
     }
 
@@ -118,7 +118,10 @@ public ref struct Hasher
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint StateToHash(uint value1, uint value2, uint value3, uint value4)
-        => MathHelper.RotateLeft(value1, 1) + MathHelper.RotateLeft(value2, 7) + MathHelper.RotateLeft(value3, 12) + MathHelper.RotateLeft(value4, 18);
+        => MathHelper.RotateLeft(value1, 1) +
+           MathHelper.RotateLeft(value2, 7) +
+           MathHelper.RotateLeft(value3, 12) +
+           MathHelper.RotateLeft(value4, 18);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint HashFinalize(uint hash)
@@ -136,7 +139,7 @@ public ref struct Hasher
     /// Gets the hashcode for a single <paramref name="value"/>
     /// </summary>
     /// <param name="value">
-    /// The value to get a hashcode for (may be <c>null</c>)
+    /// The value to get a hashcode for (can be <c>null</c>)
     /// </param>
     public static int Hash<T>(T? value)
     {
@@ -479,7 +482,7 @@ public ref struct Hasher
         return hasher.ToHashCode();
     }
 
-    #endregion
+#endregion
 
     // current hasher states
 
@@ -569,20 +572,20 @@ public ref struct Hasher
     /// </summary>
     public void AddMany<T>(scoped Span<T> values)
     {
-        for (int i = 0; i < values.Length; i++)
+        foreach (var value in values)
         {
-            Add<T>(values[i]);
+            Add<T>(value);
         }
     }
 
     /// <summary>
     /// Adds the hashcodes of the items in a <see cref="ReadOnlySpan{T}"/>
     /// </summary>
-    public void AddMany<T>(scoped ReadOnlySpan<T> values)
+    public void AddMany<T>(params ReadOnlySpan<T> values)
     {
-        for (int i = 0; i < values.Length; i++)
+        foreach (var value in values)
         {
-            Add<T>(values[i]);
+            Add<T>(value);
         }
     }
 
@@ -591,22 +594,22 @@ public ref struct Hasher
     /// </summary>
     public void AddMany<T>(scoped ReadOnlySpan<T> values, IEqualityComparer<T>? comparer)
     {
-        for (int i = 0; i < values.Length; i++)
+        foreach (var value in values)
         {
-            Add<T>(values[i], comparer);
+            Add<T>(value, comparer);
         }
     }
 
     /// <summary>
     /// Adds the hashcodes generated for the given <paramref name="values"/> to this <see cref="Hasher"/>
     /// </summary>
-    public void AddMany<T>(params T[]? values)
+    public void AddMany<T>(T[]? values)
     {
         if (values is null)
             return;
-        for (int i = 0; i < values.Length; i++)
+        foreach (var value in values)
         {
-            Add<T>(values[i]);
+            Add<T>(value);
         }
     }
 
@@ -617,9 +620,9 @@ public ref struct Hasher
     {
         if (values is null)
             return;
-        for (int i = 0; i < values.Length; i++)
+        foreach (var value in values)
         {
-            Add<T>(values[i], comparer);
+            Add<T>(value, comparer);
         }
     }
 
@@ -673,7 +676,7 @@ public ref struct Hasher
         }
 
         // _length is incremented once per AddHash() and is therefore 4 times too small
-        // (xxHash length is in bytes and we are using uints)
+        // (xxHash length is in bytes, and we are using uints)
         hash += (length * 4);
 
         // Mix what remains in the queue

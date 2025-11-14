@@ -1,21 +1,21 @@
-﻿#pragma warning disable CS1574, CS1584, CS1581, CS1580
-#pragma warning disable CA1040, CA1716
-
-namespace ScrubJay;
+﻿namespace ScrubJay;
 
 /// <summary>
-/// Indicates that this type provides a static <see cref="Default"/> instance
+/// Indicates that this type provides a <c>static</c> <see cref="Default"/> instance
 /// </summary>
 /// <typeparam name="S">
-/// <c>self</c>
+/// <c>typeof(self)</c>
 /// </typeparam>
 [PublicAPI]
 public interface IHasDefault<out S>
     where S : IHasDefault<S>
+#if NET9_0_OR_GREATER
+    , allows ref struct
+#endif
 {
 #if NET7_0_OR_GREATER
     /// <summary>
-    /// Get the default <typeparamref name="S"/> instance
+    /// Get the <c>default</c> <typeparamref name="S"/> instance
     /// </summary>
     static abstract S Default { get; }
 #endif

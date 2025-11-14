@@ -17,6 +17,11 @@ public class ConcurrentTypeMap<V> : ConcurrentDictionary<Type, V>
     public ConcurrentTypeMap(int capacity)
         : base(Environment.ProcessorCount, capacity) { }
 
+    public ConcurrentTypeMap(IEqualityComparer<Type> comparer)
+        : base(comparer)
+    {
+    }
+
     public bool ContainsKey<K>()
 #if NET9_0_OR_GREATER
         where K : allows ref struct

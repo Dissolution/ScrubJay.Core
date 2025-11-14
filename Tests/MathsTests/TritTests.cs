@@ -1,4 +1,5 @@
 using ScrubJay.Maths.Ternary;
+using ScrubJay.Validation;
 using static ScrubJay.Maths.Ternary.Trit;
 
 namespace ScrubJay.Tests.MathsTests;

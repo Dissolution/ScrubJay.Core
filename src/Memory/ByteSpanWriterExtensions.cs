@@ -21,7 +21,7 @@ public static class ByteSpanWriterExtensions
             if (count > writer.RemainingCount)
                 return new InvalidOperationException($"Could not write span count {count}");
 
-            if (endianness.IsSwap)
+            if (endianness.NeedsSwap)
             {
                 for (var i = count - 1; i >= 0; i--)
                 {

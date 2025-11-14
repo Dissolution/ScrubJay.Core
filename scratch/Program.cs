@@ -22,6 +22,7 @@ using ScrubJay.Debugging;
 using ScrubJay.Dumping;
 using ScrubJay.Maths;
 using ScrubJay.Maths.Ternary;
+using ScrubJay.Rendering;
 using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 using static InlineIL.IL;
@@ -38,28 +39,15 @@ watcher.UnhandledException += (sender, args) =>
 };
 #endregion End Setup
 
-try
-{
-    Util.Check1(null);
-}
-catch (Exception ex)
-{
-    Console.WriteLine(ex);
-    Console.WriteLine(ex.StackTrace);
-    Debugger.Break();
-}
+using var builder = new TextBuilder();
+
+char[] array = ['T', 'R', 'J'];
 
 
-try
-{
-    Util.Check2(null);
-}
-catch (Exception ex)
-{
-    Console.WriteLine(ex);
-    Console.WriteLine(ex.StackTrace);
-    Debugger.Break();
-}
+ScrubJay.Rendering.Renderer.FaceRenderTo(BindingFlags.Public, builder);
+string str = builder.ToString();
+Console.WriteLine(str);
+Debugger.Break();
 
 
 
@@ -72,6 +60,8 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
+
+
     partial class Util
     {
         public static int Check1(object? obj)

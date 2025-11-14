@@ -1,5 +1,5 @@
-﻿#pragma warning disable IDE0060, CS8500, CA1045, CA1034, CA1715, CA1724, CS9080
-// ReSharper disable InconsistentNaming
+﻿#pragma warning disable IDE0060
+#pragma warning disable CS8500
 
 using InlineIL;
 using static InlineIL.IL;
@@ -9,8 +9,9 @@ using static InlineIL.IL;
 namespace ScrubJay.Utilities;
 
 /// <summary>
-/// Very <b>unsafe</b> methods, more dangerous than <see cref="Unsafe"/><br/>
-/// Many of the methods in here have no validations of any kind
+/// <b>Very unsafe</b> methods, often more dangerous than <see cref="Unsafe"/><br/>
+/// Many of the methods in here have no validation,
+/// and often direct il manipulation for pure speed has been defined
 /// </summary>
 /// <seealso href="https://github.com/ltrzesniewski/InlineIL.Fody/blob/master/src/InlineIL.Examples/UnsafeNet9.cs"/>
 [PublicAPI]
@@ -111,60 +112,33 @@ public static unsafe class Notsafe
         /* And the below is just crazy */
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void CopyBlock<USource, UDest>(in USource source, ref UDest destination, int count)
-            where USource : unmanaged
-            where UDest : unmanaged
+        private static void CopyBlock<I, O>(in I source, ref O destination, int count)
+            where I : unmanaged
+            where O : unmanaged
         {
-            Debug.Assert(SizeOf<USource>() == SizeOf<UDest>());
+            Debug.Assert(SizeOf<I>() == SizeOf<O>());
             Emit.Ldarg(nameof(destination));
             Emit.Ldarg(nameof(source));
             Emit.Ldarg(nameof(count));
-            Emit.Sizeof<USource>();
+            Emit.Sizeof<I>();
             Emit.Mul();
             Emit.Cpblk();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyTo<USource, UDest>(ReadOnlySpan<USource> source, Span<UDest> destination, int count)
-            where USource : unmanaged
-            where UDest : unmanaged
+        public static void CopyTo<I, O>(ReadOnlySpan<I> source, Span<O> destination, int count)
+            where I : unmanaged
+            where O : unmanaged
         {
-            Debug.Assert(SizeOf<USource>() == SizeOf<UDest>());
-            CopyBlock<USource, UDest>(
-                in MemoryMarshal.GetReference<USource>(source),
-                ref MemoryMarshal.GetReference<UDest>(destination),
+            Debug.Assert(SizeOf<I>() == SizeOf<O>());
+            CopyBlock<I, O>(
+                in MemoryMarshal.GetReference<I>(source),
+                ref MemoryMarshal.GetReference<O>(destination),
                 count);
         }
 
 #endregion
 
-#region Arrays
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* ArrayAlloc<T>(int size)
-            where T : unmanaged
-            => (T*)Marshal.AllocHGlobal(size * sizeof(T));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ArrayFree<T>(T* array)
-            where T : unmanaged
-            => Marshal.FreeHGlobal((IntPtr)array);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ArrayClear<T>(T* array, int size)
-            where T : unmanaged
-        {
-            Unsafe.InitBlock(array, 0, (uint)(size * sizeof(T)));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ArrayCopy<T>(T* src, T* dst, int size)
-            where T : unmanaged
-        {
-            CopyBlock(in PtrAsIn(src), ref PtrAsRef(dst), size * sizeof(T));
-        }
-
-#endregion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZero<U>(U value)
@@ -236,13 +210,31 @@ public static unsafe class Notsafe
     }
 
 
-#region Referencing
+#region Changing reference types
 
     /************************************
      * Roughly:
      * void*, T*, in T, ref T
      ************************************
      */
+
+    /// <summary>
+    /// Returns the <typeparamref name="I"/> <paramref name="input"/> as a <typeparamref name="O"/> with no type checking
+    /// </summary>
+    /// <remarks>
+    /// If <typeparamref name="I"/> and <typeparamref name="O"/> do not have the same size and layout,
+    /// memory corruption, undefined behavior, and Exceptions may occur
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static O As<I, O>(I input)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(input));
+        return Return<O>();
+    }
 
     // void* -> ?
 
@@ -251,9 +243,8 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* VoidPtrAsPtr<T>(void* voidPointer)
-        where T : unmanaged
 #if NET9_0_OR_GREATER
-        , allows ref struct
+        where T : allows ref struct
 #endif
     {
         Emit.Ldarg(nameof(voidPointer));
@@ -293,9 +284,8 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void* PtrAsVoidPtr<T>(T* sourcePointer)
-        where T : unmanaged
 #if NET9_0_OR_GREATER
-        , allows ref struct
+        where T : allows ref struct
 #endif
     {
         Emit.Ldarg(nameof(sourcePointer));
@@ -303,13 +293,26 @@ public static unsafe class Notsafe
     }
 
     /// <summary>
+    /// <c>I* -> O*</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static O* PtrAsPtr<I, O>(I* sourcePointer)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(sourcePointer));
+        return ReturnPointer<O>();
+    }
+
+    /// <summary>
     /// <c>T* -> ref T</c>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T PtrAsRef<T>(T* sourcePointer)
-        where T : unmanaged
 #if NET9_0_OR_GREATER
-        , allows ref struct
+        where T : allows ref struct
 #endif
     {
         Emit.Ldarg(nameof(sourcePointer));
@@ -317,17 +320,44 @@ public static unsafe class Notsafe
     }
 
     /// <summary>
+    /// <c>I* -> ref O</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref O PtrAsRef<I, O>(I* sourcePointer)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(sourcePointer));
+        return ref ReturnRef<O>();
+    }
+
+    /// <summary>
     /// <c>T* -> in T</c>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly T PtrAsIn<T>(T* sourcePointer)
-        where T : unmanaged
 #if NET9_0_OR_GREATER
-        , allows ref struct
+        where T : allows ref struct
 #endif
     {
         Emit.Ldarg(nameof(sourcePointer));
         return ref ReturnRef<T>();
+    }
+
+    /// <summary>
+    /// <c>I* -> in O</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref readonly O PtrAsIn<I, O>(I* sourcePointer)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(sourcePointer));
+        return ref ReturnRef<O>();
     }
 
     // in T -> ?
@@ -350,13 +380,40 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* InAsPtr<T>(in T inValue)
-        where T : unmanaged
 #if NET9_0_OR_GREATER
-        , allows ref struct
+        where T : allows ref struct
 #endif
     {
         Emit.Ldarg(nameof(inValue));
         return ReturnPointer<T>();
+    }
+
+    /// <summary>
+    /// <c>in I -> O*</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static O* InAsPtr<I, O>(in I inValue)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(inValue));
+        return ReturnPointer<O>();
+    }
+
+    /// <summary>
+    /// <c>in I -> in O</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref readonly O InAsIn<I, O>(in I inValue)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(inValue));
+        return ref ReturnRef<O>();
     }
 
     /// <summary>
@@ -371,6 +428,21 @@ public static unsafe class Notsafe
         Emit.Ldarg(nameof(inValue));
         return ref ReturnRef<T>();
     }
+
+    /// <summary>
+    /// <c>in I -> ref O</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref O InAsRef<I, O>(in I inValue)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(inValue));
+        return ref ReturnRef<O>();
+    }
+
 
     // ref T -> ?
 
@@ -393,13 +465,26 @@ public static unsafe class Notsafe
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T* RefAsPtr<T>(ref T inValue)
-        where T : unmanaged
 #if NET9_0_OR_GREATER
-        , allows ref struct
+        where T : allows ref struct
 #endif
     {
         Emit.Ldarg(nameof(inValue));
         return ReturnPointer<T>();
+    }
+
+    /// <summary>
+    /// <c>ref I -> O*</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static O* RefAsPtr<I, O>(ref I inValue)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(inValue));
+        return ReturnPointer<O>();
     }
 
     /// <summary>
@@ -415,8 +500,37 @@ public static unsafe class Notsafe
         return ref ReturnRef<T>();
     }
 
+    /// <summary>
+    /// <c>ref I -> in O</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref readonly O RefAsIn<I, O>(ref I inValue)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(inValue));
+        return ref ReturnRef<O>();
+    }
+
+    /// <summary>
+    /// <c>ref I -> ref O</c>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref O RefAsRef<I, O>(ref I inValue)
+#if NET9_0_OR_GREATER
+        where I : allows ref struct
+        where O : allows ref struct
+#endif
+    {
+        Emit.Ldarg(nameof(inValue));
+        return ref ReturnRef<O>();
+    }
+
     // out T -> ?
-    // everything in here is so very, very dangerous
+
+    // like why? just pure IL evil
 
     public static ref T OutAsRef<T>(out T outValue)
 #if NET9_0_OR_GREATER
@@ -435,9 +549,6 @@ public static unsafe class Notsafe
     // object -> ?
 
     public static object Box<T>(T value)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
     {
         Emit.Ldarg(nameof(value));
         Emit.Box<T>();
@@ -456,29 +567,12 @@ public static unsafe class Notsafe
     }
 
     /// <summary>
-    /// Gets a <c>ref </c><typeparamref name="TStruct"/> to the contents of an <see cref="object"/>
+    /// Gets a <c>ref </c><typeparamref name="T"/> to the contents of an <see cref="object"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref TStruct UnboxRef<TStruct>(object obj)
-        //where TStruct : struct
+    public static ref T UnboxRef<T>(object obj)
     {
         Emit.Ldarg_0();
-        Emit.Unbox<TStruct>();
-        return ref ReturnRef<TStruct>();
-    }
-
-    public static ref T TryUnboxRef<T>(object obj)
-    {
-        Debug.Assert(obj is not null);
-        Emit.Ldarg(nameof(obj));
-        Emit.Isinst<T>();
-        Emit.Brtrue("is_inst");
-        // return a null ref
-        Emit.Ldc_I4_0();
-        Emit.Conv_U();
-        Emit.Ret();
-        MarkLabel("is_inst");
-        Emit.Ldarg(nameof(obj));
         Emit.Unbox<T>();
         return ref ReturnRef<T>();
     }
@@ -487,12 +581,11 @@ public static unsafe class Notsafe
     /// Casts an <see cref="object"/> to a <c>class</c>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TClass CastClass<TClass>(object obj)
-        //where TClass : class
+    public static T CastClass<T>(object obj)
     {
         Emit.Ldarg_0();
-        Emit.Castclass<TClass>();
-        return Return<TClass>();
+        Emit.Castclass<T>();
+        return Return<T>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -504,71 +597,18 @@ public static unsafe class Notsafe
         return Return<T>();
     }
 
-    /// <summary>
-    /// Returns the <typeparamref name="TIn"/> <paramref name="input"/> as a <typeparamref name="TOut"/> with no type checking
-    /// </summary>
-    /// <remarks>
-    /// If <typeparamref name="TIn"/> and <typeparamref name="TOut"/> do not have the same size and layout,
-    /// memory corruption, undefined behavior, and Exceptions may occur
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TOut As<TIn, TOut>(TIn input)
-#if NET9_0_OR_GREATER
-        where TIn : allows ref struct
-        where TOut : allows ref struct
-#endif
-    {
-        Emit.Ldarg(nameof(input));
-        return Return<TOut>();
-    }
-
-    /// <summary>
-    /// Returns the <typeparamref name="TIn"/> <c>in</c> <paramref name="input"/> as a <c>ref readonly</c> <typeparamref name="TOut"/> with no type checking
-    /// </summary>
-    /// <remarks>
-    /// If <typeparamref name="TIn"/> and <typeparamref name="TOut"/> do not have the same size and layout,
-    /// memory corruption, undefined behavior, and Exceptions may occur
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref readonly TOut InAsReadonly<TIn, TOut>(in TIn input)
-#if NET9_0_OR_GREATER
-        where TIn : allows ref struct
-        where TOut : allows ref struct
-#endif
-    {
-        Emit.Ldarg(nameof(input));
-        return ref ReturnRef<TOut>();
-    }
-
-    /// <summary>
-    /// Returns the <typeparamref name="TIn"/> <c>ref</c> <paramref name="input"/> as a <c>ref</c> <typeparamref name="TOut"/> with no type checking
-    /// </summary>
-    /// <remarks>
-    /// If <typeparamref name="TIn"/> and <typeparamref name="TOut"/> do not have the same size and layout,
-    /// memory corruption, undefined behavior, and Exceptions may occur
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref TOut RefAsRef<TIn, TOut>(ref TIn input)
-#if NET9_0_OR_GREATER
-        where TIn : allows ref struct
-        where TOut : allows ref struct
-#endif
-    {
-        Emit.Ldarg(nameof(input));
-        return ref ReturnRef<TOut>();
-    }
 
     /// <summary>
     /// Interpret the <see cref="Span{TIn}">Span&lt;TIn&gt;</see> <paramref name="input"/> as a <see cref="Span{TOut}">Span&lt;TOut&gt;</see>
     /// </summary>
     /// <remarks>
-    /// Unless <typeparamref name="TIn"/> and <typeparamref name="TOut"/> have the same size and layout,
+    /// Unless <typeparamref name="I"/> and <typeparamref name="O"/> have the same size and layout,
     /// exceptions can be thrown and possible memory corruption
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<TOut> SpanAs<TIn, TOut>(Span<TIn> input)
+    public static Span<O> SpanAs<I, O>(Span<I> input)
     {
-        return new Span<TOut>(
+        return new Span<O>(
             pointer: RefAsVoidPtr(ref input.GetPinnableReference()),
             length: input.Length);
     }
@@ -577,13 +617,13 @@ public static unsafe class Notsafe
     /// Interpret the <see cref="ReadOnlySpan{TIn}">ReadOnlySpan&lt;TIn&gt;</see> <paramref name="input"/> as a <see cref="ReadOnlySpan{TOut}">ReadOnlySpan&lt;TOut&gt;</see>
     /// </summary>
     /// <remarks>
-    /// Unless <typeparamref name="TIn"/> and <typeparamref name="TOut"/> have the same size and layout,
+    /// Unless <typeparamref name="I"/> and <typeparamref name="O"/> have the same size and layout,
     /// exceptions can be thrown and possible memory corruption
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<TOut> SpanAs<TIn, TOut>(ReadOnlySpan<TIn> input)
+    public static ReadOnlySpan<O> SpanAs<I, O>(ReadOnlySpan<I> input)
     {
-        return new ReadOnlySpan<TOut>(
+        return new ReadOnlySpan<O>(
             pointer: InAsVoidPtr(in input.GetPinnableReference()),
             length: input.Length);
     }

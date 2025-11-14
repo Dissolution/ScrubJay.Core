@@ -149,8 +149,5 @@
     <ItemGroup>
       <Compile Remove="Validation\Throw.IfNull.cs" />
     </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Text\Displaying\" />
-    </ItemGroup>
 
 </Project>

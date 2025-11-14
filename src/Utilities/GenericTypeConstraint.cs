@@ -1,8 +1,7 @@
-﻿using ScrubJay.Text.Rendering;
+﻿#pragma warning disable CA1711
 
-#pragma warning disable CA1034, S2326, CA1711
+using ScrubJay.Text.Rendering;
 
-// ReSharper disable UnusedTypeParameter
 namespace ScrubJay.Utilities;
 
 /// <summary>

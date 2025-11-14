@@ -1,4 +1,6 @@
-﻿namespace ScrubJay.Tests.TextBuilderTests;
+﻿using ScrubJay.Validation;
+
+namespace ScrubJay.Tests.TextBuilderTests;
 
 public class ConstructionTests
 {
