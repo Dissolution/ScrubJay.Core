@@ -1,3 +1,4 @@
+using ScrubJay.Collections.NonGeneric;
 using ScrubJay.Iteration;
 
 namespace ScrubJay.Rendering;
@@ -61,37 +62,26 @@ public partial class Renderer
         builder.Write(name);
     }
 
-    private static void RenderArrayTo(Array array, TextBuilder builder)
-    {
-        Debugger.Break();
-    }
-
-    private static void RenderArrayTo<T>(T[] array, TextBuilder builder)
-    {
-        Debugger.Break();
-    }
 
     private static void RenderReadOnlySpanTo<T>(ReadOnlySpan<T> span, TextBuilder builder)
     {
-        Debugger.Break();
+        builder.Append('[')
+            .Delimit<T>(", ", span, "@")
+            .Write(']');
     }
 
     private static void RenderSpanTo<T>(Span<T> span, TextBuilder builder)
     {
-        Debugger.Break();
+        builder.Append('[')
+            .Delimit<T>(", ", span, "@")
+            .Write(']');
+    }
+
+    private static void RenderArrayTo<T>(T[] array, TextBuilder builder)
+    {
+        builder.Append('[')
+            .Delimit<T>(", ", array, "@")
+            .Write(']');
     }
 }
 
-internal sealed class ArrayRenderer : IValueRenderer<Array>
-{
-    public bool CanRenderType(Type instanceType)
-    {
-        return instanceType.IsArray;
-    }
-
-    public void RenderTo(Array value, TextBuilder builder)
-    {
-        Debugger.Break();
-        throw Ex.NotImplemented();
-    }
-}

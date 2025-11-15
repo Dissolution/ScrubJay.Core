@@ -2,11 +2,11 @@ namespace ScrubJay.Text.Rendering;
 
 [PublicAPI]
 [AttributeUsage(AttributeTargets.Field)]
-public class RenderAsAttribute : Attribute
+public class DisplayAsAttribute : Attribute
 {
     public string Rendered { get;  }
 
-    public RenderAsAttribute(string rendered)
+    public DisplayAsAttribute(string rendered)
     {
         this.Rendered = rendered;
     }

@@ -3,14 +3,13 @@ using System.Reflection;
 using System.Security;
 using InlineIL;
 using static InlineIL.IL;
+// ReSharper disable EntityNameCapturedOnly.Local
 
 namespace ScrubJay.Rendering;
 
 /* Rendering needs to be relatively lightweight
  *
  */
-
-
 
 [PublicAPI]
 public static partial class Renderer
@@ -46,89 +45,149 @@ public static partial class Renderer
 
         Add<Guid>(RenderGuidTo);
         Add<ITuple>(RenderTupleTo);
-        Add<Array>(RenderArrayTo);
-        Add(new ArrayRenderer());
+        Add<Array>(ArrayRenderer.Default.RenderTo);
+        Add<object>(RenderObjectTo);
     }
 
-    private static ValueRenderer<T>? GetValueRenderer<T>()
+    private static ValueRenderer<T>? FindValueRenderer<T>()
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
-        if (_valueRenderers.TryGetValue<T>(out var obj))
-        {
-            if (obj is ValueRenderer<T> vrDelegate)
-                return vrDelegate;
-            if (obj is IValueRenderer<T> vrtImpl)
-                return vrtImpl.RenderTo;
-        }
+        object obj = _valueRenderers.GetOrAdd<T>(CreateValueRenderer<T>);
 
+        // delegate
+        if (obj is ValueRenderer<T> vrDelegate)
+            return vrDelegate;
+
+        // interface
+        if (obj is IValueRenderer<T> vrtImpl)
+            return vrtImpl.RenderTo;
+
+
+        // We don't have an _exact_ type match, so now we need to split the logic
         if (typeof(T).IsRef)
         {
-            //return static (v, t) => HandleRefStruct(v, t);
-            return HandleRefStruct;
+            // ref structs have their own path as they cannot perform many common operations
+            return FindRefStructRenderer<T>();
         }
         else
         {
             //return static (v, t) => NonRsPassthrough(v, t);
-            return NonRsPassthrough;
+            return Shim<T>();
         }
     }
 
+    private static ValueRenderer<T> CreateValueRenderer<T>(Type type)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        if (type.IsArray)
+        {
+            return BindRenderMethod<T>(type, nameof(RenderArrayTo));
+        }
+
+        if (type.HasGenericTypeDefinition(typeof(Span<>)))
+        {
+            return BindRenderMethod<T>(type, nameof(RenderSpanTo));
+        }
+
+        if (type.HasGenericTypeDefinition(typeof(ReadOnlySpan<>)))
+        {
+            return BindRenderMethod<T>(type, nameof(RenderSpanTo));
+        }
+
+        if (type.IsEnum)
+        {
+            var renderMethod = typeof(Renderer).GetMethod(
+                    nameof(RenderEnumTo),
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!
+                .MakeGenericMethod(type);
+            var del = Delegate.CreateDelegate(typeof(ValueRenderer<T>), renderMethod, true)
+                .ThrowIfNull();
+            var valueRenderer = del.ThrowIfNot<ValueRenderer<T>>();
+            return valueRenderer!;
+        }
+
+        Debugger.Break();
+        throw Ex.NotImplemented();
+
+
+    }
+
+    private static ValueRenderer<T> BindRenderMethod<T>(Type type, string methodName)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        var elementType = type.GetElementType() ?? type.GetGenericArguments().Single();
+        var renderArrayMethod = typeof(Renderer).GetMethod(
+                methodName,
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!
+            .MakeGenericMethod(elementType);
+        var del = Delegate.CreateDelegate(typeof(ValueRenderer<T>), renderArrayMethod, true)
+            .ThrowIfNull();
+        var valueRenderer = del.ThrowIfNot<ValueRenderer<T>>();
+        return valueRenderer!;
+    }
+
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void NonRsPassthrough<T>(T value, TextBuilder builder)
+    public static ValueRenderer<T>? Shim<T>()
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
         unsafe
         {
-            Emit.Ldarg(nameof(value));
-            Emit.Ldarg(nameof(builder));
-            Emit.Call(new MethodRef(typeof(Renderer), nameof(Handle)).MakeGenericMethod(typeof(T)));
+            //Emit.Ldarg(nameof(value));
+            //Emit.Ldarg(nameof(builder));
+            //Emit.Call(new MethodRef(typeof(Renderer), nameof(Handle)).MakeGenericMethod(typeof(T)));
+            Emit.Call(new MethodRef(typeof(Renderer), nameof(FindNonRefStructRenderer)).MakeGenericMethod(typeof(T)));
+            return Return<ValueRenderer<T>>();
         }
     }
 
-    internal static void HandleRefStruct<RS>(RS value, TextBuilder builder)
-#if NET9_0_OR_GREATER
-        where RS : allows ref struct
-#endif
-    {
-        Debugger.Break();
-    }
-
-    internal static void Handle<T>(T value, TextBuilder builder)
-    {
-        if (value is Enum e)
-        {
-            string str = EnumInfo.For(e).GetMemberInfo(e)!.ToString();
-            builder.Write(str);
-            return;
-        }
-
-        Debugger.Break();
-    }
-
-    public static void FaceRenderTo<T>(T? value, TextBuilder builder)
+    private static ValueRenderer<T>? FindRefStructRenderer<T>()
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
-        if (value is null)
+        Debugger.Break();
+        throw Ex.NotImplemented();
+    }
+
+    private static ValueRenderer<T>? FindNonRefStructRenderer<T>()
+    {
+        var type = typeof(T);
+        if (type.IsArray)
         {
-            builder.Write("〈null〉");
-            return;
+            var elementType = type.GetElementType()!;
+            var renderArrayMethod = typeof(Renderer).GetMethod(
+                nameof(RenderArrayTo),
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!
+                .MakeGenericMethod(elementType);
+            var del = Delegate.CreateDelegate(typeof(ValueRenderer<T>), renderArrayMethod);
+            var valueRenderer = del as ValueRenderer<T>;
+            return valueRenderer!;
         }
 
-        var valueRenderer = GetValueRenderer<T>();
-        if (valueRenderer is not null)
+        return DefaultNonRefStructRenderTo;
+    }
+
+    private static void DefaultNonRefStructRenderTo<T>(T value, TextBuilder builder)
+    {
+        if (value is Enum e)
         {
-            valueRenderer.Invoke(value, builder);
+            builder.Write(e.Display());
             return;
         }
 
         Debugger.Break();
+        throw Ex.NotImplemented();
     }
+
 
     public static void Add<T>(ValueRenderer<T> valueRenderer)
 #if NET9_0_OR_GREATER
@@ -163,6 +222,21 @@ public static partial class Renderer
         where T : allows ref struct
 #endif
     {
-        FaceRenderTo<T>(value, builder);
+        if (value is null)
+        {
+            builder.Write("〈null〉");
+            return;
+        }
+
+        var valueRenderer = FindValueRenderer<T>();
+        if (valueRenderer is not null)
+        {
+            valueRenderer.Invoke(value, builder);
+        }
+        else
+        {
+            // just call ToString
+            builder.Write(TextHelper.Stringify(value));
+        }
     }
 }
