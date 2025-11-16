@@ -1,10 +1,37 @@
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace ScrubJay.Rendering;
 
 partial class Renderer
 {
-    private static void RenderObjectTo(object obj, TextBuilder builder)
+    private static readonly ConcurrentTypeMap<Delegate> _renderObjectMap = [];
+
+    private static ValueRenderer<object> CreateObjectRenderer(Type type)
+    {
+        var renderToMethod = typeof(Renderer)
+            .GetMethod(nameof(RenderTo), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+            .ThrowIfNull("Could not find Renderer.RenderTo")
+            .MakeGenericMethod(type);
+
+        var dm = new DynamicMethod(
+            name: $"renderBoxed{type}",
+            attributes: MethodAttributes.Public | MethodAttributes.Static,
+            callingConvention: CallingConventions.Standard,
+            returnType: typeof(void),
+            parameterTypes: [typeof(object), typeof(TextBuilder)],
+            m: typeof(Renderer).Module,
+            skipVisibility: true);
+        var gen = dm.GetILGenerator();
+        gen.Emit(OpCodes.Ldarg_0);
+        gen.Emit(OpCodes.Unbox_Any, type);
+        gen.Emit(OpCodes.Ldarg_1);
+        gen.Emit(OpCodes.Call, renderToMethod);
+        gen.Emit(OpCodes.Ret);
+        return (ValueRenderer<object>)dm.CreateDelegate(typeof(ValueRenderer<object>));
+    }
+
+    internal static void RenderObjectTo(object obj, TextBuilder builder)
     {
         Type objType = obj.GetType();
         if (objType == typeof(object))
@@ -14,14 +41,8 @@ partial class Renderer
             return;
         }
 
-        var result = typeof(Renderer).GetMethod(nameof(FindValueRenderer),
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
-            .ThrowIfNull()
-            .MakeGenericMethod(objType)
-            .Invoke(null, null)
-            .ThrowIfNot<Delegate>()
-            .DynamicInvoke(obj, builder);
-
-        Debugger.Break();
+        var del = _renderObjectMap.GetOrAdd(objType, CreateObjectRenderer);
+        var objectRenderer = del.ThrowIfNot<ValueRenderer<object>>();
+        objectRenderer.Invoke(obj, builder);
     }
 }

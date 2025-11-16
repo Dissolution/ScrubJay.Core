@@ -43,23 +43,7 @@ public partial class Renderer
     private static void RenderEnumTo<E>(E @enum, TextBuilder builder)
         where E : struct, Enum
     {
-        // todo:
-        // EnumInfo.For<E>().GetMemberInfo(@enum).RenderTo(builder);
-
-#if NET8_0_OR_GREATER
-        if (Enum.TryFormat(@enum, builder.Available, out int charsWritten))
-        {
-            builder.Length += charsWritten;
-            return;
-        }
-#endif
-
-//#if NETSTANDARD
-        string name = Enum.GetName(typeof(E), @enum) ?? @enum.ToString()!;
-// #else
-//         string name = Enum.GetName<E>(@enum) ?? @enum.ToString();
-// #endif
-        builder.Write(name);
+        EnumMemberInfo.For<E>(@enum)!.RenderTo(builder);
     }
 
 
@@ -77,11 +61,6 @@ public partial class Renderer
             .Write(']');
     }
 
-    private static void RenderArrayTo<T>(T[] array, TextBuilder builder)
-    {
-        builder.Append('[')
-            .Delimit<T>(", ", array, "@")
-            .Write(']');
-    }
+
 }
 

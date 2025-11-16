@@ -17,6 +17,7 @@ using InlineIL;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ScrubJay.Collections.NonGeneric;
 using ScrubJay.Collections.Pooling;
 using ScrubJay.Debugging;
 using ScrubJay.Dumping;
@@ -27,6 +28,7 @@ using ScrubJay.Scratch;
 using ScrubJay.Text.Rendering;
 using static InlineIL.IL;
 using Renderer = ScrubJay.Rendering.Renderer;
+using TypeRenderer = ScrubJay.Rendering.TypeRenderer;
 
 Console.OutputEncoding = Encoding.UTF8;
 var hostBuilder = Host.CreateApplicationBuilder(args);
@@ -41,17 +43,68 @@ watcher.UnhandledException += (sender, args) =>
 
 #endregion End Setup
 
+Span<int> test = [1, 2, 3];
+var after = test[3..];
+Debugger.Break();
+
+
+
 using var builder = new TextBuilder();
+
+var allTypes =
+    AppDomain.CurrentDomain
+    .GetAssemblies()
+    .SelectMany(static ass => ass.GetTypes());
+    //Assembly.GetEntryAssembly()!
+    //    .GetTypes();
+var typeRenderer = new TypeRenderer();
+foreach (var type in allTypes)
+{
+    builder.Clear();
+    typeRenderer.RenderTo(type, builder);
+    string typeString = type.ToString();
+    string display = builder.ToString();
+
+    using var tx = new TextBuilder();
+    tx.Write(typeString);
+    tx.Written.Replace('+', '.');
+    tx.Written.Replace('[', '<');
+    tx.Written.Replace(']', '>');
+
+
+
+    var txStr = tx.ToString();
+    if (txStr != display)
+    {
+        Debugger.Break();
+    }
+}
+
+Debugger.Break();
 
 Array arr = Array.CreateInstance(typeof(string), 3);
 arr.SetValue("Zero", 0);
 arr.SetValue("One", 1);
 arr.SetValue("Two", 2);
 
+var mda = new int[2, 2, 2];
+Array.Clear(mda);
+foreach (var i in ArrayIndicesEnumerator.For(mda))
+{
+    mda.SetValue(Random.Shared.Next(), i);
+}
+
+builder.Write("3d Array:  ");
+Renderer.RenderTo(mda, builder);
+builder.NewLine();
+
+object obj = Guid.NewGuid();
 
 char[] array = ['T', 'R', 'J'];
 
-Renderer.RenderTo(arr, builder);
+Renderer.RenderTo(obj, builder);
+builder.Write("  | ");
+Renderer.RenderArrayTo(arr, builder);
 builder.Write("  | ");
 Renderer.RenderTo(array, builder);
 builder.Write("  | ");
@@ -60,8 +113,8 @@ builder.Write(" | ");
 Renderer.RenderTo(BindingFlags.Public, builder);
 builder.Write("  | ");
 
-string str = builder.ToString();
-Console.WriteLine(str);
+string output = builder.ToString();
+Console.WriteLine(output);
 Debugger.Break();
 
 
@@ -131,6 +184,23 @@ namespace ScrubJay.Scratch
 
         public class NestedGenericClass<U>
         {
+            public class FurtherNestedTuple<W, X, Y> : ITuple
+            {
+                public W Dubya { get; }
+                public X Exx { get; }
+                public Y Why { get; }
+
+                object? ITuple.this[int index]
+                    => index switch
+                    {
+                        0 => Dubya,
+                        1 => Exx,
+                        2 => Why,
+                        _ => throw Ex.Argument(index),
+                    };
+
+                int ITuple.Length => 3;
+            }
         }
     }
 

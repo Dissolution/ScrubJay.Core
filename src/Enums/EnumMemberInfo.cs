@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 #endif
 using System.Reflection;
+using ScrubJay.Rendering;
 using ScrubJay.Text.Rendering;
 
 namespace ScrubJay.Enums;
@@ -87,9 +88,9 @@ public abstract class EnumMemberInfo :
             AddAlias(descriptionAttr.Description, _aliases, ref _display);
         }
 
-        if (Attributes.TryGet<DisplayAsAttribute>(out var displayAsAttr))
+        if (Attributes.TryGet<RenderAsAttribute>(out var displayAsAttr))
         {
-            AddAlias(displayAsAttr.Rendered, _aliases, ref _display);
+            AddAlias(displayAsAttr.Display, _aliases, ref _display);
         }
 
         // shrink aliases to save memory

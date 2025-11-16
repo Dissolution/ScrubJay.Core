@@ -41,12 +41,12 @@ public struct ArrayIterator : IIterator<object?>
 }
 
 [PublicAPI]
-public struct ArrayIterator<T> : IIterator<T>
+public struct Generic2DArrayIterator<T> : IIterator<T>
 {
     private readonly T[] _array;
     private int _index;
 
-    public ArrayIterator(T[]? array)
+    public Generic2DArrayIterator(T[]? array)
     {
         _array = array ?? [];
     }
@@ -135,7 +135,7 @@ public static class IteratorExtensions
 
     extension<T>(T[]? array)
     {
-        public Iterable<ArrayIterator<T>, T> AsIterable()
+        public Iterable<Generic2DArrayIterator<T>, T> AsIterable()
         {
             return new(new(array));
         }
