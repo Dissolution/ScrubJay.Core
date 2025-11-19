@@ -1,5 +1,5 @@
 using System.Reflection;
-using ScrubJay.Text.Rendering;
+
 
 namespace ScrubJay.Dumping;
 
@@ -12,7 +12,7 @@ public partial class Dumper
         using var inst = new DumpInst();
         if (!string.IsNullOrEmpty(valueName))
         {
-            inst.DumpKey(valueName)
+            inst.Append(valueName)
                 .Append(": ");
         }
 
@@ -36,167 +36,28 @@ internal sealed class DumpInst : IDisposable
 {
     private const string INDENT = "  "; // 2 spaces
 
-    private static bool IsSimple(Type type)
+    private static bool UseRender(Type type)
     {
         return type.IsPrimitive ||
+               type == typeof(string) ||
+               type == typeof(nint) ||
+               type == typeof(nuint) ||
                type == typeof(decimal) ||
                type == typeof(Guid) ||
                type == typeof(TimeSpan) ||
                type == typeof(DateTime) ||
-               type == typeof(DateTimeOffset);
+               type == typeof(DateTimeOffset) ||
+               type.Implements<ITuple>() ||
+               type.IsEnum ||
+               type == typeof(Type);
     }
 
     private readonly TextBuilder _builder = new();
     private readonly HashSet<object> _visited = [];
 
+    internal TextBuilder Append(string? str) => _builder.Append(str);
 
-    public DumpInst Append(scoped text text)
-    {
-        _builder.Write(text);
-        return this;
-    }
-
-    public DumpInst DumpString(string str, bool escape)
-    {
-        if (!escape)
-        {
-            _builder.Write(str);
-        }
-        else
-        {
-            _builder.Append('"').Append(str).Write('"');
-        }
-
-        return this;
-    }
-
-    public DumpInst DumpKey(object? key)
-    {
-        if (key is string str)
-        {
-            return DumpString(str, false);
-        }
-        else if (key is null)
-        {
-            return Append("`null`");
-        }
-        else
-        {
-            return DumpString(key.ToString() ?? "`null", true);
-        }
-    }
-
-    public DumpInst DumpEnum(Enum e)
-    {
-        EnumInfo.RenderTo(_builder, e);
-        return this;
-    }
-
-    public DumpInst DumpTuple<T>(T tuple)
-        where T : ITuple
-    {
-        _builder.Write('[');
-        if (tuple.Length > 0)
-        {
-            DumpObject(tuple[0]);
-            for (var i = 1; i < tuple.Length; i++)
-            {
-                _builder.Write(", ");
-                DumpObject(tuple[i]);
-            }
-        }
-
-        _builder.Append(']');
-        return this;
-    }
-
-    public DumpInst DumpSimple(object obj)
-    {
-        if (obj is bool boolean)
-        {
-            _builder.If(boolean, "true", "false");
-        }
-        else if (obj is byte u8)
-        {
-            _builder.Format(u8);
-        }
-        else if (obj is sbyte i8)
-        {
-            _builder.Format(i8);
-        }
-        else if (obj is short i16)
-        {
-            _builder.Format(i16);
-        }
-        else if (obj is ushort u16)
-        {
-            _builder.Format(u16);
-        }
-        else if (obj is int i32)
-        {
-            _builder.Format(i32);
-        }
-        else if (obj is uint u32)
-        {
-            _builder.Format(u32).Write('U');
-        }
-        else if (obj is long i64)
-        {
-            _builder.Format(i64).Write('L');
-        }
-        else if (obj is ulong u64)
-        {
-            _builder.Format(u64).Write("UL");
-        }
-        else if (obj is IntPtr intptr)
-        {
-            _builder.Format(intptr).Write('*');
-        }
-        else if (obj is UIntPtr uintptr)
-        {
-            _builder.Format(uintptr).Write('*');
-        }
-        else if (obj is char ch)
-        {
-            _builder.Append('\'').Append(ch).Write('\'');
-        }
-        else if (obj is float f32)
-        {
-            _builder.Format(f32, "G").Write('f');
-        }
-        else if (obj is double f64)
-        {
-            _builder.Format(f64, "G").Write('d');
-        }
-        else if (obj is decimal dec)
-        {
-            _builder.Format(dec, "G").Write('m');
-        }
-        else if (obj is DateTime dt)
-        {
-            _builder.Append('"').Format(dt, "yyyy-MM-dd HH:mm:ss").Write('"');
-        }
-        else if (obj is DateTimeOffset dto)
-        {
-            _builder.Append('"').Format(dto, "yyyy-MM-dd HH:mm:ss").Write('"');
-        }
-        else if (obj is TimeSpan ts)
-        {
-            _builder.Append('"').Format(ts).Write('"');
-        }
-        else if (obj is Guid guid)
-        {
-            _builder.Render(guid);
-        }
-        else
-        {
-            throw Ex.Unreachable();
-        }
-
-        return this;
-    }
-
-    public DumpInst DumpDictionary(IDictionary dict)
+    private DumpInst DumpDictionary(IDictionary dict)
     {
         _builder.Append($"{dict:@T}[{dict.Count}]");
 
@@ -209,7 +70,7 @@ internal sealed class DumpInst : IDisposable
             .Indent(INDENT)
             .Delimit(TBA.NewLine, dict.OfType<DictionaryEntry>(), (tb, entry) =>
             {
-                DumpKey(entry.Key);
+                DumpObject(entry.Key);
                 tb.Write(": ");
                 DumpObject(entry.Value);
             })
@@ -253,27 +114,9 @@ internal sealed class DumpInst : IDisposable
 
         var type = obj.GetType();
 
-        if (IsSimple(type))
+        if (UseRender(type))
         {
-            DumpSimple(obj);
-            return;
-        }
-
-        if (obj is string str)
-        {
-            DumpString(str, true);
-            return;
-        }
-
-        if (obj is Enum @enum)
-        {
-            DumpEnum(@enum);
-            return;
-        }
-
-        if (obj is ITuple tuple)
-        {
-            DumpTuple(tuple);
+            _builder.Render(obj);
             return;
         }
 
@@ -333,9 +176,9 @@ internal sealed class DumpInst : IDisposable
                     var res = Result.Try(() => prop.GetValue(obj));
                     if (res.IsOk(out var value))
                     {
-                        tb.NewLine();
-                        DumpKey(prop.Name);
-                        tb.Write(": ");
+                        tb.NewLine()
+                            .Append(prop.Name)
+                            .Write(": ");
                         DumpObject(value);
                     }
                 })
@@ -358,9 +201,9 @@ internal sealed class DumpInst : IDisposable
                         var res = Result.Try(() => field.GetValue(obj));
                         if (res.IsOk(out var value))
                         {
-                            tb.NewLine();
-                            DumpKey(field.Name);
-                            tb.Write(": ");
+                            tb.NewLine()
+                                .Append(field.Name)
+                                .Write(": ");
                             DumpObject(value);
                         }
                     })
@@ -396,8 +239,8 @@ internal sealed class DumpInst : IDisposable
                 var owner = methodInfo.DeclaringType ?? methodInfo.ReflectedType ?? methodInfo.Module.GetType();
                 _builder.Render(owner)
                     .Append('.')
-                    .AppendName(methodInfo)
-                    .AppendGenericTypes(methodInfo)
+                    //.AppendName(methodInfo)
+                    //.AppendGenericTypes(methodInfo)
                     .Append('(')
                     .Delimit(", ", methodInfo.GetParameters(), (tb, param) => DumpParameter(param))
                     .Append(')');

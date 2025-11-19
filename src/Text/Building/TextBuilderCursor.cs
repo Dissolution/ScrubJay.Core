@@ -3,23 +3,28 @@ namespace ScrubJay.Text;
 // sits between, not on
 
 
-public ref struct TextCursor
+public sealed class TextBuilderCursor
 {
-    private readonly text _text;
+    private readonly TextBuilder _builder;
     private int _position; // index of the 'next' item
 
     public text PreviousText
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _text[.._position];
+        get => _builder.Written[.._position];
     }
 
     public text NextText
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _text[_position..];
+        get => _builder.Written[_position..];
     }
 
+    public TextBuilderCursor(TextBuilder builder)
+    {
+        _builder = builder;
+        _position = 0;
+    }
 
     public bool MovePrevious()
     {
@@ -33,9 +38,16 @@ public ref struct TextCursor
     public bool MoveNext()
     {
         int next = _position + 1;
-        if (next > _text.Length)
+        if (next > _builder.Length)
             return false;
         _position = next;
+        return true;
+    }
+
+    public bool RemoveNext(int count)
+    {
+
+        _builder.TryGetAndRemoveAt(new Range(_position, _position + count));
         return true;
     }
 }

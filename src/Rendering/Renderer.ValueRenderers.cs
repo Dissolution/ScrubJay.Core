@@ -5,7 +5,7 @@ namespace ScrubJay.Rendering;
 
 public partial class Renderer
 {
-    private static void RenderGuidTo(Guid guid, TextBuilder builder)
+    internal static void RenderGuidTo(Guid guid, TextBuilder builder)
     {
         var buffer = builder.Allocate(36);
 #if NETFRAMEWORK || NETSTANDARD2_0
@@ -31,36 +31,72 @@ public partial class Renderer
         });
     }
 
-    private static void RenderTupleTo<T>(T tuple, TextBuilder builder)
+    internal static void RenderTupleTo<T>(T tuple, TextBuilder builder)
         where T : ITuple
     {
         builder
             .Append('(')
-            .Delimit(", ", tuple.AsIterable())
+            .Delimit(", ", tuple.AsIterable(), "@")
             .Append(')');
     }
 
-    private static void RenderEnumTo<E>(E @enum, TextBuilder builder)
+    internal static void RenderEnumTo<E>(E @enum, TextBuilder builder)
         where E : struct, Enum
     {
         EnumMemberInfo.For<E>(@enum)!.RenderTo(builder);
     }
 
 
-    private static void RenderReadOnlySpanTo<T>(ReadOnlySpan<T> span, TextBuilder builder)
+    internal static void RenderReadOnlySpanTo<T>(ReadOnlySpan<T> span, TextBuilder builder)
     {
         builder.Append('[')
             .Delimit<T>(", ", span, "@")
             .Write(']');
     }
 
-    private static void RenderSpanTo<T>(Span<T> span, TextBuilder builder)
+    internal static void RenderSpanTo<T>(Span<T> span, TextBuilder builder)
     {
         builder.Append('[')
             .Delimit<T>(", ", span, "@")
             .Write(']');
     }
 
+    internal static void RenderEnumerableTo<T>(IEnumerable<T> enumerable, TextBuilder builder)
+    {
+        if (enumerable is IList<T> list)
+        {
+            builder
+                .Append('[')
+                .Delimit(", ", list, "@")
+                .Append(']');
+        }
+        else if (enumerable is ICollection<T> collection)
+        {
+            builder
+                .Append('(')
+                .Delimit(", ", collection, "@")
+                .Append(')');
+        }
+        else
+        {
+            builder
+                .Append('{')
+                .Delimit(", ", enumerable, "@")
+                .Append('}');
+        }
+    }
 
+    internal static void RenderDictionaryTo<K, V>(IDictionary<K, V> dictionary, TextBuilder builder)
+    {
+        builder.Append('{')
+            .Delimit(", ", dictionary,
+                static (tb, pair) => tb.Append($"({pair.Key:@}: {pair.Value:@})"))
+            .Append('}');
+    }
+
+    internal static void RenderRenderableTo<R>(TextBuilder builder, R renderable)
+        where R : IRenderable
+    {
+        renderable.RenderTo(builder);
+    }
 }
-

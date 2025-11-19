@@ -370,6 +370,25 @@ partial class TextHelper
                 ref MemoryMarshal.GetReference<char>(destination),
                 count);
         }
+
+
+        public static void SelfCopy(Span<char> chars, Range source, Range destination)
+        {
+            int length = chars.Length;
+            (int sourceOffset, int sourceLen) = source.UnsafeGetOffsetAndLength(length);
+            Debug.Assert(sourceOffset >= 0);
+            Debug.Assert(sourceLen >= 0);
+            Debug.Assert(sourceLen <= length);
+            (int destinationOffset, int destinationLength) = destination.UnsafeGetOffsetAndLength(length);
+            Debug.Assert(destinationOffset >= 0);
+            Debug.Assert(destinationLength >= 0);
+            Debug.Assert(destinationLength <= length);
+            Debug.Assert(destinationLength >= sourceLen);
+            ref char src = ref chars[sourceOffset];
+            ref char dst = ref chars[destinationOffset];
+            CopyCharBlock(in src, ref dst, sourceLen);
+        }
+
 #endif
 
 #endregion

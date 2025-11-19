@@ -5,7 +5,7 @@ namespace ScrubJay.Rendering;
 
 partial class Renderer
 {
-    private static readonly ConcurrentTypeMap<Delegate> _renderObjectMap = [];
+    private static readonly ConcurrentTypeMap<ValueRenderer<object>> _renderObjectMap = [];
 
     private static ValueRenderer<object> CreateObjectRenderer(Type type)
     {
@@ -28,10 +28,10 @@ partial class Renderer
         gen.Emit(OpCodes.Ldarg_1);
         gen.Emit(OpCodes.Call, renderToMethod);
         gen.Emit(OpCodes.Ret);
-        return (ValueRenderer<object>)dm.CreateDelegate(typeof(ValueRenderer<object>));
+        return dm.CreateDelegate<ValueRenderer<object>>();
     }
 
-    internal static void RenderObjectTo(object obj, TextBuilder builder)
+    private static void RenderObjectTo(object obj, TextBuilder builder)
     {
         Type objType = obj.GetType();
         if (objType == typeof(object))
@@ -41,8 +41,7 @@ partial class Renderer
             return;
         }
 
-        var del = _renderObjectMap.GetOrAdd(objType, CreateObjectRenderer);
-        var objectRenderer = del.ThrowIfNot<ValueRenderer<object>>();
+        var objectRenderer = _renderObjectMap.GetOrAdd(objType, CreateObjectRenderer);
         objectRenderer.Invoke(obj, builder);
     }
 }

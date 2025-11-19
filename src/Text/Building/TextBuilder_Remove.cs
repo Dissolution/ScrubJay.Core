@@ -2,7 +2,7 @@
 
 public partial class TextBuilder
 {
-    public Result<char> RemoveAt(Index index)
+    public Result<char> TryGetAndRemoveAt(Index index)
     {
         if (!Validate.Index(index, _position).IsOk(out var offset, out var ex))
             return ex;
@@ -14,7 +14,7 @@ public partial class TextBuilder
         return Ok(removed);
     }
 
-    public Result<char[]> RemoveAt(Range range)
+    public Result<char[]> TryGetAndRemoveAt(Range range)
     {
         if (!Validate.Range(range, _position).IsOk(out var ok, out var ex))
             return ex;
@@ -24,11 +24,44 @@ public partial class TextBuilder
         char[] removed = _chars.AsSpan(offset, len).ToArray();
         var right = _chars.AsSpan(offset + len);
         TextHelper.Notsafe.CopyBlock(right, _chars.AsSpan(offset), right.Length);
+
         _position -= len;
         return Ok(removed);
     }
 
-    public Result<int> RemoveWhere(Func<char, bool>? charPredicate)
+    public bool TryRemoveAt(int index)
+    {
+        if (index < 0 || index >= _position)
+            return false;
+        TextHelper.Notsafe.SelfCopy(Written, (index + 1).., index..);
+        _position--;
+        return true;
+    }
+
+    public bool TryRemoveAt(Index index)
+    {
+        int offset = index.GetOffset(_position);
+        if (offset < 0 || offset >= _position)
+            return false;
+        TextHelper.Notsafe.SelfCopy(Written, (offset + 1).., offset..);
+        _position--;
+        return true;
+    }
+
+    public bool TryRemoveAt(Range range)
+    {
+        (int offset, int length) = range.UnsafeGetOffsetAndLength(_position);
+        if (offset < 0 || length < 0 || (offset + length) > _position)
+            return false;
+
+        TextHelper.Notsafe.SelfCopy(Written, (offset + length).., offset..);
+
+        _position -= length;
+        return true;
+    }
+
+
+    public Result<int> TryRemoveWhere(Func<char, bool>? charPredicate)
     {
         if (charPredicate is null)
             return new ArgumentNullException(nameof(charPredicate));

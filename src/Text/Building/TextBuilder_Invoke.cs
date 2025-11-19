@@ -27,6 +27,19 @@ partial class TextBuilder
         return this;
     }
 
+    public TextBuilder Invoke<S>(S state, Action<S, TextBuilder>? buildText)
+#if NET9_0_OR_GREATER
+        where S : allows ref struct
+#endif
+    {
+        if (buildText is not null)
+        {
+            buildText(state, this);
+        }
+
+        return this;
+    }
+
     public TextBuilder Invoke<R>(Func<TextBuilder, R>? buildText)
 #if NET9_0_OR_GREATER
         where R : allows ref struct

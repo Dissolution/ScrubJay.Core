@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
-using ScrubJay.Text.Rendering;
+
 using BF = System.Reflection.BindingFlags;
 #endif
 

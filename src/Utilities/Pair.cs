@@ -79,7 +79,8 @@ public readonly struct Pair<K, V> :
 #if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
-    IFormattable
+    IFormattable,
+    IRenderable
 {
     // Interop with KeyValuePair, Tuple, and ValueTuple
 
@@ -179,4 +180,9 @@ public readonly struct Pair<K, V> :
     }
 
     public override string ToString() => $"({Key}, {Value})";
+
+    public void RenderTo(TextBuilder builder)
+    {
+        builder.Append($"({Key:@}, {Value:@})");
+    }
 }

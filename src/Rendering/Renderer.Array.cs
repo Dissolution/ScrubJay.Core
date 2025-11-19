@@ -72,7 +72,7 @@ partial class Renderer
                 builder.Write('[');
                 indices[dim] = start;
                 object? obj = array.GetValue(indices);
-                RenderTo<object>(obj, builder);
+                obj?.RenderTo(builder);
                 for (var i = start + 1; i <= end; i++)
                 {
                     indices[dim] = i;
@@ -85,7 +85,7 @@ partial class Renderer
         }
     }
 
-    internal static void RenderGenericArrayTo<T>(T[] array, TextBuilder builder)
+    internal static void Render2DArrayTo<T>(T[] array, TextBuilder builder)
     {
         builder.Append('[')
             .Delimit<T>(", ", array, "@")

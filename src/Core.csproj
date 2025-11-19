@@ -107,6 +107,7 @@
         <Using Include="ScrubJay.Extensions"/>
         <Using Include="ScrubJay.Functional"/>
         <Using Include="ScrubJay.Memory"/>
+        <Using Include="ScrubJay.Rendering"/>
         <Using Include="ScrubJay.Text"/>
         <Using Include="ScrubJay.Utilities"/>
         <Using Include="ScrubJay.Validation"/>
@@ -143,9 +144,6 @@
     </ItemGroup>
     <ItemGroup>
       <Compile Remove="Validation\Throw.IfNull.cs" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Reflection\" />
     </ItemGroup>
 
 </Project>

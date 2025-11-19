@@ -25,7 +25,7 @@ using ScrubJay.Maths;
 using ScrubJay.Maths.Ternary;
 using ScrubJay.Rendering;
 using ScrubJay.Scratch;
-using ScrubJay.Text.Rendering;
+
 using static InlineIL.IL;
 using Renderer = ScrubJay.Rendering.Renderer;
 using TypeRenderer = ScrubJay.Rendering.TypeRenderer;
@@ -43,44 +43,60 @@ watcher.UnhandledException += (sender, args) =>
 
 #endregion End Setup
 
-Span<int> test = [1, 2, 3];
-var after = test[3..];
-Debugger.Break();
-
-
 
 using var builder = new TextBuilder();
 
-var allTypes =
+var allMethods =
     AppDomain.CurrentDomain
-    .GetAssemblies()
-    .SelectMany(static ass => ass.GetTypes());
-    //Assembly.GetEntryAssembly()!
-    //    .GetTypes();
-var typeRenderer = new TypeRenderer();
-foreach (var type in allTypes)
+        .GetAssemblies()
+        .SelectMany(static ass => ass.GetTypes())
+        .SelectMany(static t =>
+            t.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
+        .ToHashSet();
+
+var renderer = new MethodRenderer();
+foreach (var method in allMethods)
 {
     builder.Clear();
-    typeRenderer.RenderTo(type, builder);
-    string typeString = type.ToString();
+    renderer.RenderTo(method, builder);
+    string? typeString = method.ToString();
     string display = builder.ToString();
 
-    using var tx = new TextBuilder();
-    tx.Write(typeString);
-    tx.Written.Replace('+', '.');
-    tx.Written.Replace('[', '<');
-    tx.Written.Replace(']', '>');
-
-
-
-    var txStr = tx.ToString();
-    if (txStr != display)
-    {
-        Debugger.Break();
-    }
+    Console.WriteLine(display);
+    // using var tx = new TextBuilder();
+    // tx.Write(typeString);
+    // tx.Written.Replace('+', '.');
+    // tx.Written.Replace('[', '<');
+    // tx.Written.Replace(']', '>');
+    //
+    // var txStr = tx.ToString();
+    // if (txStr != display)
+    // {
+    //     Debugger.Break();
+    // }
 }
 
 Debugger.Break();
+
+Pair<int, string> pair = new(147, "TRJ");
+builder.Write("Pair<int, string> (IRenderable):  ");
+Renderer.RenderTo(pair, builder);
+builder.NewLine();
+Debugger.Break();
+
+
+
+Dictionary<int, string> dict = new()
+{
+    { 4, "Four" },
+    { 5, "Five" },
+};
+builder.Write("Dictionary<int,string>:  ");
+Renderer.RenderTo(dict, builder);
+builder.NewLine();
+Debugger.Break();
+
+
 
 Array arr = Array.CreateInstance(typeof(string), 3);
 arr.SetValue("Zero", 0);
@@ -98,12 +114,15 @@ builder.Write("3d Array:  ");
 Renderer.RenderTo(mda, builder);
 builder.NewLine();
 
+
+builder.Write("Object:  ");
 object obj = Guid.NewGuid();
+Renderer.RenderTo(obj, builder);
+builder.NewLine();
 
 char[] array = ['T', 'R', 'J'];
 
-Renderer.RenderTo(obj, builder);
-builder.Write("  | ");
+
 Renderer.RenderArrayTo(arr, builder);
 builder.Write("  | ");
 Renderer.RenderTo(array, builder);
