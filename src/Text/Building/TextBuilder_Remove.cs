@@ -33,7 +33,7 @@ public partial class TextBuilder
     {
         if (index < 0 || index >= _position)
             return false;
-        TextHelper.Notsafe.SelfCopy(Written, (index + 1).., index..);
+        Sequence.SelfCopy(Written, (index + 1).., index..);
         _position--;
         return true;
     }
@@ -43,7 +43,7 @@ public partial class TextBuilder
         int offset = index.GetOffset(_position);
         if (offset < 0 || offset >= _position)
             return false;
-        TextHelper.Notsafe.SelfCopy(Written, (offset + 1).., offset..);
+        Sequence.SelfCopy(Written, (offset + 1).., offset..);
         _position--;
         return true;
     }
@@ -54,7 +54,7 @@ public partial class TextBuilder
         if (offset < 0 || length < 0 || (offset + length) > _position)
             return false;
 
-        TextHelper.Notsafe.SelfCopy(Written, (offset + length).., offset..);
+        Sequence.SelfCopy(Written, (offset + length).., offset..);
 
         _position -= length;
         return true;

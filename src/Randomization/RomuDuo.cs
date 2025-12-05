@@ -10,10 +10,17 @@ namespace ScrubJay.Randomization;
 /// State size          = 128 bits<br/>
 /// </summary>
 [PublicAPI]
-public sealed class RomuDuo : RomuPrng
+public sealed class RomuDuo : RomuPrng, ICloneable<RomuDuo>
 {
     private ulong _xState;
     private ulong _yState;
+
+    private RomuDuo(ulong xState, ulong yState, RandSeed seed)
+        : base(seed)
+    {
+        _xState = xState;
+        _yState = yState;
+    }
 
     public RomuDuo(RandSeed seed) : base(seed)
     {
@@ -38,5 +45,10 @@ public sealed class RomuDuo : RomuPrng
         _xState = 15241094284759029579UL * _yState;
         _yState = MathHelper.RotateLeft(_yState, 36) + MathHelper.RotateLeft(_yState, 15) - xp;
         return xp;
+    }
+
+    public RomuDuo Clone()
+    {
+        return new RomuDuo(_xState, _yState, Seed);
     }
 }

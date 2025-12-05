@@ -16,7 +16,7 @@ public abstract class RandSeed
     public static PhraseSeed Known(string phrase) => new PhraseSeed(phrase);
 
     /// <summary>
-    /// Whether this Seed is stable or deterministic
+    /// Whether this Seed is stable (deterministic)
     /// </summary>
     public abstract bool IsStable { get; }
 

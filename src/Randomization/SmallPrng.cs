@@ -11,12 +11,20 @@ namespace ScrubJay.Randomization;
 /// </remarks>
 /// <seealso href="https://burtleburtle.net/bob/rand/smallprng.html"/>
 [PublicAPI]
-public sealed class SmallPrng : PrngBase
+public sealed class SmallPrng : PrngBase, ICloneable<SmallPrng>
 {
     private ulong _stateA;
     private ulong _stateB;
     private ulong _stateC;
     private ulong _stateD;
+
+    public SmallPrng(ulong stateA, ulong stateB, ulong stateC, ulong stateD, RandSeed seed) : base(seed)
+    {
+        _stateA = stateA;
+        _stateB = stateB;
+        _stateC = stateC;
+        _stateD = stateD;
+    }
 
     /// <summary>
     /// Creates a new <see cref="SmallPrng"/> with the specified <seealso cref="RandSeed"/>
@@ -75,5 +83,11 @@ public sealed class SmallPrng : PrngBase
         _stateC = _stateD + e;
         _stateD = e + _stateA;
         return _stateD;
+    }
+
+
+    public SmallPrng Clone()
+    {
+        return new SmallPrng(_stateA, _stateB, _stateC, _stateD, Seed);
     }
 }
