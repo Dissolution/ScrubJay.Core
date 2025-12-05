@@ -15,7 +15,7 @@ public static class DelegateExtensions
         public static D CreateDelegate<D>(MethodInfo method)
             where D : Delegate
         {
-            return Delegate.CreateDelegate(typeof(D), method).ThrowIfNot<D>();
+            return Delegate.CreateDelegate(typeof(D), method, true).ThrowIfNot<D>();
         }
     }
 

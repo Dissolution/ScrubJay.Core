@@ -14,7 +14,7 @@ public partial class TextBuilder
         if (len > 0)
         {
             var slice = AllocateAt(index, len);
-            Notsafe.Text.CopyBlock(text, slice, len);
+            TextHelper.Notsafe.CopyBlock(text, slice, len);
         }
 
         return this;
@@ -28,7 +28,7 @@ public partial class TextBuilder
             if (len > 0)
             {
                 var slice = AllocateAt(index, len);
-                Notsafe.Text.CopyBlock(str, slice, len);
+                TextHelper.Notsafe.CopyBlock(str, slice, len);
             }
         }
 
@@ -51,7 +51,7 @@ public partial class TextBuilder
             var buffer = AllocateAt(offset, len);
             // written has been offset
             written = _chars.AsSpan(pos + len, len);
-            Notsafe.Text.CopyBlock(written, buffer, len);
+            TextHelper.Notsafe.CopyBlock(written, buffer, len);
             // trim off the end
             _position = pos + len;
         }
@@ -75,7 +75,7 @@ public partial class TextBuilder
             var buffer = AllocateAt(offset, len);
             // written has been offset
             written = _chars.AsSpan(pos + len, len);
-            Notsafe.Text.CopyBlock(written, buffer, len);
+            TextHelper.Notsafe.CopyBlock(written, buffer, len);
             // trim off the end
             _position = pos + len;
         }

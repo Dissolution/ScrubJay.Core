@@ -1,3 +1,5 @@
+using ScrubJay.Iteration;
+
 namespace ScrubJay.Text;
 
 partial class TextBuilder
@@ -140,40 +142,42 @@ partial class TextBuilder
 
 #endregion Values: IEnumerable<T>
 
-#region Values: Iterable<T>
+#region Values: Iterable
 
-    public TextBuilder Delimit<T>(char delimiter, Iterable<T>? values)
+    public TextBuilder Delimit<R, V>(char delimiter, Iterable<R, V> iterable)
+        where R : struct, IIterator<V>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        T? value;
-
-        if (values is not null)
+        V? value;
+        var iterator = iterable.Iterator;
+        if (iterator.TryMoveNext(out value))
         {
-            if (values().IsSome(out value))
+            Append<V>(value);
+            while (iterator.TryMoveNext(out value))
             {
-                Append<T>(value);
-                while (values().IsSome(out value))
-                {
-                    Append(delimiter).Append<T>(value);
-                }
+                Append(delimiter).Append<V>(value);
             }
         }
 
         return this;
     }
 
-    public TextBuilder Delimit<T>(scoped text delimiter, Iterable<T>? values)
+    public TextBuilder Delimit<R, V>(scoped text delimiter, Iterable<R, V> iterable)
+        where R : struct, IIterator<V>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        T? value;
-
-        if (values is not null)
+        V? value;
+        var iterator = iterable.Iterator;
+        if (iterator.TryMoveNext(out value))
         {
-            if (values().IsSome(out value))
+            Append<V>(value);
+            while (iterator.TryMoveNext(out value))
             {
-                Append<T>(value);
-                while (values().IsSome(out value))
-                {
-                    Append(delimiter).Append<T>(value);
-                }
+                Append(delimiter).Append<V>(value);
             }
         }
 
@@ -181,30 +185,35 @@ partial class TextBuilder
     }
 
 #if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, Iterable<T>? values)
-        => Delimit<T>(delimiter.AsSpan(), values);
+    public TextBuilder Delimit<R, V>(string? delimiter, Iterable<R, V> iterable)
+        where R : struct, IIterator<V>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
+        => Delimit<R, V>(delimiter.AsSpan(), iterable);
 #endif
 
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, Iterable<T>? values)
+    public TextBuilder Delimit<R, V>(Action<TextBuilder>? delimit, Iterable<R, V> iterable)
+        where R : struct, IIterator<V>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+#endif
     {
-        T? value;
-
-        if (values is not null)
+        V? value;
+        var iterator = iterable.Iterator;
+        if (iterator.TryMoveNext(out value))
         {
-            if (values().IsSome(out value))
+            Append<V>(value);
+            while (iterator.TryMoveNext(out value))
             {
-                Append<T>(value);
-                while (values().IsSome(out value))
-                {
-                    Invoke(delimit).Append<T>(value);
-                }
+                Invoke(delimit).Append<V>(value);
             }
         }
 
         return this;
     }
 
-#endregion Values: Iterable<T>
+#endregion Values: Iterable
 
 #endregion Values: Append
 
@@ -354,41 +363,39 @@ partial class TextBuilder
 
 #endregion Values: IEnumerable<T>
 
-#region Values: Iterable<T>
+#region Values: Iterable
 
-    public TextBuilder Delimit<T>(char delimiter, Iterable<T>? values, string? format, IFormatProvider? provider = null)
+    public TextBuilder Delimit<R, V>(char delimiter, Iterable<R, V> iterable, string? format, IFormatProvider? provider = null)
+        where R : struct, IIterator<V>
     {
-        T? value;
+        V? value;
+        var iterator = iterable.Iterator;
 
-        if (values is not null)
+        if (iterator.TryMoveNext(out value))
         {
-            if (values().IsSome(out value))
+            Format<V>(value, format, provider);
+            while (iterator.TryMoveNext(out value))
             {
-                Format<T>(value, format, provider);
-                while (values().IsSome(out value))
-                {
-                    Append(delimiter)
-                        .Format<T>(value, format, provider);
-                }
+                Append(delimiter).Format<V>(value, format, provider);
             }
         }
 
         return this;
     }
 
-    public TextBuilder Delimit<T>(scoped text delimiter, Iterable<T>? values, string? format, IFormatProvider? provider = null)
+    public TextBuilder Delimit<R, V>(scoped text delimiter, Iterable<R, V> iterable, string? format,
+        IFormatProvider? provider = null)
+        where R : struct, IIterator<V>
     {
-        T? value;
+        V? value;
+        var iterator = iterable.Iterator;
 
-        if (values is not null)
+        if (iterator.TryMoveNext(out value))
         {
-            if (values().IsSome(out value))
+            Format<V>(value, format, provider);
+            while (iterator.TryMoveNext(out value))
             {
-                Format<T>(value, format, provider);
-                while (values().IsSome(out value))
-                {
-                    Append(delimiter).Format<T>(value, format, provider);
-                }
+                Append(delimiter).Format<V>(value, format, provider);
             }
         }
 
@@ -396,24 +403,25 @@ partial class TextBuilder
     }
 
 #if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, Iterable<T>? values, string? format, IFormatProvider? provider = null)
-        => Delimit<T>(delimiter.AsSpan(), values, format, provider);
+    public TextBuilder Delimit<R, V>(string? delimiter, Iterable<R, V> iterable, string? format,
+        IFormatProvider? provider = null)
+        where R : struct, IIterator<V>
+        => Delimit<R, V>(delimiter.AsSpan(), iterable, format, provider);
 #endif
 
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, Iterable<T>? values, string? format,
+    public TextBuilder Delimit<R, V>(Action<TextBuilder>? delimit, Iterable<R, V> iterable, string? format,
         IFormatProvider? provider = null)
+        where R : struct, IIterator<V>
     {
-        T? value;
+        V? value;
+        var iterator = iterable.Iterator;
 
-        if (values is not null)
+        if (iterator.TryMoveNext(out value))
         {
-            if (values().IsSome(out value))
+            Format<V>(value, format, provider);
+            while (iterator.TryMoveNext(out value))
             {
-                Format<T>(value, format, provider);
-                while (values().IsSome(out value))
-                {
-                    Invoke(delimit).Format<T>(value, format, provider);
-                }
+                Invoke(delimit).Format<V>(value, format, provider);
             }
         }
 
@@ -562,38 +570,36 @@ partial class TextBuilder
 
 #region Values: Iterable<T>
 
-    public TextBuilder Delimit<T>(char delimiter, Iterable<T>? values, Action<TextBuilder, T>? build)
+    public TextBuilder Delimit<R, V>(char delimiter, Iterable<R, V> iterable, Action<TextBuilder, V>? build)
+        where R : struct, IIterator<V>
     {
-        T? value;
+        V? value;
+        var iterator = iterable.Iterator;
 
-        if (values is not null)
+        if (iterator.TryMoveNext(out value))
         {
-            if (values().IsSome(out value))
+            Invoke(value, build);
+            while (iterator.TryMoveNext(out value))
             {
-                Invoke(value, build);
-                while (values().IsSome(out value))
-                {
-                    Append(delimiter).Invoke(value, build);
-                }
+                Append(delimiter).Invoke(value, build);
             }
         }
 
         return this;
     }
 
-    public TextBuilder Delimit<T>(scoped text delimiter, Iterable<T>? values, Action<TextBuilder, T>? build)
+    public TextBuilder Delimit<R, V>(scoped text delimiter, Iterable<R, V> iterable, Action<TextBuilder, V>? build)
+        where R : struct, IIterator<V>
     {
-        T? value;
+        V? value;
+        var iterator = iterable.Iterator;
 
-        if (values is not null)
+        if (iterator.TryMoveNext(out value))
         {
-            if (values().IsSome(out value))
+            Invoke(value, build);
+            while (iterator.TryMoveNext(out value))
             {
-                Invoke(value, build);
-                while (values().IsSome(out value))
-                {
-                    Append(delimiter).Invoke(value, build);
-                }
+                Append(delimiter).Invoke(value, build);
             }
         }
 
@@ -601,23 +607,23 @@ partial class TextBuilder
     }
 
 #if NETFRAMEWORK || NETSTANDARD2_0
-    public TextBuilder Delimit<T>(string? delimiter, Iterable<T>? values, Action<TextBuilder, T>? build)
-        => Delimit<T>(delimiter.AsSpan(), values, build);
+    public TextBuilder Delimit<R, V>(string? delimiter, Iterable<R, V> iterable, Action<TextBuilder, V>? build)
+        where R : struct, IIterator<V>
+        => Delimit<R, V>(delimiter.AsSpan(), iterable, build);
 #endif
 
-    public TextBuilder Delimit<T>(Action<TextBuilder>? delimit, Iterable<T>? values, Action<TextBuilder, T>? build)
+    public TextBuilder Delimit<R, V>(Action<TextBuilder>? delimit, Iterable<R, V> iterable, Action<TextBuilder, V>? build)
+        where R : struct, IIterator<V>
     {
-        T? value;
+        V? value;
+        var iterator = iterable.Iterator;
 
-        if (values is not null)
+        if (iterator.TryMoveNext(out value))
         {
-            if (values().IsSome(out value))
+            Invoke(value, build);
+            while (iterator.TryMoveNext(out value))
             {
-                Invoke(value, build);
-                while (values().IsSome(out value))
-                {
-                    Invoke(delimit).Invoke(value, build);
-                }
+                Invoke(delimit).Invoke(value, build);
             }
         }
 

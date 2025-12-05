@@ -9,11 +9,18 @@ namespace ScrubJay.Randomization;
 /// Register pressure   = 6<br/>
 /// State size          = 192 bits<br/>
 /// </summary>
-public sealed class RomuTrio : RomuPrng
+public sealed class RomuTrio : RomuPrng, ICloneable<RomuTrio>
 {
     private ulong _xState;
     private ulong _yState;
     private ulong _zState;
+
+    public RomuTrio(ulong xState, ulong yState, ulong zState, RandSeed seed) : base(seed)
+    {
+        _xState = xState;
+        _yState = yState;
+        _zState = zState;
+    }
 
     public RomuTrio(RandSeed seed) : base(seed)
     {
@@ -36,8 +43,16 @@ public sealed class RomuTrio : RomuPrng
 
         ulong xp = _xState, yp = _yState, zp = _zState;
         _xState = 15241094284759029579UL * zp;
-        _yState = yp - xp; _yState = MathHelper.RotateLeft(_yState, 12);
-        _zState = zp - yp; _zState = MathHelper.RotateLeft(_zState, 44);
+        _yState = yp - xp;
+        _yState = MathHelper.RotateLeft(_yState, 12);
+        _zState = zp - yp;
+        _zState = MathHelper.RotateLeft(_zState, 44);
         return xp;
+    }
+
+
+    public RomuTrio Clone()
+    {
+        return new RomuTrio(_xState, _yState, _zState, Seed);
     }
 }

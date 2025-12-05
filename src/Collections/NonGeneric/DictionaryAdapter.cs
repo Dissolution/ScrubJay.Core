@@ -28,7 +28,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objKey.Is<K>(out var key))
             return key;
-        throw Ex.Arg(objKey, $"Invalid Key - '{objKey}' is not a {typeof(K):@}", null, keyName);
+        throw Ex.Argument(objKey, $"Invalid Key - '{objKey}' is not a {typeof(K):@}", null, keyName);
     }
 
     [return: NotNullIfNotNull(nameof(objValue))]
@@ -38,7 +38,7 @@ public sealed class DictionaryAdapter<K, V> :
     {
         if (objValue.As<V>(out var value))
             return value;
-        throw Ex.Arg(objValue, $"Invalid Value - '{objValue}' is not a {typeof(V):@}", null, valueName);
+        throw Ex.Argument(objValue, $"Invalid Value - '{objValue}' is not a {typeof(V):@}", null, valueName);
     }
 
     private sealed class KeyCollection : IReadOnlyCollection<K>, ICollection<K>, ICollection
@@ -61,11 +61,11 @@ public sealed class DictionaryAdapter<K, V> :
             _adapter = adapter;
         }
 
-        void ICollection<K>.Add(K item) => Throw.IsReadOnly(this);
+        void ICollection<K>.Add(K item) => throw Ex.IsReadOnly(this);
 
-        bool ICollection<K>.Remove(K item) => Throw.IsReadOnly<KeyCollection, bool>(this);
+        bool ICollection<K>.Remove(K item) => throw Ex.IsReadOnly(this);
 
-        void ICollection<K>.Clear() => Throw.IsReadOnly(this);
+        void ICollection<K>.Clear() => throw Ex.IsReadOnly(this);
 
         void ICollection.CopyTo(Array array, int index)
         {

@@ -1,6 +1,6 @@
 ﻿using ScrubJay.Maths;
 using ScrubJay.Randomization.Seeding;
-using ScrubJay.Text.Rendering;
+
 
 // ReSharper disable InconsistentNaming
 
@@ -120,7 +120,7 @@ public abstract class PrngBase : IPrng
     {
         while (span.Length >= sizeof(ulong))
         {
-            BitHelper.WriteTo(span, NextU64());
+            BitHelper.Notsafe.WriteTo(ref span.GetPinnableReference(), NextU64());
             span = span[sizeof(ulong)..];
         }
 
@@ -148,7 +148,7 @@ public abstract class PrngBase : IPrng
         {
             Span<byte> buffer = stackalloc byte[sizeof(U)];
             Fill(buffer);
-            return BitHelper.AsValue<U>(buffer);
+            return BitHelper.Read<U>(buffer);
         }
     }
 
@@ -156,7 +156,7 @@ public abstract class PrngBase : IPrng
     {
         int count = items.Length;
         if (count == 0)
-            throw Ex.Arg(items, "You must pass at least one item");
+            throw Ex.Argument(items, "You must pass at least one item");
         if (count == 1)
             return items[0];
         int r = ZeroTo(count);

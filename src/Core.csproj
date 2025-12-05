@@ -4,14 +4,9 @@
         <RootNamespace>ScrubJay</RootNamespace>
         <AssemblyName>ScrubJay</AssemblyName>
 
-        <TargetFrameworks>
-            <!-- Always supports all latest versions -->
-            <!-- https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-version -->
-            net10.0;net9.0;net8.0;net7.0;net6.0;netstandard2.1;
-            <!-- net5.0;net481; -->
-            <!-- Support for .NET Standard 2.0 so source generators can consume this package -->
-            netstandard2.0;
-        </TargetFrameworks>
+        <!-- Always supports the latest versions -->
+        <!-- https://learn.microsoft.com/en-us/dotnet/standard/frameworks#latest-version -->
+        <TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0;netstandard2.1;netstandard2.0</TargetFrameworks>
         <CheckEolTargetFramework>false</CheckEolTargetFramework>
 
         <!-- Always use the latest features -->
@@ -49,11 +44,11 @@
         <IsPackable>true</IsPackable>
         <PackageId>ScrubJay.Core</PackageId>
         <Title>ScrubJay - Core</Title>
-        <Version>0.63.0-alpha</Version>
+        <Version>0.64.0-alpha</Version>
         <Authors>Dissolution</Authors>
 
         <Description>
-            The core ScrubJay library: common code used in all ScrubJay projects
+            The core ScrubJay library: common code used in all ScrubJay solutions.
         </Description>
 
         <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Core</RepositoryUrl>
@@ -109,10 +104,10 @@
         <Using Include="ScrubJay.Collections.Pooling"/>
         <Using Include="ScrubJay.Comparison"/>
         <Using Include="ScrubJay.Enums"/>
-        <Using Include="ScrubJay.Exceptions"/>
         <Using Include="ScrubJay.Extensions"/>
         <Using Include="ScrubJay.Functional"/>
         <Using Include="ScrubJay.Memory"/>
+        <Using Include="ScrubJay.Rendering"/>
         <Using Include="ScrubJay.Text"/>
         <Using Include="ScrubJay.Utilities"/>
         <Using Include="ScrubJay.Validation"/>
@@ -146,6 +141,9 @@
         <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="Validation\Throw.IfNull.cs" />
     </ItemGroup>
 
 </Project>

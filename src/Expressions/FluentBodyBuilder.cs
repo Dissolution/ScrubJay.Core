@@ -25,7 +25,7 @@ public class FluentBodyBuilder<B>
             var param = Parameters.OneOrDefault(p => ((string?)p.Name).Equate(name));
             if (param is not null)
                 return param;
-            throw Ex.Arg(paramRef, $"There is no parameter named \"{name}\"");
+            throw Ex.Argument(paramRef, $"There is no parameter named \"{name}\"");
         }
         else
         {
@@ -36,7 +36,7 @@ public class FluentBodyBuilder<B>
     public MethodCallExpression Call(MethodInfo staticMethod, params ExprNode[] parameters)
     {
         if (!staticMethod.IsStatic)
-            throw Ex.Arg(staticMethod);
+            throw Ex.Argument(staticMethod);
         var methodArgs = parameters.ConvertAll(Resolve);
         MethodCallExpression callExpr = Expression.Call(staticMethod, methodArgs);
         return callExpr;
@@ -45,7 +45,7 @@ public class FluentBodyBuilder<B>
     public MethodCallExpression Call(MethodInfo staticMethod, IReadOnlyList<ParameterExpression> parameters)
     {
         if (!staticMethod.IsStatic)
-            throw Ex.Arg(staticMethod);
+            throw Ex.Argument(staticMethod);
         var methodArgs = parameters.OfType<Expression>().ToArray();
         MethodCallExpression callExpr = Expression.Call(staticMethod, methodArgs);
         return callExpr;
@@ -55,7 +55,7 @@ public class FluentBodyBuilder<B>
     public MethodCallExpression Call(ExprNode instance, MethodInfo instanceMethod, params ExprNode[] args)
     {
         if (instanceMethod.IsStatic)
-            throw Ex.Arg(instanceMethod);
+            throw Ex.Argument(instanceMethod);
 
         var methodArgs = args.Select(Resolve).ToArray();
         MethodCallExpression callExpr = Expression.Call(Resolve(instance), instanceMethod, methodArgs);

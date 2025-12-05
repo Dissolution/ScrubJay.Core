@@ -21,7 +21,7 @@ public static class ByteSpanWriterExtensions
             if (count > writer.RemainingCount)
                 return new InvalidOperationException($"Could not write span count {count}");
 
-            if (endianness.IsSwap)
+            if (endianness.NeedsSwap)
             {
                 for (var i = count - 1; i >= 0; i--)
                 {
@@ -50,54 +50,54 @@ public static class ByteSpanWriterExtensions
 
         public void Write(short i16, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(i16), endianness);
+            writer.WriteMany(BitHelper.AsBytes(i16), endianness);
         }
 
         public void Write(ushort u16, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(u16), endianness);
+            writer.WriteMany(BitHelper.AsBytes(u16), endianness);
         }
 
         public void Write(int i32, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(i32), endianness);
+            writer.WriteMany(BitHelper.AsBytes(i32), endianness);
         }
 
         public void Write(uint u32, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(u32), endianness);
+            writer.WriteMany(BitHelper.AsBytes(u32), endianness);
         }
 
         public void Write(long i64, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(i64), endianness);
+            writer.WriteMany(BitHelper.AsBytes(i64), endianness);
         }
 
         public void Write(ulong u64, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(u64), endianness);
+            writer.WriteMany(BitHelper.AsBytes(u64), endianness);
         }
 
 #if NET6_0_OR_GREATER
         public void Write(Half f16, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(f16), endianness);
+            writer.WriteMany(BitHelper.AsBytes(f16), endianness);
         }
 #endif
 
         public void Write(float f32, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(f32), endianness);
+            writer.WriteMany(BitHelper.AsBytes(f32), endianness);
         }
 
         public void Write(double f64, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(f64), endianness);
+            writer.WriteMany(BitHelper.AsBytes(f64), endianness);
         }
 
         public void Write(decimal dec, Endianness endianness = Endianness.System)
         {
-            writer.WriteMany(BitConverter.AsBytes(dec), endianness);
+            writer.WriteMany(BitHelper.AsBytes(dec), endianness);
         }
 
 #endregion
@@ -141,14 +141,14 @@ public static class ByteSpanWriterExtensions
             , allows ref struct
 #endif
         {
-            var bytes = BitConverter.AsBytes<U>(in value);
+            var bytes = BitHelper.AsBytes<U>(in value);
             writer.WriteMany(bytes, endianness);
         }
 
         public void Write<E>(E e, Endianness endianness = Endianness.System)
             where E : struct, Enum
         {
-            var bytes = BitConverter.AsEnumBytes<E>(e);
+            var bytes = BitHelper.AsBytes<E>(e);
             writer.WriteMany(bytes, endianness);
         }
 
@@ -177,7 +177,7 @@ public static class ByteSpanWriterExtensions
 
         public void Write(char ch, Endianness endianness = Endianness.System)
         {
-            var bytes = BitConverter.AsBytes(in ch);
+            var bytes = BitHelper.AsBytes(in ch);
             writer.WriteMany(bytes, endianness);
         }
 
@@ -210,7 +210,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.U8Prefix:
                 {
                     if (len > byte.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in U8Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in U8Prefix");
                     writer.Write((byte)len);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -218,7 +218,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.U16Prefix:
                 {
                     if (len > ushort.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in U16Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in U16Prefix");
                     writer.Write((ushort)len, endianness);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -238,7 +238,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.I8Prefix:
                 {
                     if (len > sbyte.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in I8Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in I8Prefix");
                     writer.Write((sbyte)len);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -246,7 +246,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.I16Prefix:
                 {
                     if (len > short.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in I16Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in I16Prefix");
                     writer.Write((short)len, endianness);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -270,7 +270,7 @@ public static class ByteSpanWriterExtensions
                     return;
                 }
                 default:
-                    throw Ex.Enum(fix);
+                    throw Ex.UndefinedEnum(fix);
             }
         }
 
@@ -301,7 +301,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.U8Prefix:
                 {
                     if (len > byte.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in U8Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in U8Prefix");
                     writer.Write((byte)len);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -309,7 +309,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.U16Prefix:
                 {
                     if (len > ushort.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in U16Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in U16Prefix");
                     writer.Write((ushort)len, endianness);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -329,7 +329,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.I8Prefix:
                 {
                     if (len > sbyte.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in I8Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in I8Prefix");
                     writer.Write((sbyte)len);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -337,7 +337,7 @@ public static class ByteSpanWriterExtensions
                 case StringFix.I16Prefix:
                 {
                     if (len > short.MaxValue)
-                        throw Ex.Arg(fix, $"String length of {len} cannot fit in I16Prefix");
+                        throw Ex.Argument(fix, $"String length of {len} cannot fit in I16Prefix");
                     writer.Write((short)len, endianness);
                     writer.WriteMany(bytes, endianness);
                     return;
@@ -361,7 +361,7 @@ public static class ByteSpanWriterExtensions
                     return;
                 }
                 default:
-                    throw Ex.Enum(fix);
+                    throw Ex.UndefinedEnum(fix);
             }
         }
 
@@ -394,7 +394,7 @@ public static class ByteSpanWriterExtensions
                     return;
                 }
                 default:
-                    throw Ex.Enum(fix);
+                    throw Ex.UndefinedEnum(fix);
             }
         }
 
@@ -426,7 +426,7 @@ public static class ByteSpanWriterExtensions
                     return;
                 }
                 default:
-                    throw Ex.Enum(fix);
+                    throw Ex.UndefinedEnum(fix);
             }
         }
 

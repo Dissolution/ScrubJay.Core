@@ -26,6 +26,13 @@ public static class RangeExtensions
                     static (tb, end) => tb.If(end.IsFromEnd, '-').Format(end.Value))
                 .ToStringAndDispose();
         }
+
+        public (int Offset, int Length) UnsafeGetOffsetAndLength(int length)
+        {
+            int start = range.Start.GetOffset(length);
+            int end = range.End.GetOffset(length);
+            return (start, end-start);
+        }
     }
 
     /// <summary>

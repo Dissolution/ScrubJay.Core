@@ -4,7 +4,8 @@
 using System.ComponentModel.DataAnnotations;
 #endif
 using System.Reflection;
-using ScrubJay.Text.Rendering;
+using ScrubJay.Rendering;
+
 
 namespace ScrubJay.Enums;
 
@@ -45,11 +46,13 @@ public abstract class EnumMemberInfo :
     }
 
     private readonly HashSet<string> _aliases = [];
-    private readonly string _render;
+    private readonly string _display;
 
     public EnumInfo EnumInfo { get; }
     public Attribute[] Attributes { get; }
     public string Name { get; }
+    public string Display => _display;
+    public IReadOnlyCollection<string> Aliases => _aliases;
     public object Member { get; }
     public long I64Value { get; }
 
@@ -67,27 +70,27 @@ public abstract class EnumMemberInfo :
         I64Value = Convert.ToInt64(Member);
 
         // default render is name
-        _render = Name;
+        _display = Name;
         _aliases = new(StringComparer.Ordinal);
 
         // In order of least important to most (overwrite)
 #if !NETFRAMEWORK && !NETSTANDARD
         if (Attributes.TryGet<DisplayAttribute>(out var displayAttr))
         {
-            AddAlias(displayAttr.Name, _aliases, ref _render);
-            AddAlias(displayAttr.ShortName, _aliases, ref _render);
-            AddAlias(displayAttr.Description, _aliases, ref _render);
+            AddAlias(displayAttr.Name, _aliases, ref _display);
+            AddAlias(displayAttr.ShortName, _aliases, ref _display);
+            AddAlias(displayAttr.Description, _aliases, ref _display);
         }
 #endif
 
         if (Attributes.TryGet<DescriptionAttribute>(out var descriptionAttr))
         {
-            AddAlias(descriptionAttr.Description, _aliases, ref _render);
+            AddAlias(descriptionAttr.Description, _aliases, ref _display);
         }
 
-        if (Attributes.TryGet<RenderAsAttribute>(out var renderAsAttr))
+        if (Attributes.TryGet<RenderAsAttribute>(out var displayAsAttr))
         {
-            AddAlias(renderAsAttr.Rendered, _aliases, ref _render);
+            AddAlias(displayAsAttr.Display, _aliases, ref _display);
         }
 
         // shrink aliases to save memory
@@ -134,7 +137,7 @@ public abstract class EnumMemberInfo :
 
     public void RenderTo(TextBuilder builder)
     {
-        builder.Write(_render);
+        builder.Write(_display);
     }
 
     public override string ToString() => Name;

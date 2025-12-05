@@ -47,6 +47,6 @@ public readonly struct Unit :
     public int CompareTo(Unit unit) => 0;
     public bool Equals(Unit unit) => true;
     public override bool Equals(object? obj) => obj is Unit;
-    public override int GetHashCode() => 0;
+    public override int GetHashCode() => typeof(Unit).GetHashCode();
     public override string ToString() => "()";
 }

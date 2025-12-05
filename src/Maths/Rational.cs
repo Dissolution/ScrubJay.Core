@@ -4,7 +4,7 @@
 
 using System.Globalization;
 using ScrubJay.Parsing;
-using ScrubJay.Text.Rendering;
+
 
 
 // https://github.com/danm-de/Fractions
@@ -34,6 +34,7 @@ public readonly struct Rational :
     ISpanParsable<Rational>,
     IParsable<Rational>,
 #endif
+    ITrySpanParsable<Rational>,
     IAlgebraic<Rational, Rational>,
     IAlgebraic<Rational, decimal>,
     IAlgebraic<Rational, double>,
@@ -554,7 +555,13 @@ public readonly struct Rational :
         return TryParse(text, style, provider)
             .IsOk(out rational);
     }
+
 #endif
+
+    public static Result<Rational> TryParse(text text, IFormatProvider? provider)
+    {
+        return TryParse(text, NumberStyles.Integer, provider);
+    }
 
 #endregion
 
@@ -1496,7 +1503,7 @@ public readonly struct Rational :
         }
 
         charsWritten = builder.Length;
-        Notsafe.Text.CopyBlock(builder.AsText(), destination, charsWritten);
+        TextHelper.Notsafe.CopyBlock(builder.AsText(), destination, charsWritten);
         return true;
     }
 

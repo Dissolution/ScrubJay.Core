@@ -52,7 +52,7 @@ public static class InstancePool
         where T : class, new()
         => new(new InstancePoolPolicy<T>(static () => new()));
 
-    public static InstancePool<T> Default<T>(IsDisposable<T> _ = default)
+    public static InstancePool<T> Default<T>(IsDisposableNew<T> _ = default)
         where T : class, IDisposable, new()
         => new(new InstancePoolPolicy<T>(
             createInstance: static () => new(),

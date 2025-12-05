@@ -49,7 +49,7 @@ public sealed class FuncEqualityComparer<T> : IEqualityComparer<T>, IEqualityCom
                 return Hasher.NullHash;
         }
 
-        throw Ex.Arg(obj, $"Object was not a {typeof(T):@}");
+        throw Ex.Argument(obj, $"Object was not a {typeof(T):@}");
     }
 
     public bool Equals(T? x, T? y) => _equals(x, y);

@@ -1,5 +1,6 @@
 ﻿using ScrubJay.Functional;
-using ScrubJay.Text.Rendering;
+using ScrubJay.Rendering;
+
 
 namespace ScrubJay.Tests.TextTests;
 

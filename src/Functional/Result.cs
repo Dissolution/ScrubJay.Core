@@ -1,99 +1,206 @@
-﻿// ReSharper disable InconsistentNaming
+﻿// Prefix generic type parameter with T
+// Do not declare static methods on generic types
+// Do not catch Exception
 
-#pragma warning disable CA1031, CA1715
+#pragma warning disable CA1715, CA1000, CA1031
+
 
 namespace ScrubJay.Functional;
 
 [PublicAPI]
-public static class Result
+[AsyncMethodBuilder(typeof(ResultAsyncMethodBuilder<>))]
+[StructLayout(LayoutKind.Auto)]
+public readonly partial struct Result :
+#if NET7_0_OR_GREATER
+    IEqualityOperators<Result, Result, bool>,
+#endif
+#if NET6_0_OR_GREATER
+    ISpanFormattable,
+#endif
+    IEquatable<Result>,
+    IFormattable
 {
+#region Operators
+
+    public static implicit operator bool(Result result) => result._error is null;
+    public static implicit operator Result(bool success) => success ? Ok : Error(Ex.Invalid());
+    public static implicit operator Result(Exception ex) => Error(ex);
+    public static implicit operator Result(IMPL.Error<Exception> error) => Error(error.Value);
+
+    public static bool operator ==(Result left, Result right) => left.Equals(right);
+    public static bool operator !=(Result left, Result right) => !left.Equals(right);
+
+#endregion
+
+
+    public static readonly Result Ok = new Result(null);
+    public static Result Error(Exception ex) => new Result(ex);
+
+    // Unlike Result<T> and Result<T,E>, default(Result) == true
+    private readonly Exception? _error;
+
+    private Result(Exception? error)
+    {
+        _error = error;
+    }
+
+
+    public bool IsOk() => _error is null;
+
+
+
+#region Error
+
+    public bool IsError() => _error is not null;
+
+    public bool IsError([MaybeNullWhen(false)] out Exception error)
+    {
+        error = _error;
+        return error is not null;
+    }
+
     /// <summary>
-    /// Try to invoke an <see cref="Action"/>
+    /// Returns <c>true</c> if this Result is Error and the value inside of it matches a predicate
     /// </summary>
-    /// <param name="action"></param>
-    /// <returns>
-    /// The <see cref="Result{T}"/> of the invocation
-    /// </returns>
-    public static Result<Unit> Try(Action? action)
-    {
-        if (action is null)
-        {
-            return new ArgumentNullException(nameof(action));
-        }
+    /// <param name="errorPredicate"></param>
+    /// <returns></returns>
+    /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_err_and"/>
+    public bool IsErrorAnd(Func<Exception, bool> errorPredicate) => _error is not null && errorPredicate(_error!);
 
-        try
+    public Exception ErrorOr(Exception fallback)
+    {
+        if (_error is not null)
+            return _error;
+        return fallback;
+    }
+
+    public Exception ErrorOr(Func<Exception> getFallback)
+    {
+        if (_error is not null)
+            return _error;
+        return getFallback();
+    }
+
+    [StackTraceHidden]
+    public void ThrowIfError()
+    {
+        if (_error is not null)
         {
-            action.Invoke();
-            return Result<Unit>.Ok(default);
-        }
-        catch (Exception ex)
-        {
-            return ex;
+            throw _error;
         }
     }
 
-    public static Result<Unit> Try<I>(
-        [NotNullWhen(true)] I? instance,
-        [NotNullWhen(true)] Action<I>? instanceAction)
-    {
-        if (instance is null)
-            return new ArgumentNullException(nameof(instance));
-        if (instanceAction is null)
-            return new ArgumentNullException(nameof(instanceAction));
+#endregion
 
-        try
+#region Match
+
+    public void Match(Action onOk, Action<Exception> onError)
+    {
+        if (_error is null)
         {
-            instanceAction.Invoke(instance);
-            return Result<Unit>.Ok(default);
+            onOk();
         }
-        catch (Exception ex)
+        else
         {
-            return ex;
+            onError(_error!);
         }
     }
 
 
-    public static Result<T> Try<T>(Func<T>? func)
+    public R Match<R>(Func<R> onOk, Func<Exception, R> onError)
     {
-        if (func is null)
-            return new ArgumentNullException(nameof(func));
-
-        try
+        if (_error is null)
         {
-            return Ok(func.Invoke());
+            return onOk();
         }
-        catch (Exception ex)
+        else
         {
-            return ex;
+            return onError(_error!);
         }
     }
 
-    public static Result<T> Try<I, T>(
-        [NotNullWhen(true)] I? instance,
-        [NotNullWhen(true)] Func<I, T>? instanceFunc)
-    {
-        if (instance is null)
-            return new ArgumentNullException(nameof(instance));
-        if (instanceFunc is null)
-            return new ArgumentNullException(nameof(instanceFunc));
+#endregion
 
-        try
+    public Option<Unit> AsOption()
+    {
+        if (_error is null)
         {
-            return Ok(instanceFunc.Invoke(instance));
+            return Some(default(Unit));
         }
-        catch (Exception ex)
+        else
         {
-            return ex;
+            return None;
         }
     }
 
-#region Extensions
+#region Equality
 
-    // public static Result<T> Flatten<T>(this Result<Result<T>> resultResult)
-    //     => resultResult.Select(static result => result);
-    //
-    // public static Result<T> Flatten<T>(this Result<Option<T>> resultResult)
-    //     => resultResult.Select(static option => option);
+    public bool Equals(Result other)
+    {
+        return EqualityComparer<Exception>.Default.Equals(_error!, other._error!);
+    }
+
+    public bool Equals(Exception? error)
+    {
+        return EqualityComparer<Exception>.Default.Equals(_error!, error!);
+    }
+
+    public override bool Equals([NotNullWhen(true)] object? obj)
+        => obj switch
+        {
+            Result result => Equals(result),
+            Exception ex => Equals(ex),
+            bool isOk => isOk == _error is null,
+            _ => false,
+        };
+
+
+    public override int GetHashCode()
+    {
+        return Hasher.Hash<Exception>(_error);
+    }
+
+#endregion
+
+#region ToString / TryFormat
+
+    public string ToString(string? format, IFormatProvider? provider = null)
+    {
+        if (_error is null)
+        {
+            return "Result.Ok";
+        }
+
+        return Build($"Result.Error({_error:@})");
+    }
+
+    public bool TryFormat(
+        Span<char> destination,
+        out int charsWritten,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? provider = null)
+    {
+        // todo: make this better
+        var str = ToString(format.ToString(), provider);
+        if (str.TryCopyTo(destination))
+        {
+            charsWritten = str.Length;
+            return true;
+        }
+
+        charsWritten = 0;
+        return false;
+    }
+
+    public override string ToString()
+    {
+        if (_error is null)
+        {
+            return "Result.Ok";
+        }
+
+        return Build($"Result.Error({_error:@})");
+    }
 
 #endregion
 }

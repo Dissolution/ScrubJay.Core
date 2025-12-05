@@ -39,7 +39,7 @@ public sealed class ArrayAdapter2D<T> :
         _array = array.ThrowIfNull();
         int dims = array.Rank;
         if (dims != 1)
-            throw Ex.Arg(nameof(array), "Array must have a Rank of 1");
+            throw Ex.Argument(nameof(array), "Array must have a Rank of 1");
         _lowerBounds = array.GetLowerBound(0);
         _upperBound = array.GetUpperBound(0);
     }

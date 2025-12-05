@@ -1,4 +1,5 @@
 ﻿using static ScrubJay.Utilities.GenericTypeConstraint;
+
 // ReSharper disable InvokeAsExtensionMethod
 // ReSharper disable MethodOverloadWithOptionalParameter
 
@@ -8,12 +9,12 @@ namespace ScrubJay.Utilities;
 /// Helper methods for working on Sequences
 /// </summary>
 /// <remarks>
-/// Generally for any Method in <see cref="Sequence"/>, its Parameters will cover:<br/>
-/// <b>Input</b><br/>
+/// Generally for any Method in <see cref="Sequence"/>, its parameters will cover:<br/>
+/// <b>Sources of:</b><br/>
 /// <see cref="ReadOnlySpan{T}"/>,
 /// <see cref="Array">T[]</see>,
 /// <see cref="IEnumerable{T}"/><br/>
-/// <b>Output</b><br/>
+/// <b>Destinations of:</b><br/>
 /// <see cref="Span{T}"/>,
 /// <see cref="Array">T[]</see>,
 /// <see cref="IList{T}"/><br/>
@@ -32,9 +33,11 @@ public static class Sequence
     public static void SelfCopy<T>(Span<T> span, Range source, Range destination) => span[source].CopyTo(span[destination]);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SelfCopy<T>(T[] array, Range source, Range destination) => array.AsSpan(source).CopyTo(array.AsSpan(destination));
+    public static void SelfCopy<T>(T[] array, Range source, Range destination) =>
+        array.AsSpan(source).CopyTo(array.AsSpan(destination));
 
-    #region TryCopyTo
+#region TryCopyTo
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryCopyTo<T>(Span<T> source, Span<T> destination) => source.TryCopyTo(destination);
 
@@ -86,7 +89,8 @@ public static class Sequence
     public static bool TryCopyTo<T>(T[]? source, Span<T> destination) => TryCopyTo(new ReadOnlySpan<T>(source), destination);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryCopyTo<T>(T[]? source, T[]? destination) => TryCopyTo(new ReadOnlySpan<T>(source), new Span<T>(destination));
+    public static bool TryCopyTo<T>(T[]? source, T[]? destination) =>
+        TryCopyTo(new ReadOnlySpan<T>(source), new Span<T>(destination));
 
     public static bool TryCopyTo<T>(T[]? source, IList<T>? destination) => TryCopyTo(new ReadOnlySpan<T>(source), destination);
 
@@ -216,11 +220,9 @@ public static class Sequence
         return true;
     }
 
+#endregion
 
-
-    #endregion
-
-    #region CopyTo
+#region CopyTo
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void CopyTo<T>(scoped Span<T> source, Span<T> destination) => source.CopyTo(destination);
@@ -246,7 +248,8 @@ public static class Sequence
         }
 
         if (sourceCount > destination.Count)
-            throw Ex.Arg(destination, $"Source count of {sourceCount} will not fit in destination length of {destination.Count}");
+            throw Ex.Argument(destination,
+                $"Source count of {sourceCount} will not fit in destination length of {destination.Count}");
 
         for (int i = 0; i < sourceCount; i++)
         {
@@ -258,11 +261,10 @@ public static class Sequence
     public static void CopyTo<T>(T[]? source, Span<T> destination) => CopyTo(new ReadOnlySpan<T>(source), destination);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void CopyTo<T>(T[]? source, T[]? destination) => CopyTo(new ReadOnlySpan<T>(source), new Span<T>(destination));
+    public static void CopyTo<T>(T[]? source, T[]? destination) =>
+        CopyTo(new ReadOnlySpan<T>(source), new Span<T>(destination));
 
     public static void CopyTo<T>(T[]? source, IList<T>? destination) => CopyTo(new ReadOnlySpan<T>(source), destination);
-
-
 
 
     public static void CopyTo<T>(IEnumerable<T>? source, Span<T> destination, bool clearOnFailure = true)
@@ -276,7 +278,7 @@ public static class Sequence
         {
             int sourceCount = collection.Count;
             if (sourceCount > destinationLength)
-                throw Ex.Arg(destination,
+                throw Ex.Argument(destination,
                     $"Source count of {sourceCount} will not fit in destination length of {destinationLength}");
 
             int i = 0;
@@ -295,7 +297,7 @@ public static class Sequence
                     if (clearOnFailure)
                         destination.Clear();
 
-                    throw Ex.Arg(destination,
+                    throw Ex.Argument(destination,
                         $"Source count of at least {i} will not fit in destination length of {destinationLength}");
                 }
 
@@ -322,7 +324,8 @@ public static class Sequence
 
             int destinationLength = destination.Length;
             if (sourceCount > destinationLength)
-                throw Ex.Arg(destination, $"Source count of {sourceCount} will not fit in destination length of {destinationLength}");
+                throw Ex.Argument(destination,
+                    $"Source count of {sourceCount} will not fit in destination length of {destinationLength}");
 
             collection.CopyTo(destination, 0);
         }
@@ -338,7 +341,8 @@ public static class Sequence
                     if (clearOnFailure)
                         Array.Clear(destination, 0, destinationLength);
 
-                    throw Ex.Arg(destination, $"Source count of at least {i} will not fit in destination length of {destinationLength}");
+                    throw Ex.Argument(destination,
+                        $"Source count of at least {i} will not fit in destination length of {destinationLength}");
                 }
 
                 destination[i++] = item;
@@ -364,7 +368,8 @@ public static class Sequence
 
             int destinationLength = destination.Count;
             if (sourceCount > destinationLength)
-                throw Ex.Arg(destination, $"Source count of {sourceCount} will not fit in destination length of {destinationLength}");
+                throw Ex.Argument(destination,
+                    $"Source count of {sourceCount} will not fit in destination length of {destinationLength}");
 
             int i = 0;
             foreach (var item in source)
@@ -384,7 +389,8 @@ public static class Sequence
                     if (clearOnFailure)
                         destination.Clear();
 
-                    throw Ex.Arg(destination, $"Source count of at least {i} will not fit in destination length of {destinationLength}");
+                    throw Ex.Argument(destination,
+                        $"Source count of at least {i} will not fit in destination length of {destinationLength}");
                 }
 
                 destination[i++] = item;
@@ -392,18 +398,17 @@ public static class Sequence
         }
     }
 
+#endregion
 
-    #endregion
 
-
-    #region Compare
+#region Compare
 
     /* comparision is supported for all combinations of:
      * T[], Span<T>, ReadOnlySpan<T>, IEnumerable<T>
      */
 
 
-    #region where T : IComparable<T>
+#region where T : IComparable<T>
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Compare<T>(T[]? left, T[]? right, IsComparable<T> _ = default)
@@ -450,9 +455,9 @@ public static class Sequence
         where T : IComparable<T>
         => left.SequenceCompareTo(right);
 
-    #endregion
+#endregion
 
-    #region no restriction w/IComparer<T>
+#region no restriction w/IComparer<T>
 
     public static int Compare<T>(T[]? left, T[]? right, IComparer<T>? itemComparer = null)
     {
@@ -498,16 +503,20 @@ public static class Sequence
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(Span<T> left, T[]? right, IComparer<T>? itemComparer = null) => Compare((ReadOnlySpan<T>)left, right, itemComparer);
+    public static int Compare<T>(Span<T> left, T[]? right, IComparer<T>? itemComparer = null) =>
+        Compare((ReadOnlySpan<T>)left, right, itemComparer);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(Span<T> left, Span<T> right, IComparer<T>? itemComparer = null) => Compare((ReadOnlySpan<T>)left, (ReadOnlySpan<T>)right, itemComparer);
+    public static int Compare<T>(Span<T> left, Span<T> right, IComparer<T>? itemComparer = null) =>
+        Compare((ReadOnlySpan<T>)left, (ReadOnlySpan<T>)right, itemComparer);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(Span<T> left, ReadOnlySpan<T> right, IComparer<T>? itemComparer = null) => Compare((ReadOnlySpan<T>)left, right, itemComparer);
+    public static int Compare<T>(Span<T> left, ReadOnlySpan<T> right, IComparer<T>? itemComparer = null) =>
+        Compare((ReadOnlySpan<T>)left, right, itemComparer);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(Span<T> left, IEnumerable<T>? right, IComparer<T>? itemComparer = null) => Compare((ReadOnlySpan<T>)left, right, itemComparer);
+    public static int Compare<T>(Span<T> left, IEnumerable<T>? right, IComparer<T>? itemComparer = null) =>
+        Compare((ReadOnlySpan<T>)left, right, itemComparer);
 
 
     public static int Compare<T>(ReadOnlySpan<T> left, T[]? right, IComparer<T>? itemComparer = null)
@@ -520,7 +529,8 @@ public static class Sequence
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Compare<T>(ReadOnlySpan<T> left, Span<T> right, IComparer<T>? itemComparer = null) => Compare(left, (ReadOnlySpan<T>)right, itemComparer);
+    public static int Compare<T>(ReadOnlySpan<T> left, Span<T> right, IComparer<T>? itemComparer = null) =>
+        Compare(left, (ReadOnlySpan<T>)right, itemComparer);
 
     public static int Compare<T>(ReadOnlySpan<T> left, ReadOnlySpan<T> right, IComparer<T>? itemComparer = null)
     {
@@ -902,13 +912,13 @@ public static class Sequence
         }
     }
 
-    #endregion
+#endregion
 
-    #endregion
+#endregion
 
-    #region Equal
+#region Equal
 
-    #region T: IEquatable<T>
+#region T: IEquatable<T>
 
     public static bool EquatableEqual<T>(T[]? left, T[]? right)
         where T : IEquatable<T>
@@ -946,9 +956,9 @@ public static class Sequence
         where T : IEquatable<T>
         => left.SequenceEqual(right);
 
-    #endregion
+#endregion
 
-    #region no constraints w/EqualityComparer
+#region no constraints w/EqualityComparer
 
     public static bool Equal<T>(T[]? left, T[]? right, IEqualityComparer<T>? itemComparer = null)
     {
@@ -1251,12 +1261,13 @@ public static class Sequence
         }
     }
 
-    #endregion
+#endregion
 
-    #endregion
+#endregion
 
 
-    #region StartsWith
+#region StartsWith
+
     public static bool StartsWith<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match, IsEquatable<T> _ = default)
         where T : IEquatable<T>
         => source.StartsWith(match);
@@ -1280,11 +1291,10 @@ public static class Sequence
         return Equal(source[..matchLen], match, itemComparer);
     }
 
-
-
-    #endregion
+#endregion
 
 #region EndsWith
+
     public static bool EndsWith<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match, IsEquatable<T> _ = default)
         where T : IEquatable<T>
         => source.EndsWith(match);
@@ -1307,8 +1317,6 @@ public static class Sequence
         // slice source down and equate
         return Equal(source[^matchLen..], match, itemComparer);
     }
-
-
 
 #endregion
 
@@ -1335,7 +1343,6 @@ public static class Sequence
         => SpanExtensions.Contains<T>(source, item, comparer);
 
 
-
     public static bool Contains<T>(ReadOnlySpan<T> source, ReadOnlySpan<T> match, IEqualityComparer<T>? comparer = null)
     {
         int sourceLen = source.Length;
@@ -1352,5 +1359,4 @@ public static class Sequence
 
         return false;
     }
-
 }

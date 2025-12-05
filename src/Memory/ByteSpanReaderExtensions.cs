@@ -33,7 +33,7 @@ public static class ByteSpanReaderExtensions
         Endianness endianness = Endianness.System)
     {
         var bytes = reader.Take(sizeof(short));
-        short i16 = Bytes.Read<short>(bytes);
+        short i16 = BitHelper.Read<short>(bytes);
         if (endianness.IsNoSwap)
             return i16;
         return BinaryPrimitives.ReverseEndianness(i16);
@@ -44,7 +44,7 @@ public static class ByteSpanReaderExtensions
         Endianness endianness = Endianness.System)
     {
         var bytes = reader.Take(sizeof(ushort));
-        ushort u16 = Bytes.Read<ushort>(bytes);
+        ushort u16 = BitHelper.Read<ushort>(bytes);
         if (endianness.IsNoSwap)
             return u16;
         return BinaryPrimitives.ReverseEndianness(u16);
@@ -55,7 +55,7 @@ public static class ByteSpanReaderExtensions
         Endianness endianness = Endianness.System)
     {
         var bytes = reader.Take(sizeof(int));
-        int i32 = Bytes.Read<int>(bytes);
+        int i32 = BitHelper.Read<int>(bytes);
         if (endianness.IsNoSwap)
             return i32;
         return BinaryPrimitives.ReverseEndianness(i32);
@@ -66,7 +66,7 @@ public static class ByteSpanReaderExtensions
         Endianness endianness = Endianness.System)
     {
         var bytes = reader.Take(sizeof(uint));
-        uint u32 = Bytes.Read<uint>(bytes);
+        uint u32 = BitHelper.Read<uint>(bytes);
         if (endianness.IsNoSwap)
             return u32;
         return BinaryPrimitives.ReverseEndianness(u32);
@@ -77,7 +77,7 @@ public static class ByteSpanReaderExtensions
         Endianness endianness = Endianness.System)
     {
         var bytes = reader.Take(sizeof(long));
-        long i64 = Bytes.Read<long>(bytes);
+        long i64 = BitHelper.Read<long>(bytes);
         if (endianness.IsNoSwap)
             return i64;
         return BinaryPrimitives.ReverseEndianness(i64);
@@ -88,7 +88,7 @@ public static class ByteSpanReaderExtensions
         Endianness endianness = Endianness.System)
     {
         var bytes = reader.Take(sizeof(ulong));
-        ulong u64 = Bytes.Read<ulong>(bytes);
+        ulong u64 = BitHelper.Read<ulong>(bytes);
         if (endianness.IsNoSwap)
             return u64;
         return BinaryPrimitives.ReverseEndianness(u64);
@@ -101,13 +101,13 @@ public static class ByteSpanReaderExtensions
     {
         if (endianness.IsNoSwap)
         {
-            return Bytes.Read<Half>(reader.Take(2)); // sizeof(Half)
+            return BitHelper.Read<Half>(reader.Take(2)); // sizeof(Half)
         }
 
         Span<byte> buffer = stackalloc byte[2]; // sizeof(Half)
         reader.TakeInto(buffer);
         buffer.Reverse();
-        return Bytes.Read<Half>(buffer);
+        return BitHelper.Read<Half>(buffer);
     }
 #endif
 
@@ -117,13 +117,13 @@ public static class ByteSpanReaderExtensions
     {
         if (endianness.IsNoSwap)
         {
-            return Bytes.Read<float>(reader.Take(sizeof(float)));
+            return BitHelper.Read<float>(reader.Take(sizeof(float)));
         }
 
         Span<byte> buffer = stackalloc byte[sizeof(float)];
         reader.TakeInto(buffer);
         buffer.Reverse();
-        return Bytes.Read<float>(buffer);
+        return BitHelper.Read<float>(buffer);
     }
 
     public static double ReadF64(
@@ -132,13 +132,13 @@ public static class ByteSpanReaderExtensions
     {
         if (endianness.IsNoSwap)
         {
-            return Bytes.Read<double>(reader.Take(sizeof(double)));
+            return BitHelper.Read<double>(reader.Take(sizeof(double)));
         }
 
         Span<byte> buffer = stackalloc byte[sizeof(double)];
         reader.TakeInto(buffer);
         buffer.Reverse();
-        return Bytes.Read<double>(buffer);
+        return BitHelper.Read<double>(buffer);
     }
 
     public static decimal ReadDec(
@@ -147,13 +147,13 @@ public static class ByteSpanReaderExtensions
     {
         if (endianness.IsNoSwap)
         {
-            return Bytes.Read<decimal>(reader.Take(sizeof(decimal)));
+            return BitHelper.Read<decimal>(reader.Take(sizeof(decimal)));
         }
 
         Span<byte> buffer = stackalloc byte[sizeof(decimal)];
         reader.TakeInto(buffer);
         buffer.Reverse();
-        return Bytes.Read<decimal>(buffer);
+        return BitHelper.Read<decimal>(buffer);
     }
 
 #endregion
@@ -181,13 +181,13 @@ public static class ByteSpanReaderExtensions
     {
         if (endianness.IsNoSwap)
         {
-            return Bytes.Read<U>(reader.Take(SizeOf<U>()));
+            return BitHelper.Read<U>(reader.Take(SizeOf<U>()));
         }
 
         Span<byte> buffer = stackalloc byte[SizeOf<U>()];
         reader.TakeInto(buffer);
         buffer.Reverse();
-        return Bytes.Read<U>(buffer);
+        return BitHelper.Read<U>(buffer);
     }
 
     public static E ReadEnum<E>(this ref SpanReader<byte> reader,
@@ -200,14 +200,14 @@ public static class ByteSpanReaderExtensions
         if (endianness.IsNoSwap)
         {
             var bytes = reader.Take(size);
-            @enum = Bytes.ReadEnum<E>(bytes);
+            @enum = BitHelper.Read<E>(bytes);
         }
         else
         {
             Span<byte> buffer = stackalloc byte[size];
             reader.TakeInto(buffer);
             buffer.Reverse();
-            @enum = Bytes.ReadEnum<E>(buffer);
+            @enum = BitHelper.Read<E>(buffer);
         }
 
 #if NET5_0_OR_GREATER
@@ -217,7 +217,7 @@ public static class ByteSpanReaderExtensions
 #endif
 
         {
-            throw Ex.Enum(@enum);
+            throw Ex.UndefinedEnum(@enum);
         }
 
         return @enum;
@@ -232,13 +232,13 @@ public static class ByteSpanReaderExtensions
     {
         if (endianness.IsNoSwap)
         {
-            return Bytes.Read<char>(reader.Take(sizeof(char)));
+            return BitHelper.Read<char>(reader.Take(sizeof(char)));
         }
 
         Span<byte> buffer = stackalloc byte[sizeof(char)];
         reader.TakeInto(buffer);
         buffer.Reverse();
-        return Bytes.Read<char>(buffer);
+        return BitHelper.Read<char>(buffer);
     }
 
     public static string ReadString(
@@ -334,7 +334,7 @@ public static class ByteSpanReaderExtensions
                 return str;
             }
             default:
-                throw Ex.Enum(fix);
+                throw Ex.UndefinedEnum(fix);
         }
     }
 
@@ -424,7 +424,7 @@ public static class ByteSpanReaderExtensions
                 return TimeSpan.FromSeconds(seconds);
             }
             default:
-                throw Ex.Enum(fix);
+                throw Ex.UndefinedEnum(fix);
         }
     }
 
@@ -450,7 +450,7 @@ public static class ByteSpanReaderExtensions
                 return TimeFix.OriginDateTime.AddSeconds(seconds);
             }
             default:
-                throw Ex.Enum(fix);
+                throw Ex.UndefinedEnum(fix);
         }
     }
 

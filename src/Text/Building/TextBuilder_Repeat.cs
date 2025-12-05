@@ -60,7 +60,7 @@ public partial class TextBuilder
             var span = _chars.AsSpan();
             for (int i = 0; i < count; i++, pos += len)
             {
-                Notsafe.Text.CopyBlock(text, span[pos..], len);
+                TextHelper.Notsafe.CopyBlock(text, span[pos..], len);
             }
 
             Debug.Assert(pos == newPos);
@@ -86,7 +86,7 @@ public partial class TextBuilder
                 var span = _chars.AsSpan();
                 for (int i = 0; i < count; i++, pos += len)
                 {
-                    Notsafe.Text.CopyBlock(str, ref span[pos], len);
+                    TextHelper.Notsafe.CopyBlock(str, ref span[pos], len);
                 }
 
                 Debug.Assert(pos == newPos);

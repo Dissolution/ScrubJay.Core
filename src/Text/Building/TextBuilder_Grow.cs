@@ -17,7 +17,7 @@ partial class TextBuilder
         if (_position > 0)
         {
             Debug.Assert(_chars is not null);
-            Notsafe.Text.CopyBlock(_chars!, array, _position);
+            TextHelper.Notsafe.CopyBlock(_chars!, array, _position);
             ArrayNest.Return(_chars, true);
         }
 

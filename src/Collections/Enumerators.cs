@@ -19,7 +19,7 @@ public static class Enumerators
     /// Gets an empty <see cref="IEnumerator{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerator<T> Empty<T>() => new EmptyIterator<T>();
+    public static IEnumerator<T> Empty<T>() => new Empty<T>();
 
     /// <summary>
     /// Gets an <see cref="IEnumerator{T}"/> that enumerates over a single <paramref name="value"/>

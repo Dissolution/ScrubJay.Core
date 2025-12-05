@@ -61,7 +61,7 @@ public static class ObjectExtensions
                 return new ArgumentNullException(nameof(obj));
             }
 
-            return Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance");
+            return Ex.Argument(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance");
         }
 
         public bool As<T>([NotNullIfNotNull(nameof(obj))] out T? value)
@@ -101,9 +101,9 @@ public static class ObjectExtensions
                 return Ok(default(T));
             }
 
-            return Ex.Arg(obj, $"Null object cannot be a {typeof(T):@} instance", null, objName);
+            return Ex.Argument(obj, $"Null object cannot be a {typeof(T):@} instance", null, objName);
         }
 
-        return Ex.Arg(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance", null, objName);
+        return Ex.Argument(obj, $"Object `{obj:@}` is not a {typeof(T):@} instance", null, objName);
     }
 }

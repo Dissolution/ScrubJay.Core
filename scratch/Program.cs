@@ -7,6 +7,7 @@
 using text = System.ReadOnlySpan<char>;
 using TextBuffer = ScrubJay.Collections.Pooling.Buffer<char>;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -16,14 +17,18 @@ using InlineIL;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ScrubJay.Collections.NonGeneric;
 using ScrubJay.Collections.Pooling;
 using ScrubJay.Debugging;
 using ScrubJay.Dumping;
 using ScrubJay.Maths;
 using ScrubJay.Maths.Ternary;
+using ScrubJay.Rendering;
 using ScrubJay.Scratch;
-using ScrubJay.Text.Rendering;
+
 using static InlineIL.IL;
+using Renderer = ScrubJay.Rendering.Renderer;
+using TypeRenderer = ScrubJay.Rendering.TypeRenderer;
 
 Console.OutputEncoding = Encoding.UTF8;
 var hostBuilder = Host.CreateApplicationBuilder(args);
@@ -35,49 +40,101 @@ watcher.UnhandledException += (sender, args) =>
     var logger = host.Services.GetService<ILogger<UnhandledEventWatcher>>();
     logger.LogError("Unhandled Exception - sender: {@sender} args: {@args}", sender, args);
 };
+
 #endregion End Setup
 
-nint k = 147;
-int a = 13;
-nint j = a;
 
-//
-// // Example 1: Simple object
-// var person = new Person
-// {
-//     Name = "John Doe",
-//     Age = 30,
-//     Email = "john@example.com",
-//     IsActive = true
-// };
-//
-// Console.WriteLine(Dumper.Dump(person, "Person"));
-// Console.WriteLine();
-//
-// // Example 2: Nested object
-// var order = new Order
-// {
-//     OrderId = 12345,
-//     Customer = new Person { Name = "Jane Smith", Age = 28 },
-//     Items = new List<string> { "Widget", "Gadget", "Doohickey" },
-//     Total = 299.99m
-// };
-//
-// Console.WriteLine(Dumper.Dump(order, "Order"));
-// Console.WriteLine();
+using var builder = new TextBuilder();
 
-// Example 3: Exception
-try
+var allMethods =
+    AppDomain.CurrentDomain
+        .GetAssemblies()
+        .SelectMany(static ass => ass.GetTypes())
+        .SelectMany(static t =>
+            t.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
+        .ToHashSet();
+
+var renderer = new MethodRenderer();
+foreach (var method in allMethods)
 {
-    throw new InvalidOperationException("Something went wrong");
-}
-catch (InvalidOperationException ex)
-{
-    var exdump = Dumper.Dump(ex);
+    builder.Clear();
+    renderer.RenderTo(method, builder);
+    string? typeString = method.ToString();
+    string display = builder.ToString();
 
-    Console.WriteLine(exdump);
-    Console.WriteLine();
+    Console.WriteLine(display);
+    // using var tx = new TextBuilder();
+    // tx.Write(typeString);
+    // tx.Written.Replace('+', '.');
+    // tx.Written.Replace('[', '<');
+    // tx.Written.Replace(']', '>');
+    //
+    // var txStr = tx.ToString();
+    // if (txStr != display)
+    // {
+    //     Debugger.Break();
+    // }
 }
+
+Debugger.Break();
+
+Pair<int, string> pair = new(147, "TRJ");
+builder.Write("Pair<int, string> (IRenderable):  ");
+Renderer.RenderTo(pair, builder);
+builder.NewLine();
+Debugger.Break();
+
+
+
+Dictionary<int, string> dict = new()
+{
+    { 4, "Four" },
+    { 5, "Five" },
+};
+builder.Write("Dictionary<int,string>:  ");
+Renderer.RenderTo(dict, builder);
+builder.NewLine();
+Debugger.Break();
+
+
+
+Array arr = Array.CreateInstance(typeof(string), 3);
+arr.SetValue("Zero", 0);
+arr.SetValue("One", 1);
+arr.SetValue("Two", 2);
+
+var mda = new int[2, 2, 2];
+Array.Clear(mda);
+foreach (var i in ArrayIndicesEnumerator.For(mda))
+{
+    mda.SetValue(Random.Shared.Next(), i);
+}
+
+builder.Write("3d Array:  ");
+Renderer.RenderTo(mda, builder);
+builder.NewLine();
+
+
+builder.Write("Object:  ");
+object obj = Guid.NewGuid();
+Renderer.RenderTo(obj, builder);
+builder.NewLine();
+
+char[] array = ['T', 'R', 'J'];
+
+
+Renderer.RenderArrayTo(arr, builder);
+builder.Write("  | ");
+Renderer.RenderTo(array, builder);
+builder.Write("  | ");
+Renderer.RenderTo(array.AsSpan(), builder);
+builder.Write(" | ");
+Renderer.RenderTo(BindingFlags.Public, builder);
+builder.Write("  | ");
+
+string output = builder.ToString();
+Console.WriteLine(output);
+Debugger.Break();
 
 
 Console.WriteLine("〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️");
@@ -89,6 +146,83 @@ return 0;
 
 namespace ScrubJay.Scratch
 {
+    partial class Util
+    {
+        public static int Check1(object? obj)
+        {
+            switch (obj)
+            {
+                case null:
+                    ThrowNullException();
+                    return 0;
+                case string str:
+                    return int.Parse(str);
+                default:
+                    throw new Exception();
+            }
+        }
+
+        public static int Check2(object? obj)
+        {
+            return obj switch
+            {
+                null => throw GetNullReferenceException(),
+                string str => int.Parse(str),
+                _ => throw new Exception()
+            };
+        }
+
+        [DoesNotReturn]
+        public static void ThrowNullException()
+        {
+            throw new NullReferenceException();
+        }
+
+        public static NullReferenceException GetNullReferenceException()
+        {
+            return new NullReferenceException();
+        }
+    }
+
+    public class SimpleClass
+    {
+        public class NestedSimpleClass
+        {
+        }
+
+        public class NestedGenericClass<T>
+        {
+        }
+    }
+
+    public class GenericClass<T>
+    {
+        public class NestedSimpleClass
+        {
+        }
+
+        public class NestedGenericClass<U>
+        {
+            public class FurtherNestedTuple<W, X, Y> : ITuple
+            {
+                public W Dubya { get; }
+                public X Exx { get; }
+                public Y Why { get; }
+
+                object? ITuple.this[int index]
+                    => index switch
+                    {
+                        0 => Dubya,
+                        1 => Exx,
+                        2 => Why,
+                        _ => throw Ex.Argument(index),
+                    };
+
+                int ITuple.Length => 3;
+            }
+        }
+    }
+
     public static partial class Util
     {
         public static string Accept(ref InterpolatedTextBuilder interpolatedTextBuilder)
@@ -100,9 +234,10 @@ namespace ScrubJay.Scratch
 
 
         public static string Accept(TextBuilder builder,
-            [InterpolatedStringHandlerArgument(nameof(builder))] ref InterpolatedTextBuilder interpolated)
+            [InterpolatedStringHandlerArgument(nameof(builder))]
+            ref InterpolatedTextBuilder interpolated)
         {
-            return interpolated.ToStringAndDispose();
+            return interpolated.ToStringAndClear();
         }
     }
 

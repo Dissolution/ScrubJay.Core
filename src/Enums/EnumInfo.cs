@@ -1,7 +1,7 @@
 ﻿#pragma warning disable CA1819
 
 using System.Reflection;
-using ScrubJay.Text.Rendering;
+
 
 namespace ScrubJay.Enums;
 
@@ -36,7 +36,7 @@ public abstract class EnumInfo :
     {
         Throw.IfNull(enumType);
         if (!enumType.IsEnum)
-            throw Ex.Arg(enumType, $"Invalid Enum Type: {enumType:@}");
+            throw Ex.Argument(enumType, $"Invalid Enum Type: {enumType:@}");
         return _enumInfoCache.GetOrAdd(enumType, CreateEnumInfo);
     }
 
@@ -103,7 +103,7 @@ public abstract class EnumInfo :
         where E : struct, Enum
     {
         if (typeof(E).DeclaringType != EnumType)
-            throw Ex.Arg(mune, "Enum does not belong to this EnumInfo");
+            throw Ex.Argument(mune, "Enum does not belong to this EnumInfo");
 
         return _members.OfType<EnumMemberInfo<E>>()
             .FirstOrDefault(m => m.Member.IsEqual(mune));
@@ -113,7 +113,7 @@ public abstract class EnumInfo :
     {
         Throw.IfNull(mune);
         if (mune.GetType() != EnumType)
-            throw Ex.Arg(mune, "Enum does not belong to this EnumInfo");
+            throw Ex.Argument(mune, "Enum does not belong to this EnumInfo");
 
         long value = ((IConvertible)mune).ToInt64(null);
 

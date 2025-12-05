@@ -1,6 +1,4 @@
-﻿using ScrubJay.Text.Rendering;
-
-namespace ScrubJay.Text;
+﻿namespace ScrubJay.Text;
 
 public partial class TextBuilder
 {
@@ -9,20 +7,20 @@ public partial class TextBuilder
         where T : allows ref struct
 #endif
     {
-        Renderer.WriteTo(this, value);
+        Renderer.RenderTo<T>(value, this);
         return this;
     }
 
 #if !NET9_0_OR_GREATER
     public TextBuilder Render<T>(scoped ReadOnlySpan<T> span)
     {
-        Renderer.RenderReadOnlySpanTo<T>(this, span);
+        Renderer.RenderReadOnlySpanTo<T>(span, this);
         return this;
     }
 
     public TextBuilder Render<T>(scoped Span<T> span)
     {
-        Renderer.RenderSpanTo<T>(this, span);
+        Renderer.RenderSpanTo<T>(span, this);
         return this;
     }
 

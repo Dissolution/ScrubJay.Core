@@ -46,6 +46,6 @@ public partial class TextBuilder
 
     public static string Build(InterpolatedTextBuilder interpolatedTextBuilder)
     {
-        return interpolatedTextBuilder.ToStringAndDispose();
+        return interpolatedTextBuilder.ToStringAndClear();
     }
 }

@@ -3,7 +3,7 @@
 namespace ScrubJay.Collections;
 
 /// <summary>
-/// A <see cref="ConcurrentDictionary{K,TValue}"/> where <c>K</c> is <see cref="Type"/> that supports using a generic type
+/// A <see cref="ConcurrentDictionary{K,V}"/> where <c>K</c> is <see cref="Type"/> that supports using a generic type
 /// instead of a key
 /// </summary>
 /// <typeparam name="V">
@@ -16,6 +16,11 @@ public class ConcurrentTypeMap<V> : ConcurrentDictionary<Type, V>
 
     public ConcurrentTypeMap(int capacity)
         : base(Environment.ProcessorCount, capacity) { }
+
+    public ConcurrentTypeMap(IEqualityComparer<Type> comparer)
+        : base(comparer)
+    {
+    }
 
     public bool ContainsKey<K>()
 #if NET9_0_OR_GREATER

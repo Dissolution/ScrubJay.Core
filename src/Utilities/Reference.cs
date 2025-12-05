@@ -1,9 +1,7 @@
-﻿#pragma warning disable CA1045
-
-namespace ScrubJay.Utilities;
+﻿namespace ScrubJay.Utilities;
 
 /// <summary>
-/// Utility for working with references
+/// Utility for manipulating references
 /// </summary>
 [PublicAPI]
 public static class Reference
@@ -18,6 +16,9 @@ public static class Reference
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [return: NotNullIfNotNull(nameof(location))]
     public static T Exchange<T>(ref T location, T value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         T original = location;
         location = value;

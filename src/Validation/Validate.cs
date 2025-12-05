@@ -1,6 +1,6 @@
 ﻿#pragma warning disable S907, S3236, S3247
 
-using ScrubJay.Text.Rendering;
+
 using ArgumentNullException = System.ArgumentNullException;
 
 

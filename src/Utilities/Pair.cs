@@ -1,11 +1,4 @@
-﻿#pragma warning disable S907
-#pragma warning disable CA1000, CA1045
-// ReSharper disable ArrangeThisQualifier
-
-
-
-#if NET7_0_OR_GREATER
-using ScrubJay.Text.Rendering;
+﻿#if NET7_0_OR_GREATER
 using ScrubJay.Parsing;
 #endif
 
@@ -60,15 +53,13 @@ public static class Pair
         {
             return Ex.Parse<Pair<K, V>>(
                 text,
-                $"Expected `({typeof(K).Render()}, {typeof(V).Render()})`",
+                $"Expected `({typeof(K):@}, {typeof(V):@})`",
                 innerEx);
         }
     }
 #endif
 
     public static Pair<K, V> New<K, V>(K key, V value) => new(key, value);
-
-    public static Pair<K, V> Parse<K, V>(ref PairBuilder<K, V> pairText) => pairText.TryGetPair().OkOrThrow();
 }
 
 /// <summary>
@@ -88,7 +79,8 @@ public readonly struct Pair<K, V> :
 #if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
-    IFormattable
+    IFormattable,
+    IRenderable
 {
     // Interop with KeyValuePair, Tuple, and ValueTuple
 
@@ -188,4 +180,9 @@ public readonly struct Pair<K, V> :
     }
 
     public override string ToString() => $"({Key}, {Value})";
+
+    public void RenderTo(TextBuilder builder)
+    {
+        builder.Append($"({Key:@}, {Value:@})");
+    }
 }
