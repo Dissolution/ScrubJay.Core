@@ -37,6 +37,13 @@ public readonly ref struct RefOption<T>
 
     public static RefOption<T> Some(T value) => new(value);
 
+    public static RefOption<T> NotNull(T? value)
+    {
+        if (value is null)
+            return None;
+        return Some(value);
+    }
+    
     // Is this Option.Some?
     // if someone does default(RefOption), this will be false, so default(RefOption) == None
     private readonly bool _isSome;
@@ -87,7 +94,7 @@ public readonly ref struct RefOption<T>
     {
         if (_isSome)
             return _value!;
-        throw Ex.Invalid(errorMessage ?? $"Option<{typeof(T)}> is None");
+        throw new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
     }
 
     public T SomeOr(T fallback)
@@ -301,9 +308,9 @@ public readonly ref struct RefOption<T>
     {
         if (_isSome)
         {
-            return Build($"RefOption<{typeof(T):@}>.Some({_value})");
+            return $"Some({_value.Stringify()})";
         }
 
-        return Build($"RefOption<{typeof(T):@}>.None");
+        return nameof(None);
     }
 }

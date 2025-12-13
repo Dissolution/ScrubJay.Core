@@ -10,7 +10,7 @@
         <CheckEolTargetFramework>false</CheckEolTargetFramework>
 
         <!-- Always use the latest features -->
-        <LangVersion>preview</LangVersion>
+        <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -44,7 +44,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>ScrubJay.Core</PackageId>
         <Title>ScrubJay - Core</Title>
-        <Version>0.64.0-alpha</Version>
+        <Version>0.65.0-alpha</Version>
         <Authors>Dissolution</Authors>
 
         <Description>

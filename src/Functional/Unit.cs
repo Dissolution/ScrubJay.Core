@@ -27,9 +27,6 @@ public readonly struct Unit :
     public static implicit operator Unit(ValueTuple _) => default;
     public static implicit operator ValueTuple(Unit _) => default;
 
-    public static implicit operator Option<Unit>(Unit _) => Option<Unit>.Some(Default);
-    public static implicit operator Result<Unit>(Unit _) => Result<Unit>.Ok(Default);
-
     // All units are exactly the same
 
     public static bool operator ==(Unit _, Unit __) => true;
@@ -45,8 +42,12 @@ public readonly struct Unit :
     public static readonly Unit Default;
 
     public int CompareTo(Unit unit) => 0;
+
     public bool Equals(Unit unit) => true;
+
     public override bool Equals(object? obj) => obj is Unit;
+
     public override int GetHashCode() => typeof(Unit).GetHashCode();
+
     public override string ToString() => "()";
 }

@@ -31,9 +31,6 @@ public readonly struct Result<T, E> :
     IComparisonOperators<Result<T, E>, T, bool>,
     //IComparisonOperators<Result<T, E>, E, bool>,
 #endif
-#if NET6_0_OR_GREATER
-    ISpanFormattable,
-#endif
     IEquatable<Result<T, E>>,
     IEquatable<T>,
     //IEquatable<E>,
@@ -46,6 +43,9 @@ public readonly struct Result<T, E> :
 #region Operators
 
     public static implicit operator bool(Result<T, E> result) => result._isOk;
+
+    public static implicit operator Result<T, E>(T ok) => Ok(ok);
+    public static implicit operator Result<T, E>(E error) => Error(error);
     public static implicit operator Result<T, E>(IMPL.Ok<T> ok) => Ok(ok.Value);
     public static implicit operator Result<T, E>(IMPL.Error<E> error) => Error(error.Value);
 
@@ -217,7 +217,7 @@ public readonly struct Result<T, E> :
             return _value!;
         if (_error is Exception ex)
             throw ex;
-        throw Ex.Invalid(exceptionMessage ?? $"{ToString()} is not Ok");
+        throw new InvalidOperationException(exceptionMessage ?? $"{ToString()} is not Ok");
     }
 
 #endregion
@@ -286,7 +286,7 @@ public readonly struct Result<T, E> :
     {
         if (!_isOk)
             return _error!;
-        throw Ex.Invalid(exceptionMessage ?? $"{ToString()} is not Error");
+        throw new InvalidOperationException(exceptionMessage ?? $"{ToString()} is not Error");
     }
 
 #endregion
@@ -307,6 +307,9 @@ public readonly struct Result<T, E> :
 
 
     public R Match<R>(Func<T, R> onOk, Func<E, R> onError)
+#if NET9_0_OR_GREATER
+        where R : allows ref struct
+#endif
     {
         if (_isOk)
         {
@@ -445,10 +448,11 @@ public readonly struct Result<T, E> :
             bool isOk => _isOk == isOk,
             _ => false,
         };
-
+    
     public override int GetHashCode()
     {
-        if (_isOk)
+#if NETFRAMEWORK || NETSTANDARD2_0
+       if (_isOk)
         {
             if (_value is not null)
             {
@@ -466,6 +470,9 @@ public readonly struct Result<T, E> :
 
             return typeof(E).GetHashCode();
         }
+#else
+        return HashCode.Combine(_isOk, _value, _error);
+#endif
     }
 
 #endregion
@@ -487,7 +494,7 @@ public readonly struct Result<T, E> :
                 str = _value?.ToString();
             }
 
-            return Build($"Result<{typeof(T):@}, {typeof(E):@}>.Ok({str})");
+            return $"Ok({str})";
         }
         else
         {
@@ -500,37 +507,19 @@ public readonly struct Result<T, E> :
                 str = _error?.ToString();
             }
 
-            return Build($"Result<{typeof(T):@}, {typeof(E):@}>.Error({str})");
+            return $"Error({str})";
         }
-    }
-
-    public bool TryFormat(
-        Span<char> destination,
-        out int charsWritten,
-        ReadOnlySpan<char> format = default,
-        IFormatProvider? provider = null)
-    {
-        // todo: make this better
-        var str = ToString(format.ToString(), provider);
-        if (str.TryCopyTo(destination))
-        {
-            charsWritten = str.Length;
-            return true;
-        }
-
-        charsWritten = 0;
-        return false;
     }
 
     public override string ToString()
     {
         if (_isOk)
         {
-            return Build($"Result<{typeof(T):@}, {typeof(E):@}>.Ok({_value:@})");
+            return $"Ok({_value})";
         }
         else
         {
-            return Build($"Result<{typeof(T):@}, {typeof(E):@}>.Error({_error:@})");
+            return $"Error({_error})";
         }
     }
 

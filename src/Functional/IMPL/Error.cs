@@ -2,6 +2,12 @@
 
 namespace ScrubJay.Functional.IMPL;
 
+/// <summary>
+/// Represents the <b>Error</b> portion of a <see cref="Result"/>, <see cref="Result{T}"/>, or <see cref="Result{T,E}"/>
+/// </summary>
+/// <remarks>
+/// This class is primarily used for implicit coercions
+/// </remarks>
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
 public readonly ref struct Error<E>
@@ -23,6 +29,6 @@ public readonly ref struct Error<E>
 
     public override string ToString()
     {
-        return TextBuilder.Build($"Error<{typeof(E):@}>({Value})");
+        return $"Error({Value.Stringify()})";
     }
 }

@@ -8,8 +8,13 @@
 namespace ScrubJay.Functional;
 
 /// <summary>
-/// Represents the results of a function - <c>(?) -> T</c><br/>
-/// imitating a discriminated union like:
+/// A Result type holding a returned <typeparamref name="T"/> value or <see cref="Exception"/>.
+/// </summary>
+/// <typeparam name="T">
+/// The <see cref="Type"/> of value stored with an <c>Ok</c> Result
+/// </typeparam>
+/// <remarks> 
+/// This emulates a discriminated union:
 /// <code>
 /// Result
 /// {
@@ -17,31 +22,26 @@ namespace ScrubJay.Functional;
 ///     Error(Exception),
 /// }
 /// </code>
-/// </summary>
-/// <typeparam name="T"></typeparam>
-/// <remarks>
-/// This result type also uses c# syntax to be more fluent<br/>
-/// 🦀 Heavily inspired by Rust's Result type 🦀
+/// 🦀 Heavily inspired by Rust's Result type! 🦀
 /// </remarks>
-/// <seealso href="https://doc.rust-lang.org/std/result/enum.Result.html"/>
+/// <seealso href="https://en.wikipedia.org/wiki/Result_type">Result Type on Wikipedia</seealso>
+/// <seealso href="https://doc.rust-lang.org/std/result/enum.Result.html">Rust's Result Type</seealso>
 [PublicAPI]
-[AsyncMethodBuilder(typeof(ResultAsyncMethodBuilder<>))]
 [StructLayout(LayoutKind.Auto)]
 public readonly struct Result<T> :
-    /* All commented out interfaces are implemented, but cannot be declared per CS0695
+    /* All commented out interfaces are implemented, but cannot be declared per CS0695:
      * 'Result<T>' cannot implement both 'X' and 'Y' because they may unify for some type parameter substitutions
      */
 #if NET7_0_OR_GREATER
     IEqualityOperators<Result<T>, Result<T>, bool>,
     IEqualityOperators<Result<T>, T, bool>,
+    // IEqualityOperators<Result<T>, Exception, bool>,
     IComparisonOperators<Result<T>, Result<T>, bool>,
     IComparisonOperators<Result<T>, T, bool>,
 #endif
-#if NET6_0_OR_GREATER
-    ISpanFormattable,
-#endif
     IEquatable<Result<T>>,
     IEquatable<T>,
+    // IEquatable<Exception>,
     IComparable<Result<T>>,
     IComparable<T>,
     IEnumerable<T>,
@@ -49,47 +49,67 @@ public readonly struct Result<T> :
 {
 #region Operators
 
+    /// <summary>
+    /// Implicitly convert a <see cref="Result{T}"/> into a <c>bool</c> (Ok -> <c>true</c>, Error -> <c>false</c>) 
+    /// </summary>
     public static implicit operator bool(Result<T> result) => result._isOk;
-    public static implicit operator Result(Result<T> result) => result.IsError(out var error) ? Result.Error(error) : Result.Ok;
+
+    /// <summary>
+    /// Implicitly convert a <see cref="Result{T}"/> into a <see cref="Result"/> (Ok(T) -> Ok, Error -> Error) 
+    /// </summary>
+    public static implicit operator Result(Result<T> result) =>
+        result.IsError(out var error) ? Result.Error(error) : Result.Ok;
+
+    /// <summary>
+    /// Implicitly convert a <typeparamref name="T"/> <paramref name="value"/> into an <see cref="Ok"/> <see cref="Result{T}"/>
+    /// </summary>
+    public static implicit operator Result<T>(T value) => Ok(value);
+
+    /// <summary>
+    /// Implicitly convert an <see cref="Exception"/> into an <see cref="Error"/> <see cref="Result{T}"/>
+    /// </summary>
     public static implicit operator Result<T>(Exception ex) => Error(ex);
+
+    /// <summary>
+    /// Implicitly convert an <see cref="IMPL.Ok{T}"/> into an <see cref="Ok"/> <see cref="Result{T}"/>
+    /// </summary>
     public static implicit operator Result<T>(IMPL.Ok<T> ok) => Ok(ok.Value);
+
+    /// <summary>
+    /// Implicitly convert an <see cref="IMPL.Error{T}"/> into an <see cref="Error"/> <see cref="Result{T}"/>
+    /// </summary>
     public static implicit operator Result<T>(IMPL.Error<Exception> error) => Error(error.Value);
 
+    /// <summary>
+    /// <see cref="Result{T}"/> evaluates to <c>true</c> if it is <see cref="Ok"/>
+    /// </summary>
+    public static bool operator true(Result<T> result) => result._isOk;
+
+    /// <summary>
+    /// <see cref="Result{T}"/> evaluates to <c>false</c> if it is <see cref="Error"/>
+    /// </summary>
+    public static bool operator false(Result<T> result) => !result._isOk;
 
     public static bool operator ==(Result<T> left, Result<T> right) => left.Equals(right);
     public static bool operator !=(Result<T> left, Result<T> right) => !left.Equals(right);
     public static bool operator ==(Result<T> result, T? value) => result.Equals(value);
     public static bool operator !=(Result<T> result, T? value) => !result.Equals(value);
+    public static bool operator ==(Result<T> result, Exception? error) => result.Equals(error);
+    public static bool operator !=(Result<T> result, Exception? error) => !result.Equals(error);
 
-    public static bool operator >(Result<T> left, Result<T> right)
-        => left.CompareTo(right) > 0;
-
-    public static bool operator >=(Result<T> left, Result<T> right)
-        => left.CompareTo(right) >= 0;
-
-    public static bool operator <(Result<T> left, Result<T> right)
-        => left.CompareTo(right) < 0;
-
-    public static bool operator <=(Result<T> left, Result<T> right)
-        => left.CompareTo(right) <= 0;
-
-    public static bool operator >(Result<T> left, T right)
-        => left.CompareTo(right) > 0;
-
-    public static bool operator >=(Result<T> left, T right)
-        => left.CompareTo(right) >= 0;
-
-    public static bool operator <(Result<T> left, T right)
-        => left.CompareTo(right) < 0;
-
-    public static bool operator <=(Result<T> left, T right)
-        => left.CompareTo(right) <= 0;
+    public static bool operator >(Result<T> left, Result<T> right) => left.CompareTo(right) > 0;
+    public static bool operator >=(Result<T> left, Result<T> right) => left.CompareTo(right) >= 0;
+    public static bool operator <(Result<T> left, Result<T> right) => left.CompareTo(right) < 0;
+    public static bool operator <=(Result<T> left, Result<T> right) => left.CompareTo(right) <= 0;
+    public static bool operator >(Result<T> left, T right) => left.CompareTo(right) > 0;
+    public static bool operator >=(Result<T> left, T right) => left.CompareTo(right) >= 0;
+    public static bool operator <(Result<T> left, T right) => left.CompareTo(right) < 0;
+    public static bool operator <=(Result<T> left, T right) => left.CompareTo(right) <= 0;
 
 #endregion
 
-
     /// <summary>
-    /// Creates <see cref="Result{T}"/>.Ok(<paramref name="value"/>)
+    /// Creates an Ok <see cref="Result{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Ok(T value) => new Result<T>(true, value, null);
@@ -97,20 +117,38 @@ public readonly struct Result<T> :
     /// <summary>
     /// Creates <see cref="Result{T}"/>.Error(<paramref name="ex"/>)
     /// </summary>
-    public static Result<T> Error(Exception ex) => new Result<T>(false, default, ex);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<T> Error(Exception? ex) => new Result<T>(false, default, ex ?? new InvalidOperationException());
 
-    /* These exact fields were chosen so that
-     * default(Result<>) would be a failure (same as default(bool) == false)
-     */
+    // is this ok or error?
+#if DEBUG
+    internal
+#else
+    private
+#endif
+        readonly bool _isOk;
+    
+    
+    // possible ok value
+#if DEBUG
+    internal
+#else
+    private
+#endif
+        readonly T? _value;
 
-    private readonly bool _isOk;
-    private readonly T? _value;
-    private readonly Exception? _error;
-
-    /// <summary>
-    /// Result may only be constructed through <see cref="Ok(T)"/>, <see cref="Error"/>,
-    /// or through implicit conversion from <see cref="IMPL.Ok{T}"/> or <see cref="IMPL.Error{E}"/>
-    /// </summary>
+    // possible error exception
+#if DEBUG
+    internal
+#else
+    private
+#endif
+        readonly Exception? _error;
+    
+    /// <remarks>
+    /// <see cref="Result{T}"/> may only be constructed with <see cref="Ok"/>, <see cref="Error"/>,
+    /// or an implicit conversion from a <typeparamref name="T"/> or <see cref="Exception"/>.
+    /// </remarks>
     private Result(bool isOk, T? value, Exception? error)
     {
         _isOk = isOk;
@@ -118,44 +156,58 @@ public readonly struct Result<T> :
         _error = error;
     }
 
-
 #region Ok
 
+    /// <summary>
+    /// Is this an Ok <see cref="Result{T}"/>?
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsOk() => _isOk;
 
+    /// <summary>
+    /// Is this an Ok <see cref="Result{T}"/>?
+    /// </summary>
+    /// <param name="value">
+    /// If this is an Ok <see cref="Result{T}"/>, the Ok value;
+    /// otherwise <c>default(T)</c>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if this is an Ok <see cref="Result{T}"/>; otherwise <c>false</c>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsOk([MaybeNullWhen(false)] out T value)
     {
-        if (_isOk)
-        {
-            value = _value!;
-            return true;
-        }
-
-        value = default!;
-        return false;
-    }
-
-    public bool IsOk([MaybeNullWhen(false)] out T ok, [MaybeNullWhen(true)] out Exception error)
-    {
-        ok = _value;
-        error = _error;
+        value = _value;
         return _isOk;
     }
 
     /// <summary>
-    /// Returns <c>true</c> if this Result is Ok and the value inside of it matches a predicate
+    /// Is this an Ok <see cref="Result{T}"/>?
     /// </summary>
-    /// <param name="okPredicate"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_ok_and"/>
-    public bool IsOkAnd(Func<T, bool> okPredicate) => _isOk && okPredicate(_value!);
+    /// <param name="value">
+    /// If this is an Ok <see cref="Result{T}"/>, the Ok value;
+    /// otherwise <c>default(T)</c>.
+    /// </param>
+    /// <param name="error">
+    /// If this is an Error <see cref="Result{T}"/>, the Error <see cref="Exception"/>;
+    /// otherwise <c>null</c>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if this is an Ok <see cref="Result{T}"/>; otherwise <c>false</c>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsOk([MaybeNullWhen(false)] out T value, [NotNullWhen(false)] out Exception? error)
+    {
+        value = _value;
+        error = _error;
+        return _isOk;
+    }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="fallback"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap_or"/>
+    public bool IsOkAnd(Func<T, bool> okPredicate)
+    {
+        return _isOk && okPredicate(_value!);
+    }
+
     public T OkOr(T fallback)
     {
         if (_isOk)
@@ -163,12 +215,6 @@ public readonly struct Result<T> :
         return fallback;
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="getFallback"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap_or_else"/>
     public T OkOr(Func<T> getFallback)
     {
         if (_isOk)
@@ -176,11 +222,6 @@ public readonly struct Result<T> :
         return getFallback();
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap_or_default"/>
     public T? OkOrDefault()
     {
         if (_isOk)
@@ -188,76 +229,59 @@ public readonly struct Result<T> :
         return default(T);
     }
 
-    /// <summary>
-    /// Returns the contained Ok value
-    /// </summary>
-    /// <returns>
-    ///
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if the value is an Error
-    /// </exception>
-    /// <a href="https://doc.rust-lang.org/std/option/enum.Result.html#method.unwrap"/>
-    public T OkOrThrow(string? exceptionMessage = null)
+    public T OkOrThrow()
     {
         if (_isOk)
             return _value!;
-        throw (_error ?? new InvalidOperationException(exceptionMessage ?? $"{ToString()} is not Ok"));
+        throw _error!;
     }
 
 #endregion
 
 #region Error
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsError() => !_isOk;
 
-    public bool IsError([MaybeNullWhen(false)] out Exception error)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsError([NotNullWhen(true)] out Exception? error)
     {
         error = _error;
         return !_isOk;
     }
 
-
-    public bool IsError([MaybeNullWhen(false)] out Exception error, [MaybeNullWhen(true)] out T ok)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsError([NotNullWhen(true)] out Exception? error, [MaybeNullWhen(true)] out T ok)
     {
         error = _error;
         ok = _value;
         return !_isOk;
     }
 
-    /// <summary>
-    /// Returns <c>true</c> if this Result is Error and the value inside of it matches a predicate
-    /// </summary>
-    /// <param name="errorPredicate"></param>
-    /// <returns></returns>
-    /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_err_and"/>
-    public bool IsErrorAnd(Func<Exception, bool> errorPredicate) => !_isOk && errorPredicate(_error!);
+    public bool IsErrorAnd(Func<Exception, bool> errorPredicate)
+    {
+        return !_isOk && errorPredicate(_error!);
+    }
 
     public Exception ErrorOr(Exception fallback)
     {
-        if (!_isOk && _error is not null)
-            return _error;
+        if (!_isOk)
+            return _error!;
         return fallback;
     }
 
     public Exception ErrorOr(Func<Exception> getFallback)
     {
-        if (!_isOk && _error is not null)
-            return _error;
+        if (!_isOk)
+            return _error!;
         return getFallback();
     }
 
-    [StackTraceHidden]
     public void ThrowIfError()
     {
         if (!_isOk)
         {
-            if (_error is not null)
-            {
-                throw _error;
-            }
-
-            throw Ex.Invalid($"{ToString()} is not Ok");
+            throw _error!;
         }
     }
 
@@ -279,6 +303,9 @@ public readonly struct Result<T> :
 
 
     public R Match<R>(Func<T, R> onOk, Func<Exception, R> onError)
+#if NET9_0_OR_GREATER
+        where R : allows ref struct
+#endif
     {
         if (_isOk)
         {
@@ -296,11 +323,11 @@ public readonly struct Result<T> :
     {
         if (_isOk)
         {
-            return Some(_value!);
+            return Option<T>.Some(_value!);
         }
         else
         {
-            return None;
+            return Option<T>.None;
         }
     }
 
@@ -392,42 +419,55 @@ public readonly struct Result<T> :
         return false;
     }
 
+    public bool Equals(bool isOk) => _isOk;
+
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj switch
         {
             Result<T> result => Equals(result),
             T value => Equals(value),
             Exception ex => Equals(ex),
-            bool isOk => isOk == _isOk,
+            bool isOk => Equals(isOk),
             _ => false,
         };
 
 
     public override int GetHashCode()
     {
+#if NETFRAMEWORK || NETSTANDARD2_0
         if (_isOk)
         {
             if (_value is not null)
-            {
                 return _value.GetHashCode();
-            }
 
             return typeof(T).GetHashCode();
         }
         else
         {
             if (_error is not null)
-            {
                 return _error.GetHashCode();
-            }
-
             return typeof(Exception).GetHashCode();
         }
+#else
+        return HashCode.Combine(_isOk, _value, _error);
+#endif
     }
 
 #endregion
 
-#region ToString / TryFormat
+#region Formatting
+
+    public override string ToString()
+    {
+        if (_isOk)
+        {
+            return $"Ok({_value})";
+        }
+        else
+        {
+            return $"Error({_error})";
+        }
+    }
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
@@ -444,113 +484,16 @@ public readonly struct Result<T> :
                 str = _value?.ToString();
             }
 
-            return Build($"Result<{typeof(T):@}>.Ok({str})");
+            return $"Ok({str})";
         }
         else
         {
-            return Build($"Result<{typeof(T):@}>.Error({_error:@})");
-        }
-    }
-
-    public bool TryFormat(
-        Span<char> destination,
-        out int charsWritten,
-        ReadOnlySpan<char> format = default,
-        IFormatProvider? provider = null)
-    {
-        // todo: make this better
-        var str = ToString(format.ToString(), provider);
-        if (str.TryCopyTo(destination))
-        {
-            charsWritten = str.Length;
-            return true;
-        }
-
-        charsWritten = 0;
-        return false;
-    }
-
-    public override string ToString()
-    {
-        if (_isOk)
-        {
-            return Build($"Result<{typeof(T):@}>.Ok({_value:@})");
-        }
-        else
-        {
-            return Build($"Result<{typeof(T):@}>.Error({_error:@})");
+            return $"Error({_error})";
         }
     }
 
 #endregion
 
-#region Linq
-
-    public Result<N> Select<N>(Func<T, N> selector)
-    {
-        if (IsOk(out var value, out var error))
-        {
-            return Result<N>.Ok(selector(value));
-        }
-        else
-        {
-            return error;
-        }
-    }
-
-    public Result<N> Select<N>(Func<T, Result<N>> selector)
-    {
-        if (IsOk(out var value, out var error))
-        {
-            return selector(value!);
-        }
-        else
-        {
-            return error;
-        }
-    }
-
-    public Result<N> Select<N>(Func<T, Option<N>> selector)
-    {
-        if (IsOk(out var value, out var error))
-        {
-            if (selector(value!).IsSome(out var some))
-            {
-                return Result<N>.Ok(some);
-            }
-            else
-            {
-                return Result<N>.Error(new InvalidOperationException());
-            }
-        }
-        else
-        {
-            return error;
-        }
-    }
-
-    public Result<N> SelectMany<K, N>(Func<T, Result<K>> keySelector, Func<T, K, N> newSelector)
-    {
-        if (IsOk(out var value, out var error))
-        {
-            var keyResult = keySelector(value!);
-            if (keyResult.IsOk(out var key, out error))
-            {
-                var newSelect = newSelector(value, key);
-                return Result<N>.Ok(newSelect);
-            }
-            else
-            {
-                return error;
-            }
-        }
-        else
-        {
-            return error;
-        }
-    }
-
-#endregion
 
 #region IEnumerable
 
@@ -570,8 +513,13 @@ public readonly struct Result<T> :
 
         object? IEnumerator.Current => _result.OkOrThrow();
 
-        public T Current => _result.OkOrThrow();
+        public T Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _result.OkOrThrow();
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ResultEnumerator(Result<T> result)
         {
             _result = result;
@@ -583,6 +531,7 @@ public readonly struct Result<T> :
             /* Do Nothing */
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
             if (!_canYield)
@@ -604,9 +553,67 @@ public readonly struct Result<T> :
 
 #endregion
 
-    /// <summary>
-    /// Support for <c>await</c> syntax in order to support early return from <c>async</c> methods
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ResultAwaiter<T> GetAwaiter() => new(this);
+#region Linq
+
+    public Result<N> Select<N>(Func<T, N> selector)
+    {
+        if (_isOk)
+        {
+            return Result<N>.Ok(selector(_value!));
+        }
+        else
+        {
+            return Result<N>.Error(_error!);
+        }
+    }
+
+    public Result<N> Select<N>(Func<T, Result<N>> selector)
+    {
+        if (_isOk)
+        {
+            return selector(_value!);
+        }
+        else
+        {
+            return Result<N>.Error(_error!);
+        }
+    }
+
+    public Result<N> Select<N>(Func<T, Option<N>> selector)
+    {
+        if (_isOk)
+        {
+            if (selector(_value!).IsSome(out var some))
+            {
+                return Result<N>.Ok(some);
+            }
+            else
+            {
+                return Result<N>.Error(new InvalidOperationException());
+            }
+        }
+        else
+        {
+            return Result<N>.Error(_error!);
+        }
+    }
+
+    public Result<N> SelectMany<K, N>(Func<T, Result<K>> keySelector, Func<T, K, N> newSelector)
+    {
+        if (_isOk)
+        {
+            var keySelectResult = keySelector(_value!);
+            if (keySelectResult._isOk)
+            {
+                var newSelectResult = newSelector(_value!, keySelectResult._value!);
+                return Result<N>.Ok(newSelectResult);
+            }
+
+            return Result<N>.Error(keySelectResult._error!);
+        }
+
+        return Result<N>.Error(_error!);
+    }
+
+#endregion
 }

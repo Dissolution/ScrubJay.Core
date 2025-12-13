@@ -1,5 +1,4 @@
 using ScrubJay.Parsing;
-using static InlineIL.IL;
 
 namespace ScrubJay.Maths.Ternary;
 
@@ -16,6 +15,7 @@ public readonly struct Trit :
     IEquatable<Trit>
 {
     public static explicit operator Trit(bool boolean) => boolean ? True : False;
+    public static explicit operator sbyte(Trit trit) => trit._value;
 
     public static bool operator true(Trit trit)
     {
@@ -28,7 +28,7 @@ public readonly struct Trit :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Trit operator !(Trit trit) => trit.Not();
+    public static Trit operator !(Trit trit) => trit.Negate();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Trit operator &(Trit left, Trit right) => left.And(right);
@@ -75,29 +75,28 @@ public readonly struct Trit :
     public static readonly Trit False = new(FALSE_VALUE);
 
 
-    [FieldOffset(0)] private readonly sbyte _value;
+    [FieldOffset(0)]
+    private readonly sbyte _value;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Trit(sbyte value)
     {
         _value = value;
     }
 
-    #region Logical operators
+#region Logical operators
 
-    #region Unary
+#region Unary
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Trit Not()
+    public Trit Negate()
     {
-        Emit.Ldarg_0(); // this
-        Emit.Neg(); // !this
-        Emit.Conv_I1(); // (sbyte)!this
-        return Return<Trit>(); // (Trit)(sbyte)!this
+        return new Trit((sbyte)-_value);
     }
 
-    #endregion Unary
+#endregion Unary
 
-    #region Binary
+#region Binary
 
     /// <summary>
     /// Logical OR (∨)
@@ -111,15 +110,7 @@ public readonly struct Trit :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Trit Or(Trit other)
     {
-        Emit.Ldarg_0();
-        Emit.Ldarg(nameof(other));
-        Emit.Bge_S("this_ge_other");
-        Emit.Ldarg(nameof(other));
-        Emit.Ret();
-        MarkLabel("this_ge_other");
-        Emit.Ldarg_0();
-        Emit.Ret();
-        throw Unreachable();
+        return new Trit(sbyte.Max(_value, other._value));
     }
 
     /// <summary>
@@ -133,21 +124,13 @@ public readonly struct Trit :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Trit And(Trit other)
     {
-        Emit.Ldarg_0();
-        Emit.Ldarg(nameof(other));
-        Emit.Ble_S("this_le_other");
-        Emit.Ldarg(nameof(other));
-        Emit.Ret();
-        MarkLabel("this_le_other");
-        Emit.Ldarg_0();
-        Emit.Ret();
-        throw Unreachable();
+        return new Trit(sbyte.Min(_value, other._value));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Trit Nor(Trit other)
     {
-        return this.Or(other).Not();
+        return this.Or(other).Negate();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -165,12 +148,12 @@ public readonly struct Trit :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Trit Nand(Trit other)
     {
-        return this.And(other).Not();
+        return this.And(other).Negate();
     }
 
-    #endregion Binary
+#endregion Binary
 
-    #endregion Logical operators
+#endregion Logical operators
 
 
     public void Match(
@@ -203,10 +186,7 @@ public readonly struct Trit :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Equals(Trit trit)
     {
-        Emit.Ldarg_0();
-        Emit.Ldarg(nameof(trit));
-        Emit.Ceq();
-        return Return<bool>();
+        return _value == trit._value;
     }
 
     public bool Equals(bool boolean)

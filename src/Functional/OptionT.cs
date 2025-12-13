@@ -46,9 +46,6 @@ public readonly struct Option<T> :
     IComparable<None>,
     //IComparable<T>,
     IEnumerable<T>,
-#if NET6_0_OR_GREATER
-    ISpanFormattable,
-#endif
     IFormattable
 {
 #region Operators
@@ -153,7 +150,7 @@ public readonly struct Option<T> :
     {
         if (_isSome)
             return _value!;
-        throw Ex.Invalid(errorMessage ?? $"{ToString()} is not Some");
+        throw new InvalidOperationException(errorMessage ?? $"{ToString()} is not Some");
     }
 
 
@@ -214,7 +211,132 @@ public readonly struct Option<T> :
 
 #endregion
 
-#region Compare
+#region LINQ + IEnumerable
+
+    public Option<N> Select<N>(Func<T, N> selector)
+    {
+        if (_isSome)
+            return Option<N>.Some(selector(_value!));
+        return Option<N>.None;
+    }
+
+    public Option<N> SelectMany<N>(Func<T, Option<N>> newSelector)
+    {
+        if (_isSome)
+        {
+            return newSelector(_value!);
+        }
+
+        return Option<N>.None;
+    }
+
+    public Option<N> SelectMany<K, N>(
+        Func<T, K> keySelector,
+        Func<T, K, N> newSelector)
+    {
+        if (_isSome)
+        {
+            var key = keySelector(_value!);
+            var newValue = newSelector(_value!, key);
+            return Option<N>.Some(newValue);
+        }
+
+        return Option<N>.None;
+    }
+
+    public Option<N> SelectMany<K, N>(
+        Func<T, Option<K>> keySelector,
+        Func<T, K, N> newSelector)
+    {
+        if (_isSome)
+        {
+            var key = keySelector(_value!);
+            if (key.IsSome(out var k))
+            {
+                var newValue = newSelector(_value!, k);
+                return Option<N>.Some(newValue);
+            }
+        }
+
+        return Option<N>.None;
+    }
+
+    /// <summary>
+    /// Returns <see cref="None"/> if this <see cref="Option{T}"/> is <see cref="None"/>,<br/>
+    /// otherwise calls <paramref name="predicate"/> with the wrapped value and returns:<br/>
+    /// <see cref="Some"/> if <paramref name="predicate"/> returns <c>true</c> (with the wrapped value),<br/>
+    /// and <see cref="None"/> if <paramref name="predicate"/> returns <c>false</c><br/>
+    /// This function works similar to <c>Enumerable.Where</c><br/>
+    /// You can imagine this <see cref="Option{T}"/> being an iterator over one or zero elements<br/>
+    /// <see cref="Where"/> lets you decide which elements to keep<br/>
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
+    public Option<T> Where(Func<T, bool> predicate)
+    {
+        if (_isSome)
+        {
+            if (predicate(_value!))
+            {
+                return this;
+            }
+        }
+
+        return None;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    [MustDisposeResource(false)]
+    public OptionEnumerator GetEnumerator() => new OptionEnumerator(this);
+
+    [PublicAPI]
+    [MustDisposeResource(false)]
+    public struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
+    {
+        private readonly Option<T> _option;
+        private bool _canYield;
+
+        readonly object? IEnumerator.Current => _option.SomeOrThrow();
+        public readonly T Current => _option.SomeOrThrow();
+
+        public OptionEnumerator(Option<T> option)
+        {
+            _option = option;
+            _canYield = option._isSome;
+        }
+
+        public bool MoveNext()
+        {
+            if (!_canYield)
+            {
+                return false;
+            }
+            else
+            {
+                _canYield = false;
+                return true;
+            }
+        }
+
+        public void Reset()
+        {
+            _canYield = _option._isSome;
+        }
+
+        readonly void IDisposable.Dispose()
+        {
+            /* Do Nothing */
+        }
+    }
+
+#endregion
+
+#region Comparison
 
     public int CompareTo(Option<T> other)
     {
@@ -383,151 +505,7 @@ public readonly struct Option<T> :
 
 #endregion
 
-#region LINQ + IEnumerable
-
-    public Option<N> Select<N>(Func<T, N> selector)
-    {
-        if (_isSome)
-            return Some<N>(selector(_value!));
-        return Option<N>.None;
-    }
-
-    public Option<N> SelectMany<N>(Func<T, Option<N>> newSelector)
-    {
-        if (_isSome)
-        {
-            return newSelector(_value!);
-        }
-
-        return Option<N>.None;
-    }
-
-    public Option<N> SelectMany<K, N>(
-        Func<T, K> keySelector,
-        Func<T, K, N> newSelector)
-    {
-        if (_isSome)
-        {
-            var key = keySelector(_value!);
-            var newValue = newSelector(_value!, key);
-            return Some<N>(newValue);
-        }
-
-        return Option<N>.None;
-    }
-
-    public Option<N> SelectMany<K, N>(
-        Func<T, Option<K>> keySelector,
-        Func<T, K, N> newSelector)
-    {
-        if (_isSome)
-        {
-            var key = keySelector(_value!);
-            if (key.IsSome(out var k))
-            {
-                var newValue = newSelector(_value!, k);
-                return Some<N>(newValue);
-            }
-        }
-
-        return Option<N>.None;
-    }
-
-    /// <summary>
-    /// Returns <see cref="None"/> if this <see cref="Option{T}"/> is <see cref="None"/>,<br/>
-    /// otherwise calls <paramref name="predicate"/> with the wrapped value and returns:<br/>
-    /// <see cref="Some"/> if <paramref name="predicate"/> returns <c>true</c> (with the wrapped value),<br/>
-    /// and <see cref="None"/> if <paramref name="predicate"/> returns <c>false</c><br/>
-    /// This function works similar to <c>Enumerable.Where</c><br/>
-    /// You can imagine this <see cref="Option{T}"/> being an iterator over one or zero elements<br/>
-    /// <see cref="Where"/> lets you decide which elements to keep<br/>
-    /// </summary>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    /// <seealso href="https://doc.rust-lang.org/std/option/enum.Option.html#method.filter"/>
-    public Option<T> Where(Func<T, bool> predicate)
-    {
-        if (_isSome)
-        {
-            if (predicate(_value!))
-            {
-                return this;
-            }
-        }
-
-        return None;
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    [MustDisposeResource(false)]
-    public OptionEnumerator GetEnumerator() => new OptionEnumerator(this);
-
-    [PublicAPI]
-    [MustDisposeResource(false)]
-    public struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
-    {
-        private readonly Option<T> _option;
-        private bool _canYield;
-
-        readonly object? IEnumerator.Current => _option.SomeOrThrow();
-        public readonly T Current => _option.SomeOrThrow();
-
-        public OptionEnumerator(Option<T> option)
-        {
-            _option = option;
-            _canYield = option._isSome;
-        }
-
-        public bool MoveNext()
-        {
-            if (!_canYield)
-            {
-                return false;
-            }
-            else
-            {
-                _canYield = false;
-                return true;
-            }
-        }
-
-        public void Reset()
-        {
-            _canYield = _option._isSome;
-        }
-
-        readonly void IDisposable.Dispose()
-        {
-            /* Do Nothing */
-        }
-    }
-
-#endregion
-
 #region Formatting
-
-    public bool TryFormat(
-        Span<char> destination,
-        out int charsWritten,
-        ReadOnlySpan<char> format = default,
-        IFormatProvider? provider = null)
-    {
-        // todo: Make this more efficient
-        string fmt = ToString(format.ToString(), provider);
-        if (fmt.TryCopyTo(destination))
-        {
-            charsWritten = fmt.Length;
-            return true;
-        }
-
-        charsWritten = 0;
-        return false;
-    }
-
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         if (_isSome)
@@ -542,21 +520,20 @@ public readonly struct Option<T> :
                 str = _value?.ToString();
             }
 
-            return Build($"Option<{typeof(T):@}>.Some({str})");
+            return $"Some({str})";
         }
 
-        return Build($"Option<{typeof(T):@}>.None");
+        return nameof(None);
     }
 
     public override string ToString()
     {
         if (_isSome)
         {
-            return Build($"Option<{typeof(T):@}>.Some({_value:@})");
+            return $"Some({_value})";
         }
 
-        return Build($"Option<{typeof(T):@}>.None");
+        return nameof(None);
     }
-
 #endregion
 }
