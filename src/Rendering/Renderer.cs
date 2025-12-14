@@ -19,23 +19,23 @@ public static partial class Renderer
     private static readonly List<IValueRenderer> _openValueRenderers = [];
     static Renderer()
     {
-        Register<byte>(static (u8, tb) => tb.Format(u8));
-        Register<sbyte>(static (i8, tb) => tb.Format(i8));
-        Register<short>(static (i16, tb) => tb.Format(i16));
-        Register<ushort>(static (u16, tb) => tb.Format(u16));
-        Register<int>(static (i32, tb) => tb.Format(i32));
-        Register<uint>(static (u32, tb) => tb.Format(u32).Write('U'));
-        Register<long>(static (i64, tb) => tb.Format(i64).Write('L'));
-        Register<ulong>(static (u64, tb) => tb.Format(u64).Write("UL"));
+        Register<byte>(static (u8, tb) => tb.Append(u8));
+        Register<sbyte>(static (i8, tb) => tb.Append(i8));
+        Register<short>(static (i16, tb) => tb.Append(i16));
+        Register<ushort>(static (u16, tb) => tb.Append(u16));
+        Register<int>(static (i32, tb) => tb.Append(i32));
+        Register<uint>(static (u32, tb) => tb.Append(u32).Write('U'));
+        Register<long>(static (i64, tb) => tb.Append(i64).Write('L'));
+        Register<ulong>(static (u64, tb) => tb.Append(u64).Write("UL"));
 
         // https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings#general-format-specifier-g
-        Register<float>(static (f32, tb) => tb.Format(f32, "G9").Write('f'));
-        Register<double>(static (f64, tb) => tb.Format(f64, "G17").Write('d'));
-        Register<decimal>(static (dec, tb) => tb.Format(dec, "G").Write('m'));
+        Register<float>(static (f32, tb) => tb.Append(f32, "G9").Write('f'));
+        Register<double>(static (f64, tb) => tb.Append(f64, "G17").Write('d'));
+        Register<decimal>(static (dec, tb) => tb.Append(dec, "G").Write('m'));
 
-        Register<TimeSpan>(static (ts, tb) => tb.Format(ts, "g"));
-        Register<DateTime>(static (dt, tb) => tb.Format(dt, "yyyy-MM-dd HH:mm:ss"));
-        Register<DateTimeOffset>(static (dto, tb) => tb.Format(dto, "yyyy-MM-dd HH:mm:ss"));
+        Register<TimeSpan>(static (ts, tb) => tb.Append(ts, "g"));
+        Register<DateTime>(static (dt, tb) => tb.Append(dt, "yyyy-MM-dd HH:mm:ss"));
+        Register<DateTimeOffset>(static (dto, tb) => tb.Append(dto, "yyyy-MM-dd HH:mm:ss"));
 
         Register<char>(static (ch, tb) => tb.Append('\'').Append(ch).Append('\''));
         Register<string>(static (str, tb) => tb.Append('"').Append(str).Append('"'));

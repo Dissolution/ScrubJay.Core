@@ -19,11 +19,11 @@ public static class RangeExtensions
             return TextBuilder.New
                 .If(range.Start,
                     static start => !start.IsUnbounded,
-                    static (tb, start) => tb.If(start.IsFromEnd, '-').Format(start.Value))
+                    static (tb, start) => tb.If(start.IsFromEnd, '-').Append(start.Value))
                 .Append("..")
                 .If(range.End,
                     static end => !end.IsUnbounded,
-                    static (tb, end) => tb.If(end.IsFromEnd, '-').Format(end.Value))
+                    static (tb, end) => tb.If(end.IsFromEnd, '-').Append(end.Value))
                 .ToStringAndDispose();
         }
 

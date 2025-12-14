@@ -154,7 +154,7 @@ public class Validations<E> : IReadOnlyCollection<E>
             return;
 
         string message = TextBuilder.New
-            .Format(_errors.Count)
+            .Append(_errors.Count)
             .Append(" validations failed:")
             .NewLine()
             .Delimit(TBA.NewLine, _errors)

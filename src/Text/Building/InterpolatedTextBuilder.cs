@@ -209,7 +209,7 @@ public ref struct InterpolatedTextBuilder
             }
             else
             {
-                _builder.Render(value);
+                _builder.Append(value, '@');
             }
         }
         else
@@ -254,7 +254,7 @@ public ref struct InterpolatedTextBuilder
         }
         else
         {
-            _builder.Format<T>(value, format);
+            _builder.Append<T>(value, format);
         }
     }
 

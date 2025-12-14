@@ -70,7 +70,7 @@ public readonly struct StackIndex :
         return TextBuilder.New
             .If(_inArrayOrder, "arr:", "pop:")
             .If(IsFromEnd, '^')
-            .Format(_index)
+            .Append(_index)
             .ToStringAndDispose();
     }
 }

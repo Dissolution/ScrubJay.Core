@@ -31,8 +31,7 @@ public partial class TextBuilder
     }
 
     public TextBuilder Append(
-        [HandlesResourceDisposal]
-        [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
+        [HandlesResourceDisposal] [InterpolatedStringHandlerArgument("")] // pass this TextBuilder instance in as an argument
         ref InterpolatedTextBuilder interpolatedTextBuilder)
     {
         if (ReferenceEquals(interpolatedTextBuilder._builder, this))
@@ -48,14 +47,71 @@ public partial class TextBuilder
         }
     }
 
-
-    public TextBuilder Append<T>(T? value)
 #if NET9_0_OR_GREATER
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // ReSharper disable once MethodOverloadWithOptionalParameter
+    public TextBuilder Append<T>(T? value, GenericTypeConstraint.AllowsRefStruct<T> _ = default)
         where T : allows ref struct
-#endif
     {
-        // stringify can be called on any value, including ref structs
-        return Append(value.Stringify());
+        Write<T>(value, _);
+        return this;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // ReSharper disable once MethodOverloadWithOptionalParameter
+    public TextBuilder Append<T>(T? value, char format, GenericTypeConstraint.AllowsRefStruct<T> _ = default)
+        where T : allows ref struct
+    {
+        Write<T>(value, format, _);
+        return this;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TextBuilder Append<T>(T? value, char format)
+    {
+        Write<T>(value, format, null);
+        return this;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TextBuilder Append<T>(T? value, char format, IFormatProvider? provider)
+    {
+        Write<T>(value, format, provider);
+        return this;
+    }
+
+#else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TextBuilder Append<T>(T? value, char format, IFormatProvider? provider = null)
+    {
+        Write<T>(value, format, provider);
+        return this;
+    }
+
+#endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TextBuilder Append<T>(T? value)
+    {
+        Write<T>(value);
+        return this;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TextBuilder Append<T>(T? value,
+        string? format,
+        IFormatProvider? provider = null)
+    {
+        Write<T>(value, format, provider);
+        return this;
+    }
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TextBuilder Append<T>(T? value, scoped text format, IFormatProvider? provider = null)
+    {
+        Write<T>(value, format, provider);
+        return this;
     }
 
 #endregion
@@ -110,13 +166,69 @@ public partial class TextBuilder
         return this;
     }
 
-    public TextBuilder AppendMany<T>(IEnumerable<T>? values)
+#if NET9_0_OR_GREATER
+    // ReSharper disable once MethodOverloadWithOptionalParameter
+    public TextBuilder AppendMany<T>(IEnumerable<T>? values, GenericTypeConstraint.AllowsRefStruct<T> _ = default)
+        where T : allows ref struct
     {
         if (values is not null)
         {
             foreach (var value in values)
             {
                 Write(value.Stringify());
+            }
+        }
+
+        return this;
+    }
+#endif
+
+    public TextBuilder AppendMany<T>(IEnumerable<T>? values)
+    {
+        if (values is not null)
+        {
+            foreach (var value in values)
+            {
+                Write<T>(value);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder AppendMany<T>(IEnumerable<T>? values, string? format, IFormatProvider? provider = null)
+    {
+        if (values is not null)
+        {
+            foreach (var value in values)
+            {
+                Write<T>(value, format, provider);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder AppendMany<T>(IEnumerable<T>? values, char format, IFormatProvider? provider = null)
+    {
+        if (values is not null)
+        {
+            foreach (var value in values)
+            {
+                Write<T>(value, format, provider);
+            }
+        }
+
+        return this;
+    }
+
+    public TextBuilder AppendMany<T>(IEnumerable<T>? values, scoped text format, IFormatProvider? provider = null)
+    {
+        if (values is not null)
+        {
+            foreach (var value in values)
+            {
+                Write<T>(value, format, provider);
             }
         }
 
@@ -140,6 +252,25 @@ public partial class TextBuilder
         // writing has occurred
         return NewLine();
     }
+
+#if NET9_0_OR_GREATER
+    // ReSharper disable once MethodOverloadWithOptionalParameter
+    public TextBuilder AppendLine<T>(T? value, GenericTypeConstraint.AllowsRefStruct<T> _ = default)
+        where T : allows ref struct
+        => Append<T>(value).NewLine();
+#endif
+
+    public TextBuilder AppendLine<T>(T? value)
+        => Append<T>(value).NewLine();
+
+    public TextBuilder AppendLine<T>(T? value, string? format, IFormatProvider? provider = null)
+        => Append<T>(value, format, provider).NewLine();
+
+    public TextBuilder AppendLine<T>(T? value, char format, IFormatProvider? provider = null)
+        => Append<T>(value, format, provider).NewLine();
+
+    public TextBuilder AppendLine<T>(T? value, scoped text format, IFormatProvider? provider = null)
+        => Append<T>(value, format, provider).NewLine();
 
 #endregion
 }

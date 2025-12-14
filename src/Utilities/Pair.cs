@@ -172,9 +172,9 @@ public readonly struct Pair<K, V> :
     {
         return TextBuilder.New
             .Append('(')
-            .Format(Key, format, provider)
+            .Append(Key, format, provider)
             .Append(", ")
-            .Format(Value, format, provider)
+            .Append(Value, format, provider)
             .Append(')')
             .ToStringAndDispose();
     }

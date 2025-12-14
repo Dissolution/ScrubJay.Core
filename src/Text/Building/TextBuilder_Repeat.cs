@@ -105,7 +105,7 @@ public partial class TextBuilder
         if (count > 0 && value is not null)
         {
             int start = _position;
-            Append<T>(value);
+            Write<T>(value);
             int pos = _position;
             Span<char> written = _chars.AsSpan(start, pos - start);
             return Repeat(count - 1, written);
@@ -119,7 +119,7 @@ public partial class TextBuilder
         if (count > 0)
         {
             int start = _position;
-            Format<T>(value, format, provider);
+            Write<T>(value, format, provider);
             int pos = _position;
             Span<char> written = _chars.AsSpan(start, pos - start);
             return Repeat(count - 1, written);
@@ -133,7 +133,7 @@ public partial class TextBuilder
         if (count > 0)
         {
             int start = _position;
-            Format<T>(value, format, provider);
+            Write<T>(value, format, provider);
             int pos = _position;
             Span<char> written = _chars.AsSpan(start, pos - start);
             return Repeat(count - 1, written);

@@ -10,7 +10,7 @@
     public override string ToString()
     {
         using var builder = new TextBuilder();
-        builder.Format(Mantissa);
+        builder.Append(Mantissa);
 
         if (Exponent == 0)
         {

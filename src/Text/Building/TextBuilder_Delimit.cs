@@ -14,10 +14,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Append<T>(values[0]);
+            Write<T>(values[0]);
             for (int i = 1; i < values.Length; i++)
             {
-                Append(delimiter).Append<T>(values[i]);
+                Write(delimiter);
+                Write<T>(values[i]);
             }
         }
 
@@ -28,10 +29,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Append<T>(values[0]);
+            Write<T>(values[0]);
             for (int i = 1; i < values.Length; i++)
             {
-                Append(delimiter).Append<T>(values[i]);
+                Write(delimiter);
+                Write<T>(values[i]);
             }
         }
 
@@ -47,10 +49,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Append<T>(values[0]);
+            Write<T>(values[0]);
             for (int i = 1; i < values.Length; i++)
             {
-                Invoke(delimit).Append<T>(values[i]);
+                delimit?.Invoke(this);
+                Write<T>(values[i]);
             }
         }
 
@@ -86,12 +89,13 @@ partial class TextBuilder
             using var e = values.GetEnumerator();
             if (e.MoveNext())
             {
-                Append<T>(e.Current);
+                Write<T>(e.Current);
             }
 
             while (e.MoveNext())
             {
-                Append(delimiter).Append<T>(e.Current);
+                Write(delimiter);
+                Write<T>(e.Current);
             }
         }
 
@@ -105,12 +109,13 @@ partial class TextBuilder
             using var e = values.GetEnumerator();
             if (e.MoveNext())
             {
-                Append<T>(e.Current);
+                Write<T>(e.Current);
             }
 
             while (e.MoveNext())
             {
-                Append(delimiter).Append<T>(e.Current);
+                Write(delimiter);
+                Write<T>(e.Current);
             }
         }
 
@@ -129,10 +134,11 @@ partial class TextBuilder
             using var e = values.GetEnumerator();
             if (e.MoveNext())
             {
-                Append<T>(e.Current);
+                Write<T>(e.Current);
                 while (e.MoveNext())
                 {
-                    Invoke(delimit).Append<T>(e.Current);
+                    delimit?.Invoke(this);
+                    Write<T>(e.Current);
                 }
             }
         }
@@ -154,10 +160,11 @@ partial class TextBuilder
         var iterator = iterable.Iterator;
         if (iterator.TryMoveNext(out value))
         {
-            Append<V>(value);
+            Write<V>(value);
             while (iterator.TryMoveNext(out value))
             {
-                Append(delimiter).Append<V>(value);
+                Write(delimiter);
+                Write<V>(value);
             }
         }
 
@@ -174,10 +181,11 @@ partial class TextBuilder
         var iterator = iterable.Iterator;
         if (iterator.TryMoveNext(out value))
         {
-            Append<V>(value);
+            Write<V>(value);
             while (iterator.TryMoveNext(out value))
             {
-                Append(delimiter).Append<V>(value);
+                Write(delimiter);
+                Write<V>(value);
             }
         }
 
@@ -203,10 +211,11 @@ partial class TextBuilder
         var iterator = iterable.Iterator;
         if (iterator.TryMoveNext(out value))
         {
-            Append<V>(value);
+            Write<V>(value);
             while (iterator.TryMoveNext(out value))
             {
-                Invoke(delimit).Append<V>(value);
+                delimit?.Invoke(this);
+                Write<V>(value);
             }
         }
 
@@ -226,11 +235,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Format<T>(values[0], format, provider);
+            Write<T>(values[0], format, provider);
             for (int i = 1; i < values.Length; i++)
             {
-                Append(delimiter)
-                    .Format<T>(values[i], format, provider);
+                Write(delimiter);
+                Write<T>(values[i], format, provider);
             }
         }
 
@@ -242,11 +251,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Format<T>(values[0], format, provider);
+            Append<T>(values[0], format, provider);
             for (int i = 1; i < values.Length; i++)
             {
-                Append(delimiter)
-                    .Format<T>(values[i], format, provider);
+                Write(delimiter);
+                Write<T>(values[i], format, provider);
             }
         }
 
@@ -264,11 +273,11 @@ partial class TextBuilder
     {
         if (!values.IsEmpty)
         {
-            Format<T>(values[0], format, provider);
+            Write<T>(values[0], format, provider);
             for (int i = 1; i < values.Length; i++)
             {
-                Invoke(delimit)
-                    .Format<T>(values[i], format, provider);
+                delimit?.Invoke(this);
+                Write<T>(values[i], format, provider);
             }
         }
 
@@ -304,12 +313,13 @@ partial class TextBuilder
             using var e = values.GetEnumerator();
             if (e.MoveNext())
             {
-                Format<T>(e.Current, format, provider);
+                Write<T>(e.Current, format, provider);
             }
 
             while (e.MoveNext())
             {
-                Append(delimiter).Format<T>(e.Current, format, provider);
+                Write(delimiter);
+                Write<T>(e.Current, format, provider);
             }
         }
 
@@ -324,12 +334,13 @@ partial class TextBuilder
             using var e = values.GetEnumerator();
             if (e.MoveNext())
             {
-                Format<T>(e.Current, format, provider);
+                Write<T>(e.Current, format, provider);
             }
 
             while (e.MoveNext())
             {
-                Append(delimiter).Format<T>(e.Current, format, provider);
+                Write(delimiter);
+                Write<T>(e.Current, format, provider);
             }
         }
 
@@ -349,12 +360,13 @@ partial class TextBuilder
             using var e = values.GetEnumerator();
             if (e.MoveNext())
             {
-                Format<T>(e.Current, format, provider);
+                Write<T>(e.Current, format, provider);
             }
 
             while (e.MoveNext())
             {
-                Invoke(delimit).Format<T>(e.Current, format, provider);
+                delimit?.Invoke(this);
+                Write<T>(e.Current, format, provider);
             }
         }
 
@@ -373,10 +385,11 @@ partial class TextBuilder
 
         if (iterator.TryMoveNext(out value))
         {
-            Format<V>(value, format, provider);
+            Write<V>(value, format, provider);
             while (iterator.TryMoveNext(out value))
             {
-                Append(delimiter).Format<V>(value, format, provider);
+                Write(delimiter);
+                Write<V>(value, format, provider);
             }
         }
 
@@ -392,10 +405,11 @@ partial class TextBuilder
 
         if (iterator.TryMoveNext(out value))
         {
-            Format<V>(value, format, provider);
+            Write<V>(value, format, provider);
             while (iterator.TryMoveNext(out value))
             {
-                Append(delimiter).Format<V>(value, format, provider);
+                Write(delimiter);
+                Write<V>(value, format, provider);
             }
         }
 
@@ -418,10 +432,11 @@ partial class TextBuilder
 
         if (iterator.TryMoveNext(out value))
         {
-            Format<V>(value, format, provider);
+            Write<V>(value, format, provider);
             while (iterator.TryMoveNext(out value))
             {
-                Invoke(delimit).Format<V>(value, format, provider);
+                delimit?.Invoke(this);
+                Write<V>(value, format, provider);
             }
         }
 
@@ -443,7 +458,8 @@ partial class TextBuilder
             Invoke(values[0], build);
             for (int i = 1; i < values.Length; i++)
             {
-                Append(delimiter).Invoke(values[i], build);
+                Write(delimiter);
+                Invoke(values[i], build);
             }
         }
 
@@ -457,7 +473,8 @@ partial class TextBuilder
             Invoke(values[0], build);
             for (int i = 1; i < values.Length; i++)
             {
-                Append(delimiter).Invoke(values[i], build);
+                Write(delimiter);
+                Invoke(values[i], build);
             }
         }
 
@@ -517,7 +534,8 @@ partial class TextBuilder
 
             while (e.MoveNext())
             {
-                Append(delimiter).Invoke(e.Current, build);
+                Write(delimiter);
+                Invoke(e.Current, build);
             }
         }
 
@@ -536,7 +554,8 @@ partial class TextBuilder
 
             while (e.MoveNext())
             {
-                Append(delimiter).Invoke(e.Current, build);
+                Write(delimiter);
+                Invoke(e.Current, build);
             }
         }
 
@@ -581,7 +600,8 @@ partial class TextBuilder
             Invoke(value, build);
             while (iterator.TryMoveNext(out value))
             {
-                Append(delimiter).Invoke(value, build);
+                Write(delimiter);
+                Invoke(value, build);
             }
         }
 
@@ -599,7 +619,8 @@ partial class TextBuilder
             Invoke(value, build);
             while (iterator.TryMoveNext(out value))
             {
-                Append(delimiter).Invoke(value, build);
+                Write(delimiter);
+                Invoke(value, build);
             }
         }
 

@@ -103,20 +103,5 @@ partial class TextBuilder
 
 #endregion
 
-    public TextBuilder Measure(Action<TextBuilder>? buildText, out Span<char> written)
-    {
-        if (buildText is not null)
-        {
-            int start = _position;
-            buildText(this);
-            int end = _position;
-            written = _chars.AsSpan(start, end - start);
-        }
-        else
-        {
-            written = default;
-        }
 
-        return this;
-    }
 }

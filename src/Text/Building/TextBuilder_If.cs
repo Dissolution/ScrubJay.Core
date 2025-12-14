@@ -4,28 +4,15 @@ partial class TextBuilder
 {
 #region If (bool)
 
-    private TextBuilder Add<T>(T? value, string? format = null)
-    {
-        if (format is not null)
-        {
-            return Format<T>(value, format);
-        }
+#region Only the True Condition
 
-        if (value is char ch)
-            return Append(ch);
-
-        if (value is string str)
-            return Append(str);
-
-        return Render<T>(value);
-    }
-
-
-    public TextBuilder If<T>(bool condition, T onTrue)
+#if NET9_0_OR_GREATER
+    public TextBuilder If<T>(bool condition, T onTrue, GenericTypeConstraint.AllowsRefStruct<T> _ = default)
+        where T : allows ref struct
     {
         if (condition)
         {
-            return Add<T>(onTrue);
+            return Append<T>(onTrue, _);
         }
         else
         {
@@ -33,11 +20,61 @@ partial class TextBuilder
         }
     }
 
-    public TextBuilder If<T>(bool condition, (T Value, string? Format) onTrue)
+    public TextBuilder If<T>(bool condition, T onTrue, char format, GenericTypeConstraint.AllowsRefStruct<T> _ = default)
+        where T : allows ref struct
     {
         if (condition)
         {
-            return Add<T>(onTrue.Value, onTrue.Format);
+            return Append<T>(onTrue, format, _);
+        }
+        else
+        {
+            return this;
+        }
+    }
+#endif
+
+    public TextBuilder If<T>(bool condition, T onTrue)
+    {
+        if (condition)
+        {
+            return Append<T>(onTrue);
+        }
+        else
+        {
+            return this;
+        }
+    }
+
+    public TextBuilder If<T>(bool condition, T onTrue, char format, IFormatProvider? provider = null)
+    {
+        if (condition)
+        {
+            return Append<T>(onTrue, format, provider);
+        }
+        else
+        {
+            return this;
+        }
+    }
+
+    public TextBuilder If<T>(bool condition, T onTrue, scoped text format, IFormatProvider? provider = null)
+    {
+        if (condition)
+        {
+            return Append<T>(onTrue, format, provider);
+        }
+        else
+        {
+            return this;
+        }
+    }
+
+    public TextBuilder If<T>(bool condition, T onTrue, string? format, IFormatProvider? provider = null)
+    {
+        if (condition)
+        {
+            return Append<T>(onTrue, format, provider);
         }
         else
         {
@@ -57,99 +94,90 @@ partial class TextBuilder
         }
     }
 
+#endregion / only true
+
+#region True + False Conditions
+
+#if NET9_0_OR_GREATER
+    public TextBuilder If<T, F>(bool condition, T onTrue, F onFalse,
+        GenericTypeConstraint.AllowsRefStruct<T> _ = default,
+        GenericTypeConstraint.AllowsRefStruct<F> __ = default)
+        where T : allows ref struct
+        where F : allows ref struct
+    {
+        if (condition)
+        {
+            return Append<T>(onTrue);
+        }
+        else
+        {
+            return Append<F>(onFalse);
+        }
+    }
+
+    public TextBuilder If<T, F>(bool condition, T onTrue, F onFalse,
+        char format,
+        GenericTypeConstraint.AllowsRefStruct<T> _ = default,
+        GenericTypeConstraint.AllowsRefStruct<F> __ = default)
+        where T : allows ref struct
+        where F : allows ref struct
+    {
+        if (condition)
+        {
+            return Append<T>(onTrue, format, _);
+        }
+        else
+        {
+            return Append<F>(onFalse, format, __);
+        }
+    }
+#endif
+
     public TextBuilder If<T, F>(bool condition, T onTrue, F onFalse)
     {
         if (condition)
         {
-            return Add<T>(onTrue);
+            return Append<T>(onTrue);
         }
         else
         {
-            return Add<F>(onFalse);
+            return Append<F>(onFalse);
         }
     }
 
-    public TextBuilder If<T, F>(bool condition, T onTrue, (F Value, string? Format) onFalse)
+    public TextBuilder If<T, F>(bool condition, T onTrue, F onFalse, char format, IFormatProvider? provider = null)
     {
         if (condition)
         {
-            return Add<T>(onTrue);
+            return Append<T>(onTrue, format, provider);
         }
         else
         {
-            return Add<F>(onFalse.Value, onFalse.Format);
+            return Append<F>(onFalse, format, provider);
         }
     }
 
-    public TextBuilder If<T>(bool condition, T onTrue, Action<TextBuilder>? onFalse)
+    public TextBuilder If<T, F>(bool condition, T onTrue, F onFalse, scoped text format, IFormatProvider? provider = null)
     {
         if (condition)
         {
-            return Add<T>(onTrue);
+            return Append<T>(onTrue, format, provider);
         }
         else
         {
-            return Invoke(onFalse);
+            return Append<F>(onFalse, format, provider);
         }
     }
 
-    public TextBuilder If<T, F>(bool condition, (T Value, string? Format) onTrue, F onFalse)
+    public TextBuilder If<T, F>(bool condition, T onTrue, F onFalse, string? format, IFormatProvider? provider = null)
     {
         if (condition)
         {
-            return Add<T>(onTrue.Value, onTrue.Format);
+            return Append<T>(onTrue, format, provider);
         }
         else
         {
-            return Add<F>(onFalse);
-        }
-    }
-
-    public TextBuilder If<T, F>(bool condition, (T Value, string? Format) onTrue, (F Value, string? Format) onFalse)
-    {
-        if (condition)
-        {
-            return Add<T>(onTrue.Value, onTrue.Format);
-        }
-        else
-        {
-            return Add<F>(onFalse.Value, onFalse.Format);
-        }
-    }
-
-    public TextBuilder If<T>(bool condition, (T Value, string? Format) onTrue, Action<TextBuilder>? onFalse)
-    {
-        if (condition)
-        {
-            return Add<T>(onTrue.Value, onTrue.Format);
-        }
-        else
-        {
-            return Invoke(onFalse);
-        }
-    }
-
-    public TextBuilder If<F>(bool condition, Action<TextBuilder>? onTrue, F onFalse)
-    {
-        if (condition)
-        {
-            return Invoke(onTrue);
-        }
-        else
-        {
-            return Add<F>(onFalse);
-        }
-    }
-
-    public TextBuilder If<F>(bool condition, Action<TextBuilder>? onTrue, (F Value, string? Format) onFalse)
-    {
-        if (condition)
-        {
-            return Invoke(onTrue);
-        }
-        else
-        {
-            return Add<F>(onFalse.Value, onFalse.Format);
+            return Append<F>(onFalse, format, provider);
         }
     }
 
@@ -164,6 +192,38 @@ partial class TextBuilder
             return Invoke(onFalse);
         }
     }
+
+    public TextBuilder If<T>(bool condition, T onTrue, Action<TextBuilder>? onFalse)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+    {
+        if (condition)
+        {
+            return Append<T>(onTrue);
+        }
+        else
+        {
+            return Invoke(onFalse);
+        }
+    }
+
+    public TextBuilder If<F>(bool condition, Action<TextBuilder>? onTrue, F onFalse)
+#if NET9_0_OR_GREATER
+        where F : allows ref struct
+#endif
+    {
+        if (condition)
+        {
+            return Invoke(onTrue);
+        }
+        else
+        {
+            return Append<F>(onFalse);
+        }
+    }
+
+#endregion / only true
 
 #endregion
 
@@ -555,22 +615,22 @@ partial class TextBuilder
     public TextBuilder EnumerateFormat<T>(scoped ReadOnlySpan<T> values,
         string? format = null,
         IFormatProvider? provider = null)
-        => Enumerate<T>(values, (tb, value) => tb.Format<T>(value, format, provider));
+        => Enumerate<T>(values, (tb, value) => tb.Append<T>(value, format, provider));
 
     public TextBuilder EnumerateFormat<T>(scoped Span<T> values,
         string? format = null,
         IFormatProvider? provider = null)
-        => Enumerate<T>(values, (tb, value) => tb.Format<T>(value, format, provider));
+        => Enumerate<T>(values, (tb, value) => tb.Append<T>(value, format, provider));
 
     public TextBuilder EnumerateFormat<T>(T[]? values,
         string? format = null,
         IFormatProvider? provider = null)
-        => Enumerate<T>(values, (tb, value) => tb.Format<T>(value, format, provider));
+        => Enumerate<T>(values, (tb, value) => tb.Append<T>(value, format, provider));
 
     public TextBuilder EnumerateFormat<T>(IEnumerable<T>? values,
         string? format = null,
         IFormatProvider? provider = null)
-        => Enumerate<T>(values, (tb, value) => tb.Format<T>(value, format, provider));
+        => Enumerate<T>(values, (tb, value) => tb.Append<T>(value, format, provider));
 
     public TextBuilder EnumerateRender<T>(scoped ReadOnlySpan<T> values)
         => Enumerate<T>(values, static (tb, value) => tb.Render<T>(value));

@@ -160,7 +160,7 @@ public partial class TextBuilder
 
         // have to format the value (otherwise we have no idea what len is)
         int start = _position;
-        Format<T>(value, format, provider);
+        Append<T>(value, format, provider);
         int end = _position;
         int len = end - start;
 

@@ -7,7 +7,7 @@ partial class TextBuilder
     private void GrowBy(int count)
     {
         Debug.Assert(count > 0);
-        GrowTo(Capacity + (count * 16));
+        GrowTo(Capacity + (count * 2));
     }
 
     private void GrowTo(int minCapacity)
