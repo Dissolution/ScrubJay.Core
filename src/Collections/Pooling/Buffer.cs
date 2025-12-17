@@ -1,26 +1,27 @@
 ﻿// Member can be made `readonly` -- Incorrect on members that return Span<T>, which may change the underlying data
-
 #pragma warning disable IDE0251
+
 // Rename collections to end in a suffix
 #pragma warning disable CA1710
 
+// Obsolete member overrides non-obsolete member
+#pragma warning disable CS0809
 
 using System.Buffers;
 using System.Text;
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 
 namespace ScrubJay.Collections.Pooling;
 
 /// <summary>
 /// A Buffer is a stack-based, <see cref="IList{T}"/>-like collection <i>(grows as required)</i>,
-/// that uses <see cref="ArrayPool{T}"/>.<see cref="ArrayPool{T}.Shared"/> to minimalize allocations.<br/>
-/// It must be <see cref="Dispose">Disposed</see> after use or there is little benefit to using one.
+/// that uses <see cref="ArrayPool{T}.Shared"/> to minimalize allocations.<br/>
+/// It must be <see cref="Dispose">Disposed</see> after use to benefit.<br/>
 /// </summary>
 /// <typeparam name="T">
-/// The <see cref="Type"/> of items stored in this <see cref="Buffer{T}"/>
+/// The <see cref="Type"/> of items stored in this <see cref="Buffer{T}"/>.
 /// </typeparam>
 /// <remarks>
-/// Heavily inspired by <c>System.Collections.Generic.ValueListBuilder&lt;T&gt;</c><br/>
+/// Heavily inspired by <c>System.Collections.Generic.ValueListBuilder&lt;T&gt;</c>.<br/>
 /// <a href="https://github.com/dotnet/runtime/blob/release/8.0/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/ValueListBuilder.cs"/>
 /// </remarks>
 [PublicAPI]
@@ -31,44 +32,59 @@ public ref struct Buffer<T> : IDisposable
 #region Static
 
     /// <summary>
-    /// Implicitly wrap a <see cref="Span{T}"/> with a <see cref="Buffer{T}"/><br/>
-    /// This is useful with <c>stackalloc</c>:<br/>
-    /// <c>using Buffer&lt;byte&gt; buffer = stackalloc byte[8];</c>
+    /// Implicitely cast a <see cref="Span{T}"/> into an empty <see cref="Buffer{T}"/> that uses it for underlying storage.<br/>
+    /// This is primarly used with <c>stackalloc</c>, otherwise use a constructor if you want to specify that items already in the <see cref="Span{T}"/> are valid.<br/>
+    /// <c>using Buffer&lt;byte&gt; buffer = stackalloc byte[64];</c>
     /// </summary>
     /// <param name="span">
-    /// The initial <see cref="Span{T}"/> the returned <see cref="Buffer{T}"/> will wrap<br/>
-    /// If items are added beyond the <see cref="Span{T}"/>'s <see cref="Span{T}.Length"/>,
-    /// a new underlying <see cref="Array">T[]</see> will be rented,
-    /// the <see cref="Span{T}"/> will be <see cref="Span{T}.Clear">Cleared</see>,
-    /// and then remain unused.
+    /// The initial <see cref="Span{T}"/> the returned <see cref="Buffer{T}"/> will use for initial underlying storage.
     /// </param>
     /// <returns>
-    /// A <see cref="Buffer{T}"/> wrapping the <paramref name="span"/>
+    /// A new, empty <see cref="Buffer{T}"/> using <paramref name="span"/>.
     /// </returns>
+    /// <remarks>
+    /// If items are added beyond <paramref name="span"/>'s initial capacity, a new array will be rented and this span will be cleared.
+    /// </remarks>
     [MustDisposeResource(false)]
     public static implicit operator Buffer<T>(Span<T> span) => new(span);
 
-    public static Buffer<T> Empty
-    {
-        [MustDisposeResource]
-        get => new();
-    }
-
-    [MustDisposeResource]
+    /// <summary>
+    /// Get a new, empty <see cref="Buffer{T}"/>.
+    /// </summary>
+    [MustDisposeResource(true)]
     public static Buffer<T> New() => new();
 
-    [MustDisposeResource]
+    /// <summary>
+    /// Get a new, empty <see cref="Buffer{T}"/> with a starting <see cref="Capacity"/> at least <paramref name="minCapacity"/>.
+    /// </summary>
+    [MustDisposeResource(true)]
     public static Buffer<T> New(int minCapacity) => new(minCapacity);
+
+    /// <summary>
+    /// Gets a new, empty <see cref="Buffer{T}"/> using a given <see cref="Span{T}"/> for initial storage.
+    /// </summary>
+    /// <param name="storage">
+    /// The <see cref="Span{T}"/> used as underlying storage in the returned <see cref="Buffer"/>.
+    /// </param>
+    /// <param name="startPosition">
+    /// The initial starting position that the <see cref="Buffer{T}"/> will write to,
+    /// a way to specify how many of the items in the initial storage span are considered valid.
+    /// </param>
+    /// <returns></returns>
+    [MustDisposeResource(false)]
+    public static Buffer<T> New(Span<T> storage, int startPosition = 0) => new(storage, startPosition);
 
 #endregion
 
 #region Fields + Properties
+    // these are internal for testing reasons
+
 
     // A writable array, usually rented from ArrayPool,
     // may be null if started with a Span buffer or as default(Buffer<T>)
     internal T[]? _array;
 
-    // The writeable span, usually pointing to _array
+    // The writeable span, usually pointing to _array,
     // may be an initial unrented buffer or empty as default
     internal Span<T> _span;
 
@@ -86,8 +102,8 @@ public ref struct Buffer<T> : IDisposable
     }
 
     /// <summary>
-    /// Gets a <see cref="Span{T}"/> over the unwritten|available portion of this <see cref="Buffer{T}"/><br/>
-    /// ⚠️ If you write to <see cref="Available"/> manually, you must also increment <see cref="Count"/> manually.
+    /// Gets a <see cref="Span{T}"/> over the unwritten, available portion of this <see cref="Buffer{T}"/>.<br/>
+    /// ⚠️ If you write to <see cref="Available"/> directly, you must also increment <see cref="Count"/> manually!
     /// </summary>
     public Span<T> Available
     {
@@ -103,11 +119,8 @@ public ref struct Buffer<T> : IDisposable
     /// </exception>
     public ref T this[int index]
     {
-        get
-        {
-            int offset = Throw.IfBadIndex(index, _position);
-            return ref _span[offset];
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _span[index];
     }
 
     /// <summary>
@@ -118,11 +131,8 @@ public ref struct Buffer<T> : IDisposable
     /// </exception>
     public ref T this[Index index]
     {
-        get
-        {
-            int offset = Throw.IfBadIndex(index, _position);
-            return ref _span[offset];
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _span[index];
     }
 
     /// <summary>
@@ -135,14 +145,14 @@ public ref struct Buffer<T> : IDisposable
     {
         get
         {
-            (int offset, int len) = Throw.IfBadRange(range, _position);
+            var (offset, len) = range.UnsafeGetOffsetAndLength(_position);
             return _span.Slice(offset, len);
         }
     }
 
     /// <summary>
     /// Gets or Sets the number of items in this <see cref="Buffer{T}"/><br/>
-    /// ⚠️ If you change this value manually without adding to <see cref="Available"/> manually, this <see cref="Buffer{T}"/> will contain unknown data.
+    /// ⚠️ If you change this value directly without also directly changing <see cref="Available"/>, this <see cref="Buffer{T}"/> will contain unknown data.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown if setting Count less than 0 or greater than <see cref="Capacity"/>
@@ -150,11 +160,7 @@ public ref struct Buffer<T> : IDisposable
     public int Count
     {
         readonly get => _position;
-        set
-        {
-            Throw.IfNotBetween(value, 0, Capacity);
-            _position = value;
-        }
+        set => _position = Guard.Between(value, 0, Capacity);
     }
 
     /// <summary>
@@ -167,7 +173,7 @@ public ref struct Buffer<T> : IDisposable
         {
             if (value < _position)
             {
-                throw Ex.ArgRange(value, $"cannot be less that Count of {Count}");
+                throw Ex.ArgRange(value, $"cannot be less that Count ({Count})");
             }
             else if (value > _span.Length)
             {
@@ -204,7 +210,7 @@ public ref struct Buffer<T> : IDisposable
     {
         _array = null;
         _span = initialBuffer;
-        _position = Throw.IfNotBetween(startPosition, 0, initialBuffer.Length, upperBoundIsInclusive: true);
+        _position = Guard.Between(startPosition, 0, (initialBuffer.Length, true));
     }
 
 #endregion
@@ -244,21 +250,6 @@ public ref struct Buffer<T> : IDisposable
 
 #endregion
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool SequenceEqual(IEqualityComparer<T> itemComparer, Span<T> left, ReadOnlySpan<T> right, int count)
-    {
-        Debug.Assert(left.Length >= count);
-        Debug.Assert(right.Length >= count);
-        for (int i = 0; i < count; i++)
-        {
-            if (!itemComparer.Equals(left[i], right[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void InsertManyEnumerable(int index, IEnumerable<T> items)
@@ -267,7 +258,7 @@ public ref struct Buffer<T> : IDisposable
         using var buffer = new Buffer<T>();
         foreach (var item in items)
         {
-            buffer.Write(item);
+            buffer.Add(item);
         }
 
         InsertMany(index, buffer.Written);
@@ -289,7 +280,7 @@ public ref struct Buffer<T> : IDisposable
     /// Add a new <paramref name="item"/> to this <see cref="Buffer{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Write(T item)
+    public void Add(T item)
     {
         if (_position < Capacity)
         {
@@ -315,7 +306,7 @@ public ref struct Buffer<T> : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteMany(params ReadOnlySpan<T> items)
+    public void AddMany(params ReadOnlySpan<T> items)
     {
         if (_position + items.Length <= _span.Length)
         {
@@ -332,12 +323,12 @@ public ref struct Buffer<T> : IDisposable
     /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteMany(T[]? items) => WriteMany(items.AsSpan());
+    public void AddMany(T[]? items) => AddMany(items.AsSpan());
 
     /// <summary>
     /// Adds the given <paramref name="items"/> to this <see cref="Buffer{T}"/>
     /// </summary>
-    public void WriteMany(IEnumerable<T>? items)
+    public void AddMany(IEnumerable<T>? items)
     {
         if (items is null)
         {
@@ -347,7 +338,7 @@ public ref struct Buffer<T> : IDisposable
         else if (items is List<T> list)
         {
             var listSpan = CollectionsMarshal.AsSpan(list);
-            WriteMany(listSpan);
+            AddMany(listSpan);
         }
 #endif
         else if (items is ICollection<T> collection)
@@ -399,12 +390,12 @@ public ref struct Buffer<T> : IDisposable
             // slowest path
             foreach (var item in items)
             {
-                Write(item);
+                Add(item);
             }
         }
     }
 
-    public void WriteMany(Buffer<T> buffer) => WriteMany(buffer.Written);
+    public void AddMany(Buffer<T> buffer) => AddMany(buffer.Written);
 
 #endregion
 
@@ -415,7 +406,7 @@ public ref struct Buffer<T> : IDisposable
         int offset = Throw.IfBadInsertIndex(index, _position);
         if (offset == _position)
         {
-            Write(item);
+            Add(item);
             return;
         }
 
@@ -438,7 +429,7 @@ public ref struct Buffer<T> : IDisposable
         int offset = Throw.IfBadInsertIndex(index, _position);
         if (offset == _position)
         {
-            WriteMany(items);
+            AddMany(items);
             return;
         }
 
@@ -470,7 +461,7 @@ public ref struct Buffer<T> : IDisposable
         int offset = Throw.IfBadInsertIndex(index, _position);
         if (offset == _position)
         {
-            WriteMany(items);
+            AddMany(items);
             return;
         }
 

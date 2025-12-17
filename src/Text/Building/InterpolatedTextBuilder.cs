@@ -59,7 +59,7 @@ public ref struct InterpolatedTextBuilder
     {
         if (_builder is null)
         {
-            _buffer.WriteMany(str.AsSpan());
+            _buffer.AddMany(str.AsSpan());
         }
         else
         {
@@ -71,7 +71,7 @@ public ref struct InterpolatedTextBuilder
     {
         if (_builder is null)
         {
-            _buffer.Write(ch);
+            _buffer.Add(ch);
         }
         else
         {
@@ -111,7 +111,7 @@ public ref struct InterpolatedTextBuilder
     {
         if (_builder is null)
         {
-            _buffer.WriteMany(str.AsSpan());
+            _buffer.AddMany(str.AsSpan());
         }
         else
         {
@@ -126,7 +126,7 @@ public ref struct InterpolatedTextBuilder
     {
         if (_builder is null)
         {
-            _buffer.WriteMany(text);
+            _buffer.AddMany(text);
         }
         else
         {
@@ -183,7 +183,7 @@ public ref struct InterpolatedTextBuilder
     {
         if (_builder is null)
         {
-            _buffer.WriteMany(value.Stringify().AsSpan());
+            _buffer.AddMany(value.Stringify().AsSpan());
         }
         else
         {
@@ -205,7 +205,7 @@ public ref struct InterpolatedTextBuilder
             // render
             if (_builder is null)
             {
-                _buffer.WriteMany(value.Render());
+                _buffer.AddMany(value.Render());
             }
             else
             {
@@ -227,7 +227,7 @@ public ref struct InterpolatedTextBuilder
             if (format.Equate('@'))
             {
                 // render this value
-                _buffer.WriteMany(value.Render());
+                _buffer.AddMany(value.Render());
             }
             else if (value is IFormattable)
             {
@@ -245,11 +245,11 @@ public ref struct InterpolatedTextBuilder
                 }
 #endif
 
-                _buffer.WriteMany(((IFormattable)value).ToString(format, null));
+                _buffer.AddMany(((IFormattable)value).ToString(format, null));
             }
             else if (value is not null)
             {
-                _buffer.WriteMany(value.ToString());
+                _buffer.AddMany(value.ToString());
             }
         }
         else

@@ -9,7 +9,9 @@ public class IfTests
     {
         using var builder = new TextBuilder();
 
-        builder.If(true, 'c', (147, "D2"));
+        Action<TextBuilder> onTrue = tb => tb.Append("true");
+
+        builder.If(true, onTrue, TBA.NewLine);
 
         Assert.Equal(1, builder.Length);
         Assert.Equal('c', builder[0]);

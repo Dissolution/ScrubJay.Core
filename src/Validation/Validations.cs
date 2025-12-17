@@ -34,7 +34,7 @@ public class Validations : Validations<Exception>
         }
     }
 
-    public void Add(Result<Unit> result)
+    public void Add(Result result)
     {
         if (result.IsError(out var error))
         {
@@ -50,7 +50,7 @@ public class Validations : Validations<Exception>
         }
     }
 
-    public void Add(Func<Result<Unit>> getResult)
+    public void Add(Func<Result> getResult)
         => Add(getResult());
 
     public void Add<T>(Func<Result<T>> getResult)

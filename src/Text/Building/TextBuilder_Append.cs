@@ -47,6 +47,13 @@ public partial class TextBuilder
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TextBuilder Append(scoped txt text)
+    {
+        Write((text)text);
+        return this;
+    }
+
 #if NET9_0_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     // ReSharper disable once MethodOverloadWithOptionalParameter

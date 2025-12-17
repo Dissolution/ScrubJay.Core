@@ -162,7 +162,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     {
         // Slow path, fill another buffer and then insert known
         using var buffer = new Buffer<T>();
-        buffer.WriteMany(items);
+        buffer.AddMany(items);
         TryInsertMany(index, buffer.Written).ThrowIfError();
     }
 
@@ -731,24 +731,24 @@ public sealed class PooledList<T> : PooledArray<T>,
             .Range(range, _position)
             .Select(ol => _array.Slice(ol.Offset, ol.Length));
 
-    public Result<Unit> TryGetManyTo(Range range, Span<T> destination)
+    public Result TryGetManyTo(Range range, Span<T> destination)
     {
         if (!Validate.Range(range, _position).IsOk(out var ol, out var error))
             return error;
         if (ol.Length > destination.Length)
             return Ex.Argument(destination, $"Destination span cannot hold {ol.Length} items");
         Sequence.CopyTo(_array.AsSpan(range), destination);
-        return Ok(Unit());
+        return true;
     }
 
-    public Result<Unit> TrySetAt(Index index, T item) => Validate.Index(index, _position).Select(i =>
+    public Result TrySetAt(Index index, T item) => Validate.Index(index, _position).Select(i =>
     {
         _version++;
         _array[i] = item;
-        return Unit();
+        return true;
     });
 
-    public Result<Unit> TrySetMany(Range range, scoped ReadOnlySpan<T> items)
+    public Result TrySetMany(Range range, scoped ReadOnlySpan<T> items)
     {
         if (!Validate.Range(range, _position).IsOk(out var ol, out var error))
             return error;
@@ -756,7 +756,7 @@ public sealed class PooledList<T> : PooledArray<T>,
             return new ArgumentException($"{items.Length} items cannot fit in a Range Length of {ol.Length}");
         _version++;
         Sequence.CopyTo(items, _array.AsSpan(ol.Offset, ol.Length));
-        return Ok(Unit());
+        return true;
     }
 
     /// <inheritdoc cref="IList{T}.RemoveAt"/>

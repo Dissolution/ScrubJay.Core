@@ -56,6 +56,18 @@ public partial class TextBuilder
             Write(value.Stringify());
         }
     }
+
+    public void Write<T>(T? value, char format)
+    {
+        if (format == '@')
+        {
+            Renderer.RenderTo<T>(value, this);
+        }
+        else
+        {
+            Write(value.Stringify());
+        }
+    }
 #endif
 
     public void Write<T>(T? value)

@@ -61,7 +61,6 @@ partial class TextBuilder
     {
         if (buildText is not null)
         {
-
             result = buildText.Invoke(this);
             return this;
         }
@@ -92,7 +91,6 @@ partial class TextBuilder
     {
         if (buildText is not null)
         {
-
             result = buildText.Invoke(this, state);
             return this;
         }
@@ -102,6 +100,4 @@ partial class TextBuilder
     }
 
 #endregion
-
-
 }

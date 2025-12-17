@@ -4,8 +4,8 @@ namespace ScrubJay.Functional;
 public static class ResultExtensions
 {
     public delegate bool TryInvoke<T>(out T value);
-    
-    
+
+
     extension(Result)
     {
 #if NET7_0_OR_GREATER
@@ -37,7 +37,7 @@ public static class ResultExtensions
         /// <returns>
         /// The <see cref="Result{T}"/> of the invocation
         /// </returns>
-        public static Result<Unit> Try(Action? action)
+        public static Result Try(Action? action)
         {
             if (action is null)
             {
@@ -47,7 +47,7 @@ public static class ResultExtensions
             try
             {
                 action.Invoke();
-                return Result<Unit>.Ok(Unit.Default);
+                return true;
             }
             catch (Exception ex)
             {
@@ -55,20 +55,20 @@ public static class ResultExtensions
             }
         }
 
-        public static Result<Unit> Try<I>(
+        public static Result Try<I>(
             [NotNullWhen(true)] I? instance,
             [NotNullWhen(true)] Action<I>? instanceAction)
         {
             if (instance is null)
                 return new ArgumentNullException(nameof(instance));
-            
+
             if (instanceAction is null)
                 return new ArgumentNullException(nameof(instanceAction));
 
             try
             {
                 instanceAction.Invoke(instance);
-                return Result<Unit>.Ok(default);
+                return true;
             }
             catch (Exception ex)
             {
@@ -99,7 +99,7 @@ public static class ResultExtensions
         {
             if (instance is null)
                 return new ArgumentNullException(nameof(instance));
-            
+
             if (instanceFunc is null)
                 return new ArgumentNullException(nameof(instanceFunc));
 
@@ -113,7 +113,7 @@ public static class ResultExtensions
                 return ex;
             }
         }
-        
+
         public static Result<T> Try<T>(TryInvoke<T>? tryInvoke)
         {
             if (tryInvoke is null)

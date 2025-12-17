@@ -100,13 +100,13 @@ public ref struct SpanWriter<T>
         throw Ex.Invalid($"Could not write item '{item}': No capacity remaining");
     }
 
-    public Result<Unit> TryWrite(T item)
+    public Result TryWrite(T item)
     {
         if (_position < Capacity)
         {
             _span[_position] = item;
             _position++;
-            return Unit();
+            return true;
         }
 
         return new InvalidOperationException($"Could not write item '{item}': No capacity remaining");

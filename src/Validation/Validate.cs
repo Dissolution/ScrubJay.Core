@@ -320,24 +320,24 @@ public static class Validate
         return Ok(array);
     }
 
-    public static Result<Unit> IsNotEmpty<T>(
+    public static Result IsNotEmpty<T>(
         Span<T> span,
         [CallerArgumentExpression(nameof(span))]
         string? spanName = null)
     {
         if (span.Length == 0)
             return new ArgumentException("Span cannot be empty", spanName);
-        return Ok(Unit());
+        return true;
     }
 
-    public static Result<Unit> IsNotEmpty<T>(
+    public static Result IsNotEmpty<T>(
         ReadOnlySpan<T> span,
         [CallerArgumentExpression(nameof(span))]
         string? spanName = null)
     {
         if (span.Length == 0)
             return new ArgumentException("ReadOnlySpan cannot be empty", spanName);
-        return Ok(Unit());
+        return true;
     }
 
     public static Result<ICollection<T>> IsNotEmpty<T>(
@@ -522,7 +522,7 @@ public static class Validate
         => Compares<T>(CompareType.GreaterThanOrEqual, value, comparisonValue, valueComparer, valueName);
 
 
-    public static Result<Unit> CanCopyTo(
+    public static Result CanCopyTo(
         Array? array,
         int arrayIndex,
         int count,
@@ -539,10 +539,10 @@ public static class Validate
                 () => new ArgumentOutOfRangeException(
                     arrayName, arr,
                     $"Cannot fit {count} items into [{arr.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}"))
-            select Unit();
+            select true;
     }
 
-    public static Result<Unit> CanCopyTo<T>(
+    public static Result CanCopyTo<T>(
         T[]? array,
         int arrayIndex,
         int count,
@@ -551,7 +551,7 @@ public static class Validate
         [CallerArgumentExpression(nameof(arrayIndex))]
         string? arrayIndexName = null)
     {
-        return
+        var result =
             from arr in IsNotNull(array, arrayName)
             from arrIndex in InRange(arrayIndex, ..arr.Length, arrayIndexName)
             from _ in IsErrorIf(
@@ -559,10 +559,11 @@ public static class Validate
                 () => new ArgumentOutOfRangeException(
                     arrayName, arr,
                     $"Cannot fit {count} items into [{arr.Length}]{(arrayIndex == 0 ? "" : $"[{arrayIndex}..]")}"))
-            select Unit();
+            select true;
+        return result;
     }
 
-    public static Result<Unit> CanCopyTo<T>(
+    public static Result CanCopyTo<T>(
         Span<T> span,
         int count,
         [CallerArgumentExpression(nameof(span))]
@@ -575,7 +576,8 @@ public static class Validate
                 span.Length,
                 $"Cannot fit {count} items into a Span with capacity {span.Length}");
         }
-        return Ok(Unit());
+
+        return true;
     }
 
     public static Result<Unit> IsErrorIf(
@@ -584,7 +586,7 @@ public static class Validate
     {
         if (predicate)
             return createException();
-        return Ok(Unit());
+        return Result<Unit>.Ok(default);
     }
 
     public static Result<T> IsErrorIf<T>(
