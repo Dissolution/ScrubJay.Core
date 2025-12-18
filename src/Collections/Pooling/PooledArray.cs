@@ -27,7 +27,7 @@ public abstract class PooledArray<T> : IDisposable
 
     protected PooledArray(int minCapacity)
     {
-        _array = ArrayPool<T>.Shared.Rent(minCapacity);
+        _array = ArrayNest<T>.Rent(minCapacity);
     }
 
     [HandlesResourceDisposal]
@@ -51,11 +51,11 @@ public abstract class PooledArray<T> : IDisposable
     public void GrowTo(int minCapacity)
     {
         Debug.Assert(minCapacity > Capacity);
-        T[] array = ArrayPool<T>.Shared.Rent(Math.Max(minCapacity * 2, 64));
+        T[] array = ArrayNest<T>.Rent(Math.Max(minCapacity * 2, 64));
         if (_array.Length > 0)
         {
             CopyToNewArray(array);
-            ArrayPool<T>.Shared.Return(_array, true);
+            ArrayNest.Return(_array, true);
         }
 
         _array = array;
@@ -71,7 +71,7 @@ public abstract class PooledArray<T> : IDisposable
     {
         OnDisposing();
         T[] toReturn = Interlocked.Exchange<T[]>(ref _array, []);
-        ArrayPool<T>.Shared.Return(toReturn, true);
+        ArrayNest.Return(toReturn, true);
         GC.SuppressFinalize(this);
     }
 }

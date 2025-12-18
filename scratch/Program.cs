@@ -17,6 +17,7 @@ using InlineIL;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ScrubJay.Collections;
 using ScrubJay.Collections.NonGeneric;
 using ScrubJay.Collections.Pooling;
 using ScrubJay.Debugging;
@@ -44,97 +45,20 @@ watcher.UnhandledException += (sender, args) =>
 #endregion End Setup
 
 
-using var builder = new TextBuilder();
-
-var allMethods =
-    AppDomain.CurrentDomain
-        .GetAssemblies()
-        .SelectMany(static ass => ass.GetTypes())
-        .SelectMany(static t =>
-            t.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
-        .ToHashSet();
-
-var renderer = new MethodRenderer();
-foreach (var method in allMethods)
+for (var x = 0; x <= 3; x++)
 {
-    builder.Clear();
-    renderer.RenderTo(method, builder);
-    string? typeString = method.ToString();
-    string display = builder.ToString();
+    Index index = x;
+    Index endIndex = ^x;
 
-    Console.WriteLine(display);
-    // using var tx = new TextBuilder();
-    // tx.Write(typeString);
-    // tx.Written.Replace('+', '.');
-    // tx.Written.Replace('[', '<');
-    // tx.Written.Replace(']', '>');
-    //
-    // var txStr = tx.ToString();
-    // if (txStr != display)
-    // {
-    //     Debugger.Break();
-    // }
+    StackIndex stackIndex = index;
+    StackIndex osi = endIndex;
+
+    var (value, fromEnd) = index;
+    var (evalue, efromEnd) = endIndex;
+    Debugger.Break();
 }
 
-Debugger.Break();
 
-Pair<int, string> pair = new(147, "TRJ");
-builder.Write("Pair<int, string> (IRenderable):  ");
-Renderer.RenderTo(pair, builder);
-builder.NewLine();
-Debugger.Break();
-
-
-
-Dictionary<int, string> dict = new()
-{
-    { 4, "Four" },
-    { 5, "Five" },
-};
-builder.Write("Dictionary<int,string>:  ");
-Renderer.RenderTo(dict, builder);
-builder.NewLine();
-Debugger.Break();
-
-
-
-Array arr = Array.CreateInstance(typeof(string), 3);
-arr.SetValue("Zero", 0);
-arr.SetValue("One", 1);
-arr.SetValue("Two", 2);
-
-var mda = new int[2, 2, 2];
-Array.Clear(mda);
-foreach (var i in ArrayIndicesEnumerator.For(mda))
-{
-    mda.SetValue(Random.Shared.Next(), i);
-}
-
-builder.Write("3d Array:  ");
-Renderer.RenderTo(mda, builder);
-builder.NewLine();
-
-
-builder.Write("Object:  ");
-object obj = Guid.NewGuid();
-Renderer.RenderTo(obj, builder);
-builder.NewLine();
-
-char[] array = ['T', 'R', 'J'];
-
-
-Renderer.RenderArrayTo(arr, builder);
-builder.Write("  | ");
-Renderer.RenderTo(array, builder);
-builder.Write("  | ");
-Renderer.RenderTo(array.AsSpan(), builder);
-builder.Write(" | ");
-Renderer.RenderTo(BindingFlags.Public, builder);
-builder.Write("  | ");
-
-string output = builder.ToString();
-Console.WriteLine(output);
-Debugger.Break();
 
 
 Console.WriteLine("〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️");

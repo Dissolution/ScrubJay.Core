@@ -712,7 +712,7 @@ public ref struct Buffer<T> : IDisposable
 
             for (; index <= end; index++)
             {
-                if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
+                if (Sequence.Equal(span.Slice(index, itemCount), items, itemComparer))
                 {
                     return Some(index);
                 }
@@ -746,7 +746,7 @@ public ref struct Buffer<T> : IDisposable
             // we can scan until the first item
             for (; index >= 0; index--)
             {
-                if (SequenceEqual(itemComparer, span.Slice(index), items, itemCount))
+                if (Sequence.Equal(span.Slice(index, itemCount), items, itemComparer))
                 {
                     return Some(index);
                 }

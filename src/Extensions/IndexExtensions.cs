@@ -5,15 +5,12 @@ public static class IndexExtensions
 {
     extension(Index index)
     {
-        public bool IsUnbounded
-        {
-            get
-            {
-                return index.Value == 0;
-            }
-        }
+        /// <summary>
+        /// Is this <see cref="Index"/> unbounded?
+        /// </summary>
+        public bool IsUnbounded => index.Value == 0;
 
-        public void Deconstruct(out bool isFromEnd, out int value)
+        public void Deconstruct(out int value, out bool isFromEnd)
         {
             isFromEnd = index.IsFromEnd;
             value = index.Value;
