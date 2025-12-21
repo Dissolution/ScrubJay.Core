@@ -51,7 +51,7 @@ public sealed class ProfileSection : IDisposable
         return TextBuilder.New
             .Append($"{_profiler.Name} Profiler section '{Name}': ")
             .If(_endTicks < 0, "Running for ", "Ran for ")
-            .Append(Elapsed, '@')
+            .Render(Elapsed)
             .ToStringAndDispose();
     }
 }

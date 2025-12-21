@@ -209,7 +209,7 @@ public ref struct InterpolatedTextBuilder
             }
             else
             {
-                _builder.Append(value, '@');
+                _builder.Render(value);
             }
         }
         else
@@ -254,9 +254,28 @@ public ref struct InterpolatedTextBuilder
         }
         else
         {
-            _builder.Append<T>(value, format);
+            _builder.Format<T>(value, format);
         }
     }
+
+#if !NET9_0_OR_GREATER
+    public void AppendFormatted<T>(ReadOnlySpan<T> span)
+    {
+        AppendLiteral(span.ToString());
+    }
+
+    public void AppendFormatted<T>(ReadOnlySpan<T> span, string? format)
+    {
+        if (format.Equate('@'))
+        {
+            AppendLiteral(span.Render());
+        }
+        else
+        {
+            AppendLiteral(span.ToString());
+        }
+    }
+#endif
 
     [HandlesResourceDisposal]
     public void Clear()

@@ -9,6 +9,31 @@ namespace ScrubJay.Text;
 [PublicAPI]
 public static class TextExtensions
 {
+    extension(text text)
+    {
+        public int IndexOfAny(ReadOnlySpan<char> values, StringComparison comparison = StringComparison.Ordinal)
+        {
+            if (comparison == StringComparison.Ordinal)
+            {
+                return MemoryExtensions.IndexOfAny<char>(text, values);
+            }
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (TextHelper.Contains(values, text[Range.OffsetLength(i,1)], comparison))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+    }
+
+
+
+
+
 #if NETFRAMEWORK || NETSTANDARD
     /// <summary>
     /// Gets a pinned <c>ref readonly</c> to this <see cref="string"/>

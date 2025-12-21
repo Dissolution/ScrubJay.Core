@@ -27,7 +27,7 @@ public sealed class ExceptionRenderer : ValueRendererBase<ExceptionRenderer, Exc
                 .IfNotEmpty(exception.Source,
                     static (tb, source) => tb.AppendLine($"Source: \"{source}\""))
                 .IfNotNull(exception.TargetSite,
-                    static (tb, ts) => tb.Append("Target Site: ").Append(ts,'@').NewLine())
+                    static (tb, ts) => tb.Append("Target Site: ").Render(ts).NewLine())
                 .IfNotEmpty(exception.StackTrace,
                     static (tb, st) => tb
                         .Append("StackTrace:")

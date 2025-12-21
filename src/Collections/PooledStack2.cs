@@ -140,11 +140,9 @@ public class PooledStack2<T> : IReadOnlyCollection<T>, IEnumerable<T>
         int end = _position;
         int offset = index.GetOffset(end);
 
-        if ((offset < 0) || (offset >= end))
-            return Ex.Index(index, _position);
-
-        // If we indicated the front, push
-        if (offset == (end - 1))
+        if (offset < 0 || offset > end)
+            return Ex.Index(index, end);
+        if (offset == end)
         {
             Push(item);
             return true;
@@ -156,7 +154,7 @@ public class PooledStack2<T> : IReadOnlyCollection<T>, IEnumerable<T>
             GrowTo(newSize);
         }
 
-        Sequence.SelfCopy(_array, offset..end, (offset + 1)..);
+        _array.SelfCopy(offset..end, (offset + 1)..);
         _array[offset] = item;
         _position = newSize;
         return true;
@@ -165,7 +163,12 @@ public class PooledStack2<T> : IReadOnlyCollection<T>, IEnumerable<T>
 
     public Option<T> TryPeek()
     {
-        throw Ex.NotImplemented();
+        if (_position > 0)
+        {
+            return Some(_array[_position - 1]);
+        }
+
+        return None;
     }
 
     public Result<T> TryGetAt(StackIndex index)

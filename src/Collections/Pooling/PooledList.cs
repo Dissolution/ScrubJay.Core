@@ -26,7 +26,7 @@ public sealed class PooledList<T> : PooledArray<T>,
     IDisposable
 {
     // the position in _array that we're writing to
-    private int _position;
+    internal int _position;
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     bool ICollection<T>.IsReadOnly => false;

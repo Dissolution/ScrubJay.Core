@@ -30,10 +30,10 @@ public static class Sequence
     /// <param name="source"></param>
     /// <param name="destination"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SelfCopy<T>(Span<T> span, Range source, Range destination) => span[source].CopyTo(span[destination]);
+    public static void SelfCopy<T>(this Span<T> span, Range source, Range destination) => span[source].CopyTo(span[destination]);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SelfCopy<T>(T[] array, Range source, Range destination) =>
+    public static void SelfCopy<T>(this T[] array, Range source, Range destination) =>
         array.AsSpan(source).CopyTo(array.AsSpan(destination));
 
 #region TryCopyTo

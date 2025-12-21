@@ -19,7 +19,7 @@ partial class Ex
             .IfNotNull(input, static (tb, n) => tb.Append('"').Append(n).Append('"'),
                 static tb => tb.Append("<null>"))
             .Append(" into a ")
-            .Append(destType, '@')
+            .Render(destType)
             .IfNotEmpty(info,
                 static (tb, n) => tb.Append(": ").Append(ref n))
             .ToStringAndDispose();

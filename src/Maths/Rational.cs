@@ -1439,9 +1439,9 @@ public readonly struct Rational :
         text fmt = format.AsSpan(1);
         if (firstChar is ('g' or 'G'))
         {
-            builder.Append(Numerator, fmt, provider)
+            builder.Format(Numerator, fmt, provider)
                 .Append('/')
-                .Append(Denominator, fmt, provider);
+                .Format(Denominator, fmt, provider);
         }
         else if (firstChar == 'M') // Mixed number
         {
@@ -1455,7 +1455,7 @@ public readonly struct Rational :
 
             BigInteger integralPart = numerator / denominator;
             var remainder = this - integralPart;
-            builder.Append(integralPart, fmt, provider);
+            builder.Format(integralPart, fmt, provider);
             if (remainder != Zero)
             {
                 builder.Append(' ').Invoke(remainder.RenderTo);
@@ -1463,19 +1463,19 @@ public readonly struct Rational :
         }
         else if (firstChar == 'N') // Numerator only
         {
-            builder.Append(Numerator, fmt, provider);
+            builder.Format(Numerator, fmt, provider);
         }
         else if (firstChar == 'D') // Denominator only
         {
-            builder.Append(Denominator, fmt, provider);
+            builder.Format(Denominator, fmt, provider);
         }
         else if (firstChar == 'd')
         {
-            builder.Append(ToDouble(), fmt, provider);
+            builder.Format(ToDouble(), fmt, provider);
         }
         else if (firstChar == 'm')
         {
-            builder.Append(ToDecimal(), fmt, provider);
+            builder.Format(ToDecimal(), fmt, provider);
         }
         else
         {

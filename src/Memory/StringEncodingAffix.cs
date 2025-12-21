@@ -4,7 +4,7 @@
 /// Indicates what kind of prefix or postfix that will be used to determine the length of the resulting string
 /// </summary>
 [PublicAPI]
-public enum StringFix
+public enum StringEncodingAffix
 {
     None,
     SevenBitEncodedLenPrefix,
@@ -25,7 +25,7 @@ public enum StringFix
 /// </summary>
 /// <seealso href="https://en.cppreference.com/w/c/chrono/time_t"/>
 [PublicAPI]
-public enum TimeFix
+public enum TimeEncodingAffix
 {
     /// <summary>
     /// 100-nanosecond intervals (ticks) from origin
@@ -53,11 +53,11 @@ public enum TimeFix
 }
 
 [PublicAPI]
-public static class TimeFixExtensions
+public static class TimeEncodingAffixExtensions
 {
     private static readonly DateTime _dateOrigin = new DateTime(1970, 1, 1);
 
-    extension(TimeFix)
+    extension(TimeEncodingAffix)
     {
         public static DateTime OriginDateTime
             => _dateOrigin;

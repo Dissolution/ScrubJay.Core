@@ -2,7 +2,7 @@
 
 public partial class TextBuilder
 {
-    #region IndexOf and Contains
+#region Contains
 
     public bool Contains(char ch)
     {
@@ -13,17 +13,49 @@ public partial class TextBuilder
 #endif
     }
 
+    public bool Contains(char ch, IEqualityComparer<char>? comparer)
+    {
+        return Written.Contains(ch, comparer);
+    }
+
+    public bool Contains(scoped text text, StringComparison comparison = StringComparison.Ordinal)
+    {
+        return Written.Contains(text, comparison);
+    }
+
+#endregion /Contains
+
+#region TryFindIndex
+
+    /// <summary>
+    /// Try to find the index of the first occurrence of a given <see cref="char"/> in this <see cref="TextBuilder"/>.
+    /// </summary>
+    /// <param name="ch">
+    /// The <see cref="char"/> to search for.
+    /// </param>
+    /// <param name="firstToLast">
+    /// Whether to search from 0 to ^1 (default) or from ^1 to 0.
+    /// </param>
+    /// <param name="startIndex">
+    /// An optional starting index for the search.<br/>
+    /// A first-to-last search will start at this index to ^1 and a last-to-first search will start at this index to 0.
+    /// </param>
+    /// <returns>
+    /// An <see cref="Option{int}"/>:<br/>
+    /// <see cref="Some{int}"/>: The index of the matching <see cref="char"/> in this <see cref="TextBuilder"/>.<br/>
+    /// <see cref="None"/>: No matching <see cref="char"/> was found.
+    /// </returns>
     public Option<int> TryFindIndex(
         char ch,
         bool firstToLast = true,
-        Index? index = null)
+        Index? startIndex = null)
     {
         int pos = _position;
         int end = pos - 1;
 
         // starting index?
         int offset;
-        if (index.TryGetValue(out Index idx))
+        if (startIndex.TryGetValue(out Index idx))
         {
             if (!Validate.Index(idx, pos).IsOk(out offset))
                 return None;
@@ -229,5 +261,4 @@ public partial class TextBuilder
     }
 
 #endregion
-
 }

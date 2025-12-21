@@ -10,6 +10,7 @@ public class CharToTextBenchmarks
     }
 
 
+    [Benchmark]
     [ArgumentsSource(nameof(Characters))]
     public ReadOnlySpan<char> CharToStringAsSpan(char ch)
     {

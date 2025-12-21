@@ -1,4 +1,4 @@
-namespace ScrubJay.Validation;
+namespace ScrubJay.Validation.Demanding;
 
 /// <summary>
 /// Information about a value being validated
@@ -11,7 +11,7 @@ public readonly ref struct ValidatingValue<T>
 #endif
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ValidatingValue<T> New(T? value,
+    public static ValidatingValue<T> New(T value,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
     {
@@ -21,7 +21,7 @@ public readonly ref struct ValidatingValue<T>
     /// <summary>
     /// The <typeparamref name="T"/> value being validated
     /// </summary>
-    public readonly T? Value;
+    public readonly T Value;
 
     /// <summary>
     /// An optional captured name for the <see cref="Value"/>
@@ -52,7 +52,7 @@ public readonly ref struct ValidatingValue<T>
 #endif
     }
 
-    internal ValidatingValue(T? value, string? valueName)
+    internal ValidatingValue(T value, string? valueName)
     {
         Value = value;
         ValueName = valueName;

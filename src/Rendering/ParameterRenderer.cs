@@ -8,10 +8,10 @@ public sealed class ParameterRenderer : ValueRendererBase<ParameterRenderer, Par
     public override void RenderTo(ParameterInfo parameter, TextBuilder builder)
     {
         // type name = default
-        builder.Append(parameter.ParameterType, '@')
+        builder.Render(parameter.ParameterType)
             .Append(' ')
             .Append(parameter.Name)
             .If(parameter.HasDefaultValue,
-                tb => tb.Append(" = ").Append(parameter.DefaultValue, '@'));
+                tb => tb.Append(" = ").Render(parameter.DefaultValue));
     }
 }

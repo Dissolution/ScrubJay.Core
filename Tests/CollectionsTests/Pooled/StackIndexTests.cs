@@ -1,4 +1,5 @@
-﻿using ScrubJay.Collections.Pooling;
+﻿using ScrubJay.Collections;
+using ScrubJay.Collections.Pooling;
 
 namespace ScrubJay.Tests.CollectionsTests.Pooled;
 

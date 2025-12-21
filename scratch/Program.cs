@@ -26,7 +26,7 @@ using ScrubJay.Maths;
 using ScrubJay.Maths.Ternary;
 using ScrubJay.Rendering;
 using ScrubJay.Scratch;
-
+using ScrubJay.Validation.Demanding;
 using static InlineIL.IL;
 using Renderer = ScrubJay.Rendering.Renderer;
 using TypeRenderer = ScrubJay.Rendering.TypeRenderer;
@@ -45,19 +45,9 @@ watcher.UnhandledException += (sender, args) =>
 #endregion End Setup
 
 
-for (var x = 0; x <= 3; x++)
-{
-    Index index = x;
-    Index endIndex = ^x;
-
-    StackIndex stackIndex = index;
-    StackIndex osi = endIndex;
-
-    var (value, fromEnd) = index;
-    var (evalue, efromEnd) = endIndex;
-    Debugger.Break();
-}
-
+bool parsed = int.TryParse("147", out int i32);
+Demand.Capture(parsed).IsTrue();
+Debugger.Break();
 
 
 

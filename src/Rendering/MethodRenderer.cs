@@ -9,7 +9,7 @@ public sealed class MethodRenderer : ValueRendererBase<MethodRenderer, MethodBas
     {
         if (method is MethodInfo methodInfo)
         {
-            builder.Append(methodInfo.ReturnType, '@')
+            builder.Render(methodInfo.ReturnType)
                 .Append(' ');
         }
 

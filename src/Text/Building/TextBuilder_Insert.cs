@@ -42,9 +42,9 @@ public partial class TextBuilder
         int offset = Throw.IfBadInsertIndex(index, pos);
 
         if (offset == pos)
-            return Append<T>(value, format, provider);
+            return Format<T>(value, format, provider);
 
-        Measure(tb => tb.Append<T>(value, format, provider), out var written);
+        Capture(tb => tb.Format<T>(value, format, provider), out var written);
         int len = written.Length;
         if (len > 0)
         {
@@ -66,9 +66,9 @@ public partial class TextBuilder
         int offset = Throw.IfBadInsertIndex(index, pos);
 
         if (offset == pos)
-            return Append<T>(value, '@');
+            return Render<T>(value);
 
-        Measure(tb => tb.Append<T>(value, '@'), out var written);
+        Capture(tb => tb.Render<T>(value), out var written);
         int len = written.Length;
         if (len > 0)
         {

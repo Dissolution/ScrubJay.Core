@@ -13,7 +13,7 @@ public static partial class Guard
             .If(lowValue,
                 (tb, lower) => tb
                     .If(lowInc, '[', '(')
-                    .Write<T>(lower))
+                    .Append<T>(lower))
             .Append("..")
             .If(hiValue,
                 (tb, upper) => tb
@@ -49,6 +49,44 @@ public static partial class Guard
             }
         }
 
-        throw Ex.ArgRange<T>(value, $"must be in [{inclusiveLowerBound}..{exclusiveUpperBound})", valueName);
+        throw Ex.ArgRange<T>(value, $"must be in [{inclusiveLowerBound}..{exclusiveUpperBound})", argumentName: valueName);
+    }
+
+    public static int Index(int index, int available,
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null)
+    {
+        if (index >= 0 && index < available)
+            return index;
+        throw Ex.Index(index, available, indexName: indexName);
+    }
+
+    public static int Index(Index index, int available,
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null)
+    {
+        int offset = index.GetOffset(available);
+        if (offset >= 0 && offset < available)
+            return offset;
+        throw Ex.Index(index, available, indexName: indexName);
+    }
+
+    public static int InsertIndex(int index, int available,
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null)
+    {
+        if (index >= 0 && index <= available)
+            return index;
+        throw Ex.Index(index, available, indexName: indexName);
+    }
+
+    public static int InsertIndex(Index index, int available,
+        [CallerArgumentExpression(nameof(index))]
+        string? indexName = null)
+    {
+        int offset = index.GetOffset(available);
+        if (offset >= 0 && offset <= available)
+            return offset;
+        throw Ex.Index(index, available, indexName: indexName);
     }
 }

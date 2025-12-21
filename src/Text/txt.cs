@@ -57,12 +57,11 @@ public readonly ref struct txt
         }
     }
 #else
-    public static implicit operator text(txt txt)
-        => txt._text;
+    public static implicit operator text(txt txt) => txt._text;
 
     private readonly text _text;
 
-  public bool IsEmpty => _text.IsEmpty;
+    public bool IsEmpty => _text.IsEmpty;
 
     public txt(in char ch)
     {

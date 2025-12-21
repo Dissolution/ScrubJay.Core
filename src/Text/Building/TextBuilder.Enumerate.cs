@@ -45,8 +45,12 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder Enumerate<R,V>(Iterable<R,V> iterable, Action<TextBuilder, V>? build)
+    public TextBuilder Enumerate<R, V>(Iterable<R, V> iterable, Action<TextBuilder, V>? build)
         where R : struct, IIterator<V>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+        where V : allows ref struct
+#endif
     {
         if (build is not null)
         {
@@ -115,8 +119,12 @@ partial class TextBuilder
         return this;
     }
 
-    public TextBuilder Enumerate<R,V>(Iterable<R,V> iterable, Action<TextBuilder, V, int>? build)
+    public TextBuilder Enumerate<R, V>(Iterable<R, V> iterable, Action<TextBuilder, V, int>? build)
         where R : struct, IIterator<V>
+#if NET9_0_OR_GREATER
+        , allows ref struct
+        where V : allows ref struct
+#endif
     {
         if (build is not null)
         {
@@ -131,7 +139,6 @@ partial class TextBuilder
 
         return this;
     }
-
 
 #endregion
 }

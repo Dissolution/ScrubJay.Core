@@ -10,8 +10,8 @@ public readonly struct StackIndex :
 #endif
     IEquatable<StackIndex>
 {
-    public static implicit operator StackIndex(int index) => new(index);
-    public static implicit operator StackIndex(Index index) => new(index.Value, index.IsFromEnd);
+    public static implicit operator StackIndex(int index) => new(index, false);
+    public static implicit operator StackIndex(Index index) => new(index);
 
     public static bool operator ==(StackIndex left, StackIndex right) => left.Equals(right);
     public static bool operator !=(StackIndex left, StackIndex right) => !left.Equals(right);
@@ -118,6 +118,14 @@ public readonly struct StackIndex :
         }
 
         return offset;
+    }
+
+    public Result<int> TryGetOffset(int size)
+    {
+        int offset = GetOffset(size);
+        if (offset >= 0 && offset < size)
+            return offset;
+        return Ex.Index(this, size);
     }
 
     public bool Equals(StackIndex other)

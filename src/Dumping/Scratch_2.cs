@@ -80,7 +80,7 @@ internal sealed class DumpInst : IDisposable
 
     private void DumpEnumerable(IEnumerable enumerable)
     {
-        _builder.Append(enumerable.GetType(), '@');
+        _builder.Render(enumerable.GetType());
 
         var e = enumerable.GetEnumerator();
         if (!e.MoveNext())
@@ -116,7 +116,7 @@ internal sealed class DumpInst : IDisposable
 
         if (UseRender(type))
         {
-            _builder.Append(obj, '@');
+            _builder.Render(obj);
             return;
         }
 
@@ -158,7 +158,7 @@ internal sealed class DumpInst : IDisposable
     {
         var type = obj.GetType();
 
-        _builder.Append(type, '@');
+        _builder.Render(type);
 
         var properties = type
             .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -218,7 +218,7 @@ internal sealed class DumpInst : IDisposable
 
     private void DumpParameter(ParameterInfo parameter)
     {
-        _builder.Append(parameter.ParameterType, '@')
+        _builder.Render(parameter.ParameterType)
             .IfNotNull(parameter.Name, static (tb, n) => tb.Append(' ').Write(n))
             .If(parameter.HasDefaultValue, tb =>
             {
@@ -232,12 +232,12 @@ internal sealed class DumpInst : IDisposable
         switch (member)
         {
             case Type type:
-                _builder.Append(type, '@');
+                _builder.Render(type);
                 return;
             case MethodInfo methodInfo:
             {
                 var owner = methodInfo.DeclaringType ?? methodInfo.ReflectedType ?? methodInfo.Module.GetType();
-                _builder.Append(owner, '@')
+                _builder.Render(owner)
                     .Append('.')
                     //.AppendName(methodInfo)
                     //.AppendGenericTypes(methodInfo)

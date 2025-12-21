@@ -1,5 +1,6 @@
 namespace ScrubJay.Text;
 
+
 /// <summary>
 /// Common <b>T</b>ext<b>B</b>uilder <b>A</b>ctions
 /// </summary>
@@ -15,8 +16,6 @@ public static class TBA
     public static Action<TextBuilder> Append(string? str) => tb => tb.Append(str);
 
     public static Action<TextBuilder> Append<T>(T value) => tb => tb.Append<T>(value);
-
-
 }
 
 [PublicAPI]
@@ -27,6 +26,7 @@ public static class TBA<T>
 {
 }
 
+
 [PublicAPI]
 public static class TBAExtensions
 {
@@ -34,16 +34,16 @@ public static class TBAExtensions
     {
         public static Action<TextBuilder, T> Append => static (tb, value) => tb.Append<T>(value);
 
-        public static Action<TextBuilder, T> Render => static (tb, value) => tb.Append<T>(value, '@');
+        public static Action<TextBuilder, T> Render => static (tb, value) => tb.Render<T>(value);
 
         public static Action<TextBuilder, T> Format(string? format, IFormatProvider? provider = null)
         {
-            return (tb, value) => tb.Append<T>(value, format, provider);
+            return (tb, value) => tb.Format<T>(value, format, provider);
         }
 
-        public static Action<TextBuilder, T> Format(char format, IFormatProvider? provider = null)
+        public static Action<TextBuilder, T> Format(char format)
         {
-            return (tb, value) => tb.Append<T>(value, format, provider);
+            return (tb, value) => tb.Format<T>(value, format);
         }
     }
 
@@ -51,9 +51,9 @@ public static class TBAExtensions
     extension<T>(TBA<T>)
         where T : allows ref struct
     {
-        public static Action<TextBuilder, T> Format(char format)
+        public static Action<TextBuilder, T> Format(char format, GenericTypeConstraint.AllowsRefStruct<T> _ = default)
         {
-            return (tb, value) => tb.Append<T>(value, format);
+            return (tb, value) => tb.Format<T>(value, format);
         }
     }
 #endif

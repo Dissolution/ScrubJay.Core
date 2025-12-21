@@ -6,6 +6,14 @@
 [PublicAPI]
 public static class RangeExtensions
 {
+    extension(Range)
+    {
+        public static Range OffsetLength(int offset, int length)
+        {
+            return new Range(Index.FromStart(offset), Index.FromStart(offset + length));
+        }
+    }
+
     extension(Range range)
     {
         public void Deconstruct(out Index start, out Index end)

@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Validation;
+﻿namespace ScrubJay.Validation.Demanding;
 
 [PublicAPI]
 public class DemandException : Exception
@@ -7,6 +7,9 @@ public class DemandException : Exception
         ValidatingValue<T> captured,
         InterpolatedTextBuilder info = default,
         Exception? innerException = null)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         var message = TextBuilder.New
             .Append($"Invalid {captured.ValueType:@} variable \"{captured.ValueName}\" `{captured.Value:@}`")
@@ -25,7 +28,7 @@ public class DemandException : Exception
 public static class Demand
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ValidatingValue<T> That<T>(T? value,
+    public static ValidatingValue<T> That<T>(T value,
         [CallerArgumentExpression(nameof(value))]
         string? valueName = null)
 #if NET9_0_OR_GREATER
@@ -35,38 +38,20 @@ public static class Demand
         return new ValidatingValue<T>(value, valueName);
     }
 
-    /// <summary>
-    /// Extensions that validate a <see cref="ValidatingValue{T}"/>
-    /// </summary>
-    /// <param name="captured"></param>
-    /// <typeparam name="T"></typeparam>
-    extension<T>(ValidatingValue<T> captured)
+    public static ValidatingValue<T> Capture<T>(T value,
+        [CallerArgumentExpression(nameof(value))]
+        string? valueName = null)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
-        public void IsEqualTo(T? other)
-        {
-            if (!EqualityComparer<T>.Default.Equals(captured.Value!, other!))
-            {
-                throw DemandException.New(captured, $"was not equal to `{other:@}`");
-            }
-        }
+        var trace = new StackTrace();
+        var frames = trace.GetFrames();
+        // skip this frame for Capture
+        Debugger.Break();
 
-        public void IsGreaterThan(T? other)
-        {
-            int c = Comparer<T>.Default.Compare(captured.Value!, other!);
-            if (c <= 0)
-            {
-                throw DemandException.New(captured, $"was not greater than `{other:@}`");
-            }
-        }
 
-        public void IsGreaterThanOrEqualTo(T? other)
-        {
-            int c = Comparer<T>.Default.Compare(captured.Value!, other!);
-            if (c < 0)
-            {
-                throw DemandException.New(captured, $"was not greater than or equal to `{other:@}`");
-            }
-        }
+        throw Ex.NotImplemented();
     }
 
 
